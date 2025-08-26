@@ -1230,6 +1230,28 @@ const PoCreate = () => {
             },
           }));
 
+          // Also update the Rate & Taxes table row with API response values
+          const mappedValues = {
+            material_rate:
+              responseData.rate_per_nos ?? submittedMaterials[tableId]?.material_rate ?? "",
+            discount_percentage:
+              responseData.discount_per ?? submittedMaterials[tableId]?.discount_percentage ?? "",
+            discount_rate:
+              responseData.discount_rate ?? submittedMaterials[tableId]?.discount_rate ?? "",
+            material_cost:
+              responseData.material_cost ?? submittedMaterials[tableId]?.material_cost ?? "",
+            after_discount_value:
+              responseData.after_discount_value ?? submittedMaterials[tableId]?.after_discount_value ?? "",
+            total_base_cost:
+              responseData.tax_applicable_cost ?? submittedMaterials[tableId]?.total_base_cost ?? "",
+            all_inclusive_cost:
+              responseData.total_material_cost ?? submittedMaterials[tableId]?.all_inclusive_cost ?? "",
+          };
+
+          setSubmittedMaterials((prev) =>
+            prev.map((m, idx) => (idx === tableId ? { ...m, ...mappedValues } : m))
+          );
+
           alert("Tax changes saved successfully!");
         }
       } catch (error) {
@@ -1760,6 +1782,12 @@ const PoCreate = () => {
     return Math.max(0, netCost);
   };
 
+  // Format numbers to two decimal places for summary display
+  const formatTwo = (value) => {
+    const num = parseFloat(value);
+    return isNaN(num) ? "0.00" : num.toFixed(2);
+  };
+
   // Handle rate per nos change with automatic discount rate calculation
   const handleRatePerNosChange = useCallback(
     (value) => {
@@ -1793,24 +1821,27 @@ const PoCreate = () => {
   // Handle discount percentage change with automatic discount rate calculation
   const handleDiscountPercentageChange = useCallback(
     (value) => {
+      // Clamp between 0 and 100
+      const parsed = parseFloat(value);
+      const clamped = isNaN(parsed) ? 0 : Math.max(0, Math.min(100, parsed));
       const currentData = taxRateData[tableId];
       if (!currentData) return;
 
       const ratePerNos = parseFloat(currentData.ratePerNos) || 0;
       const totalPoQty = parseFloat(currentData.totalPoQty) || 0;
 
-      const newDiscountRate = calculateDiscountRate(ratePerNos, value);
+      const newDiscountRate = calculateDiscountRate(ratePerNos, clamped);
       const newMaterialCost = calculateMaterialCost(ratePerNos, totalPoQty);
       const newAfterDiscountValue = calculateAfterDiscountValue(
         newMaterialCost,
-        value
+        clamped
       );
 
       setTaxRateData((prev) => ({
         ...prev,
         [tableId]: {
           ...prev[tableId],
-          discount: value,
+          discount: clamped.toString(),
           discountRate: newDiscountRate.toString(),
           materialCost: newMaterialCost.toString(),
           afterDiscountValue: newAfterDiscountValue.toString(),
@@ -1884,9 +1915,20 @@ const PoCreate = () => {
 
   // Handle terms form input changes
   const handleTermsFormChange = (field, value) => {
+    // Clamp non-negative for specific numeric fields
+    const nonNegativeFields = [
+      "creditPeriod",
+      "poValidityPeriod",
+      "advanceReminderDuration",
+    ];
+    let nextValue = value;
+    if (nonNegativeFields.includes(field)) {
+      const parsed = parseFloat(value);
+      nextValue = isNaN(parsed) ? "" : Math.max(0, parsed).toString();
+    }
     setTermsFormData((prev) => ({
       ...prev,
-      [field]: value,
+      [field]: nextValue,
     }));
   };
 
@@ -2582,7 +2624,7 @@ const PoCreate = () => {
                       <div className="form-group"> */}
                       {/* <div className="form-check">
                           <input
-                            className="form-check-input"
+                          className="form-check-input"
                             type="radio"
                             name="contentSelector"
                             defaultValue="content2"
@@ -3039,13 +3081,23 @@ const PoCreate = () => {
 
                                     <th>UOM</th>
                                     <th>PO Qty</th>
-
+                                     <th>Material Rate</th>
+                                    <th>Material Cost</th>
+                                    <th>Discount(%)</th>
+                                    <th>Discount Rate</th>
+                                    <th>After Discount Value</th>
                                     <th>Tax Addition</th>
-                                    <th>Total Changes</th>
+                                    <th>Tax Deduction</th>
+                                    <th>Total Charges</th>
+                                    <th>Total Base Cost</th>
+                                    <th>All Incl. Cost</th>
+
+                                    {/* <th>Tax Addition</th>
+                                    <th>Total Charges</th>
                                     <th>Other Addition</th>
                                     <th>Other Deductions</th>
                                     <th>All Incl. Cost</th>
-                                    <th>Tax Deductions</th>
+                                    <th>Tax Deductions</th> */}
                                     <th>Select Tax</th>
                                   </tr>
                                 </thead>
@@ -3057,13 +3109,17 @@ const PoCreate = () => {
                                           <td>{index + 1}</td>
                                           <td>{material.material_name}</td>
                                           <td>{material.uom_name}</td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
+                                          <td>{material.po_qty ?? "-"}</td>
+                                          <td>{material.material_rate ?? "-"}</td>
+                                          <td>{material.material_cost ?? "-"}</td>
+                                          <td>{material.discount_percentage ?? "-"}</td>
+                                          <td>{material.discount_rate ?? "-"}</td>
+                                          <td>{material.after_discount_value ?? "-"}</td>
+                                          <td>{material.tax_addition ?? "-"}</td>
+                                          <td>{material.tax_deduction ?? "-"}</td>
+                                          <td>{material.total_charges ?? "-"}</td>
+                                          <td>{material.total_base_cost ?? "-"}</td>
+                                          <td>{material.all_inclusive_cost ?? "-"}</td>
                                           <td
                                             className="text-decoration-underline"
                                             style={{ cursor: "pointer" }}
@@ -3119,21 +3175,21 @@ const PoCreate = () => {
                                 <tbody>
                                   <tr>
                                     <td>Total Base Cost</td>
-                                    <td>0</td>
+                                    <td>{formatTwo(0)}</td>
                                   </tr>
                                   <tr>
                                     <td>Total Tax </td>
-                                    <td>0</td>
+                                    <td>{formatTwo(0)}</td>
                                   </tr>
                                   <tr>
                                     <td>Total Charge</td>
-                                    <td>0</td>
+                                    <td>{formatTwo(0)}</td>
                                   </tr>
                                   <tr>
                                     <td className="fw-bold">
                                       Total All Incl. Cost
                                     </td>
-                                    <td className="fw-bold">0</td>
+                                    <td className="fw-bold">{formatTwo(0)}</td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -3431,6 +3487,7 @@ const PoCreate = () => {
                                     <input
                                       className="form-control"
                                       type="number"
+                                      min={0}
                                       value={termsFormData.creditPeriod}
                                       onChange={(e) =>
                                         handleTermsFormChange(
@@ -3450,6 +3507,7 @@ const PoCreate = () => {
                                     <input
                                       className="form-control"
                                       type="number"
+                                      min={0}
                                       value={termsFormData.poValidityPeriod}
                                       onChange={(e) =>
                                         handleTermsFormChange(
@@ -3469,6 +3527,7 @@ const PoCreate = () => {
                                     <input
                                       className="form-control"
                                       type="number"
+                                      min={0}
                                       value={
                                         termsFormData.advanceReminderDuration
                                       }
@@ -3628,7 +3687,8 @@ const PoCreate = () => {
                                     </label>
                                     <input
                                       className="form-control"
-                                      type="text"
+                                      type="number"
+                                      min={0}
                                       placeholder={0}
                                     />
                                   </div>
@@ -4125,7 +4185,13 @@ const PoCreate = () => {
                                         className="form-control"
                                         rows={3}
                                         placeholder="Enter ..."
-                                        defaultValue={""}
+                                        value={termsFormData.remark}
+                                        onChange={(e) =>
+                                          handleTermsFormChange(
+                                            "remark",
+                                            e.target.value
+                                          )
+                                        }
                                       />
                                     </div>
                                   </div>
@@ -4138,7 +4204,13 @@ const PoCreate = () => {
                                         className="form-control"
                                         rows={3}
                                         placeholder="Enter ..."
-                                        defaultValue={""}
+                                        value={termsFormData.comments}
+                                        onChange={(e) =>
+                                          handleTermsFormChange(
+                                            "comments",
+                                            e.target.value
+                                          )
+                                        }
                                       />
                                     </div>
                                   </div>
@@ -4510,6 +4582,16 @@ const PoCreate = () => {
             </table>
           </div>
         </Modal.Body>
+        {/* Ensure native dropdown arrows are visible inside this modal */}
+        <style>{`
+          .modal select.form-control, .modal select {
+            -webkit-appearance: auto;
+            -moz-appearance: auto;
+            appearance: auto;
+            background-image: initial !important;
+            background-repeat: no-repeat;
+          }
+        `}</style>
         <Modal.Footer className="justify-content-center">
           <button
             type="button"
@@ -4767,10 +4849,11 @@ const PoCreate = () => {
                     Rate per Nos <span> *</span>
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     className="form-control"
                     value={taxRateData[tableId]?.ratePerNos || ""}
                     onChange={(e) => handleRatePerNosChange(e.target.value)}
+                    min={0}
                   />
                 </div>
               </div>
@@ -4793,12 +4876,14 @@ const PoCreate = () => {
                 <div className="mb-3">
                   <label className="form-label fw-bold">Discount (%)</label>
                   <input
-                    type="text"
+                    type="number"
                     className="form-control"
                     value={taxRateData[tableId]?.discount || ""}
                     onChange={(e) =>
                       handleDiscountPercentageChange(e.target.value)
                     }
+                    min={0}
+                    max={100}
                   />
                 </div>
               </div>

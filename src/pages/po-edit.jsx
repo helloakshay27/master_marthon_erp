@@ -200,6 +200,19 @@ const formatDateTime = (dateString) => {
     fetchPurchaseOrderData();
   }, [id, token]);
 
+  // Helper to refetch and refresh page state after successful updates
+  const refetchPurchaseOrderData = async () => {
+    try {
+      const response = await axios.get(
+        `${baseURL}purchase_orders/${id}/ropo_detail.json?token=${token}`
+      );
+      console.log("Refetched purchase order data");
+      populateFormData(response.data);
+    } catch (error) {
+      console.error("Error refetching purchase order data:", error);
+    }
+  };
+
   // Function to populate form data from API response
   const populateFormData = (poData) => {
     // Populate company and supplier
@@ -777,7 +790,40 @@ const formatDateTime = (dateString) => {
     if (editRowIndex !== null) {
       // Update existing row
       setTableData((prev) =>
-        prev.map((row, index) => (index === editRowIndex ? newRow : row))
+        prev.map((row, index) => {
+          if (index === editRowIndex) {
+            // Check if this is an existing material (has material object with API data)
+            if (row.material && typeof row.material === 'object' && row.material.id) {
+              // Update existing material - preserve the material object but update the labels
+              return {
+                ...row,
+                materialTypeLabel: inventoryTypes2.find((opt) => opt.value === formData.materialType)?.label || "",
+                materialSubTypeLabel: inventorySubTypes2.find((opt) => opt.value === formData.materialSubType)?.label || "",
+                materialLabel: inventoryMaterialTypes2.find((opt) => opt.value === formData.material)?.label || "",
+                genericSpecificationLabel: genericSpecifications.find((opt) => opt.value === formData.genericSpecification)?.label || "",
+                colourLabel: colors.find((opt) => opt.value === formData.colour)?.label || "",
+                brandLabel: inventoryBrands.find((opt) => opt.value === formData.brand)?.label || "",
+                uomLabel: unitOfMeasures.find((opt) => opt.value === formData.uom)?.label || "",
+                effectiveDate: formData.effectiveDate,
+                // Update the material object with new values
+                material: {
+                  ...row.material,
+                  pms_inventory_type_id: formData.materialType,
+                  pms_inventory_sub_type_id: formData.materialSubType,
+                  pms_inventory_id: formData.material,
+                  pms_generic_info_id: formData.genericSpecification,
+                  pms_colour_id: formData.colour,
+                  pms_brand_id: formData.brand,
+                  uom_id: formData.uom,
+                }
+              };
+            } else {
+              // Update new material - use the newRow structure
+              return newRow;
+            }
+          }
+          return row;
+        })
       );
     } else {
       // Add new row
@@ -814,16 +860,34 @@ const formatDateTime = (dateString) => {
 
   const handleEditRow = (index, material) => {
     const row = tableData[index];
+    
+    // Check if this is an existing material (has material object with API data)
+    if (row.material && typeof row.material === 'object' && row.material.id) {
+      // Existing material - extract values from the material object
     setFormData({
-      materialType: row.materialType,
-      materialSubType: row.materialSubType,
-      material: row.material,
-      genericSpecification: row.genericSpecification,
-      colour: row.colour,
-      brand: row.brand,
-      effectiveDate: row.effectiveDate,
-      uom: row.uom,
-    });
+        materialType: row.material.pms_inventory_type_id || "",
+        materialSubType: row.material.pms_inventory_sub_type_id || "",
+        material: row.material.pms_inventory_id || "",
+        genericSpecification: row.material.pms_generic_info_id || "",
+        colour: row.material.pms_colour_id || "",
+        brand: row.material.pms_brand_id || "",
+        effectiveDate: row.effectiveDate || "",
+        uom: row.material.uom_id || "",
+      });
+    } else {
+      // New material - use the direct values
+      setFormData({
+        materialType: row.materialType || "",
+        materialSubType: row.materialSubType || "",
+        material: row.material || "",
+        genericSpecification: row.genericSpecification || "",
+        colour: row.colour || "",
+        brand: row.brand || "",
+        effectiveDate: row.effectiveDate || "",
+        uom: row.uom || "",
+      });
+    }
+    
     setEditRowIndex(index);
     setShowModal(true);
   };
@@ -848,22 +912,9 @@ const formatDateTime = (dateString) => {
   // );
   //   };
   const handleDeleteRow = (index) => {
-    const deletedMaterial = tableData[index];
-
-    setTableData((prev) => prev.filter((_, i) => i !== index));
-
-    // Remove from submittedMaterials
-    setSubmittedMaterials((prev) =>
-      prev.filter(
-        (m) => m.material_inventory_id !== deletedMaterial.material_inventory_id
-      )
-    );
-
-    // Remove from rateAndTaxes
-    setRateAndTaxes((prev) =>
-      prev.filter(
-        (m) => m.material_inventory_id !== deletedMaterial.material_inventory_id
-      )
+    // Soft-delete: mark row with _destroy so it is excluded from submission and views
+    setTableData((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, _destroy: true } : row))
     );
   };
 
@@ -994,7 +1045,8 @@ const formatDateTime = (dateString) => {
         }
 
         alert("Materials submitted successfully!");
-        // Change tab to Rate & Taxes
+        // Refresh page data and then change tab to Rate & Taxes
+        await refetchPurchaseOrderData();
         setActiveTab("rate-taxes");
         const rateTaxesTab = document.querySelector(
           '[data-bs-target="#Domestic2"]'
@@ -1338,8 +1390,10 @@ const formatDateTime = (dateString) => {
               currentTax.amount = calculatedAmount.toString();
             }
           } else if (field === "amount") {
-            // Handle direct amount input for TaxCharge type
-            currentTax[field] = value;
+            // Handle direct amount input for TaxCharge type, non-negative only
+            const parsed = parseFloat(value);
+            const nonNegative = isNaN(parsed) ? 0 : Math.max(0, parsed);
+            currentTax[field] = nonNegative.toString();
 
             // For TaxCategory, amount is auto-calculated from percentage
             if (
@@ -1611,8 +1665,35 @@ const formatDateTime = (dateString) => {
                 })) || currentData.deduction_bid_material_tax_details,
             },
           }));
+          
 
           alert("Tax changes saved successfully!");
+          // Reflect saved values into Rate & Taxes table row
+          try {
+            const mappedValues = {
+              material_rate: responseData.rate_per_nos ?? "",
+              discount_percentage: responseData.discount_per ?? "",
+              discount_rate: responseData.discount_rate ?? "",
+              material_cost: responseData.material_cost ?? "",
+              after_discount_value: responseData.after_discount_value ?? "",
+              total_base_cost: responseData.tax_applicable_cost ?? "",
+              all_inclusive_cost: responseData.total_material_cost ?? "",
+            };
+
+            const rateLen = Array.isArray(rateAndTaxes) ? rateAndTaxes.length : 0;
+            if (tableId < rateLen) {
+              setRateAndTaxes((prev) =>
+                prev.map((item, idx) => (idx === tableId ? { ...item, ...mappedValues } : item))
+              );
+            } else {
+              const submittedIndex = tableId - rateLen;
+              setSubmittedMaterials((prev) =>
+                prev.map((m, idx) => (idx === submittedIndex ? { ...m, ...mappedValues } : m))
+              );
+            }
+          } catch (e) {
+            console.error("Error updating Rate & Taxes row:", e);
+          }
         }
       } catch (error) {
         console.error("Error saving tax changes:", error);
@@ -2264,14 +2345,17 @@ const formatDateTime = (dateString) => {
   // Handle rate per nos change with automatic discount rate calculation
   const handleRatePerNosChange = useCallback(
     (value) => {
+      // Disallow negatives
+      const numeric = parseFloat(value);
+      const safeRatePerNos = isNaN(numeric) ? 0 : Math.max(0, numeric);
       const currentData = taxRateData[tableId];
       if (!currentData) return;
 
       const discountPercentage = parseFloat(currentData.discount) || 0;
       const totalPoQty = parseFloat(currentData.totalPoQty) || 0;
 
-      const newDiscountRate = calculateDiscountRate(value, discountPercentage);
-      const newMaterialCost = calculateMaterialCost(value, totalPoQty);
+      const newDiscountRate = calculateDiscountRate(safeRatePerNos, discountPercentage);
+      const newMaterialCost = calculateMaterialCost(safeRatePerNos, totalPoQty);
       const newAfterDiscountValue = calculateAfterDiscountValue(
         newMaterialCost,
         discountPercentage
@@ -2281,7 +2365,7 @@ const formatDateTime = (dateString) => {
         ...prev,
         [tableId]: {
           ...prev[tableId],
-          ratePerNos: value,
+          ratePerNos: safeRatePerNos.toString(),
           discountRate: newDiscountRate.toString(),
           materialCost: newMaterialCost.toString(),
           afterDiscountValue: newAfterDiscountValue.toString(),
@@ -2294,24 +2378,27 @@ const formatDateTime = (dateString) => {
   // Handle discount percentage change with automatic discount rate calculation
   const handleDiscountPercentageChange = useCallback(
     (value) => {
+      // Clamp between 0 and 100
+      const parsed = parseFloat(value);
+      const clamped = isNaN(parsed) ? 0 : Math.max(0, Math.min(100, parsed));
       const currentData = taxRateData[tableId];
       if (!currentData) return;
 
       const ratePerNos = parseFloat(currentData.ratePerNos) || 0;
       const totalPoQty = parseFloat(currentData.totalPoQty) || 0;
 
-      const newDiscountRate = calculateDiscountRate(ratePerNos, value);
+      const newDiscountRate = calculateDiscountRate(ratePerNos, clamped);
       const newMaterialCost = calculateMaterialCost(ratePerNos, totalPoQty);
       const newAfterDiscountValue = calculateAfterDiscountValue(
         newMaterialCost,
-        value
+        clamped
       );
 
       setTaxRateData((prev) => ({
         ...prev,
         [tableId]: {
           ...prev[tableId],
-          discount: value,
+          discount: clamped.toString(),
           discountRate: newDiscountRate.toString(),
           materialCost: newMaterialCost.toString(),
           afterDiscountValue: newAfterDiscountValue.toString(),
@@ -2385,9 +2472,20 @@ const formatDateTime = (dateString) => {
 
   // Handle terms form input changes
   const handleTermsFormChange = (field, value) => {
+    // Clamp non-negative for specific numeric fields
+    const nonNegativeFields = [
+      "creditPeriod",
+      "poValidityPeriod",
+      "advanceReminderDuration",
+    ];
+    let nextValue = value;
+    if (nonNegativeFields.includes(field)) {
+      const parsed = parseFloat(value);
+      nextValue = isNaN(parsed) ? "" : Math.max(0, parsed).toString();
+    }
     setTermsFormData((prev) => ({
       ...prev,
-      [field]: value,
+      [field]: nextValue,
     }));
   };
 
@@ -3159,13 +3257,30 @@ const formatDateTime = (dateString) => {
 
     // Add prepopulated rate and taxes data
     if (rateAndTaxes && rateAndTaxes.length > 0) {
-      combined.push(...rateAndTaxes);
+      // Exclude any materials flagged as _destroy in current tableData mapping
+      const deletedIds = new Set(
+        tableData
+          .filter((row) => row._destroy)
+          .map((row) => row.material_inventory_id || row.material?.pms_inventory_id)
+          .filter(Boolean)
+      );
+
+      combined.push(
+        ...rateAndTaxes.filter(
+          (rate) =>
+            !deletedIds.has(rate.material_inventory_id) &&
+            // also ensure not marked _destroy on rate if present
+            !rate._destroy
+        )
+      );
       console.log("Added prepopulated data:", rateAndTaxes.length, "items");
     }
 
     // Add submitted materials (if not already in rateAndTaxes)
     if (submittedMaterials && submittedMaterials.length > 0) {
-      submittedMaterials.forEach((submitted) => {
+      submittedMaterials
+        .filter((s) => !s._destroy)
+        .forEach((submitted) => {
         const submittedMaterialName = submitted.material || submitted.material_name || "";
         const submittedUomName = submitted.uom || submitted.uom_name || "";
 
@@ -4179,6 +4294,7 @@ const formatDateTime = (dateString) => {
                                     <input
                                       className="form-control"
                                       type="number"
+                                      min={0}
                                       value={termsFormData.creditPeriod}
                                       onChange={(e) =>
                                         handleTermsFormChange(
@@ -4198,6 +4314,7 @@ const formatDateTime = (dateString) => {
                                     <input
                                       className="form-control"
                                       type="number"
+                                      min={0}
                                       value={termsFormData.poValidityPeriod}
                                       onChange={(e) =>
                                         handleTermsFormChange(
@@ -4217,6 +4334,7 @@ const formatDateTime = (dateString) => {
                                     <input
                                       className="form-control"
                                       type="number"
+                                      min={0}
                                       value={
                                         termsFormData.advanceReminderDuration
                                       }
@@ -4445,7 +4563,8 @@ const formatDateTime = (dateString) => {
                                     </label>
                                     <input
                                       className="form-control"
-                                      type="text"
+                                      type="number"
+                                      min={0}
                                       placeholder={0}
                                     />
                                   </div>
@@ -5355,6 +5474,16 @@ const formatDateTime = (dateString) => {
               </tbody>
             </table>
           </div>
+          {/* Ensure native dropdown arrows are visible inside this modal */}
+          <style>{`
+            .modal select.form-control, .modal select {
+              -webkit-appearance: auto;
+              -moz-appearance: auto;
+              appearance: auto;
+              background-image: initial !important;
+              background-repeat: no-repeat;
+            }
+          `}</style>
         </Modal.Body>
         <Modal.Footer className="justify-content-center">
           <button
@@ -5599,10 +5728,11 @@ const formatDateTime = (dateString) => {
                 <div className="mb-3">
                   <label className="form-label fw-bold">Rate per Nos</label>
                   <input
-                    type="text"
+                    type="number"
                     className="form-control"
                     value={taxRateData[tableId]?.ratePerNos || ""}
                     onChange={(e) => handleRatePerNosChange(e.target.value)}
+                    min={0}
                   />
                 </div>
               </div>
@@ -5625,12 +5755,14 @@ const formatDateTime = (dateString) => {
                 <div className="mb-3">
                   <label className="form-label fw-bold">Discount (%)</label>
                   <input
-                    type="text"
+                    type="number"
                     className="form-control"
                     value={taxRateData[tableId]?.discount || ""}
                     onChange={(e) =>
                       handleDiscountPercentageChange(e.target.value)
                     }
+                    min={0}
+                    max={100}
                   />
                 </div>
               </div>
@@ -5877,7 +6009,7 @@ const formatDateTime = (dateString) => {
 
                             <td>
                               <input
-                                type="text"
+                                type="number"
                                 className="form-control"
                                 value={item.amount || ""}
                                 onChange={(e) =>
@@ -5889,6 +6021,7 @@ const formatDateTime = (dateString) => {
                                     "addition"
                                   )
                                 }
+                                min={0}
                                 disabled={
                                   item.taxType === "TaxCategory" ||
                                   (item.taxChargeType &&
@@ -6057,7 +6190,7 @@ const formatDateTime = (dateString) => {
                             </td>
                             <td>
                               <input
-                                type="text"
+                                type="number"
                                 className="form-control"
                                 value={item.amount || ""}
                                 onChange={(e) =>
@@ -6069,6 +6202,7 @@ const formatDateTime = (dateString) => {
                                     "deduction"
                                   )
                                 }
+                                min={0}
                                 disabled={
                                   item.taxType === "TaxCategory" ||
                                   (item.taxChargeType &&

@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 const  RopoImportCreate = () => {
   // State variables for the modal
   const [showModal, setShowModal] = useState(false);
+  const [addMORModal, setAddMORModal] = useState(false);
   const [editRowIndex, setEditRowIndex] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [apiMaterialInventoryIds, setApiMaterialInventoryIds] = useState();
@@ -60,6 +61,20 @@ const  RopoImportCreate = () => {
   // Material data from API response
   const [submittedMaterials, setSubmittedMaterials] = useState([]);
   const [purchaseOrderId, setPurchaseOrderId] = useState(null);
+  // MOR modal data
+  const [materialDetailsData, setMaterialDetailsData] = useState([]);
+  const [selectedMaterialItems, setSelectedMaterialItems] = useState([]);
+  const [loadingMaterialDetails, setLoadingMaterialDetails] = useState(false);
+  const [morFormData, setMorFormData] = useState({
+    morNumber: "",
+    morStartDate: "",
+    morEndDate: "",
+    projectIds: [],
+    siteIds: [],
+    materialType: "",
+    materialSubType: "",
+    material: "",
+  });
 
   // Terms and conditions state
   const [termsConditions, setTermsConditions] = useState([]);
@@ -532,6 +547,111 @@ const  RopoImportCreate = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // --- Add MOR modal logic (borrowed from mapping page, simplified) ---
+  const handleMorMaterialCheckboxChange = (index) => {
+    setSelectedMaterialItems((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    );
+  };
+
+  const handleMorSelectAllMaterials = (e) => {
+    if (e.target.checked) {
+      setSelectedMaterialItems(materialDetailsData.map((_, idx) => idx));
+    } else {
+      setSelectedMaterialItems([]);
+    }
+  };
+
+  const fetchMaterialDetails = async () => {
+    setLoadingMaterialDetails(true);
+    try {
+      const params = new URLSearchParams();
+      params.append("token", token);
+      params.append("q[mor_type_eq]", "ropo");
+      if (selectedCompany?.value) params.append("q[company_id_in][]", selectedCompany.value);
+      if (morFormData.morNumber) params.append("q[id_in][]", morFormData.morNumber);
+      if (morFormData.morStartDate) params.append("q[mor_date_gteq][]", morFormData.morStartDate);
+      if (morFormData.morEndDate) params.append("q[mor_date_lteq][]", morFormData.morEndDate);
+      const url = `${baseURL}material_order_requests/material_details.json?${params.toString()}`;
+      const resp = await axios.get(url);
+      const list = Array.isArray(resp.data?.material_order_requests)
+        ? resp.data.material_order_requests
+        : Array.isArray(resp.data)
+        ? resp.data
+        : [];
+      const rows = [];
+      list.forEach((mor) => {
+        (mor.mor_inventories || []).forEach((inv) => {
+          rows.push({
+            mor_id: mor.id,
+            mor_number: mor.mor_number,
+            mor_date: mor.mor_date,
+            project_name: mor.project_name,
+            sub_project_name: mor.sub_project_name,
+            status: mor.status,
+            inventory_id: inv.id,
+            material_name: inv.material_name,
+            uom_name: inv.uom_name,
+            required_quantity: inv.required_quantity,
+            prev_order_qty: inv.prev_order_qty,
+            order_qty: inv.order_qty,
+          });
+        });
+      });
+      setMaterialDetailsData(rows);
+    } catch (e) {
+      console.error("Failed to fetch MOR material details", e);
+      setMaterialDetailsData([]);
+    } finally {
+      setLoadingMaterialDetails(false);
+    }
+  };
+
+  const handleMorSearch = () => fetchMaterialDetails();
+  const handleMorReset = () => {
+    setMorFormData({
+      morNumber: "",
+      morStartDate: "",
+      morEndDate: "",
+      projectIds: [],
+      siteIds: [],
+      materialType: "",
+      materialSubType: "",
+      material: "",
+    });
+    setMaterialDetailsData([]);
+    setSelectedMaterialItems([]);
+  };
+
+  const handleAcceptSelectedMaterials = () => {
+    if (selectedMaterialItems.length === 0) {
+      alert("Please select at least one material");
+      return;
+    }
+    const selectedRows = selectedMaterialItems.map((idx) => materialDetailsData[idx]);
+    // Map for flat display in both PO details table and rate & taxes list
+    const mapped = selectedRows.map((r) => ({
+      id: r.inventory_id,
+      mor_id: r.mor_id,
+      mor_number: r.mor_number,
+      mor_date: r.mor_date,
+      project_name: r.project_name,
+      sub_project_name: r.sub_project_name,
+      material_name: r.material_name,
+      uom_name: r.uom_name,
+      required_quantity: r.required_quantity,
+      prev_order_qty: r.prev_order_qty,
+      order_qty: r.order_qty,
+    }));
+    setSubmittedMaterials((prev) => {
+      const existing = new Set(prev.map((x) => `${x.id}`));
+      const uniqueNew = mapped.filter((m) => !existing.has(`${m.id}`));
+      return [...prev, ...uniqueNew];
+    });
+    setAddMORModal(false);
+    setSelectedMaterialItems([]);
   };
 
   // Tax modal functions
@@ -2819,11 +2939,11 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                 <button
                                   className="purple-btn2 "
                                   onClick={() => {
-                                    setFieldErrors({});
-                                    setShowModal(true);
+                                    setAddMORModal(true);
+                                    fetchMaterialDetails();
                                   }}
                                 >
-                                  <span> + Add</span>
+                                  <span> + Add MOR</span>
                                 </button>
                               </div>
                             </div>
@@ -2855,83 +2975,39 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {tableData.filter((row) => !row._destroy)
-                                      .length > 0 ? (
-                                      tableData
-                                        .filter((row) => !row._destroy)
-                                        .map((row, index) => (
+                                    {submittedMaterials.length > 0 ? (
+                                      submittedMaterials.map((row, index) => (
                                           <tr key={index}>
                                             <td className="text-start">
                                               {index + 1}
                                             </td>
                                             <td className="text-start">
-                                              {row.materialTypeLabel}
+                                              {row.project_name || ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.materialSubTypeLabel}
+                                              {row.sub_project_name || ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.materialLabel}
+                                              {row.material_name || ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.genericSpecificationLabel}
+                                              {row.mor_number || ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.colourLabel}
+                                              {row.required_quantity ?? ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.brandLabel}
+                                              {row.prev_order_qty ?? ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.uomLabel}
+                                              {row.uom_name || ""}
                                             </td>
 
                                             <td className="text-start">
-                                              <span
-                                                onClick={() =>
-                                                  handleEditRow(
-                                                    index,
-                                                    row.material
-                                                  )
-                                                }
-                                                style={{ cursor: "pointer" }}
-                                              >
-                                                <svg
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                  width="16"
-                                                  height="16"
-                                                  fill="currentColor"
-                                                  className="bi bi-pencil-square"
-                                                  viewBox="0 0 16 16"
-                                                >
-                                                  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path>
-                                                  <path
-                                                    fillRule="evenodd"
-                                                    d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
-                                                  ></path>
-                                                </svg>
-                                              </span>
+                                              
                                             </td>
                                             <td className="text-start">
-                                              <button
-                                                className="btn mt-0 pt-0"
-                                                onClick={() =>
-                                                  handleDeleteRow(index)
-                                                }
-                                              >
-                                                <svg
-                                                  width="16"
-                                                  height="20"
-                                                  viewBox="0 0 16 20"
-                                                  fill="none"
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                >
-                                                  <path
-                                                    d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533ZM7.52531 16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
-                                                    fill="#B25657"
-                                                  />
-                                                </svg>
-                                              </button>
+                                              
                                             </td>
                                           </tr>
                                         ))
@@ -4456,6 +4532,116 @@ po_date: getLocalDateTime().split("T")[0], // Current date
             onClick={handleSaveTaxes}
           >
             Save
+          </button>
+        </Modal.Footer>
+      </Modal>
+      {/* Add MOR Modal */}
+      <Modal
+        centered
+        size="xl"
+        show={addMORModal}
+        onHide={() => {
+          setAddMORModal(false);
+        }}
+      >
+        <Modal.Header closeButton>
+          <h5>Select MOR Materials</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row g-3 mb-3">
+            <div className="col-md-3">
+              <label>MOR No</label>
+              <input
+                className="form-control"
+                value={morFormData.morNumber}
+                onChange={(e) => setMorFormData((p) => ({ ...p, morNumber: e.target.value }))}
+                placeholder="Enter MOR No"
+              />
+            </div>
+            <div className="col-md-3">
+              <label>Start Date</label>
+              <input
+                type="date"
+                className="form-control"
+                value={morFormData.morStartDate}
+                onChange={(e) => setMorFormData((p) => ({ ...p, morStartDate: e.target.value }))}
+              />
+            </div>
+            <div className="col-md-3">
+              <label>End Date</label>
+              <input
+                type="date"
+                className="form-control"
+                value={morFormData.morEndDate}
+                onChange={(e) => setMorFormData((p) => ({ ...p, morEndDate: e.target.value }))}
+              />
+            </div>
+            <div className="col-md-3 d-flex align-items-end gap-2">
+              <button className="purple-btn2" onClick={handleMorSearch} disabled={loadingMaterialDetails}>Search</button>
+              <button className="purple-btn1" onClick={handleMorReset}>Reset</button>
+            </div>
+          </div>
+          <div className="tbl-container">
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <th style={{ width: 40 }}>
+                    <input type="checkbox" onChange={handleMorSelectAllMaterials} />
+                  </th>
+                  <th>MOR No</th>
+                  <th>MOR Date</th>
+                  <th>Project</th>
+                  <th>Sub-Project</th>
+                  <th>Material</th>
+                  <th>UOM</th>
+                  <th>Required Qty</th>
+                  <th>Prev Ordered</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loadingMaterialDetails ? (
+                  <tr><td colSpan="9" className="text-center">Loading...</td></tr>
+                ) : materialDetailsData.length > 0 ? (
+                  materialDetailsData.map((row, idx) => (
+                    <tr key={`${row.inventory_id}-${idx}`}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedMaterialItems.includes(idx)}
+                          onChange={() => handleMorMaterialCheckboxChange(idx)}
+                        />
+                      </td>
+                      <td>{row.mor_number}</td>
+                      <td>{row.mor_date}</td>
+                      <td>{row.project_name}</td>
+                      <td>{row.sub_project_name}</td>
+                      <td>{row.material_name}</td>
+                      <td>{row.uom_name}</td>
+                      <td>{row.required_quantity}</td>
+                      <td>{row.prev_order_qty}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr><td colSpan="9" className="text-center">No data</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Modal.Body>
+        <Modal.Footer className="justify-content-center">
+          <button
+            type="button"
+            className=" purple-btn1"
+            onClick={() => setAddMORModal(false)}
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            className="purple-btn2"
+            onClick={handleAcceptSelectedMaterials}
+          >
+            Add Selected
           </button>
         </Modal.Footer>
       </Modal>

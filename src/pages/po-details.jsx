@@ -1868,6 +1868,8 @@ const PoDetails = () => {
   });
 
   const [adminComment, setAdminComment] = useState("");
+  const [poRemark, setPoRemark] = useState("");
+  const [poComments, setPoComments] = useState("");
 
   useEffect(() => {
     if (purchaseOrderData?.selected_status) {
@@ -1885,7 +1887,9 @@ const PoDetails = () => {
       const payload = {
         status_log: {
           status: selectedStatus?.value.toLowerCase() || "Draft", // default to "Draft"
-          remarks: adminComment || "", // in case you have a remarks field
+          remarks: poRemark || "",
+          comments: poComments || "",
+          admin_comment: adminComment || "",
         },
       };
 
@@ -3233,7 +3237,8 @@ Document */}
                       className="form-control"
                       rows={3}
                       placeholder="Enter ..."
-                      defaultValue={""}
+                      value={poRemark}
+                      onChange={(e) => setPoRemark(e.target.value)}
                     />
                   </div>
                 </div>
@@ -3246,7 +3251,8 @@ Document */}
                       className="form-control"
                       rows={3}
                       placeholder="Enter ..."
-                      defaultValue={""}
+                      value={poComments}
+                      onChange={(e) => setPoComments(e.target.value)}
                     />
                   </div>
                 </div>

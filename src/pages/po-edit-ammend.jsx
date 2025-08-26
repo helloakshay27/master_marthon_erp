@@ -3090,7 +3090,7 @@ const formatDateTime = (dateString) => {
                     condition_type: "general",
                   };
 
-                  // Pass existing DB id only if it’s a real API id (shorter than 10 digits)
+                  // Pass existing DB id only if it's a real API id (shorter than 10 digits)
                   if (row.id && row.id.toString().length < 10) {
                     termPayload.id = row.id;
                   }
@@ -3253,13 +3253,14 @@ const formatDateTime = (dateString) => {
           const itemMatInvId = item.material_inventory_id || item.pms_inventory_id;
           return itemMatInvId && submittedMatInvId
             ? itemMatInvId === submittedMatInvId
-            : (item.material && submitted.material_name && item.material === submitted.material_name);
+            : (item.material && submitted.material && item.material === submitted.material);
         });
 
         if (!exists) {
           combined.push({
             id: submitted.id,
-            material: submitted.material_name || submitted.material || "",
+            material: submitted.material || submitted.material_name || "",
+            material_name: submitted.material_name || "",
             uom: submitted.uom_name || submitted.uom || "",
             po_qty: submitted.po_qty || "",
             material_rate: submitted.material_rate || "",
@@ -3275,7 +3276,7 @@ const formatDateTime = (dateString) => {
             material_inventory_id: submittedMatInvId,
             isSubmitted: true,
           });
-          console.log("Added submitted material:", submitted.material_name || submitted.material);
+          console.log("Added submitted material:", submitted.material || submitted.material_name);
         }
       });
     }
