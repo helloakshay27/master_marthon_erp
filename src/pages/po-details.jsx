@@ -2077,7 +2077,6 @@ const PoDetails = () => {
                               name="contentSelector"
                               defaultValue="content3"
                               checked
-
                             />
                             <label className="form-check-label">ROPO</label>
                           </div>
@@ -2187,24 +2186,33 @@ const PoDetails = () => {
                            purchaseOrderData?.selected_status !== "terminated" &&
                            purchaseOrderData?.selected_status !== "rejected" && ( */}
 
-
-                           {purchaseOrderData?.selected_status?.toLowerCase() !== "draft" && 
- purchaseOrderData?.selected_status?.toLowerCase() !== "accepted_by_vendor" &&
- purchaseOrderData?.selected_status?.toLowerCase() !== "rejected_by_vendor" &&
- purchaseOrderData?.selected_status?.toLowerCase() !== "cancelled" &&
- purchaseOrderData?.selected_status?.toLowerCase() !== "terminated" &&
- purchaseOrderData?.selected_status?.toLowerCase() !== "rejected" && (
-                            
-                            <Link
-                              to={`/po-edit-ammend/${purchaseOrderData?.parent_po_id}?token=${token}`}
-                              className="d-flex align-items-center"
-                              style={{ borderColor: "#8b0203" }}
-                            >
-                              <button type="button" className="purple-btn2 mb-3">
-                                <span>Amend</span>
-                              </button>
-                            </Link>
-                          )}
+                          {purchaseOrderData?.selected_status?.toLowerCase() !==
+                            "draft" &&
+                            purchaseOrderData?.selected_status?.toLowerCase() !==
+                              "accepted_by_vendor" &&
+                            purchaseOrderData?.selected_status?.toLowerCase() !==
+                              "rejected_by_vendor" &&
+                            purchaseOrderData?.selected_status?.toLowerCase() !==
+                              "cancelled" &&
+                            purchaseOrderData?.selected_status?.toLowerCase() !==
+                              "terminated" &&
+                            purchaseOrderData?.selected_status?.toLowerCase() !==
+                              "rejected" &&
+                            purchaseOrderData?.vendor_status?.toLowerCase() !==
+                              "accepted" && (
+                              <Link
+                                to={`/po-edit-ammend/${purchaseOrderData?.parent_po_id}?token=${token}`}
+                                className="d-flex align-items-center"
+                                style={{ borderColor: "#8b0203" }}
+                              >
+                                <button
+                                  type="button"
+                                  className="purple-btn2 mb-3"
+                                >
+                                  <span>Amend</span>
+                                </button>
+                              </Link>
+                            )}
                           {purchaseOrderData?.approval_logs &&
                             purchaseOrderData.approval_logs.length > 0 && (
                               <button
@@ -3122,11 +3130,13 @@ const PoDetails = () => {
                                                 color: "#8b0203",
                                                 textDecoration: "none",
                                               }}
-                                               onClick={(e) => {
-              e.preventDefault(); // Prevent default navigation
-              navigate(`/po-details/${amend.id}?token=${token}`);
-              window.location.reload(); // Force page reload after navigation
-            }}
+                                              onClick={(e) => {
+                                                e.preventDefault(); // Prevent default navigation
+                                                navigate(
+                                                  `/po-details/${amend.id}?token=${token}`
+                                                );
+                                                window.location.reload(); // Force page reload after navigation
+                                              }}
                                             >
                                               {amend.version_number}
                                             </Link>
