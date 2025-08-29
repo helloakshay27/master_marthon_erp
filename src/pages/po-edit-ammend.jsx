@@ -1543,10 +1543,38 @@ const formatDateTime = (dateString) => {
         return;
       }
 
-      // Get the material ID from submitted materials
-      const material = submittedMaterials[tableId];
-      if (!material || !material.id) {
-        console.error("No material ID available for API call");
+      // Get the material from combined materials list to handle both existing and new materials
+      const combinedMaterials = getCombinedMaterials();
+      const material = combinedMaterials[tableId];
+      
+      if (!material) {
+        console.error("No material found at tableId:", tableId);
+        return;
+      }
+
+      // Determine the material ID - check multiple possible sources
+      let materialId = null;
+      
+      // First check if it's a submitted material with an ID
+      if (material.isSubmitted && material.id) {
+        materialId = material.id;
+      }
+      // Check if it's an existing material from rateAndTaxes with po_mor_inventory_id
+      else if (material.po_mor_inventory_id) {
+        materialId = material.po_mor_inventory_id;
+      }
+      // Check if it's an existing material with id field
+      else if (material.id) {
+        materialId = material.id;
+      }
+      // Check if it's a submitted material with material_inventory_id
+      else if (material.material_inventory_id) {
+        materialId = material.material_inventory_id;
+      }
+
+      if (!materialId) {
+        console.error("No material ID available for API call. Material data:", material);
+        alert("Unable to save tax changes: No material ID found. Please submit the material first.");
         return;
       }
 
@@ -1632,11 +1660,11 @@ const formatDateTime = (dateString) => {
       };
 
       console.log("Saving tax changes with payload:", payload);
-      console.log("Material ID:", material.id);
+      console.log("Material ID:", materialId);
 
       try {
         const response = await axios.patch(
-          `${baseURL}po_mor_inventories/${material.id}.json?token=${token}`,
+          `${baseURL}po_mor_inventories/${materialId}.json?token=${token}`,
           payload
         );
 
@@ -1645,6 +1673,47 @@ const formatDateTime = (dateString) => {
         if (response.status === 200 || response.status === 201) {
           // Update local state with the response data
           const responseData = response.data;
+          
+          // Update the appropriate state based on whether it's an existing or new material
+          if (material.isSubmitted) {
+            // Update submittedMaterials
+            setSubmittedMaterials((prev) =>
+              prev.map((item) =>
+                item.id === materialId
+                  ? {
+                      ...item,
+                      material_rate: responseData.rate_per_nos?.toString() || item.material_rate,
+                      discount_percentage: responseData.discount_per?.toString() || item.discount_percentage,
+                      discount_rate: responseData.discount_rate?.toString() || item.discount_rate,
+                      material_cost: responseData.material_cost?.toString() || item.material_cost,
+                      after_discount_value: responseData.after_discount_value?.toString() || item.after_discount_value,
+                      total_base_cost: responseData.tax_applicable_cost?.toString() || item.total_base_cost,
+                      all_inclusive_cost: responseData.total_material_cost?.toString() || item.all_inclusive_cost,
+                    }
+                  : item
+              )
+            );
+          } else {
+            // Update rateAndTaxes for existing materials
+            setRateAndTaxes((prev) =>
+              prev.map((item) =>
+                (item.po_mor_inventory_id === materialId || item.id === materialId)
+                  ? {
+                      ...item,
+                      material_rate: responseData.rate_per_nos?.toString() || item.material_rate,
+                      discount_percentage: responseData.discount_per?.toString() || item.discount_percentage,
+                      discount_rate: responseData.discount_rate?.toString() || item.discount_rate,
+                      material_cost: responseData.material_cost?.toString() || item.material_cost,
+                      after_discount_value: responseData.after_discount_value?.toString() || item.after_discount_value,
+                      total_base_cost: responseData.tax_applicable_cost?.toString() || item.total_base_cost,
+                      all_inclusive_cost: responseData.total_material_cost?.toString() || item.all_inclusive_cost,
+                    }
+                  : item
+              )
+            );
+          }
+
+          // Update taxRateData
           setTaxRateData((prev) => ({
             ...prev,
             [tableId]: {
@@ -3241,44 +3310,65 @@ const formatDateTime = (dateString) => {
 
     // Add prepopulated rate and taxes data
     if (rateAndTaxes && rateAndTaxes.length > 0) {
-      combined.push(...rateAndTaxes);
+      // Exclude any materials flagged as _destroy in current tableData mapping
+      const deletedIds = new Set(
+        tableData
+          .filter((row) => row._destroy)
+          .map((row) => row.material_inventory_id || row.material?.pms_inventory_id)
+          .filter(Boolean)
+      );
+
+      combined.push(
+        ...rateAndTaxes.filter(
+          (rate) =>
+            !deletedIds.has(rate.material_inventory_id || rate.pms_inventory_id) &&
+            // also ensure not marked _destroy on rate if present
+            !rate._destroy
+        )
+      );
       console.log("Added prepopulated data:", rateAndTaxes.length, "items");
     }
 
     // Add submitted materials (if not already in rateAndTaxes)
     if (submittedMaterials && submittedMaterials.length > 0) {
-      submittedMaterials.forEach((submitted) => {
-        const submittedMatInvId = submitted.material_inventory_id || submitted.pms_inventory_id;
-        const exists = combined.some((item) => {
-          const itemMatInvId = item.material_inventory_id || item.pms_inventory_id;
-          return itemMatInvId && submittedMatInvId
-            ? itemMatInvId === submittedMatInvId
-            : (item.material && submitted.material && item.material === submitted.material);
-        });
+      submittedMaterials
+        .filter((s) => !s._destroy)
+        .forEach((submitted) => {
+          const submittedMaterialName = submitted.material || submitted.material_name || "";
+          const submittedUomName = submitted.uom || submitted.uom_name || "";
+          const submittedInvId = submitted.material_inventory_id || submitted.pms_inventory_id;
 
-        if (!exists) {
-          combined.push({
-            id: submitted.id,
-            material: submitted.material || submitted.material_name || "",
-            material_name: submitted.material_name || "",
-            uom: submitted.uom_name || submitted.uom || "",
-            po_qty: submitted.po_qty || "",
-            material_rate: submitted.material_rate || "",
-            material_cost: submitted.material_cost || "",
-            discount_percentage: submitted.discount_percentage || "",
-            discount_rate: submitted.discount_rate || "",
-            after_discount_value: submitted.after_discount_value || "",
-            tax_addition: submitted.tax_addition || "",
-            tax_deduction: submitted.tax_deduction || "",
-            total_charges: submitted.total_charges || "",
-            total_base_cost: submitted.total_base_cost || "",
-            all_inclusive_cost: submitted.all_inclusive_cost || "",
-            material_inventory_id: submittedMatInvId,
-            isSubmitted: true,
+          const exists = combined.some((item) => {
+            const itemMaterialName = item.material || item.material_name || "";
+            const itemInvId = item.material_inventory_id || item.pms_inventory_id || item.material?.pms_inventory_id;
+            return (
+              (itemInvId && submittedInvId && itemInvId === submittedInvId) ||
+              itemMaterialName === submittedMaterialName
+            );
           });
-          console.log("Added submitted material:", submitted.material || submitted.material_name);
-        }
-      });
+
+          if (!exists) {
+            combined.push({
+              id: submitted.id,
+              material: submittedMaterialName,
+              uom: submittedUomName,
+              po_qty: submitted.po_qty || "",
+              material_rate: submitted.material_rate || "",
+              material_cost: submitted.material_cost || "",
+              discount_percentage: submitted.discount_percentage || "",
+              discount_rate: submitted.discount_rate || "",
+              after_discount_value: submitted.after_discount_value || "",
+              tax_addition: submitted.tax_addition || "",
+              tax_deduction: submitted.tax_deduction || "",
+              total_charges: submitted.total_charges || "",
+              total_base_cost: submitted.total_base_cost || "",
+              all_inclusive_cost: submitted.all_inclusive_cost || "",
+              material_inventory_id: submittedInvId,
+              isSubmitted: true, // Flag to identify submitted materials
+            });
+            console.log("Added submitted material:", submittedMaterialName);
+          }
+        });
     }
 
     console.log("Combined materials:", combined);
