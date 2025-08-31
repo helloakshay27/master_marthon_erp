@@ -1,6 +1,633 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { baseURL } from "../confi/apiDomain";
+import DownloadIcon from "../components/common/Icon/DownloadIcon";
+import { Modal, Button, Form } from "react-bootstrap";
+import SingleSelector from "../components/base/Select/SingleSelector";
+import MultiSelector from "../components/base/Select/MultiSelector";
+import SelectBox from "../components/base/Select/SelectBox";
 
 const RopoImportDetails = () => {
+  // State variables for API data
+  const [ropoData, setRopoData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Get URL parameters
+  const { id } = useParams();
+  const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+  const poType = urlParams.get("po_type");
+  
+  // State for rate and taxes data
+  const [rateAndTaxes, setRateAndTaxes] = useState([]);
+  const [taxSummary, setTaxSummary] = useState({
+    total_base_cost: 0,
+    total_tax: 0,
+    total_charge: 0,
+    total_inclusive_cost: 0,
+  });
+  
+  // State for charges and other costs
+  const [charges, setCharges] = useState([]);
+  const [otherCosts, setOtherCosts] = useState([]);
+  const [chargeNames, setChargeNames] = useState([]);
+  
+  // State for attachments
+  const [attachments, setAttachments] = useState([]);
+  
+  // State for status management
+  const [selectedStatus, setSelectedStatus] = useState({
+    value: "",
+    label: "Select Status",
+  });
+  const [poRemark, setPoRemark] = useState("");
+  const [poComments, setPoComments] = useState("");
+
+  // State for View Tax & Rate modal
+  const [showTaxesModal, setShowTaxesModal] = useState(false);
+  const [selectedChargeId, setSelectedChargeId] = useState(null);
+  const [selectedItemType, setSelectedItemType] = useState(null);
+  const [chargeTaxes, setChargeTaxes] = useState({
+    additionTaxes: [],
+    deductionTaxes: [],
+    baseCost: 0,
+    netCost: "0",
+  });
+
+  // State for tax options
+  const [chargesAdditionTaxOptions, setChargesAdditionTaxOptions] = useState([]);
+  const [chargesDeductionTaxOptions, setChargesDeductionTaxOptions] = useState([]);
+  const [chargesTaxPercentages, setChargesTaxPercentages] = useState([]);
+
+  // State for Tax Modal (material taxes)
+  const [showTaxModal, setShowTaxModal] = useState(false);
+  const [tableId, setTableId] = useState(null);
+  const [taxRateData, setTaxRateData] = useState({});
+  const [taxOptions, setTaxOptions] = useState([]);
+  const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
+  const [taxPercentageOptions, setTaxPercentageOptions] = useState([]);
+  const [materialTaxPercentages, setMaterialTaxPercentages] = useState({});
+
+  // State for approval modal
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  
+  const navigate = useNavigate();
+
+  // Fetch ROPO data on component mount
+  useEffect(() => {
+    const fetchRopoData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        console.log("Fetching ROPO data for ID:", id);
+        console.log("Token:", token);
+        console.log("PO Type:", poType);
+        
+        const response = await axios.get(
+          `${baseURL}purchase_orders/${id}/ropo_detail.json?token=${token}&po_type=import`
+        );
+        
+        console.log("ROPO data response:", response.data);
+        setRopoData(response.data);
+        
+        // Populate form data from API response
+        populateFormData(response.data);
+        
+      } catch (error) {
+        console.error("Error fetching ROPO data:", error);
+        setError("Failed to load ROPO data. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (id && token) {
+      fetchRopoData();
+    }
+  }, [id, token, poType]);
+
+  // Function to populate form data from API response
+  const populateFormData = (data) => {
+    // Populate rate and taxes data
+    if (data.rate_and_taxes) {
+      setRateAndTaxes(
+        data.rate_and_taxes.map((rate) => ({
+          id: rate.id,
+          material_inventory_id: rate.material_inventory_id,
+          material: rate.material,
+          uom: rate.uom,
+          po_qty: rate.po_qty,
+          adjusted_qty: rate.adjusted_qty,
+          tolerance_qty: rate.tolerance_qty,
+          material_rate: rate.material_rate,
+          material_cost: rate.material_cost,
+          discount_percentage: rate.discount_percentage,
+          discount_rate: rate.discount_rate,
+          after_discount_value: rate.after_discount_value,
+          tax_addition: rate.tax_addition,
+          tax_deduction: rate.tax_deduction,
+          total_charges: rate.total_charges,
+          total_base_cost: rate.total_base_cost,
+          all_inclusive_cost: rate.all_inclusive_cost,
+        }))
+      );
+    }
+
+    // Populate tax summary
+    if (data.tax_summary) {
+      setTaxSummary({
+        total_base_cost: data.tax_summary.total_base_cost ?? 0,
+        total_tax: data.tax_summary.total_tax ?? 0,
+        total_charge: data.tax_summary.total_charge ?? 0,
+        total_inclusive_cost: data.tax_summary.total_inclusive_cost ?? 0,
+      });
+    }
+
+    // Populate charges data
+    if (data.charges_with_taxes) {
+      const formattedCharges = data.charges_with_taxes.map((charge) => ({
+        id: charge.id || Date.now(),
+        charge_name: charge.charge_name || "",
+        charge_id: charge.charge_id || 0,
+        amount: charge.amount?.toString() || "",
+        realised_amount: charge.realised_amount?.toString() || "",
+        taxes: {
+          additionTaxes: charge.taxes_and_charges?.filter((tax) => tax.addition).map((tax) => ({
+            id: tax.id || Date.now(),
+            taxType: tax.resource_id?.toString() || "",
+            taxPercentage: tax.percentage?.toString() || "",
+            inclusive: tax.inclusive || false,
+            amount: tax.amount?.toString() || "0",
+          })) || [],
+          deductionTaxes: charge.taxes_and_charges?.filter((tax) => !tax.addition).map((tax) => ({
+            id: tax.id || Date.now(),
+            taxType: tax.resource_id?.toString() || "",
+            taxPercentage: tax.percentage?.toString() || "",
+            inclusive: tax.inclusive || false,
+            amount: tax.amount?.toString() || "0",
+          })) || [],
+          netCost: charge.realised_amount?.toString() || "0",
+        },
+      }));
+      setCharges(formattedCharges);
+    }
+
+    // Populate other costs data
+    if (data.other_cost_details) {
+      const formattedOtherCosts = data.other_cost_details.map((cost) => ({
+        id: cost.id || Date.now(),
+        cost_name: cost.cost_type || "",
+        amount: cost.cost?.toString() || "",
+        scope: cost.scope || "",
+        realised_amount: cost.cost?.toString() || "",
+        taxes: {
+          additionTaxes: cost.taxes_and_charges?.filter((tax) => tax.addition).map((tax) => ({
+            id: tax.id || Date.now(),
+            taxType: tax.resource_id?.toString() || "",
+            taxPercentage: tax.percentage?.toString() || "",
+            inclusive: tax.inclusive || false,
+            amount: tax.amount?.toString() || "0",
+          })) || [],
+          deductionTaxes: cost.taxes_and_charges?.filter((tax) => !tax.addition).map((tax) => ({
+            id: tax.id || Date.now(),
+            taxType: tax.resource_id?.toString() || "",
+            taxPercentage: tax.percentage?.toString() || "",
+            inclusive: tax.inclusive || false,
+            amount: tax.amount?.toString() || "0",
+          })) || [],
+          netCost: cost.cost?.toString() || "0",
+        },
+      }));
+      setOtherCosts(formattedOtherCosts);
+    }
+
+    // Populate attachments
+    if (data.attachments && Array.isArray(data.attachments)) {
+      const formattedAttachments = data.attachments.map((att) => ({
+        id: att.id || Math.random(),
+        fileType: att.file_type || "",
+        fileName: att.file_name || "",
+        uploadDate: att.uploaded_at || "",
+        fileUrl: att.url || "",
+        isExisting: true,
+        blob_id: att.blob_id,
+        byteSize: att.byte_size,
+        doc_path: att.url,
+      }));
+      setAttachments(formattedAttachments);
+    } else {
+      setAttachments([]);
+    }
+
+    // Set status
+    if (data.selected_status) {
+      setSelectedStatus({
+        value: data.selected_status.toLowerCase(),
+        label: data.selected_status,
+      });
+    }
+  };
+
+  // Fetch charge names and tax options from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch charge names
+        const chargeResponse = await axios.get(
+          `${baseURL}tax_configurations/charge_names.json?token=${token}`
+        );
+        console.log("Charge names response:", chargeResponse.data);
+        setChargeNames(chargeResponse.data || []);
+
+        // Fetch addition taxes
+        const additionResponse = await axios.get(
+          `${baseURL}rfq/events/addition_taxes_dropdown?token=${token}`
+        );
+        console.log("Addition taxes response:", additionResponse.data);
+        setChargesAdditionTaxOptions(additionResponse.data.taxes || []);
+
+        // Fetch deduction taxes
+        const deductionResponse = await axios.get(
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
+        );
+        console.log("Deduction taxes response:", deductionResponse.data);
+        setChargesDeductionTaxOptions(deductionResponse.data.taxes || []);
+
+        // Fetch tax percentages
+        const percentageResponse = await axios.get(
+          `${baseURL}rfq/events/tax_percentage?token=${token}`
+        );
+        console.log("Tax percentages response:", percentageResponse.data);
+        setChargesTaxPercentages(percentageResponse.data || []);
+
+        // Fetch tax options for material taxes
+        const taxResponse = await axios.get(
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
+        );
+        console.log("Tax options response:", taxResponse.data);
+        const taxesData = taxResponse.data.taxes || taxResponse.data;
+        const options = taxesData.map((tax) => ({
+          id: tax.id,
+          value: tax.name,
+          label: tax.name,
+          type: tax.type === "TaxCategory" ? "TaxDetail" : tax.type,
+        }));
+        console.log("Formatted tax options:", options);
+        setTaxOptions(options);
+
+        // Fetch deduction tax options for material taxes
+        const deductionTaxResponse = await axios.get(
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
+        );
+        if (deductionTaxResponse.data?.taxes) {
+          const formattedOptions = deductionTaxResponse.data.taxes.map((tax) => ({
+            value: tax.name,
+            label: tax.name,
+            id: tax.id,
+            type: tax.type === "TaxCategory" ? "TaxDetail" : tax.type,
+          }));
+          setDeductionTaxOptions([
+            { value: "", label: "Select Tax & Charges" },
+            ...formattedOptions,
+          ]);
+        }
+
+        // Fetch tax percentages for material taxes
+        const materialTaxPercentageResponse = await axios.get(
+          `${baseURL}rfq/events/tax_percentage?token=${token}`
+        );
+        setTaxPercentageOptions(materialTaxPercentageResponse.data);
+
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setChargeNames([]);
+        setChargesAdditionTaxOptions([]);
+        setChargesDeductionTaxOptions([]);
+        setChargesTaxPercentages([]);
+        setTaxOptions([]);
+        setDeductionTaxOptions([]);
+        setTaxPercentageOptions([]);
+      }
+    };
+
+    if (token) {
+      fetchData();
+    }
+  }, [token]);
+
+  // Handle View Tax & Rate modal functions
+  const handleOpenTaxesModal = (itemId, itemType = "charge") => {
+    console.log("Opening taxes modal for:", itemId, itemType);
+    setSelectedChargeId(itemId);
+    setSelectedItemType(itemType);
+
+    let item;
+    if (itemType === "charge") {
+      item = charges.find((c) => c.id === itemId);
+    } else {
+      item = otherCosts.find((c) => c.id === itemId);
+    }
+
+    const baseCost = parseFloat(item?.amount) || 0;
+
+    // Load previously saved tax data if it exists
+    const savedTaxes = item?.taxes || {
+      additionTaxes: [],
+      deductionTaxes: [],
+      netCost: baseCost.toFixed(2),
+    };
+
+    setChargeTaxes({
+      additionTaxes: savedTaxes.additionTaxes || [],
+      deductionTaxes: savedTaxes.deductionTaxes || [],
+      baseCost: baseCost,
+      netCost: savedTaxes.netCost || baseCost.toFixed(2),
+    });
+    setShowTaxesModal(true);
+  };
+
+  const handleCloseTaxesModal = () => {
+    setShowTaxesModal(false);
+    setSelectedChargeId(null);
+    setSelectedItemType(null);
+  };
+
+  // Tax modal functions for material taxes
+  const handleOpenTaxModal = async (rowIndex) => {
+    console.log("Opening tax modal for row:", rowIndex);
+    
+    if (rowIndex < 0 || rowIndex >= rateAndTaxes.length) {
+      console.error("Invalid row index:", rowIndex);
+      return;
+    }
+    
+    setTableId(rowIndex);
+    setShowTaxModal(true);
+
+    const material = rateAndTaxes[rowIndex];
+    console.log("Selected material for tax modal:", material);
+
+    if (material && material.id) {
+      try {
+        const materialId = material.id;
+        console.log("Fetching rate details for material ID:", materialId);
+        const response = await axios.get(
+          `${baseURL}po_mor_inventories/${materialId}/ropo_rate_details.json?token=${token}`
+        );
+
+        console.log("Rate details API response:", response.data);
+
+        const rateData = response.data;
+        console.log("Processing rate data for material:", material.material);
+        setTaxRateData((prev) => ({
+          ...prev,
+          [rowIndex]: {
+            material: rateData.material_name,
+            hsnCode: rateData.hsn_code,
+            ratePerNos: rateData.rate_per_nos?.toString(),
+            totalPoQty: rateData.order_qty?.toString(),
+            discount: rateData.discount_per?.toString(),
+            materialCost: rateData.material_cost?.toString(),
+            discountRate: rateData.discount_rate?.toString(),
+            afterDiscountValue: rateData.after_discount_value?.toString(),
+            remark: rateData.remarks || "",
+            netCost: rateData.total_material_cost?.toString(),
+            pms_inventory_id: rateData.pms_inventory_id || null,
+            addition_bid_material_tax_details:
+              rateData.addition_tax_details?.map((tax) => {
+                const baseOptionId =
+                  tax.resource_type === "TaxCategory"
+                    ? tax.tax_category_id
+                    : tax.resource_id;
+                return {
+                  id: tax.id,
+                  resource_id: tax.resource_id,
+                  tax_category_id: tax.tax_category_id,
+                  taxChargeType:
+                    taxOptions.find((option) => option.id === baseOptionId)
+                      ?.value || "",
+                  taxType: tax.resource_type,
+                  taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
+                  percentageId: tax.percentage_id || null,
+                  inclusive: tax.inclusive,
+                  amount: tax.amount?.toString() || "0",
+                };
+              }) || [],
+            deduction_bid_material_tax_details:
+              rateData.deduction_tax_details?.map((tax) => {
+                const baseOptionId =
+                  tax.resource_type === "TaxCategory"
+                    ? tax.tax_category_id
+                    : tax.resource_id;
+                return {
+                  id: tax.id,
+                  resource_id: tax.resource_id,
+                  tax_category_id: tax.tax_category_id,
+                  taxChargeType:
+                    deductionTaxOptions.find(
+                      (option) => option.id === baseOptionId
+                    )?.value || "",
+                  taxType: tax.resource_type,
+                  taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
+                  percentageId: tax.percentage_id || null,
+                  inclusive: tax.inclusive,
+                  amount: tax.amount?.toString() || "0",
+                };
+              }) || [],
+          },
+        }));
+
+        // Fetch tax percentages for each tax item
+        const pmsInventoryId = rateData.pms_inventory_id || material.id;
+
+        // Fetch percentages for addition taxes
+        for (const tax of rateData.addition_tax_details || []) {
+          if (tax.tax_category_id) {
+            try {
+              const percentages = await fetchTaxPercentagesByMaterial(
+                pmsInventoryId,
+                tax.tax_category_id
+              );
+              setMaterialTaxPercentages((prev) => ({
+                ...prev,
+                [tax.id]: percentages,
+              }));
+            } catch (error) {
+              console.error(
+                `Error fetching percentages for tax ${tax.id}:`,
+                error
+              );
+            }
+          }
+        }
+
+        // Fetch percentages for deduction taxes
+        for (const tax of rateData.deduction_tax_details || []) {
+          if (tax.tax_category_id) {
+            try {
+              const percentages = await fetchTaxPercentagesByMaterial(
+                pmsInventoryId,
+                tax.tax_category_id
+              );
+              setMaterialTaxPercentages((prev) => ({
+                ...prev,
+                [tax.id]: percentages,
+              }));
+            } catch (error) {
+              console.error(
+                `Error fetching percentages for tax ${tax.id}:`,
+                error
+              );
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching rate details:", error);
+        // Fallback to default data if API fails
+        if (!taxRateData[rowIndex]) {
+          setTaxRateData((prev) => ({
+            ...prev,
+            [rowIndex]: {
+              material: "Sample Material",
+              hsnCode: "123456",
+              ratePerNos: "100",
+              totalPoQty: "10",
+              discount: "5",
+              materialCost: "950",
+              discountRate: "95",
+              afterDiscountValue: "950",
+              remark: "",
+              netCost: "950",
+              addition_bid_material_tax_details: [],
+              deduction_bid_material_tax_details: [],
+            },
+          }));
+        }
+      }
+    } else {
+      console.log("No material ID found, opening modal with empty data");
+      if (!taxRateData[rowIndex]) {
+        setTaxRateData((prev) => ({
+          ...prev,
+          [rowIndex]: {
+            material: material?.material || "Sample Material",
+            hsnCode: "",
+            ratePerNos: "",
+            totalPoQty: "",
+            discount: "",
+            materialCost: "",
+            discountRate: "",
+            afterDiscountValue: "",
+            remark: "",
+            netCost: "",
+            pms_inventory_id: material?.material_inventory_id || null,
+            addition_bid_material_tax_details: [],
+            deduction_bid_material_tax_details: [],
+          },
+        }));
+      }
+    }
+  };
+
+  const handleCloseTaxModal = () => {
+    setShowTaxModal(false);
+    setTableId(null);
+  };
+
+  // Fetch tax percentages for specific material and tax category
+  const fetchTaxPercentagesByMaterial = async (pmsInventoryId, taxCategoryId) => {
+    try {
+      if (!pmsInventoryId || !taxCategoryId) {
+        console.warn("Missing required parameters for tax percentage fetch");
+        return [];
+      }
+      
+      const response = await axios.get(
+        `${baseURL}tax_percentage_by_material.json?pms_inventory_id=${pmsInventoryId}&tax_category_id=${taxCategoryId}&token=${token}`
+      );
+      console.log("Tax percentages by material response:", response.data);
+      return response.data.percentages || [];
+    } catch (error) {
+      console.error("Error fetching tax percentages by material:", error);
+      return [];
+    }
+  };
+
+  // Approval modal functions
+  const openApprovalModal = () => setShowApprovalModal(true);
+  const closeApprovalModal = () => setShowApprovalModal(false);
+
+  // Helper function to get tax percentages
+  const getChargesTaxPercentages = (taxCategoryId) => {
+    if (!taxCategoryId) return [];
+    
+    const taxCategory = chargesTaxPercentages.find(
+      (category) => {
+        if (!category || !category.id) return false;
+        return category.id.toString() === taxCategoryId.toString();
+      }
+    );
+    return taxCategory ? taxCategory.percentages || [] : [];
+  };
+
+  // Handle status submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const payload = {
+        status_log: {
+          status: selectedStatus?.value.toLowerCase() || "Draft",
+          remarks: poRemark || "",
+          comments: poComments || "",
+          admin_comment: "",
+        },
+      };
+
+      const response = await axios.put(
+        `${baseURL}purchase_orders/${id}/update_status.json?token=${token}`,
+        payload
+      );
+
+      console.log("Status update successful:", response.data);
+      alert("Status updated successfully!");
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Error updating status. Please try again.");
+    }
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <span className="ms-3">Loading ROPO data...</span>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* top navigation above */}
@@ -8,7 +635,7 @@ const RopoImportDetails = () => {
         {/* sidebar ends above */}
         {/* webpage conteaint start */}
         <div className="website-content overflow-auto">
-          <div className="module-data-section container-fluid details_page">
+          <div className="module-data-section container-fluid">
             <a href="">Home &gt; Purchase &gt; MTO &gt; MTO Pending Approval</a>
             <h5 className="mt-3">Create Purchase Order</h5>
             <div className="row my-4 align-items-center">
@@ -25,7 +652,7 @@ const RopoImportDetails = () => {
                         data-bs-toggle="pill"
                         data-bs-target="#create-mor"
                         type="button"
-                        role="tab"
+                      role="tab"
                         aria-controls="create-mor"
                         aria-selected="false"
                       >
@@ -181,35 +808,75 @@ const RopoImportDetails = () => {
                           <div className="card-body">
                             <div className="card-body">
                               <div className="row">
+                                 <div className="d-flex gap-2 justify-content-end mb-3">
+                                    {ropoData?.selected_status === "Draft" && (
+                                      <Link
+                                        to={`/ropo-edit/${id}?token=${token}`}
+                                        className="d-flex align-items-center"
+                                        style={{ borderColor: "#8b0203" }}
+                                      >
+                                        <button type="button" className="purple-btn1">
+                                          <svg
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill="#8b0203"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                          >
+                                            <path
+                                              d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z"
+                                              fill="#8b0203"
+                                            />
+                                            <path
+                                              d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"
+                                              fill="#8b0203"
+                                            />
+                                          </svg>
+                                        </button>
+                                      </Link>
+                                    )}
+
+                                    {ropoData?.selected_status?.toLowerCase() !== "draft" &&
+                                      ropoData?.selected_status?.toLowerCase() !== "accepted_by_vendor" &&
+                                      ropoData?.selected_status?.toLowerCase() !== "rejected_by_vendor" &&
+                                      ropoData?.selected_status?.toLowerCase() !== "cancelled" &&
+                                      ropoData?.selected_status?.toLowerCase() !== "terminated" &&
+                                      ropoData?.selected_status?.toLowerCase() !== "rejected" &&
+                                      ropoData?.selected_status?.toLowerCase() !== "submitted" &&
+                                      ropoData?.vendor_status?.toLowerCase() !== "accepted" && (
+                                        <Link
+                                          to={`/ropo-edit-ammend/${ropoData?.parent_po_id}?token=${token}`}
+                                          className="d-flex align-items-center"
+                                          style={{ borderColor: "#8b0203" }}
+                                        >
+                                          <button type="button" className="purple-btn2 mb-3">
+                                            <span>Amend</span>
+                                          </button>
+                                        </Link>
+                                      )}
+                                    
+                                    {ropoData?.approval_logs && ropoData.approval_logs.length > 0 && (
+                                      <button
+                                        type="button"
+                                        className="purple-btn2 mb-3"
+                                        onClick={openApprovalModal}
+                                        style={{
+                                          backgroundColor: ropoData?.selected_status === "Approved" ? "green" : "",
+                                          border: "none",
+                                        }}
+                                      >
+                                        <span>Approval Logs</span>
+                                      </button>
+                                    )}
+                                  </div>
                                 <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                                   <div className="col-6 ">
                                     <label>Company </label>
                                   </div>
                                   <div className="col-6">
                                     <label className="text">
-                                      <span className="me-3">:-</span>Material
-                                    </label>
-                                  </div>
-                                </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                  <div className="col-6 ">
-                                    <label>Project </label>
-                                  </div>
-                                  <div className="col-6">
-                                    <label className="text">
-                                      <span className="me-3">:-</span>Sanvo
-                                      Resorts Pvt. Ltd.-II
-                                    </label>
-                                  </div>
-                                </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                  <div className="col-6 ">
-                                    <label>PO Category </label>
-                                  </div>
-                                  <div className="col-6">
-                                    <label className="text">
-                                      <span className="me-3">:-</span>Nexzone -
-                                      Phase II
+                                        <span className="me-3 text-dark">:</span>
+                                        {ropoData?.company_name || "-"}
                                     </label>
                                   </div>
                                 </div>
@@ -219,7 +886,8 @@ const RopoImportDetails = () => {
                                   </div>
                                   <div className="col-6">
                                     <label className="text">
-                                      <span className="me-3">:-</span>82423
+                                        <span className="me-3 text-dark">:</span>
+                                        {ropoData?.po_type || "-"}
                                     </label>
                                   </div>
                                 </div>
@@ -229,8 +897,8 @@ const RopoImportDetails = () => {
                                   </div>
                                   <div className="col-6">
                                     <label className="text">
-                                      <span className="me-3">:-</span>
-                                      PO/SRPL/NXZPh2/18254
+                                        <span className="me-3 text-dark">:</span>
+                                        {ropoData?.po_date || "-"}
                                     </label>
                                   </div>
                                 </div>
@@ -240,8 +908,8 @@ const RopoImportDetails = () => {
                                   </div>
                                   <div className="col-6">
                                     <label className="text">
-                                      <span className="me-3">:-</span>INR
-                                      65,47,926.82
+                                        <span className="me-3 text-dark">:</span>
+                                        {ropoData?.created_at || "-"}
                                     </label>
                                   </div>
                                 </div>
@@ -251,7 +919,8 @@ const RopoImportDetails = () => {
                                   </div>
                                   <div className="col-6">
                                     <label className="text">
-                                      <span className="me-3">:-</span>INR 0.00
+                                        <span className="me-3 text-dark">:</span>
+                                        {ropoData?.po_number || "-"}
                                     </label>
                                   </div>
                                 </div>
@@ -261,8 +930,8 @@ const RopoImportDetails = () => {
                                   </div>
                                   <div className="col-6">
                                     <label className="text">
-                                      <span className="me-3">:-</span>LANDMARK
-                                      REALTY(L-06), Mumbai (Bombay)
+                                        <span className="me-3 text-dark">:</span>
+                                        {ropoData?.total_value || "-"}
                                     </label>
                                   </div>
                                 </div>
@@ -272,8 +941,8 @@ const RopoImportDetails = () => {
                                   </div>
                                   <div className="col-6">
                                     <label className="text">
-                                      <span className="me-3">:-</span>LANDMARK
-                                      REALTY(L-06), Mumbai (Bombay)
+                                        <span className="me-3 text-dark">:</span>
+                                        {ropoData?.total_discount || "-"}
                                     </label>
                                   </div>
                                 </div>
@@ -283,41 +952,41 @@ const RopoImportDetails = () => {
                                   </div>
                                   <div className="col-6">
                                     <label className="text">
-                                      <span className="me-3">:-</span>LANDMARK
-                                      REALTY(L-06), Mumbai (Bombay)
+                                        <span className="me-3 text-dark">:</span>
+                                        {ropoData?.supplier_name || "-"}
                                     </label>
                                   </div>
                                 </div>
                                 <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                                   <div className="col-6 ">
-                                    <label>Branch</label>
+                                      <label>Vendor GSTIN</label>
                                   </div>
                                   <div className="col-6">
                                     <label className="text">
-                                      <span className="me-3">:-</span>LANDMARK
-                                      REALTY(L-06), Mumbai (Bombay)
+                                        <span className="me-3 text-dark">:</span>
+                                        {ropoData?.vendor_gstin || "-"}
                                     </label>
                                   </div>
                                 </div>
                                 <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                                   <div className="col-6 ">
-                                    <label>PO Currency</label>
+                                      <label>Branch</label>
                                   </div>
                                   <div className="col-6">
                                     <label className="text">
-                                      <span className="me-3">:-</span>LANDMARK
-                                      REALTY(L-06), Mumbai (Bombay)
+                                        <span className="me-3 text-dark">:</span>
+                                        {ropoData?.branch || "-"}
                                     </label>
                                   </div>
                                 </div>
                                 <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                                   <div className="col-6 ">
-                                    <label>Conversion Rate</label>
+                                      <label>Unloading Scope</label>
                                   </div>
                                   <div className="col-6">
                                     <label className="text">
-                                      <span className="me-3">:-</span>LANDMARK
-                                      REALTY(L-06), Mumbai (Bombay)
+                                        <span className="me-3 text-dark">:</span>
+                                        {ropoData?.unloading_scope || "-"}
                                     </label>
                                   </div>
                                 </div>
@@ -330,17 +999,7 @@ const RopoImportDetails = () => {
                                 >
                                   Material Details
                                 </h5>
-                                <div className="card-tools">
-                                  <div>
-                                    <button
-                                      className="d-btn purple-btn2"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#Amend"
-                                    >
-                                      Amend
-                                    </button>
-                                  </div>
-                                </div>
+                               
                               </div>
                               <div className="tbl-container me-2 mt-3">
                                 <table className="w-100">
@@ -350,8 +1009,8 @@ const RopoImportDetails = () => {
                                       <th>Sub-Project</th>
                                       <th>MOR No.</th>
                                       <th>Material Description</th>
-                                      <th>Material Specifications</th>
-                                      <th>UMO</th>
+                                      {/* <th>Material Specifications</th>
+                                      <th>UMO</th> */}
                                       <th>Pending Mor Qty</th>
                                       <th>PO Order Qty</th>
                                       <th>GRN Qty</th>
@@ -360,46 +1019,35 @@ const RopoImportDetails = () => {
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    <tr>
-                                      <td>1</td>
+                                    {ropoData?.material_details && ropoData.material_details.length > 0 ? (
+                                      ropoData.material_details.map((mat, idx) => (
+                                        <tr key={mat.id || idx}>
+                                          <td>{idx + 1}</td>
                                       <td className="text-decoration-underline">
-                                        Neo Valley- Building
+                                            {mat.project || "-"}
                                       </td>
-                                      <td>MOR/MAR/MAX/ 101/02/2024</td>
-                                      <td>Plain White Sperenza Tiles</td>
-                                      <td>300 x 300 mm</td>
-                                      <td>
-                                        <div className="form-group">
-                                          <label className="po-fontBold">
-                                            Supplier
-                                          </label>
-                                          <select
-                                            className="form-control form-select"
-                                            style={{ width: "100%" }}
-                                          >
-                                            <option selected="selected">
-                                              Nos
-                                            </option>
-                                            <option>Alaska</option>
-                                            <option>California</option>
-                                            <option>Delaware</option>
-                                            <option>Tennessee</option>
-                                            <option>Texas</option>
-                                            <option>Washington</option>
-                                          </select>
-                                        </div>
-                                      </td>
-                                      <td>150</td>
-                                      <td>40</td>
-                                      <td>50</td>
-                                      <td>60</td>
-                                      <td>
+                                          <td>{mat.sub_project || "-"}</td>
+                                          <td>{mat.material || "-"}</td>
+                                          <td>{mat.uom || "-"}</td>
+                                          <td>{mat.mor_qty || "-"}</td>
+                                          <td>{mat.po_order_qty || "-"}</td>
+                                          <td>{mat.grn_qty || "-"}</td>
+                                          <td>{mat.po_balance_qty || "-"}</td>
+                                      {/* <td>
                                         <i
                                           className="fa-solid fa-xmark"
                                           style={{ fontSize: 18 }}
                                         />
-                                      </td>
+                                      </td> */}
                                     </tr>
+                                      ))
+                                    ) : (
+                                      <tr>
+                                        <td colSpan={9} className="text-center">
+                                          No material details available
+                                        </td>
+                                      </tr>
+                                    )}
                                   </tbody>
                                 </table>
                               </div>
@@ -451,51 +1099,55 @@ const RopoImportDetails = () => {
                                 <tr>
                                   <th>Sr. No</th>
                                   <th>Material Description</th>
-                                  <th>Brand</th>
                                   <th>UOM</th>
                                   <th>PO Qty</th>
-                                  <th colSpan={2}>Material Rate</th>
-                                  <th colSpan={2}>Material Cost</th>
+                                  <th>Material Rate</th>
+                                  <th>Material Cost</th>
+                                  <th>Discount(%)</th>
+                                  <th>Discount Rate</th>
+                                  <th>After Discount Value</th>
                                   <th>Tax Addition</th>
-                                  <th>Total Changes</th>
-                                  <th>Other Addition</th>
-                                  <th>Other Deductions</th>
+                                  <th>Tax Deduction</th>
+                                  <th>Total Charges</th>
+                                  <th>Total Base Cost</th>
                                   <th>All Incl. Cost</th>
-                                  <th>Tax Deductions</th>
                                   <th>Select Tax</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr>
-                                  <td>1</td>
-                                  <td>Plain White Sperenza Tiles</td>
-                                  <td>Sperenza</td>
-                                  <td>300 x 300 mm</td>
-                                  <td>nos</td>
-                                  <td
-                                    className="text-decoration-underline"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#cozyModal"
-                                  >
-                                    Attributes
-                                  </td>
-                                  <td>40</td>
-                                  <td>USD 0.24</td>
-                                  <td>INR 20</td>
-                                  <td>USD 9.67</td>
-                                  <td>INR 800</td>
-                                  <td>108</td>
-                                  <td>708</td>
-                                  <td>108</td>
-                                  <td>708</td>
-                                  <td
-                                    className="text-decoration-underline"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#zenithModal"
-                                  >
-                                    select
-                                  </td>
-                                </tr>
+                                {rateAndTaxes.length > 0 ? (
+                                  rateAndTaxes.map((item, index) => (
+                                    <tr key={item.id || index}>
+                                      <td>{index + 1}</td>
+                                      <td>{item.material || "-"}</td>
+                                      <td>{item.uom || "-"}</td>
+                                      <td>{item.po_qty || "-"}</td>
+                                      <td>{item.material_rate || "-"}</td>
+                                      <td>{item.material_cost || "-"}</td>
+                                      <td>{item.discount_percentage || "-"}</td>
+                                      <td>{item.discount_rate || "-"}</td>
+                                      <td>{item.after_discount_value || "-"}</td>
+                                      <td>{item.tax_addition || "-"}</td>
+                                      <td>{item.tax_deduction || "-"}</td>
+                                      <td>{item.total_charges || "-"}</td>
+                                      <td>{item.total_base_cost || "-"}</td>
+                                      <td>{item.all_inclusive_cost || "-"}</td>
+                                      <td
+                                        className="text-decoration-underline"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => handleOpenTaxModal(index)}
+                                      >
+                                        select
+                                      </td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan="15" className="text-center">
+                                      No rate and taxes data available
+                                    </td>
+                                  </tr>
+                                )}
                               </tbody>
                             </table>
                           </div>
@@ -517,31 +1169,111 @@ const RopoImportDetails = () => {
                               <tbody>
                                 <tr>
                                   <td>Total Base Cost</td>
-                                  <td>800</td>
-                                  <td>800</td>
+                                  <td>{taxSummary.total_base_cost || "0"}</td>
+                                  <td>{taxSummary.total_base_cost || "0"}</td>
                                 </tr>
                                 <tr>
-                                  <td>Custom Duty</td>
-                                  <td>400</td>
-                                  <td>400</td>
+                                  <td>Total Tax</td>
+                                  <td>{taxSummary.total_tax || "0"}</td>
+                                  <td>{taxSummary.total_tax || "0"}</td>
                                 </tr>
                                 <tr>
-                                  <td>C &amp; F Charges</td>
-                                  <td>30.4</td>
-                                  <td>30.4</td>
+                                  <td>Total Charge</td>
+                                  <td>{taxSummary.total_charge || "0"}</td>
+                                  <td>{taxSummary.total_charge || "0"}</td>
                                 </tr>
                                 <tr>
                                   <td className="fw-bold">
                                     Total All Incl. Cost
                                   </td>
-                                  <td className="fw-bold">1230.4</td>
-                                  <td className="fw-bold">1230.4</td>
+                                  <td className="fw-bold">{taxSummary.total_inclusive_cost || "0"}</td>
+                                  <td className="fw-bold">{taxSummary.total_inclusive_cost || "0"}</td>
                                 </tr>
                               </tbody>
                             </table>
                           </div>
-                          <div className=" mt-3 d-flex justify-content-between ">
-                            <h5 className=" ">Other Cost</h5>
+                          <div className="mt-4">
+                             <div className="d-flex justify-content-between align-items-center">
+                               <h5 className="mt-3">Charges</h5>
+                             </div>
+                             <div className="tbl-container me-2 mt-3">
+                               <table className="w-100">
+                                 <thead>
+                                   <tr>
+                                     <th>Charges And Taxes</th>
+                                     <th>Amount</th>
+                                     <th>Scope</th>
+                                     <th>Taxes</th>
+                                   </tr>
+                                 </thead>
+                                 <tbody>
+                                   {charges.length > 0 ? (
+                                     charges.map((charge) => (
+                                       <tr key={charge.id}>
+                                         <td>
+                                           <select
+                                             className="form-control form-select mySelect"
+                                             value={charge.charge_name}
+                                             disabled={true}
+                                           >
+                                             <option value="">Select Charge</option>
+                                             {chargeNames.map((chargeName) => (
+                                               <option key={chargeName.id} value={chargeName.name}>
+                                                 {chargeName.name}
+                                               </option>
+                                             ))}
+                                           </select>
+                                         </td>
+                                         <td>
+                                           <input
+                                             type="number"
+                                             className="form-control forname-control decimal-input"
+                                             value={charge.amount}
+                                             disabled
+                                             placeholder="Enter amount"
+                                           />
+                                         </td>
+                                         <td>
+                                           <select
+                                             className="form-control form-select mySelect"
+                                             value={charge.scope || ""}
+                                             disabled={true}
+                                           >
+                                             <option value="">Select Scope</option>
+                                             <option value="By Vendor">By Vendor</option>
+                                             <option value="By Marathon">By Marathon</option>
+                                           </select>
+                                         </td>
+                                         <td>
+                                           <button
+                                             type="button"
+                                             className="btn btn-info chargeButton"
+                                             onClick={() =>
+                                               handleOpenTaxesModal(
+                                                 charge.id,
+                                                 "charge"
+                                               )
+                                             }
+                                           >
+                                             Taxes
+                                           </button>
+                                         </td>
+                                       </tr>
+                                     ))
+                                   ) : (
+                                     <tr>
+                                       <td colSpan={4} className="text-center">
+                                         No charges available
+                                       </td>
+                                     </tr>
+                                   )}
+                                 </tbody>
+                               </table>
+                             </div>
+                           </div>
+                           <div className="mt-4">
+                             <div className="d-flex justify-content-between align-items-center">
+                               <h5 className="mt-3">Other Cost</h5>
                           </div>
                           <div className="tbl-container me-2 mt-3">
                             <table className="w-100">
@@ -552,27 +1284,72 @@ const RopoImportDetails = () => {
                                     Details
                                   </th>
                                   <th>Cost</th>
+                                     <th>Scope</th>
+                                     <th>Taxes</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr>
-                                  <td>Loading</td>
-                                  <td>0.00</td>
+                                   {otherCosts.length > 0 ? (
+                                     otherCosts.map((cost) => (
+                                       <tr key={cost.id}>
+                                         <td>
+                                           <select
+                                             className="form-control form-select mySelect"
+                                             value={cost.cost_name}
+                                             disabled={true}
+                                           >
+                                             <option value="">Select Type</option>
+                                             <option value="Transportation">Transportation</option>
+                                             <option value="Loading">Loading</option>
+                                             <option value="Unloading">Unloading</option>
+                                           </select>
+                                         </td>
+                                         <td>
+                                           <input
+                                             type="number"
+                                             className="form-control forname-control decimal-input"
+                                             value={cost.amount}
+                                             disabled
+                                             placeholder="Enter amount"
+                                           />
+                                         </td>
+                                         <td>
+                                           <select
+                                             className="form-control form-select mySelect"
+                                             value={cost.scope}
+                                             disabled={true}
+                                           >
+                                             <option value="">Select Scope</option>
+                                             <option value="By Vendor">By Vendor</option>
+                                             <option value="By Marathon">By Marathon</option>
+                                           </select>
+                                         </td>
+                                         <td>
+                                           <button
+                                             type="button"
+                                             className="btn btn-info chargeButton"
+                                             onClick={() =>
+                                               handleOpenTaxesModal(
+                                                 cost.id,
+                                                 "cost"
+                                               )
+                                             }
+                                           >
+                                             Add Taxes and Charges
+                                           </button>
+                                         </td>
                                 </tr>
+                                     ))
+                                   ) : (
                                 <tr>
-                                  <td>Unloading</td>
-                                  <td>0.00</td>
+                                       <td colSpan={4} className="text-center">
+                                         No other costs available
+                                       </td>
                                 </tr>
-                                <tr>
-                                  <td>Transportation</td>
-                                  <td>0.00</td>
-                                </tr>
-                                <tr>
-                                  <th>Total</th>
-                                  <th>0.00</th>
-                                </tr>
+                                   )}
                               </tbody>
                             </table>
+                             </div>
                           </div>
                         </div>
                         <div
@@ -590,7 +1367,8 @@ const RopoImportDetails = () => {
                                 </div>
                                 <div className="col-6">
                                   <label className="text">
-                                    <span className="me-3">:-</span>Material
+                                      <span className="me-3">:-</span>
+                                      {ropoData?.terms_and_conditions?.credit_period || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -600,8 +1378,8 @@ const RopoImportDetails = () => {
                                 </div>
                                 <div className="col-6">
                                   <label className="text">
-                                    <span className="me-3">:-</span>Sanvo
-                                    Resorts Pvt. Ltd.-II
+                                      <span className="me-3">:-</span>
+                                      {ropoData?.terms_and_conditions?.po_validity_period || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -613,8 +1391,8 @@ const RopoImportDetails = () => {
                                 </div>
                                 <div className="col-6">
                                   <label className="text">
-                                    <span className="me-3">:-</span>Nexzone -
-                                    Phase II
+                                      <span className="me-3">:-</span>
+                                      {ropoData?.terms_and_conditions?.advance_reminder_duration || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -624,7 +1402,8 @@ const RopoImportDetails = () => {
                                 </div>
                                 <div className="col-6">
                                   <label className="text">
-                                    <span className="me-3">:-</span>82423
+                                      <span className="me-3">:-</span>
+                                      {ropoData?.terms_and_conditions?.payment_terms || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -634,7 +1413,8 @@ const RopoImportDetails = () => {
                                 </div>
                                 <div className="col-6">
                                   <label className="text">
-                                    <span className="me-3">:-</span>82423
+                                      <span className="me-3">:-</span>
+                                      {ropoData?.terms_and_conditions?.payment_remarks || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -779,7 +1559,7 @@ const RopoImportDetails = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="mt-3 d-flex justify-content-between align-items-center">
+                          {/* <div className="mt-3 d-flex justify-content-between align-items-center">
                             <h5 className=" mt-3">Advance Payment Schedule</h5>
                           </div>
                           <div className="tbl-container me-2 mt-2">
@@ -832,7 +1612,7 @@ const RopoImportDetails = () => {
                                 </tr>
                               </tbody>
                             </table>
-                          </div>
+                          </div> */}
                           <div className="mt-3 ">
                             <h5 className=" ">General Term &amp; Conditions</h5>
                           </div>
@@ -883,217 +1663,7 @@ const RopoImportDetails = () => {
                           aria-labelledby="nav-home-tab"
                           tabIndex={0}
                         >
-                          <div className="card-body">
-                            <div className="row">
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>PO Category </label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">:-</span>Material
-                                  </label>
-                                </div>
-                              </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="col-6 ">
-                                  <label>Certifying company </label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">:-</span>Sanvo
-                                    Resorts Pvt. Ltd.-II
-                                  </label>
-                                </div>
-                              </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                <div className="col-6 ">
-                                  <label>Project </label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">:-</span>Nexzone -
-                                    Phase II
-                                  </label>
-                                </div>
-                              </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                <div className="col-6 ">
-                                  <label>Serial No. </label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">:-</span>82423
-                                  </label>
-                                </div>
-                              </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                <div className="col-6 ">
-                                  <label>Purchase Order No. </label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">:-</span>
-                                    PO/SRPL/NXZPh2/18254
-                                  </label>
-                                </div>
-                              </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                <div className="col-6 ">
-                                  <label>PO Value </label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">:-</span>INR
-                                    65,47,926.82
-                                  </label>
-                                </div>
-                              </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                <div className="col-6 ">
-                                  <label>Total Discount </label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">:-</span>INR 0.00
-                                  </label>
-                                </div>
-                              </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                <div className="col-6 ">
-                                  <label>Supplier </label>
-                                </div>
-                                <div className="col-6">
-                                  <label className="text">
-                                    <span className="me-3">:-</span>LANDMARK
-                                    REALTY(L-06), Mumbai (Bombay)
-                                  </label>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="row mt-3">
-                              <div className="tbl-container px-0 ">
-                                <table className="w-100">
-                                  <thead>
-                                    <tr>
-                                      <th>Amendment No. </th>
-                                      <th>Status</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    <tr>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                            <div className="row mt-3 align-items-center">
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                <div className="row align-items-center ">
-                                  <div className="col-4 ">
-                                    <label className="mb-0">
-                                      View amendment for{" "}
-                                    </label>
-                                  </div>
-                                  <div className="col-6">
-                                    <select
-                                      className="form-control form-select"
-                                      style={{ width: "100%" }}
-                                    >
-                                      <option selected="selected">Nos</option>
-                                      <option>Alaska</option>
-                                      <option>California</option>
-                                      <option>Delaware</option>
-                                      <option>Tennessee</option>
-                                      <option>Texas</option>
-                                      <option>Washington</option>
-                                    </select>
-                                  </div>
-                                  <div className="col-2">
-                                    <button className="purple-btn2">Go</button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="row mt-3">
-                              <h5>Added Materials</h5>
-                              <div className="tbl-container px-0 ">
-                                <table className="w-100">
-                                  <thead>
-                                    <tr>
-                                      <th>Material </th>
-                                      <th>Quantity</th>
-                                      <th>Material Description </th>
-                                      <th>UOM </th>
-                                      <th>Brand </th>
-                                      <th>Rate</th>
-                                      <th>Net Rate </th>
-                                      <th>Material Cost </th>
-                                      <th>Tax Additions </th>
-                                      <th>Landed Cost </th>
-                                      <th>Tax Deductions</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    <tr>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                            <div className="row mt-3">
-                              <h5>Modified Material</h5>
-                              <div className="tbl-container px-0 ">
-                                <table className="w-100">
-                                  <thead>
-                                    <tr>
-                                      <th>Material </th>
-                                      <th>Prev Quantity </th>
-                                      <th>Prev Material Description </th>
-                                      <th>Prev UOM </th>
-                                      <th>New Quantity </th>
-                                      <th>New Material Description </th>
-                                      <th>New UOM </th>
-                                      <th>Prev Brand </th>
-                                      <th>New Brand </th>
-                                      <th>Prev Net Rate </th>
-                                      <th>New Net Rate</th>
-                                      <th>Prev Tax</th>
-                                      <th>New Tax</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    <tr>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                      <td>Approved</td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          </div>{" "}
+
                         </div>
                       </div>
                       {/* /.container-fluid */}
@@ -1102,68 +1672,167 @@ const RopoImportDetails = () => {
                 </div>
               </div>
             </div>
-            <div className=" d-flex justify-content-between align-items-center">
-              <h5 className=" mt-3">Document Attachment</h5>
+            <div className="d-flex justify-content-between mt-5  ms-2">
+              <h5>Document Attachment</h5>
+              <div
+                className=""
+                data-bs-toggle="modal"
+                data-bs-target="#attachModal"
+              ></div>
             </div>
-            <div className="tbl-container m-0">
+
+            <div
+              className="tbl-container mb-4 ms-2"
+              style={{ maxHeight: "500px" }}
+            >
               <table className="w-100">
-                <thead className="w-100">
+                <thead>
                   <tr>
-                    <th className="main2-th">Sr. No.</th>
-                    <th className="main2-th">Document Name</th>
-                    <th className="main2-th">File Name</th>
                     <th className="main2-th">File Type</th>
-                    <th className="main2-th">Upload Date</th>
+                    <th className="main2-th">File Name</th>
+                    <th className="main2-th">Upload At</th>
                     <th className="main2-th">Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <th>1</th>
-                    <td>03-03-2024</td>
-                    <th>MTO Copy.pdf</th>
-                    <td>03-03-2024</td>
-                    <th>MTO Copy.pdf</th>
-                    <td>
-                      <i
-                        className="fa-regular fa-eye"
-                        data-bs-toggle="modal"
-                        data-bs-target="#document_attchment"
-                        style={{ fontSize: 18 }}
-                      />
-                    </td>
-                  </tr>
+                  {attachments.map((att, index) => (
+                    <tr key={att.id}>
+                      <td>
+                        <input
+                          className="form-control document_content_type"
+                          readOnly
+                          disabled
+                          value={att.fileType}
+                          placeholder="File Type"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          className="form-control file_name"
+                          readOnly
+                          disabled
+                          value={att.fileName || att.file_name || ""}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          className="form-control created_at"
+                          readOnly
+                          disabled
+                          value={att.uploadDate || att.uploaded_at || ""}
+                        />
+                      </td>
+                      <td className="document">
+                        <div
+                          style={{ display: "flex", alignItems: "center" }}
+                        >
+                          <div className="attachment-placeholder">
+                            {att.isExisting && (
+                              <div className="file-box">
+                                <div className="">
+                                  <a
+                                    href={att.doc_path}
+                                    download
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <DownloadIcon />
+                                  </a>
+                                </div>
+                                <div className="file-name">
+                                  <span>{att.fileName || att.file_name}</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
-            <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
-              <p className="">Status</p>
-              <div className="dropdown">
+            <div className="row w-100">
+              <div className="col-md-12">
+                <div className="form-group">
+                  <label>Remark</label>
+                  <textarea
+                    className="form-control"
+                    rows={3}
+                    placeholder="Enter ..."
+                    value={poRemark}
+                    onChange={(e) => setPoRemark(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="row w-100">
+              <div className="col-md-12">
+                <div className="form-group">
+                  <label>Comments</label>
+                  <textarea
+                    className="form-control"
+                    rows={3}
+                    placeholder="Enter ..."
+                    value={poComments}
+                    onChange={(e) => setPoComments(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="row mt-4 justify-content-end align-items-center mx-2">
+              <div className="col-md-3">
+                <div className="form-group d-flex gap-3 align-items-center mx-3">
+                  <label
+                    className="form-label mt-2"
+                    style={{ fontSize: "0.95rem", color: "black" }}
+                  >
+                    Status
+                  </label>
+                  <SingleSelector
+                    options={
+                      ropoData?.status_list?.map((status) => ({
+                        value: status.toLowerCase(),
+                        label: status,
+                      })) || []
+                    }
+                    value={
+                      selectedStatus
+                        ? {
+                            value: selectedStatus.value.toLowerCase(),
+                            label: selectedStatus.label,
+                          }
+                        : null
+                    }
+                    onChange={(selected) => setSelectedStatus(selected)}
+                    placeholder="Select Status"
+                    isClearable={false}
+                    isDisabled={ropoData?.disabled ?? false}
+                    classNamePrefix="react-select"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-2 justify-content-end">
+              <div className="col-md-2 mt-2">
                 <button
-                  className="btn purple-btn2 btn-secondary dropdown-toggle"
                   type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
+                  className="purple-btn2 w-100"
+                  id="submit_tag_button"
+                  onClick={handleSubmit}
                 >
-                  PO Draft
+                  Submit
                 </button>
-                <ul className="dropdown-menu">
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      Action
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      Another action
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      Something else here
-                    </a>
-                  </li>
-                </ul>
+              </div>
+              <div className="col-md-2">
+                <button
+                  type="button"
+                  className="purple-btn1 w-100"
+                  onClick={() => navigate(-1)}
+                >
+                  Cancel
+                </button>
               </div>
             </div>
             <h5 className="px-3 mt-3">Audit Logs</h5>
@@ -1181,11 +1850,13 @@ const RopoImportDetails = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <th>1</th>
-                      <td>Pratham Shastri</td>
-                      <td>15-02-2024</td>
-                      <td>Verified</td>
+                    {ropoData?.status_logs && ropoData.status_logs.length > 0 ? (
+                      ropoData.status_logs.map((log, index) => (
+                        <tr key={log.id || index}>
+                          <th>{index + 1}</th>
+                          <td>{log.user || "-"}</td>
+                          <td>{log.date || "-"}</td>
+                          <td>{log.status || "-"}</td>
                       <td>
                         <i
                           className="fa-regular fa-eye"
@@ -1203,6 +1874,14 @@ const RopoImportDetails = () => {
                         />
                       </td>
                     </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="text-center">
+                          No audit log data available
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -2605,6 +3284,734 @@ const RopoImportDetails = () => {
       {/* document_attchment schedule modal */}
      
       {/* document_attchment schedule modal end */}
+
+       {/* View Tax & Rate Modal for Charges */}
+       <Modal
+         show={showTaxesModal}
+         onHide={handleCloseTaxesModal}
+         size="lg"
+         centered
+       >
+         <Modal.Header closeButton>
+           <Modal.Title>View Tax & Rate</Modal.Title>
+         </Modal.Header>
+         <Modal.Body>
+           <div className="container-fluid p-0">
+             <div className="row mb-3">
+               <div className="col-md-6">
+                 <div className="mb-3">
+                   <label className="form-label fw-bold">Base Cost</label>
+                   <input
+                     type="text"
+                     className="form-control"
+                     value={chargeTaxes.baseCost || ""}
+                     readOnly
+                     disabled={true}
+                   />
+                 </div>
+               </div>
+               <div className="col-md-6">
+                 <div className="mb-3">
+                   <label className="form-label fw-bold">Net Cost</label>
+                   <input
+                     type="text"
+                     className="form-control"
+                     value={chargeTaxes.netCost || ""}
+                     readOnly
+                     disabled={true}
+                   />
+                 </div>
+               </div>
+             </div>
+
+             {/* Tax Charges Table */}
+             <div className="row mt-4">
+               <div className="col-12">
+                 <div className="table-responsive">
+                   <table className="table table-bordered">
+                     <thead>
+                       <tr>
+                         <th>Tax / Charge Type</th>
+                         <th>Tax / Charges per UOM (INR)</th>
+                         <th>Inclusive</th>
+                         <th>Tax / Charges Amount</th>
+                         <th>Action</th>
+                       </tr>
+                     </thead>
+                     <tbody>
+                       <tr className="text-center">
+                         <th>Total Base Cost</th>
+                         <td></td>
+                         <td></td>
+                         <td>{chargeTaxes.baseCost}</td>
+                         <td></td>
+                       </tr>
+                       <tr className="text-center">
+                         <th>Addition Tax & Charges</th>
+                         <td></td>
+                         <td></td>
+                         <td></td>
+                         <td></td>
+                       </tr>
+
+                       {/* Addition Tax Rows */}
+                       {chargeTaxes.additionTaxes.map((tax) => (
+                         <tr key={tax.id}>
+                           <td>
+                             <select
+                               className="form-control"
+                               value={tax.taxType}
+                               disabled
+                             >
+                               <option value="">Select Tax Type</option>
+                               {chargesAdditionTaxOptions.map((taxOption) => (
+                                 <option key={taxOption.id} value={taxOption.id}>
+                                   {taxOption.name}
+                                 </option>
+                               ))}
+                             </select>
+                           </td>
+                           <td>
+                             <select
+                               className="form-control"
+                               value={tax.taxPercentage}
+                               disabled
+                             >
+                               <option value="">Select Percentage</option>
+                               {tax.taxType &&
+                                 getChargesTaxPercentages(tax.taxType).map(
+                                   (percentage, index) => (
+                                     <option key={index} value={percentage}>
+                                       {percentage}%
+                                     </option>
+                                   )
+                                 )}
+                             </select>
+                           </td>
+                           <td>
+                             <input
+                               type="checkbox"
+                               checked={tax.inclusive}
+                               disabled
+                             />
+                           </td>
+                           <td>
+                             <input
+                               type="number"
+                               className="form-control"
+                               value={tax.amount}
+                               disabled
+                             />
+                           </td>
+                           <td className="text-center">
+                             <button
+                               type="button"
+                               className="btn btn-link text-danger"
+                               disabled
+                             >
+                               <span className="material-symbols-outlined">
+                                 cancel
+                               </span>
+                             </button>
+                           </td>
+                         </tr>
+                       ))}
+
+                       {/* Deduction Tax Section */}
+                       <tr className="deduction-anchor">
+                         <td>Deduction Tax</td>
+                         <td></td>
+                         <td></td>
+                         <td></td>
+                         <td className="text-center">
+                           <button
+                             type="button"
+                             className="btn btn-outline-danger btn-sm add-tax-row"
+                             disabled
+                           >
+                             +
+                           </button>
+                         </td>
+                       </tr>
+
+                       {/* Deduction Tax Rows */}
+                       {chargeTaxes.deductionTaxes.map((tax) => (
+                         <tr key={tax.id}>
+                           <td>
+                             <select
+                               className="form-control"
+                               value={tax.taxType}
+                               disabled
+                             >
+                               <option value="">Select Tax Type</option>
+                               {chargesDeductionTaxOptions.map((taxOption) => (
+                                 <option key={taxOption.id} value={taxOption.id}>
+                                   {taxOption.name}
+                                 </option>
+                               ))}
+                             </select>
+                           </td>
+                           <td>
+                             <select
+                               className="form-control"
+                               value={tax.taxPercentage}
+                               disabled
+                             >
+                               <option value="">Select Percentage</option>
+                               {tax.taxType &&
+                                 getChargesTaxPercentages(tax.taxType).map(
+                                   (percentage, index) => (
+                                     <option key={index} value={percentage}>
+                                       {percentage}%
+                                     </option>
+                                   )
+                                 )}
+                             </select>
+                           </td>
+                           <td>
+                             <input
+                               type="checkbox"
+                               checked={tax.inclusive}
+                               disabled
+                             />
+                           </td>
+                           <td>
+                             <input
+                               type="number"
+                               className="form-control"
+                               value={tax.amount}
+                               disabled
+                               placeholder="Auto-calculated"
+                             />
+                           </td>
+                           <td className="text-center">
+                             <button
+                               type="button"
+                               className="btn btn-link text-danger"
+                               disabled
+                             >
+                               <span className="material-symbols-outlined">
+                                 cancel
+                               </span>
+                             </button>
+                           </td>
+                         </tr>
+                       ))}
+
+                       <tr>
+                         <td>Net Cost</td>
+                         <td></td>
+                         <td></td>
+                         <td className="text-center">
+                           <input
+                             type="text"
+                             className="form-control net-cost"
+                             value={chargeTaxes.netCost}
+                             readOnly
+                             disabled
+                           />
+                         </td>
+                         <td></td>
+                       </tr>
+                     </tbody>
+                   </table>
+                 </div>
+               </div>
+             </div>
+           </div>
+         </Modal.Body>
+         <Modal.Footer className="justify-content-center">
+           <button
+             type="button"
+             className="purple-btn1"
+             onClick={handleCloseTaxesModal}
+           >
+             Close
+           </button>
+         </Modal.Footer>
+       </Modal>
+
+       {/* Tax Modal for Material Taxes */}
+       <Modal
+         show={showTaxModal}
+         onHide={handleCloseTaxModal}
+         size="lg"
+         centered
+       >
+         <Modal.Header closeButton>
+           <Modal.Title>View Tax & Rate</Modal.Title>
+         </Modal.Header>
+         <Modal.Body>
+           <div className="container-fluid p-0">
+             {console.log("Modal is rendering, tableId:", tableId)}
+             {console.log("Tax options in modal:", taxOptions)}
+             <div className="row mb-3">
+               <div className="col-md-6">
+                 <div className="mb-3">
+                   <label className="form-label fw-bold">Material</label>
+                   <input
+                     type="text"
+                     className="form-control"
+                     value={taxRateData[tableId]?.material || ""}
+                     readOnly
+                     disabled={true}
+                   />
+                 </div>
+               </div>
+               <div className="col-md-6">
+                 <div className="mb-3">
+                   <label className="form-label fw-bold">HSN Code</label>
+                   <input
+                     type="text"
+                     className="form-control"
+                     value={taxRateData[tableId]?.hsnCode || ""}
+                     readOnly
+                     disabled={true}
+                   />
+                 </div>
+               </div>
+             </div>
+
+             <div className="row mb-3">
+               <div className="col-md-6">
+                 <div className="mb-3">
+                   <label className="form-label fw-bold">Rate per Nos</label>
+                   <input
+                     type="text"
+                     className="form-control"
+                     value={taxRateData[tableId]?.ratePerNos || ""}
+                     disabled
+                   />
+                 </div>
+               </div>
+               <div className="col-md-6">
+                 <div className="mb-3">
+                   <label className="form-label fw-bold">Total PO Qty</label>
+                   <input
+                     type="text"
+                     className="form-control"
+                     value={taxRateData[tableId]?.totalPoQty || ""}
+                     readOnly
+                     disabled={true}
+                   />
+                 </div>
+               </div>
+             </div>
+
+             <div className="row mb-3">
+               <div className="col-md-6">
+                 <div className="mb-3">
+                   <label className="form-label fw-bold">Discount (%)</label>
+                   <input
+                     type="text"
+                     className="form-control"
+                     value={taxRateData[tableId]?.discount || ""}
+                     disabled
+                   />
+                 </div>
+               </div>
+               <div className="col-md-6">
+                 <div className="mb-3">
+                   <label className="form-label fw-bold">Material Cost</label>
+                   <input
+                     type="text"
+                     className="form-control"
+                     value={taxRateData[tableId]?.materialCost || ""}
+                     readOnly
+                     disabled={true}
+                   />
+                 </div>
+               </div>
+             </div>
+
+             <div className="row mb-3">
+               <div className="col-md-6">
+                 <div className="mb-3">
+                   <label className="form-label fw-bold">Discount Rate</label>
+                   <input
+                     type="text"
+                     className="form-control"
+                     value={taxRateData[tableId]?.discountRate || ""}
+                     readOnly
+                     disabled={true}
+                   />
+                 </div>
+               </div>
+               <div className="col-md-6">
+                 <div className="mb-3">
+                   <label className="form-label fw-bold">
+                     After Discount Value
+                   </label>
+                   <input
+                     type="text"
+                     className="form-control"
+                     value={taxRateData[tableId]?.afterDiscountValue || ""}
+                     readOnly
+                     disabled={true}
+                   />
+                 </div>
+               </div>
+             </div>
+
+             <div className="row mb-3">
+               <div className="col-md-6">
+                 <div className="mb-3">
+                   <label className="form-label fw-bold">Remark</label>
+                   <textarea
+                     className="form-control"
+                     rows={3}
+                     value={taxRateData[tableId]?.remark || ""}
+                     disabled={true}
+                   />
+                 </div>
+               </div>
+             </div>
+
+             {/* Tax Charges Table */}
+             <div className="row mt-4">
+               <div className="col-12">
+                 <div className="table-responsive">
+                   <table className="table table-bordered">
+                     <thead className="tax-table-header">
+                       <tr>
+                         <th>Tax / Charge Type</th>
+                         <th>Tax / Charges per UOM (INR)</th>
+                         <th>Inclusive</th>
+                         <th>Amount</th>
+                         <th>Action</th>
+                       </tr>
+                     </thead>
+                     <tbody>
+                       {/* Total Base Cost Row */}
+                       <tr>
+                         <td>Total Base Cost</td>
+                         <td></td>
+                         <td></td>
+                         <td>
+                           <input
+                             type="number"
+                             className="form-control "
+                             value={
+                               taxRateData[tableId]?.afterDiscountValue || ""
+                             }
+                             readOnly
+                             disabled={true}
+                           />
+                         </td>
+                         <td></td>
+                       </tr>
+
+                       {/* Addition Tax & Charges Row */}
+                       <tr>
+                         <td>Addition Tax & Charges</td>
+                         <td></td>
+                         <td></td>
+                         <td></td>
+                         <td className="text-center">
+                           <button
+                             className="btn btn-outline-danger btn-sm"
+                           >
+                             <span>+</span>
+                           </button>
+                         </td>
+                       </tr>
+                       {taxRateData[tableId]?.addition_bid_material_tax_details
+                         ?.filter((item) => !item._destroy)
+                         .map((item, rowIndex) => (
+                           <tr key={`${rowIndex}-${item.id}`}>
+                             <td>
+                               <select
+                                 className="form-control"
+                                 disabled
+                                 value={
+                                   item.taxChargeType ||
+                                   taxOptions.find(
+                                     (opt) => opt.id === item.tax_category_id
+                                   )?.value ||
+                                   taxOptions.find(
+                                     (opt) => opt.id === item.resource_id
+                                   )?.value ||
+                                   ""
+                                 }
+                               >
+                                 <option value="">Select Tax</option>
+                                 {taxOptions.map((opt) => (
+                                   <option key={opt.id} value={opt.value}>
+                                     {opt.label}
+                                   </option>
+                                 ))}
+                               </select>
+                             </td>
+
+                             <td>
+                               <select
+                                 className="form-control"
+                                 disabled
+                                 value={
+                                   item?.taxChargePerUom ||
+                                   (() => {
+                                     const found = (
+                                       materialTaxPercentages[item.id] || []
+                                     ).find(
+                                       (p) => p.id === item.tax_category_id
+                                     );
+                                     return found ? `${found.percentage}%` : "";
+                                   })() ||
+                                   ""
+                                 }
+                               >
+                                 <option value="">
+                                   {(materialTaxPercentages[item.id] || [])
+                                     .length === 0
+                                     ? "No percentages available"
+                                     : "Select percentage"}
+                                 </option>
+                                 {(materialTaxPercentages[item.id] || []).map(
+                                   (percent) => (
+                                     <option
+                                       key={percent.id}
+                                       value={`${percent.percentage}%`}
+                                     >
+                                       {percent.percentage}%
+                                     </option>
+                                   )
+                                 )}
+                               </select>
+                             </td>
+
+                             <td className="text-center">
+                               <input
+                                 type="checkbox"
+                                 className="form-check-input"
+                                 checked={item.inclusive}
+                               />
+                             </td>
+
+                             <td>
+                               <input
+                                 type="text"
+                                 className="form-control"
+                                 value={item.amount || ""}
+                                 disabled
+                               />
+                             </td>
+
+                             <td className="text-center">
+                               <button
+                                 className="btn btn-outline-danger btn-sm"
+                               >
+                                 <span>×</span>
+                               </button>
+                             </td>
+                           </tr>
+                         ))}
+
+                       <tr>
+                         <td>Deduction Tax</td>
+                         <td></td>
+                         <td></td>
+                         <td></td>
+                         <td className="text-center">
+                           <button
+                             className="btn btn-outline-danger btn-sm"
+                           >
+                             <span>+</span>
+                           </button>
+                         </td>
+                       </tr>
+
+                       {taxRateData[tableId]?.deduction_bid_material_tax_details
+                         ?.filter((item) => !item._destroy)
+                         .map((item) => (
+                           <tr key={item.id}>
+                             <td>
+                               <select
+                                 className="form-control"
+                                 disabled
+                                 value={
+                                   item.taxChargeType ||
+                                   deductionTaxOptions.find(
+                                     (opt) => opt.id == item.tax_category_id
+                                   )?.value ||
+                                   deductionTaxOptions.find(
+                                     (opt) => opt.id == item.resource_id
+                                   )?.value ||
+                                   ""
+                                 }
+                               >
+                                 <option value="">Select Tax & Charges</option>
+                                 {deductionTaxOptions
+                                   .filter((opt) => opt.value)
+                                   .map((opt) => (
+                                     <option key={opt.id} value={opt.value}>
+                                       {opt.label}
+                                     </option>
+                                   ))}
+                               </select>
+                             </td>
+                             <td>
+                               <select
+                                 className="form-control"
+                                 disabled
+                                 value={
+                                   item?.taxChargePerUom ||
+                                   (() => {
+                                     const found = (
+                                       materialTaxPercentages[item.id] || []
+                                     ).find(
+                                       (p) => p.id === item.tax_category_id
+                                     );
+                                     return found ? `${found.percentage}%` : "";
+                                   })() ||
+                                   ""
+                                 }
+                               >
+                                 <option value="">
+                                   {(materialTaxPercentages[item.id] || [])
+                                     .length === 0
+                                     ? "No percentages available"
+                                     : "Select percentage"}
+                                 </option>
+                                 {(materialTaxPercentages[item.id] || []).map(
+                                   (percent) => (
+                                     <option
+                                       key={percent.id}
+                                       value={`${percent.percentage}%`}
+                                     >
+                                       {percent.percentage}%
+                                     </option>
+                                   )
+                                 )}
+                               </select>
+                             </td>
+                             <td className="text-center">
+                               <input
+                                 type="checkbox"
+                                 className="form-check-input"
+                                 checked={item.inclusive}
+                                 disabled
+                               />
+                             </td>
+                             <td>
+                               <input
+                                 type="text"
+                                 className="form-control"
+                                 value={item.amount || ""}
+                                 disabled
+                                 placeholder="Auto-calculated"
+                               />
+                             </td>
+                             <td className="text-center">
+                               <button
+                                 className="btn btn-outline-danger btn-sm"
+                               >
+                                 <span>×</span>
+                               </button>
+                             </td>
+                           </tr>
+                         ))}
+                       <tr>
+                         <td>Net Cost</td>
+                         <td></td>
+                         <td></td>
+                         <td className="text-center">
+                           <input
+                             type="text"
+                             className="form-control"
+                             value={taxRateData[tableId]?.netCost || ""}
+                             readOnly
+                             disabled={true}
+                           />
+                         </td>
+                         <td></td>
+                       </tr>
+                     </tbody>
+                   </table>
+                 </div>
+               </div>
+             </div>
+           </div>
+         </Modal.Body>
+         <Modal.Footer className="justify-content-center">
+           <button
+             variant="secondary"
+             onClick={handleCloseTaxModal}
+             className="purple-btn1"
+           >
+             Close
+           </button>
+         </Modal.Footer>
+       </Modal>
+
+       {/* Approval Modal */}
+       <Modal
+         size="lg"
+         show={showApprovalModal}
+         onHide={closeApprovalModal}
+         centered
+       >
+         <Modal.Header closeButton>
+           <h5>Approval Log</h5>
+         </Modal.Header>
+         <Modal.Body>
+           <div className="row mt-2 px-2">
+             <div className="col-12">
+               <div className="tbl-container me-2 mt-3">
+                 {/* Check if approval_logs is empty or undefined */}
+                 {!ropoData?.approval_logs ||
+                 ropoData?.approval_logs.length === 0 ? (
+                   // Display a message if no logs are available
+                   <div className="text-center py-4">
+                     <p className="text-muted">No approval logs available.</p>
+                   </div>
+                 ) : (
+                   // Render the table if logs are available
+                   <table className="w-100" style={{ width: "100%" }}>
+                     <thead>
+                       <tr>
+                         <th style={{ width: "66px !important" }}>Sr.No.</th>
+                         <th>Approval Level</th>
+                         <th>Approved By</th>
+                         <th>Date</th>
+                         <th>Status</th>
+                         <th>Remark</th>
+                         <th>Users</th>
+                       </tr>
+                     </thead>
+                     <tbody>
+                       {ropoData?.approval_logs.map((log, id) => (
+                         <tr key={id}>
+                           <td className="text-start">{id + 1}</td>
+                           <td className="text-start">{log.approval_level}</td>
+                           <td className="text-start">
+                             {log.approved_by || "-"}
+                           </td>
+                           <td className="text-start">{log.date}</td>
+                           <td className="text-start">
+                             <span
+                               className="px-2 py-1 rounded text-white"
+                               style={{
+                                 backgroundColor:
+                                   log.status === "Pending" ? "red" : "green",
+                               }}
+                             >
+                               {log.status}
+                             </span>
+                           </td>
+                           <td className="text-start">
+                             <p>{log.remark || "-"}</p>
+                           </td>
+                           <td className="text-start">{log.users}</td>
+                         </tr>
+                       ))}
+                     </tbody>
+                   </table>
+                 )}
+               </div>
+             </div>
+           </div>
+         </Modal.Body>
+       </Modal>
     </>
   );
 };

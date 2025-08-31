@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 const  RopoImportCreate = () => {
   // State variables for the modal
   const [showModal, setShowModal] = useState(false);
+  const [exchangeRate, setExchangeRate] = useState(); 
   const [addMORModal, setAddMORModal] = useState(false);
   const [editRowIndex, setEditRowIndex] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -19,6 +20,14 @@ const  RopoImportCreate = () => {
    const urlParams = new URLSearchParams(location.search);
    const token = urlParams.get("token");
    
+  // State for MOR modal dropdown options
+  const [inventoryTypes2, setInventoryTypes2] = useState([]);
+  const [selectedInventory2, setSelectedInventory2] = useState(null);
+  const [inventorySubTypes2, setInventorySubTypes2] = useState([]);
+  const [selectedSubType2, setSelectedSubType2] = useState(null);
+  const [inventoryMaterialTypes2, setInventoryMaterialTypes2] = useState([]);
+  const [selectedInventoryMaterialTypes2, setSelectedInventoryMaterialTypes2] =
+    useState(null);
 
   // Tax modal state variables
   const [showTaxModal, setShowTaxModal] = useState(false);
@@ -76,6 +85,8 @@ const  RopoImportCreate = () => {
     material: "",
   });
 
+
+
   // Terms and conditions state
   const [termsConditions, setTermsConditions] = useState([]);
   const [selectedConditionCategory, setSelectedConditionCategory] =
@@ -111,6 +122,20 @@ const  RopoImportCreate = () => {
   const [otherCosts, setOtherCosts] = useState([]);
   const [chargeNames, setChargeNames] = useState([]);
 
+  // New state for charges from API
+  const [chargesFromApi, setChargesFromApi] = useState([]);
+  const [selectedServiceProviders, setSelectedServiceProviders] = useState({});
+  const [loadingCharges, setLoadingCharges] = useState(false);
+  const [serviceCertificates, setServiceCertificates] = useState({});
+  const [chargeRemarks, setChargeRemarks] = useState({});
+  
+  // State for advance calculations
+  const [supplierAdvancePercentage, setSupplierAdvancePercentage] = useState("");
+  const [serviceCertificateAdvancePercentage, setServiceCertificateAdvancePercentage] = useState("");
+  const [totalMaterialCost, setTotalMaterialCost] = useState(0);
+  
+
+
   // Taxes modal state
   const [showTaxesModal, setShowTaxesModal] = useState(false);
   const [selectedChargeId, setSelectedChargeId] = useState(null);
@@ -134,6 +159,11 @@ const  RopoImportCreate = () => {
   // Handle tab change
   const handleTabChange = (tabName) => {
     setActiveTab(tabName);
+    
+    // Fetch charges data when Terms & Conditions tab is selected
+    if (tabName === "terms-conditions" && submittedMaterials.length > 0) {
+      fetchChargesData();
+    }
   };
 
   // Fetch company data on component mount
@@ -159,6 +189,91 @@ const  RopoImportCreate = () => {
         console.error("Error fetching suppliers data:", error);
       });
   }, []);
+
+  // Fetch inventory types for MOR modal
+  useEffect(() => {
+    axios
+      .get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`)
+      .then((response) => {
+        if (Array.isArray(response.data)) {
+          const options = response.data.map((inventory) => ({
+            value: inventory.id,
+            label: inventory.name,
+          }));
+          setInventoryTypes2(options);
+        } else if (response.data && Array.isArray(response.data.inventory_types)) {
+          const options = response.data.inventory_types.map((inventory) => ({
+            value: inventory.id,
+            label: inventory.name,
+          }));
+          setInventoryTypes2(options);
+        } else {
+          setInventoryTypes2([]);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching inventory types:", error);
+        setInventoryTypes2([]);
+      });
+  }, []);
+
+  // Fetch inventory sub-types when material type changes
+  useEffect(() => {
+    if (selectedInventory2 || morFormData.materialType) {
+      axios
+        .get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${selectedInventory2?.value || morFormData.materialType}&token=${token}`)
+        .then((response) => {
+          if (Array.isArray(response.data)) {
+            const options = response.data.map((subType) => ({
+              value: subType.id,
+              label: subType.name,
+            }));
+            setInventorySubTypes2(options);
+          } else if (response.data && Array.isArray(response.data.inventory_sub_types)) {
+            const options = response.data.inventory_sub_types.map((subType) => ({
+              value: subType.id,
+              label: subType.name,
+            }));
+            setInventorySubTypes2(options);
+          } else {
+            setInventorySubTypes2([]);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching inventory sub-types:", error);
+          setInventorySubTypes2([]);
+        });
+    }
+  }, [selectedInventory2, morFormData.materialType]);
+
+  // Fetch inventory materials when material type changes
+  useEffect(() => {
+    if (selectedInventory2 || morFormData.materialType) {
+      axios
+        .get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${selectedInventory2?.value || morFormData.materialType}&q[material_category_eq]=material&token=${token}`)
+        .then((response) => {
+          if (Array.isArray(response.data)) {
+            const options = response.data.map((subType) => ({
+              value: subType.id,
+              label: subType.name,
+            }));
+            setInventoryMaterialTypes2(options);
+          } else if (response.data && Array.isArray(response.data.inventories)) {
+            const options = response.data.inventories.map((subType) => ({
+              value: subType.id,
+              label: subType.name,
+            }));
+            setInventoryMaterialTypes2(options);
+          } else {
+            setInventoryMaterialTypes2([]);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching inventory materials:", error);
+          setInventoryMaterialTypes2([]);
+        });
+    }
+  }, [selectedInventory2, morFormData.materialType]);
 
   // Fetch Vendor GSTIN when supplier changes
   useEffect(() => {
@@ -211,6 +326,23 @@ const  RopoImportCreate = () => {
     setSelectedSupplier(selectedOption);
     setVendorGstin("");
   };
+
+  // Handle project selection
+  const handleProjectChange = (selectedOption) => {
+    setSelectedProject(selectedOption);
+    setSelectedSite(null); // Reset site selection when project changes
+  };
+
+  // Handle site selection
+  const handleSiteChange = (selectedOption) => {
+    setSelectedSite(selectedOption);
+  };
+  // Fixed PO Currency (disabled, default USD)
+  const [poCurrency] = useState({ code: "USD", symbol: "$" });
+  
+  // State for conversion rate
+  const [conversionRate, setConversionRate] = useState(82.5);
+  
   // Map companies to options for the dropdown
   const companyOptions = companies.map((company) => ({
     value: company.id,
@@ -224,13 +356,6 @@ const  RopoImportCreate = () => {
   }));
 
   // State for dropdown options
-  const [inventoryTypes2, setInventoryTypes2] = useState([]);
-  const [selectedInventory2, setSelectedInventory2] = useState(null);
-  const [inventorySubTypes2, setInventorySubTypes2] = useState([]);
-  const [selectedSubType2, setSelectedSubType2] = useState(null);
-  const [inventoryMaterialTypes2, setInventoryMaterialTypes2] = useState([]);
-  const [selectedInventoryMaterialTypes2, setSelectedInventoryMaterialTypes2] =
-    useState(null);
   const [unitOfMeasures, setUnitOfMeasures] = useState([]);
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [genericSpecifications, setGenericSpecifications] = useState([]);
@@ -430,8 +555,8 @@ const  RopoImportCreate = () => {
   };
 
   // Handle submit button click
-  const handleSubmitMaterials = async () => {
-    console.log("Submit button clicked");
+  const handleUpdateMaterials = async () => {
+    console.log("Update button clicked");
     console.log("tableData:", tableData);
     console.log("selectedCompany:", selectedCompany);
 
@@ -448,7 +573,7 @@ const  RopoImportCreate = () => {
 
     if (activeRows.length === 0) {
       console.log("No materials in table");
-      alert("Please add at least one material before submitting.");
+      alert("Please add at least one material before updating.");
       return;
     }
 
@@ -469,7 +594,7 @@ const  RopoImportCreate = () => {
     console.log("missingMaterial:", missingMaterial);
     if (missingMaterial) {
       console.log("Some rows missing material");
-      alert("Please select a material for all rows before submitting.");
+      alert("Please select a material for all rows before updating.");
       return;
     }
 
@@ -531,7 +656,7 @@ const  RopoImportCreate = () => {
           );
         }
 
-        alert("Materials submitted successfully!");
+        alert("Materials updated successfully!");
         // Change tab to Rate & Taxes
         setActiveTab("rate-taxes");
         const rateTaxesTab = document.querySelector(
@@ -574,7 +699,32 @@ const  RopoImportCreate = () => {
       if (morFormData.morNumber) params.append("q[id_in][]", morFormData.morNumber);
       if (morFormData.morStartDate) params.append("q[mor_date_gteq][]", morFormData.morStartDate);
       if (morFormData.morEndDate) params.append("q[mor_date_lteq][]", morFormData.morEndDate);
+      
+      // Add project and sub-project filters
+      if (selectedProject && selectedProject.length > 0) {
+        selectedProject.forEach(project => {
+          params.append("q[project_id_in][]", project.value);
+        });
+      }
+      if (selectedSite && selectedSite.length > 0) {
+        selectedSite.forEach(site => {
+          params.append("q[pms_site_id_in][]", site.value);
+        });
+      }
+      
+      // Add material type filters
+      if (morFormData.materialType) {
+        params.append("q[material_type_id_in][]", morFormData.materialType);
+      }
+      if (morFormData.materialSubType) {
+        params.append("q[material_type_material_sub_type_id_in][]", morFormData.materialSubType);
+      }
+      if (morFormData.material) {
+        params.append("q[mor_inventories_material_id_in][]", morFormData.material);
+      }
+
       const url = `${baseURL}material_order_requests/material_details.json?${params.toString()}`;
+      console.log("Fetching material details with URL:", url);
       const resp = await axios.get(url);
       const list = Array.isArray(resp.data?.material_order_requests)
         ? resp.data.material_order_requests
@@ -583,7 +733,8 @@ const  RopoImportCreate = () => {
         : [];
       const rows = [];
       list.forEach((mor) => {
-        (mor.mor_inventories || []).forEach((inv) => {
+        const morInventories = mor.mor_inventories || [];
+        morInventories.forEach((inv, invIndex) => {
           rows.push({
             mor_id: mor.id,
             mor_number: mor.mor_number,
@@ -594,9 +745,17 @@ const  RopoImportCreate = () => {
             inventory_id: inv.id,
             material_name: inv.material_name,
             uom_name: inv.uom_name,
+            uom_id: inv.uom_id,
             required_quantity: inv.required_quantity,
             prev_order_qty: inv.prev_order_qty,
-            order_qty: inv.order_qty,
+            pending_qty: inv.pending_qty || "", // Use empty string if null
+      order_qty: inv.order_qty || "", // Use empty string if null
+            generic_info_id: inv.generic_info_id,
+            brand_id: inv.brand_id,
+            colour_id: inv.colour_id,
+            inventory_status: inv.inventory_status,
+            isFirstMaterial: invIndex === 0, // First material in this MOR
+            rowspan: morInventories.length, // Number of materials in this MOR
           });
         });
       });
@@ -621,43 +780,214 @@ const  RopoImportCreate = () => {
       materialSubType: "",
       material: "",
     });
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setSelectedInventory2(null);
+    setSelectedSubType2(null);
+    setSelectedInventoryMaterialTypes2(null);
     setMaterialDetailsData([]);
     setSelectedMaterialItems([]);
   };
 
-  const handleAcceptSelectedMaterials = () => {
+  // Handle project selection for MOR modal
+  const handleMorSelectProject = (e, morId) => {
+    const isChecked = e.target.checked;
+    const morMaterials = materialDetailsData.filter(m => m.mor_id === morId);
+    const morIndices = morMaterials.map(m => materialDetailsData.indexOf(m));
+    
+    if (isChecked) {
+      setSelectedMaterialItems(prev => [...new Set([...prev, ...morIndices])]);
+    } else {
+      setSelectedMaterialItems(prev => prev.filter(idx => !morIndices.includes(idx)));
+    }
+  };
+
+  // Handle order quantity change
+  const handleOrderQtyChange = (index, value) => {
+    // Validation: Prevent negative values
+    const numValue = parseFloat(value);
+    if (value !== "" && (isNaN(numValue) || numValue < 0)) {
+      alert("Order quantity cannot be negative. Please enter a valid positive number.");
+      return;
+    }
+    
+    setMaterialDetailsData(prev => 
+      prev.map((item, idx) => 
+        idx === index ? { ...item, order_qty: value } : item
+      )
+    );
+  };
+
+  // MOR Modal related functions
+  const handleMorSelectorChange = (field, selectedOption) => {
+    setMorFormData((prev) => ({
+      ...prev,
+      [field]: selectedOption ? selectedOption.value : "",
+    }));
+
+    if (field === "materialType") {
+      setSelectedInventory2(selectedOption);
+      setMorFormData((prev) => ({
+        ...prev,
+        materialSubType: "",
+        material: "",
+      }));
+    }
+  };
+
+  const handleAcceptSelectedMaterials = async () => {
+    if (!selectedCompany?.value) {
+      alert("Please select a company first.");
+      return;
+    }
     if (selectedMaterialItems.length === 0) {
       alert("Please select at least one material");
       return;
     }
-    const selectedRows = selectedMaterialItems.map((idx) => materialDetailsData[idx]);
-    // Map for flat display in both PO details table and rate & taxes list
-    const mapped = selectedRows.map((r) => ({
-      id: r.inventory_id,
-      mor_id: r.mor_id,
-      mor_number: r.mor_number,
-      mor_date: r.mor_date,
-      project_name: r.project_name,
-      sub_project_name: r.sub_project_name,
-      material_name: r.material_name,
-      uom_name: r.uom_name,
-      required_quantity: r.required_quantity,
-      prev_order_qty: r.prev_order_qty,
-      order_qty: r.order_qty,
-    }));
+
+    try {
+      const selectedRows = selectedMaterialItems.map((idx) => materialDetailsData[idx]);
+      
+      // Validation: Check for duplicate materials
+      const duplicateCheck = selectedRows.some((selectedRow) => {
+        return submittedMaterials.some((existingMaterial) => {
+          // Check if material with same mor_inventory_id already exists
+          return existingMaterial.mor_inventory_id === selectedRow.inventory_id ||
+                 existingMaterial.id === selectedRow.inventory_id;
+        });
+      });
+
+      if (duplicateCheck) {
+        alert("Cannot add duplicate materials. Some selected materials are already added.");
+        return;
+      }
+
+      // Validation: Check for negative or zero order quantities
+      const invalidQuantities = selectedRows.some((row) => {
+        const orderQty = parseFloat(row.order_qty) || 0;
+        return orderQty <= 0;
+      });
+
+      if (invalidQuantities) {
+        alert("Order quantity must be greater than 0 for all materials.");
+        return;
+      }
+
+      // Validation: Check if all required fields are filled
+      const missingFields = selectedRows.some((row) => {
+        return !row.material_name || !row.uom_name || !row.order_qty;
+      });
+
+      if (missingFields) {
+        alert("Please ensure all materials have material name, UOM, and order quantity filled.");
+        return;
+      }
+      
+      // Prepare materials array for API payload
+      const materials = selectedRows.map((r) => ({
+        mor_inventory_id: r.inventory_id,
+        order_qty: r.order_qty || r.required_quantity || 0,
+        uom_id: r.uom_id || null,
+        generic_info_id: r.generic_info_id || null,
+        brand_id: r.brand_id || null,
+        colour_id: r.colour_id || null
+      }));
+
+      // Prepare API payload
+      const payload = {
+        po_id: purchaseOrderId || null,
+        company_id: selectedCompany?.value,
+        materials: materials
+      };
+
+      console.log("Submitting materials with payload:", payload);
+
+      // Make API call
+      const response = await axios.post(
+        `${baseURL}purchase_orders/import_material_details.json?token=${token}`,
+        payload
+      );
+
+      console.log("API response:", response.data);
+
+      // Update purchase order ID if returned from API
+      if (response.data.po_id) {
+        setPurchaseOrderId(response.data.po_id);
+      }
+
+      // Prefer server-returned materials to capture po_mor_inventory IDs
+      const apiMaterials = Array.isArray(response.data?.materials)
+        ? response.data.materials
+        : [];
+
+      // Build a lookup from mor_inventory_id -> selected row info
+      const byMorInvId = new Map(
+        selectedRows.map((r) => [r.inventory_id, r])
+      );
+
+      const mappedFromApi = apiMaterials.map((m) => {
+        const base = byMorInvId.get(m.mor_inventory_id) || {};
+        return {
+          // Use server id (po_mor_inventory id) so tax modal fetch works
+          id: m.id,
+          mor_inventory_id: m.mor_inventory_id, // Add this for duplicate checking
+          mor_id: base.mor_id,
+          mor_number: base.mor_number,
+          mor_date: base.mor_date,
+          project_name: base.project_name,
+          sub_project_name: base.sub_project_name,
+          material_name: base.material_name,
+          uom_name: base.uom_name,
+          required_quantity: base.required_quantity,
+          prev_order_qty: base.prev_order_qty,
+          order_qty: base.order_qty,
+        };
+      });
+
+      const rowsToAdd = mappedFromApi.length > 0
+        ? mappedFromApi
+        : selectedRows.map((r) => ({
+            // Fallback: if API didn't return materials, use mor inventory id
+            id: r.inventory_id,
+            mor_inventory_id: r.inventory_id, // Add this for duplicate checking
+            mor_id: r.mor_id,
+            mor_number: r.mor_number,
+            mor_date: r.mor_date,
+            project_name: r.project_name,
+            sub_project_name: r.sub_project_name,
+            material_name: r.material_name,
+            uom_name: r.uom_name,
+            required_quantity: r.required_quantity,
+            prev_order_qty: r.prev_order_qty,
+            order_qty: r.order_qty,
+          }));
+
     setSubmittedMaterials((prev) => {
-      const existing = new Set(prev.map((x) => `${x.id}`));
-      const uniqueNew = mapped.filter((m) => !existing.has(`${m.id}`));
-      return [...prev, ...uniqueNew];
-    });
+        const seen = new Set(prev.map((x) => `${x.id}`));
+        const unique = rowsToAdd.filter((r) => !seen.has(`${r.id}`));
+        return [...prev, ...unique];
+      });
+
+      alert(`Successfully added ${selectedRows.length} material(s)`);
     setAddMORModal(false);
     setSelectedMaterialItems([]);
+    } catch (error) {
+      console.error("Error adding materials:", error);
+      alert("Error adding materials. Please try again.");
+    }
   };
 
   // Tax modal functions
   const handleOpenTaxModal = async (rowIndex) => {
     console.log("Opening tax modal for row:", rowIndex);
     console.log("Current tax options:", taxOptions);
+    
+    // Validate conversion rate is set
+    if (!conversionRate || conversionRate <= 0) {
+      alert("Please set the Conversion Rate (USD to INR) in the PO Details tab before opening tax modal.");
+      return;
+    }
+    
     setTableId(rowIndex);
     setShowTaxModal(true);
 
@@ -686,38 +1016,63 @@ const  RopoImportCreate = () => {
             discountRate: rateData.discount_rate?.toString(),
             afterDiscountValue: rateData.after_discount_value?.toString(),
             remark: rateData.remarks || "",
-
             netCost: rateData.total_material_cost?.toString(),
-            pms_inventory_id: rateData.pms_inventory_id || null, // Store pms_inventory_id
+            pms_inventory_id: rateData.pms_inventory_id || null,
             addition_bid_material_tax_details:
-              rateData.addition_tax_details?.map((tax) => ({
-                id: tax.id,
-                resource_id: tax.resource_id,
-                tax_category_id: tax.tax_category_id,
-                taxChargeType:
-                  taxOptions.find((option) => option.id === tax.tax_category_id)
-                    ?.value || tax.resource_type,
-                taxType: tax.resource_type, // Set taxType based on API response
-                taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
-                percentageId: tax.percentage_id || null, // Add percentageId from API response
-                inclusive: tax.inclusive,
-                amount: tax.amount?.toString() || "0",
-              })) || [],
+              rateData.addition_tax_details?.map((tax) => {
+                // Convert USD amount back to INR for the input field
+                let taxChargePerUom = "";
+                if (tax.percentage) {
+                  // If it's a percentage, keep it as percentage
+                  taxChargePerUom = `${tax.percentage}%`;
+                } else {
+                  // If it's a fixed amount, convert USD to INR for display
+                  const usdAmount = parseFloat(tax.amount) || 0;
+                  taxChargePerUom = convertUsdToInr(usdAmount);
+                }
+                
+                return {
+                  id: tax.id,
+                  resource_id: tax.resource_id,
+                  tax_category_id: tax.tax_category_id,
+                  taxChargeType:
+                    taxOptions.find((option) => option.id === tax.tax_category_id)
+                      ?.value || tax.resource_type,
+                  taxType: tax.resource_type,
+                  taxChargePerUom: taxChargePerUom,
+                  percentageId: tax.percentage_id || null,
+                  inclusive: tax.inclusive,
+                  amount: tax.amount?.toString() || "0",
+                };
+              }) || [],
             deduction_bid_material_tax_details:
-              rateData.deduction_tax_details?.map((tax) => ({
-                id: tax.id,
-                resource_id: tax.resource_id,
-                tax_category_id: tax.tax_category_id,
-                taxChargeType:
-                  deductionTaxOptions.find(
-                    (option) => option.id === tax.tax_category_id
-                  )?.value || tax.resource_type,
-                taxType: tax.resource_type, // Set taxType based on API response
-                taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
-                percentageId: tax.percentage_id || null, // Add percentageId from API response
-                inclusive: tax.inclusive,
-                amount: tax.amount?.toString() || "0",
-              })) || [],
+              rateData.deduction_tax_details?.map((tax) => {
+                // Convert USD amount back to INR for the input field
+                let taxChargePerUom = "";
+                if (tax.percentage) {
+                  // If it's a percentage, keep it as percentage
+                  taxChargePerUom = `${tax.percentage}%`;
+                } else {
+                  // If it's a fixed amount, convert USD to INR for display
+                  const usdAmount = parseFloat(tax.amount) || 0;
+                  taxChargePerUom = convertUsdToInr(usdAmount);
+                }
+                
+                return {
+                  id: tax.id,
+                  resource_id: tax.resource_id,
+                  tax_category_id: tax.tax_category_id,
+                  taxChargeType:
+                    deductionTaxOptions.find(
+                      (option) => option.id === tax.tax_category_id
+                    )?.value || tax.resource_type,
+                  taxType: tax.resource_type,
+                  taxChargePerUom: taxChargePerUom,
+                  percentageId: tax.percentage_id || null,
+                  inclusive: tax.inclusive,
+                  amount: tax.amount?.toString() || "0",
+                };
+              }) || [],
           },
         }));
 
@@ -1030,6 +1385,7 @@ const handleTaxChargeChange = useCallback(
       const taxIndex = taxDetails.findIndex((tax) => tax.id === id);
       if (taxIndex !== -1) {
         const currentTax = { ...taxDetails[taxIndex] };
+        const baseAmount = parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
 
         if (field === "taxChargeType") {
           const selectedTaxOption = type === "addition"
@@ -1043,27 +1399,68 @@ const handleTaxChargeChange = useCallback(
           currentTax.percentageId = null;
           currentTax.tax_category_id = selectedTaxOption?.id;
 
+          // Fetch tax percentages if it's a percentage-based tax (CGST, SGST, IGST, TDS)
+          if (selectedTaxOption?.id && isPercentageTax(value)) {
+            handleTaxCategoryChange(rowIndex, selectedTaxOption.id, currentTax.id);
+          }
+
         } else if (field === "taxChargePerUom") {
           currentTax[field] = value;
 
-          // Only auto-calculate for percentage-based taxes
-          if (value && value.includes("%") && currentTax.taxType !== "TaxCharge") {
-            const percentage = parseFloat(value.replace("%", ""));
-            const baseAmount = parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
-            const calculatedAmount = calculateTaxAmount(
-              percentage,
-              baseAmount,
-              Boolean(currentTax.inclusive)
-            );
-            // Find the percentage ID from materialTaxPercentages
-            const percentages = materialTaxPercentages[currentTax.id] || [];
-            const percentageData = percentages.find(
-              (p) => p.percentage === percentage
-            );
-            if (percentageData) {
-              currentTax.percentageId = percentageData.id;
+          // For addition taxes, calculate amount based on input value
+          if (type === "addition") {
+            if (value && !isNaN(parseFloat(value))) {
+              // If it's a percentage, calculate the percentage amount
+              if (value.includes("%")) {
+                const percentage = parseFloat(value.replace("%", ""));
+                const calculatedAmount = calculateTaxAmount(
+                  percentage,
+                  baseAmount,
+                  Boolean(currentTax.inclusive)
+                );
+                currentTax.amount = calculatedAmount.toString();
+                
+                // Find the percentage ID from materialTaxPercentages
+                const percentages = materialTaxPercentages[currentTax.id] || [];
+                const percentageData = percentages.find(
+                  (p) => p.percentage === percentage
+                );
+                if (percentageData) {
+                  currentTax.percentageId = percentageData.id;
+                }
+              } else {
+                // If it's a fixed amount, use it directly
+                currentTax.amount = value;
+              }
+            } else {
+              currentTax.amount = "0";
             }
-            currentTax.amount = calculatedAmount.toString();
+          } else {
+            // For deduction taxes, calculate amount based on input value
+            if (value && !isNaN(parseFloat(value))) {
+              if (value.includes("%")) {
+                const percentage = parseFloat(value.replace("%", ""));
+                const calculatedAmount = calculateTaxAmount(
+                  percentage,
+                  baseAmount,
+                  Boolean(currentTax.inclusive)
+                );
+                currentTax.amount = calculatedAmount.toString();
+                
+                // Find the percentage ID from materialTaxPercentages
+                const percentages = materialTaxPercentages[currentTax.id] || [];
+                const percentageData = percentages.find(
+                  (p) => p.percentage === percentage
+                );
+                if (percentageData) {
+                  currentTax.percentageId = percentageData.id;
+                }
+              } else {
+                currentTax.amount = value;
+              }
+            } else {
+              currentTax.amount = "0";
+            }
           }
         } else if (field === "amount") {
           // Allow manual amount input for TaxCharge type taxes
@@ -1073,14 +1470,9 @@ const handleTaxChargeChange = useCallback(
         } else if (field === "inclusive") {
           // Toggle inclusive and recalculate when percentage-based
           currentTax.inclusive = value;
-          const percentString = currentTax.taxChargePerUom || "";
-          if (
-            percentString &&
-            percentString.includes("%") &&
-            currentTax.taxType !== "TaxCharge"
-          ) {
-            const percentage = parseFloat(percentString.replace("%", "")) || 0;
-            const baseAmount = parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
+          const inputValue = currentTax.taxChargePerUom || "";
+          if (inputValue && inputValue.includes("%")) {
+            const percentage = parseFloat(inputValue.replace("%", "")) || 0;
             const recalculated = calculateTaxAmount(
               percentage,
               baseAmount,
@@ -1195,13 +1587,27 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
               resolvedResourceId = taxOptions.find((option) => option.value === tax.taxChargeType)?.id || tax.resource_id;
             }
 
+            // Calculate the amount to send in USD
+            // For ALL addition taxes, send the Tax / Charges per UOM value converted to USD
+            let amountToSend = 0;
+            if (tax.taxChargePerUom && tax.taxChargePerUom.includes("%")) {
+              // If it's a percentage, calculate the percentage amount in USD
+              const percentage = parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
+              const baseAmount = currentData.afterDiscountValue || 0;
+              amountToSend = (baseAmount * percentage) / 100;
+            } else {
+              // If it's a fixed amount, convert the INR value to USD using conversion rate
+              const inrValue = parseFloat(tax.taxChargePerUom) || 0;
+              amountToSend = parseFloat(safeConvertInrToUsd(inrValue, conversionRate)) || 0;
+            }
+
             const payload = {
               resource_type: tax.taxType || "TaxCharge",
               resource_id: resolvedResourceId,
-              amount: parseFloat(tax.amount) || 0,
+              amount: amountToSend,
               inclusive: tax.inclusive || false,
               addition: true,
-              remarks: `${tax.taxChargeType} - ${tax.amount}`,
+              remarks: `${tax.taxChargeType} - ${amountToSend} USD`,
               _destroy: tax._destroy, // Include destroy flag
             };
 
@@ -1238,13 +1644,27 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
               resolvedResourceId = deductionTaxOptions.find((option) => option.value === tax.taxChargeType)?.id || tax.resource_id;
             }
 
+            // Calculate the amount to send in USD
+            // For deduction taxes, send the Tax / Charges per UOM value converted to USD
+            let amountToSend = 0;
+            if (tax.taxChargePerUom && tax.taxChargePerUom.includes("%")) {
+              // If it's a percentage, calculate the percentage amount in USD
+              const percentage = parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
+              const baseAmount = currentData.afterDiscountValue || 0;
+              amountToSend = (baseAmount * percentage) / 100;
+            } else {
+              // If it's a fixed amount, convert the INR value to USD using conversion rate
+              const inrValue = parseFloat(tax.taxChargePerUom) || 0;
+              amountToSend = parseFloat(safeConvertInrToUsd(inrValue, conversionRate)) || 0;
+            }
+
             const payload = {
               resource_type: tax.taxType || "TaxCharge",
               resource_id: resolvedResourceId,
-              amount: parseFloat(tax.amount) || 0,
+              amount: amountToSend,
               inclusive: tax.inclusive || false,
               addition: false,
-              remarks: `${tax.taxChargeType} - ${tax.amount}`,
+              remarks: `${tax.taxChargeType} - ${amountToSend} USD`,
               _destroy: tax._destroy, // Include destroy flag
             };
 
@@ -1295,35 +1715,61 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
                 responseData.total_material_cost?.toString() ||
                 currentData.netCost,
               remark: responseData.remarks || currentData.remark,
-              addition_bid_material_tax_details:
-                responseData.addition_tax_details?.map((tax) => ({
-                  id: tax.id,
-                  resource_id: tax.resource_id,
-                  tax_category_id: tax.tax_category_id,
-                  percentageId: tax.percentage_id,
-                  taxChargeType:
-                    taxOptions.find((option) => option.id === tax.tax_category_id)
-                      ?.value || "",
-                  taxType: tax.resource_type,
-                  taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
-                  inclusive: tax.inclusive,
-                  amount: tax.amount?.toString() || "0",
-                })) || currentData.addition_bid_material_tax_details,
-              deduction_bid_material_tax_details:
-                responseData.deduction_tax_details?.map((tax) => ({
-                  id: tax.id,
-                  resource_id: tax.resource_id,
-                  tax_category_id: tax.tax_category_id,
-                  percentageId: tax.percentage_id,
-                  taxChargeType:
-                    deductionTaxOptions.find(
-                      (option) => option.id === tax.tax_category_id
-                    )?.value || "",
-                  taxType: tax.resource_type,
-                  taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
-                  inclusive: tax.inclusive,
-                  amount: tax.amount?.toString() || "0",
-                })) || currentData.deduction_bid_material_tax_details,
+                              addition_bid_material_tax_details:
+                  responseData.addition_tax_details?.map((tax) => {
+                    // Convert USD amount back to INR for the input field
+                    let taxChargePerUom = "";
+                    if (tax.percentage) {
+                      // If it's a percentage, keep it as percentage
+                      taxChargePerUom = `${tax.percentage}%`;
+                    } else {
+                      // If it's a fixed amount, convert USD to INR for display
+                      const usdAmount = parseFloat(tax.amount) || 0;
+                      taxChargePerUom = convertUsdToInr(usdAmount);
+                    }
+                    
+                    return {
+                      id: tax.id,
+                      resource_id: tax.resource_id,
+                      tax_category_id: tax.tax_category_id,
+                      percentageId: tax.percentage_id,
+                      taxChargeType:
+                        taxOptions.find((option) => option.id === tax.tax_category_id)
+                          ?.value || "",
+                      taxType: tax.resource_type,
+                      taxChargePerUom: taxChargePerUom,
+                      inclusive: tax.inclusive,
+                      amount: tax.amount?.toString() || "0", // Keep USD amount for calculations
+                    };
+                  }) || currentData.addition_bid_material_tax_details,
+                              deduction_bid_material_tax_details:
+                  responseData.deduction_tax_details?.map((tax) => {
+                    // Convert USD amount back to INR for the input field
+                    let taxChargePerUom = "";
+                    if (tax.percentage) {
+                      // If it's a percentage, keep it as percentage
+                      taxChargePerUom = `${tax.percentage}%`;
+                    } else {
+                      // If it's a fixed amount, convert USD to INR for display
+                      const usdAmount = parseFloat(tax.amount) || 0;
+                      taxChargePerUom = convertUsdToInr(usdAmount);
+                    }
+                    
+                    return {
+                      id: tax.id,
+                      resource_id: tax.resource_id,
+                      tax_category_id: tax.tax_category_id,
+                      percentageId: tax.percentage_id,
+                      taxChargeType:
+                        deductionTaxOptions.find(
+                          (option) => option.id === tax.tax_category_id
+                        )?.value || "",
+                      taxType: tax.resource_type,
+                      taxChargePerUom: taxChargePerUom,
+                      inclusive: tax.inclusive,
+                      amount: tax.amount?.toString() || "0", // Keep USD amount for calculations
+                    };
+                  }) || currentData.deduction_bid_material_tax_details,
             },
           }));
 
@@ -1488,6 +1934,13 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
 
     fetchMaterialTermConditions();
   }, [submittedMaterials]);
+
+  // Fetch charges data when submitted materials change and we're on terms tab
+  useEffect(() => {
+    if (activeTab === "terms-conditions" && submittedMaterials.length > 0) {
+      fetchChargesData();
+    }
+  }, [submittedMaterials, activeTab]);
 
   // Fetch charges taxes data on component mount
   useEffect(() => {
@@ -1807,7 +2260,7 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
     setTermsConditions(updatedConditions);
   };
 
-  // Calculate discount rate based on rate per nos and discount percentage
+  // Calculate discount rate based on rate per nos and discount percentage (all in USD)
   const calculateDiscountRate = (ratePerNos, discountPercentage) => {
     const rate = parseFloat(ratePerNos) || 0;
     const discount = parseFloat(discountPercentage) || 0;
@@ -1815,14 +2268,14 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
     return Math.max(0, rate - (rate * discount) / 100);
   };
 
-  // Calculate material cost based on rate per nos and total PO qty
+  // Calculate material cost based on rate per nos and total PO qty (all in USD)
   const calculateMaterialCost = (ratePerNos, totalPoQty) => {
     const rate = parseFloat(ratePerNos) || 0;
     const qty = parseFloat(totalPoQty) || 0;
     return rate * qty;
   };
 
-  // Calculate after discount value based on material cost and discount percentage
+  // Calculate after discount value based on material cost and discount percentage (all in USD)
   const calculateAfterDiscountValue = (materialCost, discountPercentage) => {
     const cost = parseFloat(materialCost) || 0;
     const discount = parseFloat(discountPercentage) || 0;
@@ -1860,6 +2313,13 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
   // Handle rate per nos change with automatic discount rate calculation
   const handleRatePerNosChange = useCallback(
     (value) => {
+      // Validation: Prevent negative values
+      const numValue = parseFloat(value);
+      if (value !== "" && (isNaN(numValue) || numValue < 0)) {
+        alert("Rate per Nos cannot be negative. Please enter a valid positive number.");
+        return;
+      }
+
       const currentData = taxRateData[tableId];
       if (!currentData) return;
 
@@ -1890,6 +2350,13 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
   // Handle discount percentage change with automatic discount rate calculation
   const handleDiscountPercentageChange = useCallback(
     (value) => {
+      // Validation: Prevent negative values and values over 100%
+      const numValue = parseFloat(value);
+      if (value !== "" && (isNaN(numValue) || numValue < 0 || numValue > 100)) {
+        alert("Discount percentage must be between 0 and 100. Please enter a valid percentage.");
+        return;
+      }
+
       const currentData = taxRateData[tableId];
       if (!currentData) return;
 
@@ -1948,6 +2415,19 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
     }
   };
 
+  // Recalculate all conversions when conversion rate changes
+  useEffect(() => {
+    if (tableId !== null && taxRateData[tableId]) {
+      // Force re-render of tax data to update all conversions
+      setTaxRateData((prev) => ({
+        ...prev,
+        [tableId]: {
+          ...prev[tableId],
+        },
+      }));
+    }
+  }, [conversionRate, tableId]);
+
   // Get available conditions for a specific category
   const getConditionsForCategory = (category) => {
     return termsConditions.filter(
@@ -1994,6 +2474,15 @@ const fetchTaxPercentagesByMaterial = async (pmsInventoryId, taxCategoryId) => {
 };
   // Handle terms form input changes
   const handleTermsFormChange = (field, value) => {
+    // Validation: Prevent negative values for numeric fields
+    if (["creditPeriod", "poValidityPeriod", "advanceReminderDuration"].includes(field)) {
+      const numValue = parseFloat(value);
+      if (value !== "" && (isNaN(numValue) || numValue < 0)) {
+        alert(`${field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} cannot be negative. Please enter a valid positive number.`);
+        return;
+      }
+    }
+
     setTermsFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -2017,6 +2506,15 @@ const fetchTaxPercentagesByMaterial = async (pmsInventoryId, taxCategoryId) => {
   };
 
   const handleChargeChange = (id, field, value) => {
+    // Validation: Prevent negative values for amount fields
+    if (field === "amount") {
+      const numValue = parseFloat(value);
+      if (value !== "" && (isNaN(numValue) || numValue < 0)) {
+        alert("Amount cannot be negative. Please enter a valid positive number.");
+        return;
+      }
+    }
+
     setCharges((prev) =>
       prev.map((charge) => {
         if (charge.id === id) {
@@ -2053,6 +2551,15 @@ const fetchTaxPercentagesByMaterial = async (pmsInventoryId, taxCategoryId) => {
   };
 
   const handleCostChange = (id, field, value) => {
+    // Validation: Prevent negative values for amount fields
+    if (field === "amount") {
+      const numValue = parseFloat(value);
+      if (value !== "" && (isNaN(numValue) || numValue < 0)) {
+        alert("Amount cannot be negative. Please enter a valid positive number.");
+        return;
+      }
+    }
+
     setOtherCosts((prev) =>
       prev.map((cost) => (cost.id === id ? { ...cost, [field]: value } : cost))
     );
@@ -2096,6 +2603,19 @@ const fetchTaxPercentagesByMaterial = async (pmsInventoryId, taxCategoryId) => {
     setSelectedItemType(null);
     // Don't reset chargeTaxes to preserve data for reopening
   };
+
+
+
+const getTaxOptionNameById = (id) => {
+  const allOpts = [...(chargesAdditionTaxOptions || []), ...(chargesDeductionTaxOptions || [])];
+  const found = allOpts.find((o) => `${o.id}` === `${id}`);
+  return found?.name || "";
+};
+const isPercentageTax = (taxChargeType) => {
+  if (!taxChargeType) return false;
+  const taxType = taxChargeType.toLowerCase();
+  return taxType.includes("cgst") || taxType.includes("sgst") || taxType.includes("igst") || taxType.includes("tds");
+};
 
   const addTaxRow = (type) => {
     const newTax = {
@@ -2334,6 +2854,172 @@ const fetchTaxPercentagesByMaterial = async (pmsInventoryId, taxCategoryId) => {
     }
   };
 
+  // Service providers will use the same data as suppliers
+  // No need for separate fetchServiceProviders function
+
+  // Fetch charges data from API for all submitted materials
+  const fetchChargesData = async () => {
+    try {
+      setLoadingCharges(true);
+      const chargesData = [];
+      let totalCost = 0;
+      
+      for (const material of submittedMaterials) {
+        if (material.id) {
+          // Make only ONE API call per material to get all the data
+          const response = await axios.get(
+            `${baseURL}po_mor_inventories/${material.id}/ropo_rate_details.json?token=${token}`
+          );
+          
+          if (response.data) {
+            const rateData = response.data;
+            
+            // Calculate total material cost from this single API call
+            if (rateData.total_material_cost) {
+              totalCost += parseFloat(rateData.total_material_cost) || 0;
+            }
+            
+            // Process addition tax details
+            if (rateData.addition_tax_details && Array.isArray(rateData.addition_tax_details)) {
+              rateData.addition_tax_details.forEach(tax => {
+                chargesData.push({
+                  id: tax.id,
+                  material_id: material.id,
+                  material_name: material.material_name,
+                  charge_name: getTaxNameById(tax.resource_id),
+                  resource_id: tax.resource_id,
+                  resource_type: tax.resource_type,
+                  amount: tax.amount,
+                  amount_inr: convertUsdToInr(tax.amount, conversionRate), // Convert USD to INR
+                  inclusive: tax.inclusive,
+                  tax_category_id: tax.tax_category_id,
+                  percentage: tax.percentage
+                });
+              });
+            }
+            
+            // Process deduction tax details
+            if (rateData.deduction_tax_details && Array.isArray(rateData.deduction_tax_details)) {
+              rateData.deduction_tax_details.forEach(tax => {
+                chargesData.push({
+                  id: tax.id,
+                  material_id: material.id,
+                  material_name: material.material_name,
+                  charge_name: getTaxNameById(tax.resource_id),
+                  resource_id: tax.resource_id,
+                  resource_type: tax.resource_type,
+                  amount: tax.amount,
+                  amount_inr: convertUsdToInr(tax.amount, conversionRate), // Convert USD to INR
+                  inclusive: tax.inclusive,
+                  tax_category_id: tax.tax_category_id,
+                  percentage: tax.percentage
+                });
+              });
+            }
+          }
+        }
+      }
+      
+      setChargesFromApi(chargesData);
+      setTotalMaterialCost(totalCost);
+      console.log("Charges data from API:", chargesData);
+      console.log("Total material cost:", totalCost);
+    } catch (error) {
+      console.error("Error fetching charges data:", error);
+      setChargesFromApi([]);
+      setTotalMaterialCost(0);
+    } finally {
+      setLoadingCharges(false);
+    }
+  };
+
+  // Helper function to get tax name by resource ID
+  const getTaxNameById = (resourceId) => {
+    // Check in tax options
+    const taxOption = taxOptions.find(option => option.id === resourceId);
+    if (taxOption) return taxOption.label;
+    
+    // Check in deduction tax options
+    const deductionOption = deductionTaxOptions.find(option => option.id === resourceId);
+    if (deductionOption) return deductionOption.label;
+    
+    // Check in charge names
+    const chargeName = chargeNames.find(charge => charge.id === resourceId);
+    if (chargeName) return chargeName.name;
+    
+    return "Unknown Charge";
+  };
+
+  // Handle service provider selection
+  const handleServiceProviderChange = (chargeId, selectedOption) => {
+    setSelectedServiceProviders(prev => ({
+      ...prev,
+      [chargeId]: selectedOption
+    }));
+  };
+
+  // Handle service certificate checkbox
+  const handleServiceCertificateChange = (chargeId, checked) => {
+    setServiceCertificates(prev => ({
+      ...prev,
+      [chargeId]: checked
+    }));
+  };
+
+  // Handle charge remarks
+  const handleChargeRemarksChange = (chargeId, remarks) => {
+    setChargeRemarks(prev => ({
+      ...prev,
+      [chargeId]: remarks
+    }));
+  };
+
+  // Calculate supplier advance amount
+  const calculateSupplierAdvanceAmount = () => {
+    const percentage = parseFloat(supplierAdvancePercentage) || 0;
+    const amount = (totalMaterialCost * percentage) / 100;
+    return amount;
+  };
+
+  // Calculate service certificate advance amount
+  const calculateServiceCertificateAdvanceAmount = () => {
+    const percentage = parseFloat(serviceCertificateAdvancePercentage) || 0;
+    const grandTotal = chargesFromApi.reduce((sum, charge) => sum + (parseFloat(charge.amount_inr) || 0), 0);
+    const amount = (grandTotal * percentage) / 100;
+    return amount;
+  };
+
+  // Handle supplier advance percentage change
+  const handleSupplierAdvancePercentageChange = (value) => {
+    const numValue = parseFloat(value) || 0;
+    if (value === "") {
+      setSupplierAdvancePercentage("");
+    } else if (numValue >= 0 && numValue <= 100) {
+      setSupplierAdvancePercentage(value);
+    } else {
+      alert("Supplier advance percentage must be between 0 and 100.");
+    }
+  };
+
+  // Handle service certificate advance percentage change
+  const handleServiceCertificateAdvancePercentageChange = (value) => {
+    const numValue = parseFloat(value) || 0;
+    if (value === "") {
+      setServiceCertificateAdvancePercentage("");
+    } else if (numValue >= 0 && numValue <= 100) {
+      setServiceCertificateAdvancePercentage(value);
+    } else {
+      alert("Service certificate advance percentage must be between 0 and 100.");
+    }
+  };
+
+  // Refresh charges data
+  const refreshChargesData = () => {
+    if (activeTab === "terms-conditions" && submittedMaterials.length > 0) {
+      fetchChargesData();
+    }
+  };
+
   // Get percentages for specific tax category
   const getChargesTaxPercentages = (taxCategoryId) => {
     const taxData = chargesTaxPercentages.find(
@@ -2359,6 +3045,29 @@ const fetchTaxPercentagesByMaterial = async (pmsInventoryId, taxCategoryId) => {
         setIsCreatingOrder(false);
         return;
       }
+
+      if (!conversionRate || conversionRate <= 0) {
+        alert("Please set the Conversion Rate (USD to INR) in the PO Details tab.");
+        setIsCreatingOrder(false);
+        return;
+      }
+
+      // Prepare charges data for submission
+      const chargesSubmissionData = chargesFromApi.map(charge => ({
+        id: charge.id,
+        material_id: charge.material_id,
+        charge_name: charge.charge_name,
+        resource_id: charge.resource_id,
+        resource_type: charge.resource_type,
+        amount: charge.amount,
+        amount_inr: charge.amount_inr,
+        service_certificate: serviceCertificates[charge.id] || false,
+        service_provider_id: selectedServiceProviders[charge.id]?.value || null,
+        service_provider_name: selectedServiceProviders[charge.id]?.label || null,
+        remarks: chargeRemarks[charge.id] || ""
+      }));
+
+      console.log("Charges data for submission:", chargesSubmissionData);
 
       // Get material inventory IDs from submitted materials
       console.log("Submitted materials:", submittedMaterials);
@@ -2422,13 +3131,26 @@ supplier_advance: null,
 survice_certificate_advance: null, 
 total_value: null,
 total_discount: null,
-po_date: getLocalDateTime().split("T")[0], // Current date
+          po_date: getLocalDateTime().split("T")[0], // Current date
           company_id: selectedCompany?.value,
-          po_type: "ropo",
+          po_type: "import",
           supplier_id: selectedSupplier?.value,
+          conversion_rate: conversionRate, // Add conversion rate to payload
           remark: termsFormData.remark || "",
           comments: termsFormData.comments || "",
           material_inventory_ids: apiMaterialInventoryIds,
+
+          // Extract unique MOR IDs from submitted materials
+          mor_ids: [...new Set(submittedMaterials.map(material => material.mor_id).filter(Boolean))],
+
+          // Extract MOR inventory tax details from charges data
+          mor_inventory_tax_details: chargesFromApi
+            .filter(charge => charge.resource_type === "TaxCategory" || charge.resource_type === "TaxCharge")
+            .map(charge => ({
+              id: charge.id,
+              remarks: charge.charge_name || "",
+              supplier_id: selectedSupplier?.value || null
+            })),
 
           // Include purchase order ID if available (for updates)
           ...(purchaseOrderId && { po_id: purchaseOrderId }),
@@ -2543,7 +3265,8 @@ po_date: getLocalDateTime().split("T")[0], // Current date
 
       console.log("Purchase order created successfully:", response.data);
       alert("Purchase order created successfully!");
-      navigate(`/po-list?token=${token}`);
+      navigate(`/ropo-import-list
+        ?token=${token}`);
 
       // Optionally redirect or clear form
       // window.location.href = '/po-list'; // Redirect to PO list
@@ -2556,6 +3279,51 @@ po_date: getLocalDateTime().split("T")[0], // Current date
   };
 
   // ...existing code...
+
+  // Currency helpers for modal
+// Exchange rate: 1 USD = 82.5 INR (default)
+
+// Conversion functions with safety checks
+const convertInrToUsd = useCallback((inrValue, customRate = null) => {
+  if (!inrValue || isNaN(inrValue)) return "";
+  const rate = customRate || conversionRate || 82.5; // Use conversionRate instead of exchangeRate
+  // Proper formula: USD = INR / ExchangeRate
+  return (parseFloat(inrValue) / rate).toFixed(2);
+}, [conversionRate]);
+
+const convertUsdToInr = useCallback((usdValue, customRate = null) => {
+  if (!usdValue || isNaN(usdValue)) return "";
+  const rate = customRate || conversionRate || 82.5; // Use conversionRate instead of exchangeRate
+  // Proper formula: INR = USD * ExchangeRate
+  return (parseFloat(usdValue) * rate).toFixed(2);
+}, [conversionRate]);
+
+// Safe conversion functions that can be used during initial render
+const safeConvertInrToUsd = (inrValue, customRate = null) => {
+  if (!inrValue || isNaN(inrValue)) return "";
+  const rate = customRate || conversionRate || 82.5;
+  return (parseFloat(inrValue) / rate).toFixed(2);
+};
+
+const safeConvertUsdToInr = (usdValue, customRate = null) => {
+  if (!usdValue || isNaN(usdValue)) return "";
+  const rate = customRate || conversionRate || 82.5;
+  return (parseFloat(usdValue) * rate).toFixed(2);
+};
+
+  // Calculate tax amount for addition taxes (Total Base Cost + Tax Amount) - all in USD
+const calculateAdditionTaxAmount = (baseCost, taxAmount) => {
+  const base = parseFloat(baseCost) || 0;
+  const tax = parseFloat(taxAmount) || 0;
+  return base + tax;
+};
+
+// Calculate tax amount for deduction taxes (Total Base Cost - Tax Amount) - all in USD
+const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
+  const base = parseFloat(baseCost) || 0;
+  const tax = parseFloat(taxAmount) || 0;
+  return Math.max(0, base - tax);
+};
 
   return (
     <>
@@ -2704,7 +3472,7 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                               name="contentSelector"
                               defaultValue="content3"
                             />
-                            <label className="form-check-label">ROPO</label>
+                            <label className="form-check-label">IMPORT</label>
                           </div>
                         </div>
                       </div>
@@ -2716,7 +3484,7 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                 <div className="card ms-3">
                   <div className="card-body">
                     <div className=" text-center">
-                      <h4>PO for New Material (ROPO)</h4>
+                      <h4>PO for New Material (ROPO Import)</h4>
                     </div>
 
                     <section className="mor p-2 pt-2">
@@ -2799,7 +3567,7 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                     <input
                                       className="form-control"
                                       type="text"
-                                      value="ROPO"
+                                      value="IMPORT"
                                       disabled
                                       style={{
                                         backgroundColor: "#f8f9fa",
@@ -2817,9 +3585,18 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                       className="form-control"
                                       type="date"
                                       value={poDate}
-                                      onChange={(e) =>
-                                        setPoDate(e.target.value)
-                                      }
+                                      onChange={(e) => {
+                                        const selectedDate = new Date(e.target.value);
+                                        const today = new Date();
+                                        today.setHours(0, 0, 0, 0);
+                                        
+                                        if (selectedDate < today) {
+                                          alert("PO Date cannot be in the past. Please select today's date or a future date.");
+                                          return;
+                                        }
+                                        setPoDate(e.target.value);
+                                      }}
+                                      min={new Date().toISOString().split('T')[0]}
                                     />
                                   </div>
                                 </div>
@@ -2884,6 +3661,7 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                     />
                                   </div>
                                 </div>
+                               
                                 {/* <div className="col-md-4 mt-2">
                                   <div className="form-group">
                                     <label className="po-fontBold">
@@ -2924,6 +3702,39 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                     />
                                   </div>
                                 </div>
+                                 <div className="col-md-4 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">PO Currency</label>
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      value={`${poCurrency.symbol} ${poCurrency.code}`}
+                                      readOnly
+                                      disabled
+                                    />
+                                  </div>
+                                </div>
+                                 <div className="col-md-4 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">Conversion Rate (USD to INR)</label>
+                                    <input
+                                      className="form-control"
+                                      type="number"
+                                      value={conversionRate}
+                                      onChange={(e) => {
+                                        const value = parseFloat(e.target.value);
+                                        if (value <= 0) {
+                                          alert("Conversion rate must be greater than 0.");
+                                          return;
+                                        }
+                                        setConversionRate(value || 82.5);
+                                      }}
+                                      placeholder="Enter conversion rate"
+                                      step="0.01"
+                                      min="0.01"
+                                    />
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div className="d-flex justify-content-between  align-items-center">
@@ -2939,6 +3750,10 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                 <button
                                   className="purple-btn2 "
                                   onClick={() => {
+                                    if (!selectedCompany?.value) {
+                                      alert("Please select a company first.");
+                                      return;
+                                    }
                                     setAddMORModal(true);
                                     fetchMaterialDetails();
                                   }}
@@ -2955,22 +3770,14 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                 <table className="w-100">
                                   <thead>
                                     <tr>
-                                      <th className="text-start">Sr.No.</th>
-                                      <th className="text-start">
-                                        Material Type
-                                      </th>
-                                      <th className="text-start">
-                                        Material Sub-Type
-                                      </th>
+                                      <th className="text-start">Sr. No</th>
+                                      <th className="text-start">Project</th>
+                                      <th className="text-start">Sub-Project</th>
+                                      <th className="text-start">MOR No.</th>
                                       <th className="text-start">Material</th>
-                                      <th className="text-start">
-                                        Generic Specification
-                                      </th>
-                                      <th className="text-start">Colour</th>
-                                      <th className="text-start">Brand</th>
                                       <th className="text-start">UOM</th>
-
-                                      <th className="text-start">Edit</th>
+                                      <th className="text-start">MOR Qty</th>
+                                      <th className="text-start">Order Qty</th>
                                       <th className="text-start">Action</th>
                                     </tr>
                                   </thead>
@@ -2988,33 +3795,47 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                               {row.sub_project_name || ""}
                                             </td>
                                             <td className="text-start">
+                                              {row.mor_number || ""}
+                                            </td>
+                                            <td className="text-start">
                                               {row.material_name || ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.mor_number || ""}
+                                              {row.uom_name || ""}
                                             </td>
                                             <td className="text-start">
                                               {row.required_quantity ?? ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.prev_order_qty ?? ""}
+                                              {row.order_qty ?? ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.uom_name || ""}
-                                            </td>
-
-                                            <td className="text-start">
-                                              
-                                            </td>
-                                            <td className="text-start">
-                                              
+                                              <button
+                                                className="btn mt-0 pt-0"
+                                                onClick={() => {
+                                                  setSubmittedMaterials((prev) => prev.filter((_, i) => i !== index));
+                                                }}
+                                              >
+                                                 <svg
+                                                  width="16"
+                                                  height="20"
+                                                  viewBox="0 0 16 20"
+                                                  fill="none"
+                                                  xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                  <path
+                                                    d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533ZM7.52531 16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
+                                                    fill="#B25657"
+                                                  />
+                                                </svg>
+                                              </button>
                                             </td>
                                           </tr>
                                         ))
                                     ) : (
                                       <tr>
                                         <td
-                                          colSpan="11"
+                                          colSpan="9"
                                           className="text-center"
                                         >
                                           No data added yet.
@@ -3029,12 +3850,18 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                             <div className="d-flex justify-content-center mt-4 mb-3">
                               <button
                                 className="purple-btn2 px-4 py-2"
-                                onClick={handleSubmitMaterials}
-                                disabled={isSubmitting}
+                                onClick={() => {
+                                  if (!submittedMaterials || submittedMaterials.length === 0) {
+                                    alert("Please add at least one material before proceeding to Rate & Taxes.");
+                                    return;
+                                  }
+                                  setActiveTab("rate-taxes");
+                                  const rateTaxesTab = document.querySelector('[data-bs-target="#Domestic2"]');
+                                  if (rateTaxesTab) rateTaxesTab.click();
+                                }}
+                                disabled={false}
                               >
-                                {isSubmitting
-                                  ? "Submitting..."
-                                  : "Submit Materials"}
+                                Update
                               </button>
                             </div>
                           </div>
@@ -3647,6 +4474,211 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                 </tbody>
                               </table>
                             </div> */}
+                             <div className="tbl-container me-2 mt-3">
+                            <table className="w-100 table table-bordered">
+                              <thead>
+                                <tr>
+                                  <th rowSpan={2}>Charges And Taxes</th>
+                                  <th colSpan={2}>Amount</th>
+                                  <th rowSpan={2}>Payable Currency</th>
+                                  <th rowSpan={2}>Service Certificate</th>
+                                  <th rowSpan={2}>Select Service Provider</th>
+                                  <th rowSpan={2}>Remarks</th>
+                                </tr>
+                                <tr>
+                                  <th>INR</th>
+                                  <th>USD</th>
+                                </tr>
+                                <tr>
+                                  <th colSpan={7}>Tax Addition(Exclusive)</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {loadingCharges ? (
+                                  <tr>
+                                    <td colSpan={7} className="text-center">
+                                      <div className="spinner-border spinner-border-sm me-2" role="status">
+                                        <span className="visually-hidden">Loading...</span>
+                                      </div>
+                                      Loading charges data...
+                                    </td>
+                                  </tr>
+                                ) : chargesFromApi.filter(charge => charge.resource_type === "TaxCategory").length > 0 ? (
+                                  chargesFromApi
+                                    .filter(charge => charge.resource_type === "TaxCategory")
+                                    .map((charge, index) => (
+                                      <tr key={`tax-${charge.id}-${index}`}>
+                                        <td>{charge.charge_name}</td>
+                                        <td>INR {charge.amount_inr || "0.00"}</td>
+                                        <td>USD {charge.amount || "0.00"}</td>
+                                        <td>USD</td>
+                                        <td>
+                                          <input 
+                                            type="checkbox" 
+                                            checked={serviceCertificates[charge.id] || false}
+                                            onChange={(e) => handleServiceCertificateChange(charge.id, e.target.checked)}
+                                          />
+                                        </td>
+                                        <td>
+                                          <SingleSelector
+                                            options={supplierOptions}
+                                            value={selectedServiceProviders[charge.id] || null}
+                                            onChange={(selectedOption) => 
+                                              handleServiceProviderChange(charge.id, selectedOption)
+                                            }
+                                            placeholder="Select Service Provider"
+                                          />
+                                        </td>
+                                        <td>
+                                          <textarea
+                                            className="form-control"
+                                            rows={2}
+                                            placeholder="Enter remarks"
+                                            value={chargeRemarks[charge.id] || ""}
+                                            onChange={(e) => handleChargeRemarksChange(charge.id, e.target.value)}
+                                          />
+                                        </td>
+                                      </tr>
+                                    ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan={7} className="text-center">
+                                      No tax addition data available.
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                          <div className="tbl-container me-2 mt-3">
+                            <table className="w-100 table table-bordered">
+                              <thead>
+                                <tr>
+                                  <th>Charges And Taxes</th>
+                                  <th colSpan={2}>Amount</th>
+                                  <th>Payable Currency</th>
+                                  <th>Service Certificate</th>
+                                  <th>Select Service Provider</th>
+                                  <th>Remarks</th>
+                                </tr>
+                                <tr>
+                                  <th></th>
+                                  <th>INR</th>
+                                  <th>USD</th>
+                                  <th></th>
+                                  <th></th>
+                                  <th></th>
+                                  <th></th>
+                                </tr>
+                                <tr>
+                                  <th colSpan={7}>Charges (Exclusive)</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {loadingCharges ? (
+                                  <tr>
+                                    <td colSpan={7} className="text-center">
+                                      <div className="spinner-border spinner-border-sm me-2" role="status">
+                                        <span className="visually-hidden">Loading...</span>
+                                      </div>
+                                      Loading charges data...
+                                    </td>
+                                  </tr>
+                                ) : chargesFromApi.filter(charge => charge.resource_type === "TaxCharge").length > 0 ? (
+                                  chargesFromApi
+                                    .filter(charge => charge.resource_type === "TaxCharge")
+                                    .map((charge, index) => (
+                                    <tr key={`${charge.id}-${index}`}>
+                                      <td>{charge.charge_name}</td>
+                                      <td>INR {charge.amount_inr || "0.00"}</td>
+                                      <td>USD {charge.amount || "0.00"}</td>
+                                      <td>USD</td>
+                                      <td>
+                                        <input 
+                                          type="checkbox" 
+                                          checked={serviceCertificates[charge.id] || false}
+                                          onChange={(e) => handleServiceCertificateChange(charge.id, e.target.checked)}
+                                        />
+                                      </td>
+                                      <td>
+                                        <SingleSelector
+                                          options={supplierOptions}
+                                          value={selectedServiceProviders[charge.id] || null}
+                                          onChange={(selectedOption) => 
+                                            handleServiceProviderChange(charge.id, selectedOption)
+                                          }
+                                          placeholder="Select Service Provider"
+                                        />
+                                      </td>
+                                      <td>
+                                        <textarea
+                                          className="form-control"
+                                          rows={2}
+                                          placeholder="Enter remarks"
+                                          value={chargeRemarks[charge.id] || ""}
+                                          onChange={(e) => handleChargeRemarksChange(charge.id, e.target.value)}
+                                        />
+                                      </td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan={7} className="text-center">
+                                      No charges data available.
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                          
+                          {/* Summary Section */}
+                          {!loadingCharges && chargesFromApi.length > 0 && (
+                            <div className="row mt-3">
+                              <div className="col-md-6">
+                                <div className="card">
+                                  <div className="card-header">
+                                    <h6 className="mb-0">Charges Summary</h6>
+                                  </div>
+                                  <div className="card-body">
+                                    <div className="row">
+                                      <div className="col-6">
+                                        <strong>Total Tax Addition:</strong>
+                                      </div>
+                                      <div className="col-6">
+                                        INR {chargesFromApi
+                                          .filter(charge => charge.resource_type === "TaxCategory")
+                                          .reduce((sum, charge) => sum + (parseFloat(charge.amount_inr) || 0), 0)
+                                          .toFixed(2)}
+                                      </div>
+                                    </div>
+                                    <div className="row">
+                                      <div className="col-6">
+                                        <strong>Total Charges:</strong>
+                                      </div>
+                                      <div className="col-6">
+                                        INR {chargesFromApi
+                                          .filter(charge => charge.resource_type === "TaxCharge")
+                                          .reduce((sum, charge) => sum + (parseFloat(charge.amount_inr) || 0), 0)
+                                          .toFixed(2)}
+                                      </div>
+                                    </div>
+                                    <hr />
+                                    <div className="row">
+                                      <div className="col-6">
+                                        <strong>Grand Total:</strong>
+                                      </div>
+                                      <div className="col-6">
+                                        INR {chargesFromApi
+                                          .reduce((sum, charge) => sum + (parseFloat(charge.amount_inr) || 0), 0)
+                                          .toFixed(2)}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                             <div className="card-body">
                               <div className="row">
                                 <div className="col-md-6 mt-0">
@@ -3657,7 +4689,7 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                     <input
                                       className="form-control"
                                       type="text"
-                                      placeholder="INR 0.00"
+                                      value={`USD ${totalMaterialCost.toFixed(2)} (INR ${convertUsdToInr(totalMaterialCost, conversionRate)})`}
                                       disabled
                                     />
                                   </div>
@@ -3669,8 +4701,13 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                     </label>
                                     <input
                                       className="form-control"
-                                      type="text"
-                                      placeholder={0}
+                                      type="number"
+                                      value={supplierAdvancePercentage}
+                                      onChange={(e) => handleSupplierAdvancePercentageChange(e.target.value)}
+                                      placeholder="0"
+                                      min="0"
+                                      max="100"
+                                      step="0.01"
                                     />
                                   </div>
                                 </div>
@@ -3697,7 +4734,7 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                     <input
                                       className="form-control"
                                       type="text"
-                                      placeholder="INR 0.00"
+                                      value={`USD ${calculateSupplierAdvanceAmount().toFixed(2)} (INR ${convertUsdToInr(calculateSupplierAdvanceAmount(), conversionRate)})`}
                                       disabled
                                     />
                                   </div>
@@ -3709,9 +4746,13 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                     </label>
                                     <input
                                       className="form-control"
-                                      type="text"
-                                      placeholder={0}
-                                      disabled
+                                      type="number"
+                                      value={serviceCertificateAdvancePercentage}
+                                      onChange={(e) => handleServiceCertificateAdvancePercentageChange(e.target.value)}
+                                      placeholder="0"
+                                      min="0"
+                                      max="100"
+                                      step="0.01"
                                     />
                                   </div>
                                 </div>
@@ -3723,7 +4764,7 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                     <input
                                       className="form-control"
                                       type="text"
-                                      placeholder="INR 0.00"
+                                      value={`USD ${calculateServiceCertificateAdvanceAmount().toFixed(2)} (INR ${convertUsdToInr(calculateServiceCertificateAdvanceAmount(), conversionRate)})`}
                                       disabled
                                     />
                                   </div>
@@ -3791,6 +4832,16 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                               <h5 className="">
                                 General Term &amp; Conditions
                               </h5>
+                              <button
+                                className="purple-btn2 me-2"
+                                onClick={refreshChargesData}
+                                title="Refresh charges data from API"
+                              >
+                                <span className="material-symbols-outlined align-text-top me-1">
+                                  refresh
+                                </span>
+                                Refresh Charges
+                              </button>
                               <button
                                 className="purple-btn2"
                                 style={{ minWidth: 100 }}
@@ -4548,9 +5599,37 @@ po_date: getLocalDateTime().split("T")[0], // Current date
           <h5>Select MOR Materials</h5>
         </Modal.Header>
         <Modal.Body>
-          <div className="row g-3 mb-3">
-            <div className="col-md-3">
-              <label>MOR No</label>
+          <div className="p-3">
+            <div className="row">
+              <div className="col-md-4 mt-2">
+                <div className="form-group">
+                  <label>
+                    Project <span></span>
+                  </label>
+                  <MultiSelector
+                    options={projects} // filtered projects as {value,label}
+                    value={selectedProject}
+                    onChange={handleProjectChange}
+                    placeholder="Select Project"
+                    // isDisabled={!selectedCompany}
+                  />
+                </div>
+              </div>
+              <div className="col-md-4">
+                <div className="form-group">
+                  <label>Sub-project</label>
+                  <MultiSelector
+                    options={siteOptions}
+                    value={selectedSite}
+                    onChange={handleSiteChange}
+                    placeholder="Select Sub-project"
+                    isDisabled={!selectedProject}
+                  />
+                </div>
+              </div>
+              <div className="col-md-4 mt-0">
+                <div className="form-group">
+                  <label>MOR No.</label>
               <input
                 className="form-control"
                 value={morFormData.morNumber}
@@ -4558,74 +5637,264 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                 placeholder="Enter MOR No"
               />
             </div>
-            <div className="col-md-3">
-              <label>Start Date</label>
+              </div>
+
+              <div className="col-md-4 mt-2">
+                <div className="form-group">
+                  <label>MOR Start Date</label>
               <input
-                type="date"
                 className="form-control"
+                    type="date"
                 value={morFormData.morStartDate}
-                onChange={(e) => setMorFormData((p) => ({ ...p, morStartDate: e.target.value }))}
+                    onChange={(e) => {
+                      const selectedDate = new Date(e.target.value);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      
+                      if (selectedDate < today) {
+                        alert("MOR Start Date cannot be in the past. Please select today's date or a future date.");
+                        return;
+                      }
+                      
+                      // If end date is set, ensure start date is before end date
+                      if (morFormData.morEndDate && e.target.value > morFormData.morEndDate) {
+                        alert("MOR Start Date must be before or equal to MOR End Date.");
+                        return;
+                      }
+                      
+                      setMorFormData((prev) => ({
+                        ...prev,
+                        morStartDate: e.target.value,
+                      }));
+                    }}
+                    min={new Date().toISOString().split('T')[0]}
               />
             </div>
-            <div className="col-md-3">
-              <label>End Date</label>
+              </div>
+              <div className="col-md-4 mt-2">
+                <div className="form-group">
+                  <label>MOR End Date</label>
               <input
-                type="date"
                 className="form-control"
+                    type="date"
                 value={morFormData.morEndDate}
-                onChange={(e) => setMorFormData((p) => ({ ...p, morEndDate: e.target.value }))}
+                    onChange={(e) => {
+                      const selectedDate = new Date(e.target.value);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      
+                      if (selectedDate < today) {
+                        alert("MOR End Date cannot be in the past. Please select today's date or a future date.");
+                        return;
+                      }
+                      
+                      // If start date is set, ensure end date is after start date
+                      if (morFormData.morStartDate && e.target.value < morFormData.morStartDate) {
+                        alert("MOR End Date must be after or equal to MOR Start Date.");
+                        return;
+                      }
+                      
+                      setMorFormData((prev) => ({
+                        ...prev,
+                        morEndDate: e.target.value,
+                      }));
+                    }}
+                    min={new Date().toISOString().split('T')[0]}
               />
             </div>
-            <div className="col-md-3 d-flex align-items-end gap-2">
-              <button className="purple-btn2" onClick={handleMorSearch} disabled={loadingMaterialDetails}>Search</button>
-              <button className="purple-btn1" onClick={handleMorReset}>Reset</button>
             </div>
+              <div className="col-md-4 mt-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Material Type <span></span>
+                  </label>
+                  <SingleSelector
+                    options={inventoryTypes2}
+                    value={inventoryTypes2.find(
+                      (option) => option.value === morFormData.materialType
+                    )}
+                    placeholder="Select Material Type"
+                    onChange={(selectedOption) =>
+                      handleMorSelectorChange("materialType", selectedOption)
+                    }
+                  />
           </div>
-          <div className="tbl-container">
+              </div>
+              <div className="col-md-4 mt-3">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Material Sub Type <span></span>
+                  </label>
+                  <SingleSelector
+                    options={inventorySubTypes2}
+                    value={inventorySubTypes2.find(
+                      (option) => option.value === morFormData.materialSubType
+                    )}
+                    placeholder="Select Material Sub Type"
+                    onChange={(selectedOption) =>
+                      handleMorSelectorChange(
+                        "materialSubType",
+                        selectedOption
+                      )
+                    }
+                  />
+                </div>
+              </div>
+              <div className="col-md-4 mt-3">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Material <span></span>
+                  </label>
+                  <SingleSelector
+                    options={inventoryMaterialTypes2}
+                    value={inventoryMaterialTypes2.find(
+                      (option) => option.value === morFormData.material
+                    )}
+                    placeholder="Select Material"
+                    onChange={(selectedOption) =>
+                      handleMorSelectorChange("material", selectedOption)
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+                        <div className="mt-1 justify-content-center d-flex gap-2">
+              <button className="purple-btn1" onClick={handleMorSearch}>
+                Search
+              </button>
+              <button className="purple-btn1" onClick={handleMorReset}>
+                Reset
+              </button>
+            </div>
+            
+            <div className="tbl-container me-2 mt-3">
+              {loadingMaterialDetails ? (
+                <div className="text-center p-4">
+                  <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              ) : (
             <table className="w-100">
               <thead>
                 <tr>
-                  <th style={{ width: 40 }}>
-                    <input type="checkbox" onChange={handleMorSelectAllMaterials} />
+                      <th rowSpan="2">
+                        <input
+                          type="checkbox"
+                          checked={
+                            selectedMaterialItems.length ===
+                              materialDetailsData.length &&
+                            materialDetailsData.length > 0
+                          }
+                          onChange={handleMorSelectAllMaterials}
+                        />
                   </th>
-                  <th>MOR No</th>
-                  <th>MOR Date</th>
-                  <th>Project</th>
-                  <th>Sub-Project</th>
+                      <th rowSpan="2">Project SubProject</th>
+                      <th rowSpan="2">MOR Number</th>
+                      <th rowSpan="2">MOR Date</th>
+                      <th colSpan="8">Material Details</th>
+                    </tr>
+                    <tr>
+                      <th>
+                        <input type="checkbox" />
+                      </th>
                   <th>Material</th>
                   <th>UOM</th>
                   <th>Required Qty</th>
-                  <th>Prev Ordered</th>
+                      <th>Prev Order Qty</th>
+                      <th>Pending Qty</th>
+                      <th>Order Qty</th>
+                      <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                {loadingMaterialDetails ? (
-                  <tr><td colSpan="9" className="text-center">Loading...</td></tr>
-                ) : materialDetailsData.length > 0 ? (
-                  materialDetailsData.map((row, idx) => (
-                    <tr key={`${row.inventory_id}-${idx}`}>
-                      <td>
+                    {materialDetailsData.length > 0 ? (
+                      materialDetailsData.map((item, index) => (
+                        <tr
+                          key={`${item.mor_id}-${item.inventory_id}-${index}`}
+                        >
+                          {/* Left-most checkbox: render only for first row of the project block */}
+                          <td>
+                            {item.isFirstMaterial ? (
                         <input
                           type="checkbox"
-                          checked={selectedMaterialItems.includes(idx)}
-                          onChange={() => handleMorMaterialCheckboxChange(idx)}
-                        />
+                                checked={materialDetailsData
+                                  .filter((m) => m.mor_id === item.mor_id)
+                                  .every((m) =>
+                                    selectedMaterialItems.includes(
+                                      materialDetailsData.indexOf(m)
+                                    )
+                                  )}
+                                 onChange={(e) => handleMorSelectProject(e, item.mor_id)}
+                              />
+                            ) : null}
                       </td>
-                      <td>{row.mor_number}</td>
-                      <td>{row.mor_date}</td>
-                      <td>{row.project_name}</td>
-                      <td>{row.sub_project_name}</td>
-                      <td>{row.material_name}</td>
-                      <td>{row.uom_name}</td>
-                      <td>{row.required_quantity}</td>
-                      <td>{row.prev_order_qty}</td>
+
+                          {/* Project/Subproject cell (merged rows) */}
+                          {item.isFirstMaterial ? (
+                            <td rowSpan={item.rowspan}>
+                              {item.project_name && item.sub_project_name
+                                ? `${item.project_name} - ${item.sub_project_name}`
+                                : item.project_name ||
+                                  item.sub_project_name ||
+                                  ""}
+                            </td>
+                          ) : null}
+
+                          {/* MOR Number (merged rows) */}
+                          {item.isFirstMaterial ? (
+                            <td rowSpan={item.rowspan}>
+                              {item.mor_number || ""}
+                            </td>
+                          ) : null}
+
+                          {/* MOR Date (merged rows) */}
+                          {item.isFirstMaterial ? (
+                            <td rowSpan={item.rowspan}>
+                              {item.mor_date || ""}
+                            </td>
+                          ) : null}
+
+                          {/* Per-material checkbox */}
+                          <td>
+                            <input
+                              type="checkbox"
+                              checked={selectedMaterialItems.includes(index)}
+                              onChange={() =>
+                                handleMorMaterialCheckboxChange(index)
+                              }
+                            />
+                          </td>
+                          <td>{item.material_name || ""}</td>
+                          <td>{item.uom_name || ""}</td>
+                          <td>{item.required_quantity || ""}</td>
+                          <td>{item.prev_order_qty || ""}</td>
+                          <td>{item.pending_quantity || ""}</td>
+                          <td>
+                            <input
+                              type="number"
+                              className="form-control form-control-sm"
+                              value={item.order_qty || ""}
+                              onChange={(e) => handleOrderQtyChange(index, e.target.value)}
+                              placeholder="Enter Qty"
+                              min="0"
+                            />
+                          </td>
+                          <td>{item.status || ""}</td>
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan="9" className="text-center">No data</td></tr>
+                      <tr>
+                        <td colSpan="12" className="text-center">
+                          No data available
+                        </td>
+                      </tr>
                 )}
               </tbody>
             </table>
+              )}
+            </div>
           </div>
         </Modal.Body>
         <Modal.Footer className="justify-content-center">
@@ -4857,7 +6126,7 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                   <input
                     type="text"
                     className="form-control"
-                    value={taxRateData[tableId]?.material || ""}
+                    value={taxRateData[tableId]?.material_name|| ""}
                     readOnly
                     disabled={true}
                   />
@@ -4904,9 +6173,27 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                   />
                 </div>
               </div>
+             
             </div>
 
+            {/* <div className="row mb-3"> */}
+             
+            {/* </div> */}
+
             <div className="row mb-3">
+               <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label fw-bold">Conversion Rate (USD to INR)</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={conversionRate}
+                    readOnly
+                    disabled={true}
+                    placeholder="Set in PO Details tab"
+                  />
+                </div>
+              </div>
               <div className="col-md-6">
                 <div className="mb-3">
                   <label className="form-label fw-bold">Discount (%)</label>
@@ -4920,7 +6207,11 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                   />
                 </div>
               </div>
-              <div className="col-md-6">
+             
+            </div>
+
+            <div className="row mb-3">
+               <div className="col-md-6">
                 <div className="mb-3">
                   <label className="form-label fw-bold">Material Cost</label>
                   <input
@@ -4932,9 +6223,6 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="row mb-3">
               <div className="col-md-6">
                 <div className="mb-3">
                   <label className="form-label fw-bold">Discount Rate</label>
@@ -4947,7 +6235,11 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                   />
                 </div>
               </div>
-              <div className="col-md-6">
+            
+            </div>
+
+            <div className="row mb-3">
+                <div className="col-md-6">
                 <div className="mb-3">
                   <label className="form-label fw-bold">
                     After Discount Value
@@ -4961,9 +6253,6 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="row mb-3">
               <div className="col-md-6">
                 <div className="mb-3">
                   <label className="form-label fw-bold">Remark</label>
@@ -4993,10 +6282,19 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                     <thead className="tax-table-header">
                       <tr>
                         <th>Tax / Charge Type</th>
-                        <th>Tax / Charges per UOM (INR)</th>
+                        <th colSpan="2">Tax / Charges per UOM (INR)</th>
                         <th>Inclusive</th>
-                        <th>Amount</th>
+                        <th colSpan="2">Tax / Charges Amount</th>
                         <th>Action</th>
+                      </tr>
+                      <tr>
+                        <th></th>
+                        <th>INR</th>
+                        <th>USD</th>
+                        <th></th>
+                        <th>INR</th>
+                        <th>USD</th>
+                        <th></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -5005,6 +6303,18 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                         <td>Total Base Cost</td>
                         <td></td>
                         <td></td>
+                        <td></td>
+                        <td>
+                          <input
+                            type="number"
+                            className="form-control "
+                            value={
+                              safeConvertUsdToInr(taxRateData[tableId]?.afterDiscountValue, conversionRate)
+                            }
+                            readOnly
+                            disabled={true}
+                          />
+                        </td>
                         <td>
                           <input
                             type="number"
@@ -5022,6 +6332,8 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                       {/* Addition Tax & Charges Row */}
                       <tr>
                         <td>Addition Tax & Charges</td>
+                        <td></td>
+                        <td></td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -5098,32 +6410,64 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                               </select>
                             </td>
 
+                                                        <td>
+                              {isPercentageTax(item.taxChargeType) ? (
+                                <select
+                                  className="form-control"
+                                  value={item?.taxChargePerUom || ""}
+                                  onChange={(e) =>
+                                    handleTaxChargeChange(
+                                      tableId,
+                                      item.id,
+                                      "taxChargePerUom",
+                                      e.target.value,
+                                      "addition"
+                                    )
+                                  }
+                                  disabled={(materialTaxPercentages[item.id] || []).length === 0}
+                                >
+                                  <option value="">{
+                                    (materialTaxPercentages[item.id] || []).length === 0
+                                      ? "No percentages available"
+                                      : "Select percentage"
+                                  }</option>
+                                  {(materialTaxPercentages[item.id] || []).map((percent) => (
+                                    <option key={percent.id} value={`${percent.percentage}%`}>
+                                      {percent.percentage}%
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  value={item?.taxChargePerUom || ""}
+                                  onChange={(e) =>
+                                    handleTaxChargeChange(
+                                      tableId,
+                                      item.id,
+                                      "taxChargePerUom",
+                                      e.target.value,
+                                      "addition"
+                                    )
+                                  }
+                                  placeholder="Enter amount"
+                                />
+                              )}
+                            </td>
                             <td>
-                              <select
-                                className="form-control"
-                                value={item?.taxChargePerUom || ""}
-                                onChange={(e) =>
-                                  handleTaxChargeChange(
-                                    tableId,
-                                    item.id,
-                                    "taxChargePerUom",
-                                    e.target.value,
-                                    "addition"
-                                  )
-                                }
-                                disabled={(materialTaxPercentages[item.id] || []).length === 0}
-                              >
-                                <option value="">{
-                                  (materialTaxPercentages[item.id] || []).length === 0
-                                    ? "No percentages available"
-                                    : "Select percentage"
-                                }</option>
-                                {(materialTaxPercentages[item.id] || []).map((percent) => (
-                                  <option key={percent.id} value={`${percent.percentage}%`}>
-                                    {percent.percentage}%
-                                  </option>
-                                ))}
-                              </select>
+                              {isPercentageTax(item.taxChargeType) ? (
+                                <span></span>
+                              ) : (
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  value={convertInrToUsd(item?.taxChargePerUom)}
+                                  readOnly
+                                  disabled={true}
+                                  placeholder="Auto calculated"
+                                />
+                              )}
                             </td>
 
                             <td className="text-center">
@@ -5147,7 +6491,16 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                               <input
                                 type="text"
                                 className="form-control"
-                                value={item.amount || ""}
+                                value={
+                                  // For ALL addition taxes, show Total Base Cost + Tax Amount in INR
+                                  safeConvertUsdToInr(
+                                    calculateAdditionTaxAmount(
+                                      taxRateData[tableId]?.afterDiscountValue || 0,
+                                      item.amount || 0
+                                    ),
+                                    conversionRate
+                                  )
+                                }
                                 onChange={(e) =>
                                   handleTaxChargeChange(
                                     tableId,
@@ -5157,40 +6510,24 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                     "addition"
                                   )
                                 }
-                                disabled={
-                                  item.taxType === "TaxCategory" ||
-                                  (item.taxChargeType &&
-                                    ["SGST", "CGST", "IGST", "TDS"].includes(
-                                      item.taxChargeType
-                                    ) &&
-                                    item.taxChargePerUom &&
-                                    item.taxChargePerUom.includes("%")) ||
-                                  (item.tax_category_id &&
-                                    (
-                                      materialTaxPercentages[item.id] || []
-                                    ).find(
-                                      (option) =>
-                                        option.id === item.tax_category_id
-                                    ))
+                                disabled={true}
+                                placeholder="Base Cost + Tax Amount"
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={
+                                  // For ALL addition taxes, show Total Base Cost + Tax Amount in USD
+                                  calculateAdditionTaxAmount(
+                                    taxRateData[tableId]?.afterDiscountValue || 0,
+                                    item.amount || 0
+                                  )
                                 }
-                                placeholder={
-                                  item.taxType === "TaxCategory" ||
-                                  (item.taxChargeType &&
-                                    ["SGST", "CGST", "IGST", "TDS"].includes(
-                                      item.taxChargeType
-                                    ) &&
-                                    item.taxChargePerUom &&
-                                    item.taxChargePerUom.includes("%")) ||
-                                  (item.tax_category_id &&
-                                    (
-                                      materialTaxPercentages[item.id] || []
-                                    ).find(
-                                      (option) =>
-                                        option.id === item.tax_category_id
-                                    ))
-                                    ? "Auto-calculated"
-                                    : "Enter amount"
-                                }
+                                readOnly
+                                disabled={true}
+                                placeholder="Auto calculated"
                               />
                             </td>
 
@@ -5213,6 +6550,8 @@ po_date: getLocalDateTime().split("T")[0], // Current date
 
                       <tr>
                         <td>Deduction Tax</td>
+                        <td></td>
+                        <td></td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -5264,31 +6603,35 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                 )}
                               />
                             </td>
-                            <td>
-                              <SingleSelector
-                                options={(() => {
-                                  const percentages = materialTaxPercentages[item.id] || [];
-                                  if (percentages.length > 0) {
-                                    return percentages.map((percent) => ({
-                                      label: `${percent.percentage}%`,
-                                      value: `${percent.percentage}%`,
-                                      id: percent.id,
-                                    }));
-                                  }
-                                  return [];
-                                })()}
-                                value={item?.taxChargePerUom ? { value: item.taxChargePerUom, label: item.taxChargePerUom } : null}
-                                onChange={(selected) => {
+                                                        <td>
+                              <select
+                                className="form-control"
+                                value={item?.taxChargePerUom || ""}
+                                onChange={(e) =>
                                   handleTaxChargeChange(
                                     tableId,
                                     item.id,
                                     "taxChargePerUom",
-                                    selected?.value || "",
+                                    e.target.value,
                                     "deduction"
-                                  );
-                                }}
-                                isClearable={false}
-                              />
+                                  )
+                                }
+                                disabled={(materialTaxPercentages[item.id] || []).length === 0}
+                              >
+                                <option value="">{
+                                  (materialTaxPercentages[item.id] || []).length === 0
+                                    ? "No percentages available"
+                                    : "Select percentage"
+                                }</option>
+                                {(materialTaxPercentages[item.id] || []).map((percent) => (
+                                  <option key={percent.id} value={`${percent.percentage}%`}>
+                                    {percent.percentage}%
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                            <td>
+                              <span></span>
                             </td>
                             <td className="text-center">
                               <input
@@ -5310,7 +6653,16 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                               <input
                                 type="text"
                                 className="form-control"
-                                value={item.amount || ""}
+                                value={
+                                  // For deduction taxes, show Total Base Cost - Tax Amount in INR
+                                  safeConvertUsdToInr(
+                                    calculateDeductionTaxAmount(
+                                      taxRateData[tableId]?.afterDiscountValue || 0,
+                                      item.amount || 0
+                                    ),
+                                    conversionRate
+                                  )
+                                }
                                 onChange={(e) =>
                                   handleTaxChargeChange(
                                     tableId,
@@ -5320,33 +6672,24 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                     "deduction"
                                   )
                                 }
-                                disabled={
-                                  item.taxType === "TaxCategory" ||
-                                  (item.taxChargeType &&
-                                    ["SGST", "CGST", "IGST", "TDS"].includes(
-                                      item.taxChargeType
-                                    ) &&
-                                    item.taxChargePerUom &&
-                                    item.taxChargePerUom.includes("%")) ||
-                                  (item.tax_category_id &&
-                                    (
-                                      materialTaxPercentages[item.id] || []
-                                    ).find(
-                                      (option) =>
-                                        option.id === item.tax_category_id
-                                    ))
+                                disabled={true}
+                                placeholder="Base Cost - Tax Amount"
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={
+                                  // For deduction taxes, show Total Base Cost - Tax Amount in USD
+                                  calculateDeductionTaxAmount(
+                                    taxRateData[tableId]?.afterDiscountValue || 0,
+                                    item.amount || 0
+                                  )
                                 }
-                                placeholder={
-                                  item.taxType === "TaxCategory" ||
-                                  (item.taxChargeType &&
-                                    ["SGST", "CGST", "IGST", "TDS"].includes(
-                                      item.taxChargeType
-                                    ) &&
-                                    item.taxChargePerUom &&
-                                    item.taxChargePerUom.includes("%"))
-                                    ? "Auto-calculated"
-                                    : "Enter amount"
-                                }
+                                readOnly
+                                disabled={true}
+                                placeholder="Auto calculated"
                               />
                             </td>
                             <td className="text-center">
@@ -5369,7 +6712,17 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                         <td>Net Cost</td>
                         <td></td>
                         <td></td>
-                        <td className="text-center">
+                        <td></td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={safeConvertUsdToInr(taxRateData[tableId]?.netCost, conversionRate)}
+                            readOnly
+                            disabled={true}
+                          />
+                        </td>
+                        <td>
                           <input
                             type="text"
                             className="form-control"

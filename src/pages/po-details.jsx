@@ -2198,6 +2198,8 @@ const PoDetails = () => {
                               "terminated" &&
                             purchaseOrderData?.selected_status?.toLowerCase() !==
                               "rejected" &&
+                            purchaseOrderData?.selected_status?.toLowerCase() !==
+                              "submitted" &&
                             purchaseOrderData?.vendor_status?.toLowerCase() !==
                               "accepted" && (
                               <Link
