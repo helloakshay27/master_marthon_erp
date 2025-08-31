@@ -2951,25 +2951,22 @@ const formatDateTime = (dateString) => {
       const payload = {
         purchase_order: {
           status: "draft",
-          credit_period: parseInt(termsFormData.creditPeriod) || 0,
-          po_validity_period: parseInt(termsFormData.poValidityPeriod) || 0,
-          advance_reminder_duration:
-            parseInt(termsFormData.advanceReminderDuration) || 0,
-          payment_terms: termsFormData.paymentTerms || "",
-          payment_remarks: termsFormData.paymentRemarks || "",
-          supplier_advance: parseFloat(termsFormData.supplierAdvance) || 0,
-          supplier_advance_amount:
-            parseFloat(termsFormData.supplierAdvanceAmount) || 0,
-          survice_certificate_advance:
-            parseFloat(termsFormData.surviceCertificateAdvance) || 0,
-          total_value: 0,
-          total_discount: 0,
+          credit_period: termsFormData.creditPeriod ? parseInt(termsFormData.creditPeriod) : null,
+          po_validity_period: termsFormData.poValidityPeriod ? parseInt(termsFormData.poValidityPeriod) : null,
+          advance_reminder_duration: termsFormData.advanceReminderDuration ? parseInt(termsFormData.advanceReminderDuration) : null,
+          payment_terms: termsFormData.paymentTerms || null,
+          payment_remarks: termsFormData.paymentRemarks || null,
+          supplier_advance: termsFormData.supplierAdvance ? parseFloat(termsFormData.supplierAdvance) : null,
+          supplier_advance_amount: termsFormData.supplierAdvanceAmount ? parseFloat(termsFormData.supplierAdvanceAmount) : null,
+          survice_certificate_advance: termsFormData.surviceCertificateAdvance ? parseFloat(termsFormData.surviceCertificateAdvance) : null,
+          total_value: null,
+          total_discount: null,
           po_date: getLocalDateTime().split("T")[0], // Current date
           company_id: selectedCompany?.value,
           po_type: "ropo",
           supplier_id: selectedSupplier?.value,
-          remark: termsFormData.remark || "",
-          comments: termsFormData.comments || "",
+          remark: termsFormData.remark || null,
+          comments: termsFormData.comments || null,
           material_inventory_ids: apiMaterialInventoryIds,
 
           // Include purchase order ID if available (for updates)
@@ -2978,18 +2975,17 @@ const formatDateTime = (dateString) => {
           // Format other cost details with taxes
           other_cost_details_attributes: otherCosts.map((cost) => {
             const costPayload = {
-              cost_type: cost.cost_name || "",
-              cost: parseFloat(cost.amount) || 0,
-              scope: cost.scope || "",
+              cost_type: cost.cost_name || null,
+              cost: cost.amount ? parseFloat(cost.amount) : null,
+              scope: cost.scope || null,
               taxes_and_charges_attributes: [
                 ...(cost.taxes?.additionTaxes || []).map((tax) => {
                   const taxPayload = {
-                    resource_id: parseInt(tax.taxType) || 0,
+                    resource_id: tax.taxType ? parseInt(tax.taxType) : null,
                     resource_type: "TaxCategory",
-                    percentage:
-                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+                    percentage: tax.taxPercentage ? parseFloat(tax.taxPercentage.replace("%", "")) : null,
                     inclusive: tax.inclusive || false,
-                    amount: parseFloat(tax.amount) || 0,
+                    amount: tax.amount ? parseFloat(tax.amount) : null,
                     addition: true,
                   };
                   // Only include ID if it exists and is not undefined/null
@@ -3000,12 +2996,11 @@ const formatDateTime = (dateString) => {
                 }),
                 ...(cost.taxes?.deductionTaxes || []).map((tax) => {
                   const taxPayload = {
-                    resource_id: parseInt(tax.taxType) || 0,
+                    resource_id: tax.taxType ? parseInt(tax.taxType) : null,
                     resource_type: "TaxCategory",
-                    percentage:
-                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+                    percentage: tax.taxPercentage ? parseFloat(tax.taxPercentage.replace("%", "")) : null,
                     inclusive: tax.inclusive || false,
-                    amount: parseFloat(tax.amount) || 0,
+                    amount: tax.amount ? parseFloat(tax.amount) : null,
                     addition: false,
                   };
                   // Only include ID if it exists and is not undefined/null
@@ -3026,18 +3021,17 @@ const formatDateTime = (dateString) => {
           // Format charges with taxes
           charges_with_taxes_attributes: charges.map((charge) => {
             const chargePayload = {
-              charge_id: charge.charge_id || 0,
-              amount: parseFloat(charge.amount) || 0,
-              realised_amount: parseFloat(charge.realised_amount) || 0,
+              charge_id: charge.charge_id || null,
+              amount: charge.amount ? parseFloat(charge.amount) : null,
+              realised_amount: charge.realised_amount ? parseFloat(charge.realised_amount) : null,
               taxes_and_charges_attributes: [
                 ...(charge.taxes?.additionTaxes || []).map((tax) => {
                   const taxPayload = {
-                    resource_id: parseInt(tax.taxType) || 0,
+                    resource_id: tax.taxType ? parseInt(tax.taxType) : null,
                     resource_type: "TaxCategory",
-                    percentage:
-                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+                    percentage: tax.taxPercentage ? parseFloat(tax.taxPercentage.replace("%", "")) : null,
                     inclusive: tax.inclusive || false,
-                    amount: parseFloat(tax.amount) || 0,
+                    amount: tax.amount ? parseFloat(tax.amount) : null,
                     addition: true,
                   };
                   // Only include ID if it exists and is not undefined/null
@@ -3048,12 +3042,11 @@ const formatDateTime = (dateString) => {
                 }),
                 ...(charge.taxes?.deductionTaxes || []).map((tax) => {
                   const taxPayload = {
-                    resource_id: parseInt(tax.taxType) || 0,
+                    resource_id: tax.taxType ? parseInt(tax.taxType) : null,
                     resource_type: "TaxCategory",
-                    percentage:
-                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+                    percentage: tax.taxPercentage ? parseFloat(tax.taxPercentage.replace("%", "")) : null,
                     inclusive: tax.inclusive || false,
-                    amount: parseFloat(tax.amount) || 0,
+                    amount: tax.amount ? parseFloat(tax.amount) : null,
                     addition: false,
                   };
                   // Only include ID if it exists and is not undefined/null
