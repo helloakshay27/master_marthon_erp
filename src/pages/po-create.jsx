@@ -1599,6 +1599,7 @@ const PoCreate = () => {
         id: Date.now(),
         fileType: "",
         fileName: "",
+        document_file_name: "", // Initialize document_file_name field
         uploadDate: getLocalDateTime(),
         fileUrl: "",
         file: null,
@@ -1631,14 +1632,14 @@ const PoCreate = () => {
                 fileType: contentType,
                 fileName: file.name,
                 isExisting: false,
-                document_file_name: att.document_file_name || file.name,
+                document_file_name: file.name, // Set document_file_name to file name initially
                 uploadDate: getLocalDateTime(),
                 attachments: [
                   {
-                    filename: file.name,
+                    filename: file.name, // Keep original filename
                     content: base64Content,
                     content_type: contentType,
-                    document_file_name: att.document_file_name || file.name,
+                    document_file_name: file.name, // Set document_file_name to file name initially
                   },
                 ],
               }
@@ -1657,11 +1658,13 @@ const PoCreate = () => {
           ? {
               ...att,
               fileName: newFileName,
+              document_file_name: newFileName,
               attachments: att.attachments?.length
                 ? [
                     {
                       ...att.attachments[0],
-                      filename: newFileName,
+                      filename: att.attachments[0].filename, // Keep original filename
+                      document_file_name: newFileName, // Update document_file_name with changed name
                     },
                   ]
                 : [],

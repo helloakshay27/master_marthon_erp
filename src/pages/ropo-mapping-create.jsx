@@ -1255,6 +1255,46 @@ useEffect(() => {
 
   // Handle final ROPO mapping submit
   const handleRopoMappingSubmit = async () => {
+    // Validation: Check if order quantities are entered for all PO materials
+    if (poData && poData.length > 0) {
+      const missingQuantities = [];
+      
+      poData.forEach((item) => {
+        const orderQty = orderedQuantities[
+          `${item.purchase_order_id}-${item.mor_inventory_id}`
+        ];
+        
+        if (!orderQty || parseFloat(orderQty) <= 0) {
+          missingQuantities.push(item.material_name || `Material ID: ${item.mor_inventory_id}`);
+        }
+      });
+      
+      if (missingQuantities.length > 0) {
+        alert(`Please enter order quantities for the following materials:\n${missingQuantities.join('\n')}`);
+        return;
+      }
+    }
+
+    // Validation: Check if passedMaterialData has quantities when poData is empty
+    if ((!poData || poData.length === 0) && passedMaterialData && passedMaterialData.length > 0) {
+      const missingQuantities = [];
+      
+      passedMaterialData.forEach((item) => {
+        const orderQty = orderedQuantities[
+          `${item.purchase_order_id}-${item.mor_inventory_id}`
+        ];
+        
+        if (!orderQty || parseFloat(orderQty) <= 0) {
+          missingQuantities.push(item.material_name || `Material ID: ${item.mor_inventory_id}`);
+        }
+      });
+      
+      if (missingQuantities.length > 0) {
+        alert(`Please enter order quantities for the following materials:\n${missingQuantities.join('\n')}`);
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {

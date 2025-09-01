@@ -9,7 +9,7 @@ import { baseURL } from "../confi/apiDomain";
 import { useParams, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
-const PoAmmendEdit = () => {
+const PoEditAmmend = () => {
   // State variables for the modal
   const [apiMaterialInventoryIds, setApiMaterialInventoryIds] = useState();
   const [showModal, setShowModal] = useState(false);
@@ -185,7 +185,7 @@ const formatDateTime = (dateString) => {
         }
 
         const response = await axios.get(
-          `${baseURL}purchase_orders/${id}/ropo_detail.json?token=${token}&amend=true`
+          `${baseURL}purchase_orders/${id}/ropo_detail.json?token=${token}`
         );
         console.log("Purchase order data:", response.data);
         setPurchaseOrderData(response.data);
@@ -200,34 +200,18 @@ const formatDateTime = (dateString) => {
     fetchPurchaseOrderData();
   }, [id, token]);
 
-  // Effect to update tableData when submittedMaterials changes
-  useEffect(() => {
-    if (submittedMaterials.length > 0) {
-      const formatted = submittedMaterials.map((mat) => ({
-        id: mat.id,
-        materialType: mat.pms_inventory_type_id,
-        materialTypeLabel: mat.material_type_name || "",
-        materialSubType: mat.pms_inventory_sub_type_id,
-        materialSubTypeLabel: mat.material_sub_type_name || "",
-        material: mat.pms_inventory_id,
-        materialLabel: mat.material_name || "",
-        genericSpecification: mat.pms_generic_info_id,
-        genericSpecificationLabel: mat.generic_info || "",
-        colour: mat.pms_colour_id,
-        colourLabel: mat.colour || "",
-        brand: mat.pms_brand_id,
-        brandLabel: mat.brand_name || "",
-        uom: mat.unit_of_measure_id,
-        uomLabel: mat.uom || "",
-        effectiveDate: mat.effective_date || "",
-        _destroy: mat._destroy || false,
-        // Keep the original material object for editing
-        originalMaterial: mat,
-      }));
-      setTableData(formatted);
-      console.log("Updated tableData from submittedMaterials:", formatted);
+  // Helper to refetch and refresh page state after successful updates
+  const refetchPurchaseOrderData = async () => {
+    try {
+      const response = await axios.get(
+        `${baseURL}purchase_orders/${id}/ropo_detail.json?token=${token}`
+      );
+      console.log("Refetched purchase order data");
+      populateFormData(response.data);
+    } catch (error) {
+      console.error("Error refetching purchase order data:", error);
     }
-  }, [submittedMaterials]);
+  };
 
   // Function to populate form data from API response
   const populateFormData = (poData) => {
@@ -449,57 +433,22 @@ const formatDateTime = (dateString) => {
 
    
 
-    // Only populate material details if we don't have submitted materials
-    // This ensures that submitted materials are preserved when switching tabs
-    if (poData.material_details && submittedMaterials.length === 0) {
+    if (poData.material_details) {
       const formatted = poData.material_details.map((mat) => ({
-        id: mat.id,
-        materialType: mat.pms_inventory_type_id,
-        materialTypeLabel: mat.material_type_name || "",
-        materialSubType: mat.pms_inventory_sub_type_id,
+        // Map to your table row structure
+        materialTypeLabel: mat.material_type_name || "", // or whatever field you use
         materialSubTypeLabel: mat.material_sub_type_name || "",
-        material: mat.pms_inventory_id,
         materialLabel: mat.material_name || "",
-        genericSpecification: mat.pms_generic_info_id,
         genericSpecificationLabel: mat.generic_info || "",
-        colour: mat.pms_colour_id,
         colourLabel: mat.colour || "",
-        brand: mat.pms_brand_id,
         brandLabel: mat.brand_name || "",
-        uom: mat.unit_of_measure_id,
         uomLabel: mat.uom || "",
-        effectiveDate: mat.effective_date || "",
-        _destroy: mat._destroy || false,
-        // Keep the original material object for editing
-        originalMaterial: mat,
+        // ...other fields as needed
+        // You may want to keep the original data for editing
+        material: mat, // for edit modal
       }));
-      setTableData(formatted);
-      console.log("Formatted material details from API:", formatted);
-    } else if (submittedMaterials.length > 0) {
-      // If we have submitted materials, use those instead
-      const formatted = submittedMaterials.map((mat) => ({
-        id: mat.id,
-        materialType: mat.pms_inventory_type_id,
-        materialTypeLabel: mat.material_type_name || "",
-        materialSubType: mat.pms_inventory_sub_type_id,
-        materialSubTypeLabel: mat.material_sub_type_name || "",
-        material: mat.pms_inventory_id,
-        materialLabel: mat.material_name || "",
-        genericSpecification: mat.pms_generic_info_id,
-        genericSpecificationLabel: mat.generic_info || "",
-        colour: mat.pms_colour_id,
-        colourLabel: mat.colour || "",
-        brand: mat.pms_brand_id,
-        brandLabel: mat.brand_name || "",
-        uom: mat.unit_of_measure_id,
-        uomLabel: mat.uom || "",
-        effectiveDate: mat.effective_date || "",
-        _destroy: mat._destroy || false,
-        // Keep the original material object for editing
-        originalMaterial: mat,
-      }));
-      setTableData(formatted);
-      console.log("Using submitted materials for table data:", formatted);
+      setTableData(formatted); // <-- THIS IS THE KEY LINE
+      console.log("Formatted material details:", formatted);
     }
 
 
@@ -540,7 +489,7 @@ const formatDateTime = (dateString) => {
       return {
         id: att.id || att.blob_id || Math.random(),
         fileType: att.file_type || att.document_content_type || "",
-        fileName: att.file_name || att.document_file_name || "Untitled",
+        fileName: att.file_name || att.document_file_name || "",
         uploadDate: uploadDate,
         fileUrl: att.url || "",
         doc_path: att.url || "", // Use url as doc_path
@@ -841,7 +790,40 @@ const formatDateTime = (dateString) => {
     if (editRowIndex !== null) {
       // Update existing row
       setTableData((prev) =>
-        prev.map((row, index) => (index === editRowIndex ? newRow : row))
+        prev.map((row, index) => {
+          if (index === editRowIndex) {
+            // Check if this is an existing material (has material object with API data)
+            if (row.material && typeof row.material === 'object' && row.material.id) {
+              // Update existing material - preserve the material object but update the labels
+              return {
+                ...row,
+                materialTypeLabel: inventoryTypes2.find((opt) => opt.value === formData.materialType)?.label || "",
+                materialSubTypeLabel: inventorySubTypes2.find((opt) => opt.value === formData.materialSubType)?.label || "",
+                materialLabel: inventoryMaterialTypes2.find((opt) => opt.value === formData.material)?.label || "",
+                genericSpecificationLabel: genericSpecifications.find((opt) => opt.value === formData.genericSpecification)?.label || "",
+                colourLabel: colors.find((opt) => opt.value === formData.colour)?.label || "",
+                brandLabel: inventoryBrands.find((opt) => opt.value === formData.brand)?.label || "",
+                uomLabel: unitOfMeasures.find((opt) => opt.value === formData.uom)?.label || "",
+                effectiveDate: formData.effectiveDate,
+                // Update the material object with new values
+                material: {
+                  ...row.material,
+                  pms_inventory_type_id: formData.materialType,
+                  pms_inventory_sub_type_id: formData.materialSubType,
+                  pms_inventory_id: formData.material,
+                  pms_generic_info_id: formData.genericSpecification,
+                  pms_colour_id: formData.colour,
+                  pms_brand_id: formData.brand,
+                  uom_id: formData.uom,
+                }
+              };
+            } else {
+              // Update new material - use the newRow structure
+              return newRow;
+            }
+          }
+          return row;
+        })
       );
     } else {
       // Add new row
@@ -878,16 +860,34 @@ const formatDateTime = (dateString) => {
 
   const handleEditRow = (index, material) => {
     const row = tableData[index];
+    
+    // Check if this is an existing material (has material object with API data)
+    if (row.material && typeof row.material === 'object' && row.material.id) {
+      // Existing material - extract values from the material object
     setFormData({
-      materialType: row.materialType,
-      materialSubType: row.materialSubType,
-      material: row.material,
-      genericSpecification: row.genericSpecification,
-      colour: row.colour,
-      brand: row.brand,
-      effectiveDate: row.effectiveDate,
-      uom: row.uom,
-    });
+        materialType: row.material.pms_inventory_type_id || "",
+        materialSubType: row.material.pms_inventory_sub_type_id || "",
+        material: row.material.pms_inventory_id || "",
+        genericSpecification: row.material.pms_generic_info_id || "",
+        colour: row.material.pms_colour_id || "",
+        brand: row.material.pms_brand_id || "",
+        effectiveDate: row.effectiveDate || "",
+        uom: row.material.uom_id || "",
+      });
+    } else {
+      // New material - use the direct values
+      setFormData({
+        materialType: row.materialType || "",
+        materialSubType: row.materialSubType || "",
+        material: row.material || "",
+        genericSpecification: row.genericSpecification || "",
+        colour: row.colour || "",
+        brand: row.brand || "",
+        effectiveDate: row.effectiveDate || "",
+        uom: row.uom || "",
+      });
+    }
+    
     setEditRowIndex(index);
     setShowModal(true);
   };
@@ -912,22 +912,9 @@ const formatDateTime = (dateString) => {
   // );
   //   };
   const handleDeleteRow = (index) => {
-    const deletedMaterial = tableData[index];
-
-    setTableData((prev) => prev.filter((_, i) => i !== index));
-
-    // Remove from submittedMaterials
-    setSubmittedMaterials((prev) =>
-      prev.filter(
-        (m) => m.pms_inventory_id !== deletedMaterial.material
-      )
-    );
-
-    // Remove from rateAndTaxes
-    setRateAndTaxes((prev) =>
-      prev.filter(
-        (m) => m.material_inventory_id !== deletedMaterial.material
-      )
+    // Soft-delete: mark row with _destroy so it is excluded from submission and views
+    setTableData((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, _destroy: true } : row))
     );
   };
 
@@ -979,15 +966,18 @@ const formatDateTime = (dateString) => {
             typeof row.material === "object" &&
             row.material.id
           ) {
-            // Existing material - extract values from the material object
+            // Existing material - extract values from the material object with safe fallbacks
             return {
-              id: row.material.id, // Use the actual ID from the material object
-              pms_inventory_id: row.material.pms_inventory_id,
-              unit_of_measure_id: row.material.uom_id,
-              pms_inventory_sub_type_id: row.material.pms_inventory_sub_type_id,
-              pms_generic_info_id: row.material.pms_generic_info_id,
-              pms_colour_id: row.material.pms_colour_id,
-              pms_brand_id: row.material.pms_brand_id,
+              id: row.material.id || row.id,
+              pms_inventory_id:
+                row.material.pms_inventory_id || row.material || row.materialId,
+              unit_of_measure_id: row.material.uom_id || row.uom,
+              pms_inventory_sub_type_id:
+                row.material.pms_inventory_sub_type_id || row.materialSubType || null,
+              pms_generic_info_id:
+                row.material.pms_generic_info_id || row.genericSpecification || null,
+              pms_colour_id: row.material.pms_colour_id || row.colour || null,
+              pms_brand_id: row.material.pms_brand_id || row.brand || null,
               _destroy: row._destroy || false,
             };
           } else {
@@ -996,7 +986,7 @@ const formatDateTime = (dateString) => {
               id: row.id, // Include ID for existing records
               pms_inventory_id: row.material,
               unit_of_measure_id: row.uom,
-              pms_inventory_sub_type_id: row.materialSubType,
+              pms_inventory_sub_type_id: row.materialSubType || null,
               pms_generic_info_id: row.genericSpecification || null,
               pms_colour_id: row.colour || null,
               pms_brand_id: row.brand || null,
@@ -1032,30 +1022,9 @@ const formatDateTime = (dateString) => {
 
         // Store the materials data from API response
         if (response.data.success && response.data.materials) {
+          // Keep displaying the user's current tableData (labels preserved)
+          // and only store API-returned materials separately for calculations/rates
           setSubmittedMaterials(response.data.materials);
-          
-          // Format the API response data to match the table display format
-          const formattedMaterials = response.data.materials.map((material) => ({
-            id: material.id,
-            materialType: material.pms_inventory_type_id,
-            materialTypeLabel: material.material_type_name || "",
-            materialSubType: material.pms_inventory_sub_type_id,
-            materialSubTypeLabel: material.material_sub_type_name || "",
-            material: material.pms_inventory_id,
-            materialLabel: material.material_name || "",
-            genericSpecification: material.pms_generic_info_id,
-            genericSpecificationLabel: material.generic_info || "",
-            colour: material.pms_colour_id,
-            colourLabel: material.colour || "",
-            brand: material.pms_brand_id,
-            brandLabel: material.brand_name || "",
-            uom: material.unit_of_measure_id,
-            uomLabel: material.uom || "",
-            effectiveDate: material.effective_date || "",
-            _destroy: material._destroy || false,
-          }));
-          
-          setTableData(formattedMaterials);
         }
 
         if (response.data.success && response.data.material_inventory_ids) {
@@ -1076,7 +1045,8 @@ const formatDateTime = (dateString) => {
         }
 
         alert("Materials submitted successfully!");
-        // Change tab to Rate & Taxes
+        // Refresh page data and then change tab to Rate & Taxes
+        await refetchPurchaseOrderData();
         setActiveTab("rate-taxes");
         const rateTaxesTab = document.querySelector(
           '[data-bs-target="#Domestic2"]'
@@ -1420,8 +1390,10 @@ const formatDateTime = (dateString) => {
               currentTax.amount = calculatedAmount.toString();
             }
           } else if (field === "amount") {
-            // Handle direct amount input for TaxCharge type
-            currentTax[field] = value;
+            // Handle direct amount input for TaxCharge type, non-negative only
+            const parsed = parseFloat(value);
+            const nonNegative = isNaN(parsed) ? 0 : Math.max(0, parsed);
+            currentTax[field] = nonNegative.toString();
 
             // For TaxCategory, amount is auto-calculated from percentage
             if (
@@ -1543,38 +1515,10 @@ const formatDateTime = (dateString) => {
         return;
       }
 
-      // Get the material from combined materials list to handle both existing and new materials
-      const combinedMaterials = getCombinedMaterials();
-      const material = combinedMaterials[tableId];
-      
-      if (!material) {
-        console.error("No material found at tableId:", tableId);
-        return;
-      }
-
-      // Determine the material ID - check multiple possible sources
-      let materialId = null;
-      
-      // First check if it's a submitted material with an ID
-      if (material.isSubmitted && material.id) {
-        materialId = material.id;
-      }
-      // Check if it's an existing material from rateAndTaxes with po_mor_inventory_id
-      else if (material.po_mor_inventory_id) {
-        materialId = material.po_mor_inventory_id;
-      }
-      // Check if it's an existing material with id field
-      else if (material.id) {
-        materialId = material.id;
-      }
-      // Check if it's a submitted material with material_inventory_id
-      else if (material.material_inventory_id) {
-        materialId = material.material_inventory_id;
-      }
-
-      if (!materialId) {
-        console.error("No material ID available for API call. Material data:", material);
-        alert("Unable to save tax changes: No material ID found. Please submit the material first.");
+      // Get the material ID from submitted materials
+      const material = submittedMaterials[tableId];
+      if (!material || !material.id) {
+        console.error("No material ID available for API call");
         return;
       }
 
@@ -1660,11 +1604,11 @@ const formatDateTime = (dateString) => {
       };
 
       console.log("Saving tax changes with payload:", payload);
-      console.log("Material ID:", materialId);
+      console.log("Material ID:", material.id);
 
       try {
         const response = await axios.patch(
-          `${baseURL}po_mor_inventories/${materialId}.json?token=${token}`,
+          `${baseURL}po_mor_inventories/${material.id}.json?token=${token}`,
           payload
         );
 
@@ -1673,47 +1617,6 @@ const formatDateTime = (dateString) => {
         if (response.status === 200 || response.status === 201) {
           // Update local state with the response data
           const responseData = response.data;
-          
-          // Update the appropriate state based on whether it's an existing or new material
-          if (material.isSubmitted) {
-            // Update submittedMaterials
-            setSubmittedMaterials((prev) =>
-              prev.map((item) =>
-                item.id === materialId
-                  ? {
-                      ...item,
-                      material_rate: responseData.rate_per_nos?.toString() || item.material_rate,
-                      discount_percentage: responseData.discount_per?.toString() || item.discount_percentage,
-                      discount_rate: responseData.discount_rate?.toString() || item.discount_rate,
-                      material_cost: responseData.material_cost?.toString() || item.material_cost,
-                      after_discount_value: responseData.after_discount_value?.toString() || item.after_discount_value,
-                      total_base_cost: responseData.tax_applicable_cost?.toString() || item.total_base_cost,
-                      all_inclusive_cost: responseData.total_material_cost?.toString() || item.all_inclusive_cost,
-                    }
-                  : item
-              )
-            );
-          } else {
-            // Update rateAndTaxes for existing materials
-            setRateAndTaxes((prev) =>
-              prev.map((item) =>
-                (item.po_mor_inventory_id === materialId || item.id === materialId)
-                  ? {
-                      ...item,
-                      material_rate: responseData.rate_per_nos?.toString() || item.material_rate,
-                      discount_percentage: responseData.discount_per?.toString() || item.discount_percentage,
-                      discount_rate: responseData.discount_rate?.toString() || item.discount_rate,
-                      material_cost: responseData.material_cost?.toString() || item.material_cost,
-                      after_discount_value: responseData.after_discount_value?.toString() || item.after_discount_value,
-                      total_base_cost: responseData.tax_applicable_cost?.toString() || item.total_base_cost,
-                      all_inclusive_cost: responseData.total_material_cost?.toString() || item.all_inclusive_cost,
-                    }
-                  : item
-              )
-            );
-          }
-
-          // Update taxRateData
           setTaxRateData((prev) => ({
             ...prev,
             [tableId]: {
@@ -1762,8 +1665,35 @@ const formatDateTime = (dateString) => {
                 })) || currentData.deduction_bid_material_tax_details,
             },
           }));
+          
 
           alert("Tax changes saved successfully!");
+          // Reflect saved values into Rate & Taxes table row
+          try {
+            const mappedValues = {
+              material_rate: responseData.rate_per_nos ?? "",
+              discount_percentage: responseData.discount_per ?? "",
+              discount_rate: responseData.discount_rate ?? "",
+              material_cost: responseData.material_cost ?? "",
+              after_discount_value: responseData.after_discount_value ?? "",
+              total_base_cost: responseData.tax_applicable_cost ?? "",
+              all_inclusive_cost: responseData.total_material_cost ?? "",
+            };
+
+            const rateLen = Array.isArray(rateAndTaxes) ? rateAndTaxes.length : 0;
+            if (tableId < rateLen) {
+              setRateAndTaxes((prev) =>
+                prev.map((item, idx) => (idx === tableId ? { ...item, ...mappedValues } : item))
+              );
+            } else {
+              const submittedIndex = tableId - rateLen;
+              setSubmittedMaterials((prev) =>
+                prev.map((m, idx) => (idx === submittedIndex ? { ...m, ...mappedValues } : m))
+              );
+            }
+          } catch (e) {
+            console.error("Error updating Rate & Taxes row:", e);
+          }
         }
       } catch (error) {
         console.error("Error saving tax changes:", error);
@@ -2300,9 +2230,34 @@ const formatDateTime = (dateString) => {
     );
   };
 
-  const attachmentsPayload = attachments.flatMap(
-    (att) => att.attachments || []
-  );
+  // Build attachments payload:
+  // - For existing items: include id if present and updated document_file_name if renamed
+  // - For new items: include uploaded attachment with document_file_name set from edited fileName
+  const attachmentsPayload = attachments.flatMap((att) => {
+    // Existing attachment (from API)
+    if (att.isExisting) {
+      const payload = {};
+      if (att.id) payload.id = att.id;
+      // If user edited the fileName, pass it as document_file_name
+      if (att.fileName && att.fileName.trim() !== "") {
+        payload.document_file_name = att.fileName.trim();
+      }
+      // Only include payload object if it has some keys (id or document_file_name)
+      return Object.keys(payload).length > 0 ? [payload] : [];
+    }
+
+    // New attachment: use first item of attachments array
+    const first = (att.attachments || [])[0];
+    if (!first) return [];
+    return [
+      {
+        filename: first.filename,
+        content: first.content,
+        content_type: first.content_type,
+        document_file_name: att.fileName && att.fileName.trim() !== "" ? att.fileName.trim() : first.document_file_name || first.filename,
+      },
+    ];
+  });
 
   console.log("attachments:", attachmentsPayload);
   // document secttion
@@ -2415,14 +2370,17 @@ const formatDateTime = (dateString) => {
   // Handle rate per nos change with automatic discount rate calculation
   const handleRatePerNosChange = useCallback(
     (value) => {
+      // Disallow negatives
+      const numeric = parseFloat(value);
+      const safeRatePerNos = isNaN(numeric) ? 0 : Math.max(0, numeric);
       const currentData = taxRateData[tableId];
       if (!currentData) return;
 
       const discountPercentage = parseFloat(currentData.discount) || 0;
       const totalPoQty = parseFloat(currentData.totalPoQty) || 0;
 
-      const newDiscountRate = calculateDiscountRate(value, discountPercentage);
-      const newMaterialCost = calculateMaterialCost(value, totalPoQty);
+      const newDiscountRate = calculateDiscountRate(safeRatePerNos, discountPercentage);
+      const newMaterialCost = calculateMaterialCost(safeRatePerNos, totalPoQty);
       const newAfterDiscountValue = calculateAfterDiscountValue(
         newMaterialCost,
         discountPercentage
@@ -2432,7 +2390,7 @@ const formatDateTime = (dateString) => {
         ...prev,
         [tableId]: {
           ...prev[tableId],
-          ratePerNos: value,
+          ratePerNos: safeRatePerNos.toString(),
           discountRate: newDiscountRate.toString(),
           materialCost: newMaterialCost.toString(),
           afterDiscountValue: newAfterDiscountValue.toString(),
@@ -2445,24 +2403,27 @@ const formatDateTime = (dateString) => {
   // Handle discount percentage change with automatic discount rate calculation
   const handleDiscountPercentageChange = useCallback(
     (value) => {
+      // Clamp between 0 and 100
+      const parsed = parseFloat(value);
+      const clamped = isNaN(parsed) ? 0 : Math.max(0, Math.min(100, parsed));
       const currentData = taxRateData[tableId];
       if (!currentData) return;
 
       const ratePerNos = parseFloat(currentData.ratePerNos) || 0;
       const totalPoQty = parseFloat(currentData.totalPoQty) || 0;
 
-      const newDiscountRate = calculateDiscountRate(ratePerNos, value);
+      const newDiscountRate = calculateDiscountRate(ratePerNos, clamped);
       const newMaterialCost = calculateMaterialCost(ratePerNos, totalPoQty);
       const newAfterDiscountValue = calculateAfterDiscountValue(
         newMaterialCost,
-        value
+        clamped
       );
 
       setTaxRateData((prev) => ({
         ...prev,
         [tableId]: {
           ...prev[tableId],
-          discount: value,
+          discount: clamped.toString(),
           discountRate: newDiscountRate.toString(),
           materialCost: newMaterialCost.toString(),
           afterDiscountValue: newAfterDiscountValue.toString(),
@@ -2536,9 +2497,20 @@ const formatDateTime = (dateString) => {
 
   // Handle terms form input changes
   const handleTermsFormChange = (field, value) => {
+    // Clamp non-negative for specific numeric fields
+    const nonNegativeFields = [
+      "creditPeriod",
+      "poValidityPeriod",
+      "advanceReminderDuration",
+    ];
+    let nextValue = value;
+    if (nonNegativeFields.includes(field)) {
+      const parsed = parseFloat(value);
+      nextValue = isNaN(parsed) ? "" : Math.max(0, parsed).toString();
+    }
     setTermsFormData((prev) => ({
       ...prev,
-      [field]: value,
+      [field]: nextValue,
     }));
   };
 
@@ -2965,8 +2937,8 @@ const formatDateTime = (dateString) => {
           company_id: selectedCompany?.value,
           po_type: "ropo",
           supplier_id: selectedSupplier?.value,
-          remark: termsFormData.remark || null,
-          comments: termsFormData.comments || null,
+          remark: termsFormData.remark || "",
+          comments: termsFormData.comments || "",
           material_inventory_ids: apiMaterialInventoryIds,
 
           // Include purchase order ID if available (for updates)
@@ -3314,7 +3286,7 @@ const formatDateTime = (dateString) => {
       combined.push(
         ...rateAndTaxes.filter(
           (rate) =>
-            !deletedIds.has(rate.material_inventory_id || rate.pms_inventory_id) &&
+            !deletedIds.has(rate.material_inventory_id) &&
             // also ensure not marked _destroy on rate if present
             !rate._destroy
         )
@@ -3327,41 +3299,39 @@ const formatDateTime = (dateString) => {
       submittedMaterials
         .filter((s) => !s._destroy)
         .forEach((submitted) => {
-          const submittedMaterialName = submitted.material || submitted.material_name || "";
-          const submittedUomName = submitted.uom || submitted.uom_name || "";
-          const submittedInvId = submitted.material_inventory_id || submitted.pms_inventory_id;
+        const submittedMaterialName = submitted.material || submitted.material_name || "";
+        const submittedUomName = submitted.uom || submitted.uom_name || "";
 
-          const exists = combined.some((item) => {
-            const itemMaterialName = item.material || item.material_name || "";
-            const itemInvId = item.material_inventory_id || item.pms_inventory_id || item.material?.pms_inventory_id;
-            return (
-              (itemInvId && submittedInvId && itemInvId === submittedInvId) ||
-              itemMaterialName === submittedMaterialName
-            );
-          });
-
-          if (!exists) {
-            combined.push({
-              id: submitted.id,
-              material: submittedMaterialName,
-              uom: submittedUomName,
-              po_qty: submitted.po_qty || "",
-              material_rate: submitted.material_rate || "",
-              material_cost: submitted.material_cost || "",
-              discount_percentage: submitted.discount_percentage || "",
-              discount_rate: submitted.discount_rate || "",
-              after_discount_value: submitted.after_discount_value || "",
-              tax_addition: submitted.tax_addition || "",
-              tax_deduction: submitted.tax_deduction || "",
-              total_charges: submitted.total_charges || "",
-              total_base_cost: submitted.total_base_cost || "",
-              all_inclusive_cost: submitted.all_inclusive_cost || "",
-              material_inventory_id: submittedInvId,
-              isSubmitted: true, // Flag to identify submitted materials
-            });
-            console.log("Added submitted material:", submittedMaterialName);
-          }
+        const exists = combined.some((item) => {
+          const itemMaterialName = item.material || item.material_name || "";
+          return (
+            item.material_inventory_id === submitted.material_inventory_id ||
+            itemMaterialName === submittedMaterialName
+          );
         });
+
+        if (!exists) {
+          combined.push({
+            id: submitted.id,
+            material: submittedMaterialName,
+            uom: submittedUomName,
+            po_qty: submitted.po_qty || "",
+            material_rate: submitted.material_rate || "",
+            material_cost: submitted.material_cost || "",
+            discount_percentage: submitted.discount_percentage || "",
+            discount_rate: submitted.discount_rate || "",
+            after_discount_value: submitted.after_discount_value || "",
+            tax_addition: submitted.tax_addition || "",
+            tax_deduction: submitted.tax_deduction || "",
+            total_charges: submitted.total_charges || "",
+            total_base_cost: submitted.total_base_cost || "",
+            all_inclusive_cost: submitted.all_inclusive_cost || "",
+            material_inventory_id: submitted.material_inventory_id,
+            isSubmitted: true, // Flag to identify submitted materials
+          });
+          console.log("Added submitted material:", submittedMaterialName);
+        }
+      });
     }
 
     console.log("Combined materials:", combined);
@@ -3527,8 +3497,6 @@ const formatDateTime = (dateString) => {
                               type="radio"
                               name="contentSelector"
                               defaultValue="content3"
-                              checked
-
                             />
                             <label className="form-check-label">ROPO</label>
                           </div>
@@ -3810,77 +3778,79 @@ const formatDateTime = (dateString) => {
                                               {index + 1}
                                             </td>
                                             <td className="text-start">
-                                              {row.materialTypeLabel || row.originalMaterial?.material_type_name || ""}
+                                              {row.materialTypeLabel}
                                             </td>
                                             <td className="text-start">
-                                              {row.materialSubTypeLabel || row.originalMaterial?.material_sub_type_name || ""}
+                                              {row.materialSubTypeLabel}
                                             </td>
                                             <td className="text-start">
-                                              {row.materialLabel || row.originalMaterial?.material_name || ""}
+                                              {row.materialLabel}
                                             </td>
                                             <td className="text-start">
-                                              {row.genericSpecificationLabel || row.originalMaterial?.generic_info || ""}
+                                              {row.genericSpecificationLabel}
                                             </td>
                                             <td className="text-start">
-                                              {row.colourLabel || row.originalMaterial?.colour || ""}
+                                              {row.colourLabel}
                                             </td>
                                             <td className="text-start">
-                                              {row.brandLabel || row.originalMaterial?.brand_name || ""}
+                                              {row.brandLabel}
                                             </td>
                                             <td className="text-start">
-                                              {row.uomLabel || row.originalMaterial?.uom || ""}
+                                              {row.uomLabel}
                                             </td>
 
                                             <td className="text-start">
-                                              {(!row.id || row.id.toString().length >= 10) && (
-                                              <span
-                                                onClick={() =>
-                                                  handleEditRow(
-                                                    index,
-                                                    row.material
-                                                  )
-                                                }
-                                                style={{ cursor: "pointer" }}
-                                              >
-                                                <svg
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                  width="16"
-                                                  height="16"
-                                                  fill="currentColor"
-                                                  className="bi bi-pencil-square"
-                                                  viewBox="0 0 16 16"
+                                              {/* Only show edit icon for new materials (not existing ones from API) */}
+                                              {(!row.material || typeof row.material !== "object" || !row.material.id) && (
+                                                <span
+                                                  onClick={() =>
+                                                    handleEditRow(
+                                                      index,
+                                                      row.material
+                                                    )
+                                                  }
+                                                  style={{ cursor: "pointer" }}
                                                 >
-                                                  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path>
-                                                  <path
-                                                    fillRule="evenodd"
-                                                    d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
-                                                  ></path>
-                                                </svg>
-                                              </span>
-                                               )}
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    fill="currentColor"
+                                                    className="bi bi-pencil-square"
+                                                    viewBox="0 0 16 16"
+                                                  >
+                                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path>
+                                                    <path
+                                                      fillRule="evenodd"
+                                                      d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                                                    ></path>
+                                                  </svg>
+                                                </span>
+                                              )}
                                             </td>
                                             <td className="text-start">
-                                               {!row.id && (
-                                              <button
-                                                className="btn mt-0 pt-0"
-                                                onClick={() =>
-                                                  handleDeleteRow(index)
-                                                }
-                                              >
-                                                <svg
-                                                  width="16"
-                                                  height="20"
-                                                  viewBox="0 0 16 20"
-                                                  fill="none"
-                                                  xmlns="http://www.w3.org/2000/svg"
+                                              {/* Only show delete icon for new materials (not existing ones from API) */}
+                                              {(!row.material || typeof row.material !== "object" || !row.material.id) && (
+                                                <button
+                                                  className="btn mt-0 pt-0"
+                                                  onClick={() =>
+                                                    handleDeleteRow(index)
+                                                  }
                                                 >
-                                                  <path
-                                                    d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533ZM7.52531 16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
-                                                    fill="#B25657"
-                                                  />
-                                                </svg>
-                                              </button>
-                                               )}
+                                                  <svg
+                                                    width="16"
+                                                    height="20"
+                                                    viewBox="0 0 16 20"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                  >
+                                                    <path
+                                                      d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533ZM7.52531 16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
+                                                      fill="#B25657"
+                                                    />
+                                                  </svg>
+                                                </button>
+                                              )}
                                             </td>
                                           </tr>
                                         ))
@@ -3979,8 +3949,8 @@ const formatDateTime = (dateString) => {
                                       combinedMaterials.map((item, index) => (
                                         <tr key={item.id || index}>
                                           <td>{index + 1}</td>
-                                          <td>{item.material || item.material_name || ""}</td>
-                                          <td>{item.uom || item.uom_name || ""}</td>
+                                          <td>{item.material}</td>
+                                          <td>{item.uom}</td>
                                           <td>{item.po_qty || "-"}</td>
                                           <td>{item.material_rate || "-"}</td>
                                           <td>{item.material_cost || "-"}</td>
@@ -4316,6 +4286,7 @@ const formatDateTime = (dateString) => {
                                   </tbody>
                                 </table>
                               </div>
+                              
                               {/* )} */}
                               
                               {/* Update Button */}
@@ -4347,6 +4318,7 @@ const formatDateTime = (dateString) => {
                                     <input
                                       className="form-control"
                                       type="number"
+                                      min={0}
                                       value={termsFormData.creditPeriod}
                                       onChange={(e) =>
                                         handleTermsFormChange(
@@ -4366,6 +4338,7 @@ const formatDateTime = (dateString) => {
                                     <input
                                       className="form-control"
                                       type="number"
+                                      min={0}
                                       value={termsFormData.poValidityPeriod}
                                       onChange={(e) =>
                                         handleTermsFormChange(
@@ -4385,6 +4358,7 @@ const formatDateTime = (dateString) => {
                                     <input
                                       className="form-control"
                                       type="number"
+                                      min={0}
                                       value={
                                         termsFormData.advanceReminderDuration
                                       }
@@ -4613,7 +4587,8 @@ const formatDateTime = (dateString) => {
                                     </label>
                                     <input
                                       className="form-control"
-                                      type="text"
+                                      type="number"
+                                      min={0}
                                       placeholder={0}
                                     />
                                   </div>
@@ -5053,7 +5028,7 @@ const formatDateTime = (dateString) => {
                                 </div>
 
                                 <div
-                                  className="tbl-container mb-4"
+                                  className="tbl-container mb-2"
                                   style={{ maxHeight: "500px" }}
                                 >
                                   <table className="w-100">
@@ -5083,8 +5058,7 @@ const formatDateTime = (dateString) => {
                                           <td>
                                             <input
                                               className="form-control file_name"
-                                              required
-                                              value={att.fileName || 'Untitled'}
+                                              value={att.fileName || ''}
                                               onChange={(e) => handleFileNameChange(att.id, e.target.value)}
                                             />
                                           </td>
@@ -5523,6 +5497,16 @@ const formatDateTime = (dateString) => {
               </tbody>
             </table>
           </div>
+          {/* Ensure native dropdown arrows are visible inside this modal */}
+          <style>{`
+            .modal select.form-control, .modal select {
+              -webkit-appearance: auto;
+              -moz-appearance: auto;
+              appearance: auto;
+              background-image: initial !important;
+              background-repeat: no-repeat;
+            }
+          `}</style>
         </Modal.Body>
         <Modal.Footer className="justify-content-center">
           <button
@@ -5767,10 +5751,11 @@ const formatDateTime = (dateString) => {
                 <div className="mb-3">
                   <label className="form-label fw-bold">Rate per Nos</label>
                   <input
-                    type="text"
+                    type="number"
                     className="form-control"
                     value={taxRateData[tableId]?.ratePerNos || ""}
                     onChange={(e) => handleRatePerNosChange(e.target.value)}
+                    min={0}
                   />
                 </div>
               </div>
@@ -5793,12 +5778,14 @@ const formatDateTime = (dateString) => {
                 <div className="mb-3">
                   <label className="form-label fw-bold">Discount (%)</label>
                   <input
-                    type="text"
+                    type="number"
                     className="form-control"
                     value={taxRateData[tableId]?.discount || ""}
                     onChange={(e) =>
                       handleDiscountPercentageChange(e.target.value)
                     }
+                    min={0}
+                    max={100}
                   />
                 </div>
               </div>
@@ -6045,7 +6032,7 @@ const formatDateTime = (dateString) => {
 
                             <td>
                               <input
-                                type="text"
+                                type="number"
                                 className="form-control"
                                 value={item.amount || ""}
                                 onChange={(e) =>
@@ -6057,6 +6044,7 @@ const formatDateTime = (dateString) => {
                                     "addition"
                                   )
                                 }
+                                min={0}
                                 disabled={
                                   item.taxType === "TaxCategory" ||
                                   (item.taxChargeType &&
@@ -6225,7 +6213,7 @@ const formatDateTime = (dateString) => {
                             </td>
                             <td>
                               <input
-                                type="text"
+                                type="number"
                                 className="form-control"
                                 value={item.amount || ""}
                                 onChange={(e) =>
@@ -6237,6 +6225,7 @@ const formatDateTime = (dateString) => {
                                     "deduction"
                                   )
                                 }
+                                min={0}
                                 disabled={
                                   item.taxType === "TaxCategory" ||
                                   (item.taxChargeType &&
@@ -6343,4 +6332,4 @@ const formatDateTime = (dateString) => {
   );
 };
 
-export default PoAmmendEdit;
+export default PoEditAmmend;
