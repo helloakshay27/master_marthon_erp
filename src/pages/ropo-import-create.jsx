@@ -1034,14 +1034,37 @@ const RopoImportCreate = () => {
       }
 
       // Prepare materials array for API payload
-      const materials = selectedRows.map((r) => ({
-        mor_inventory_id: r.inventory_id,
+      // Requirement: when adding more materials later, include previously added materials too
+      // Build a normalized list from both submittedMaterials and selectedRows, then dedupe by mor_inventory_id
+      const previouslySubmitted = Array.isArray(submittedMaterials)
+        ? submittedMaterials
+        : [];
+
+      const normalizedFromSubmitted = previouslySubmitted.map((r) => ({
+        mor_inventory_id: r.mor_inventory_id || r.inventory_id || r.id,
         order_qty: r.order_qty || r.required_quantity || 0,
         uom_id: r.uom_id || null,
         generic_info_id: r.generic_info_id || null,
         brand_id: r.brand_id || null,
         colour_id: r.colour_id || null,
       }));
+
+      const normalizedFromSelected = selectedRows.map((r) => ({
+        mor_inventory_id: r.mor_inventory_id || r.inventory_id,
+        order_qty: r.order_qty || r.required_quantity || 0,
+        uom_id: r.uom_id || null,
+        generic_info_id: r.generic_info_id || null,
+        brand_id: r.brand_id || null,
+        colour_id: r.colour_id || null,
+      }));
+
+      const dedupMap = new Map();
+      [...normalizedFromSubmitted, ...normalizedFromSelected].forEach((m) => {
+        if (!m || m.mor_inventory_id == null) return;
+        dedupMap.set(String(m.mor_inventory_id), m);
+      });
+
+      const materials = Array.from(dedupMap.values());
 
       // Prepare API payload
       const payload = {
@@ -1061,8 +1084,8 @@ const RopoImportCreate = () => {
       console.log("API response:", response.data);
 
       // Update purchase order ID if returned from API
-      if (response.data.po_id) {
-        setPurchaseOrderId(response.data.po_id);
+      if (response.data?.purchase_order_id) {
+        setPurchaseOrderId(response.data.purchase_order_id);
       }
 
       // Prefer server-returned materials to capture po_mor_inventory IDs
@@ -2574,12 +2597,12 @@ const RopoImportCreate = () => {
     setTermsConditions(updatedConditions);
   };
 
-  // Calculate discount rate based on rate per nos and discount percentage (all in USD)
-  const calculateDiscountRate = (ratePerNos, discountPercentage) => {
-    const rate = parseFloat(ratePerNos) || 0;
+  // Calculate discount amount based on base amount (material cost) and discount percentage (all in USD)
+  const calculateDiscountRate = (baseAmount, discountPercentage) => {
+    const amount = parseFloat(baseAmount) || 0;
     const discount = parseFloat(discountPercentage) || 0;
-    // Correct calculation: Discount Rate = Rate per Nos - (Rate per Nos * Discount % / 100)
-    return Math.max(0, rate - (rate * discount) / 100);
+    // Discount amount: Example amount=100, discount=10% -> 10
+    return Math.max(0, (amount * discount) / 100);
   };
 
   // Calculate material cost based on rate per nos and total PO qty (all in USD)
@@ -2642,8 +2665,11 @@ const RopoImportCreate = () => {
       const discountPercentage = parseFloat(currentData.discount) || 0;
       const totalPoQty = parseFloat(currentData.totalPoQty) || 0;
 
-      const newDiscountRate = calculateDiscountRate(value, discountPercentage);
       const newMaterialCost = calculateMaterialCost(value, totalPoQty);
+      const newDiscountRate = calculateDiscountRate(
+        newMaterialCost,
+        discountPercentage
+      );
       const newAfterDiscountValue = calculateAfterDiscountValue(
         newMaterialCost,
         discountPercentage
@@ -2681,8 +2707,8 @@ const RopoImportCreate = () => {
       const ratePerNos = parseFloat(currentData.ratePerNos) || 0;
       const totalPoQty = parseFloat(currentData.totalPoQty) || 0;
 
-      const newDiscountRate = calculateDiscountRate(ratePerNos, value);
       const newMaterialCost = calculateMaterialCost(ratePerNos, totalPoQty);
+      const newDiscountRate = calculateDiscountRate(newMaterialCost, value);
       const newAfterDiscountValue = calculateAfterDiscountValue(
         newMaterialCost,
         value
@@ -3376,19 +3402,33 @@ const RopoImportCreate = () => {
   // Calculate supplier advance amount
   const calculateSupplierAdvanceAmount = () => {
     const percentage = parseFloat(supplierAdvancePercentage) || 0;
-    const amount = (totalMaterialCost * percentage) / 100;
+    // Base should be addition of all materials' material_cost (USD)
+    const baseUsd = submittedMaterials.reduce((sum, _mat, idx) => {
+      const materialCost = parseFloat(taxRateData[idx]?.materialCost) || 0;
+      return sum + materialCost;
+    }, 0);
+    const amount = (baseUsd * percentage) / 100;
     return amount;
   };
 
   // Calculate service certificate advance amount
   const calculateServiceCertificateAdvanceAmount = () => {
     const percentage = parseFloat(serviceCertificateAdvancePercentage) || 0;
-    const grandTotal = chargesFromApi.reduce(
-      (sum, charge) => sum + (parseFloat(charge.amount_inr) || 0),
-      0
-    );
-    const amount = (grandTotal * percentage) / 100;
+    // Base should be addition of all materials' material_cost (USD)
+    const baseUsd = submittedMaterials.reduce((sum, _mat, idx) => {
+      const materialCost = parseFloat(taxRateData[idx]?.materialCost) || 0;
+      return sum + materialCost;
+    }, 0);
+    const amount = (baseUsd * percentage) / 100;
     return amount;
+  };
+
+  // Calculate total discount as sum of discount_rate for all materials (USD)
+  const calculateTotalDiscountAmount = () => {
+    return submittedMaterials.reduce((sum, _mat, idx) => {
+      const discount = parseFloat(taxRateData[idx]?.discountRate) || 0;
+      return sum + discount;
+    }, 0);
   };
 
   // Handle supplier advance percentage change
@@ -3549,6 +3589,19 @@ const RopoImportCreate = () => {
           po_type: "import",
           supplier_id: selectedSupplier?.value,
           conversion_rate: conversionRate, // Add conversion rate to payload
+          // Selected PO currency from dropdown
+          po_currency: selectedCurrency?.code || null,
+          // Payables
+          payable_to_supplier: submittedMaterials.reduce((sum, _mat, idx) => {
+            const materialCost = parseFloat(taxRateData[idx]?.materialCost) || 0;
+            return sum + materialCost;
+          }, 0),
+          payable_to_service_provider: chargesFromApi
+            .filter(
+              (charge) =>
+                charge.resource_type === "TaxCharge" && Boolean(charge.inclusive)
+            )
+            .reduce((sum, charge) => sum + (parseFloat(charge.amount) || 0), 0),
           remark: termsFormData.remark || "",
           comments: termsFormData.comments || "",
           material_inventory_ids: apiMaterialInventoryIds,
@@ -3557,7 +3610,7 @@ const RopoImportCreate = () => {
           mor_ids: [
             ...new Set(
               submittedMaterials
-                .map((material) => material.mor_id)
+                .map((material) => material.mor_inventory_id)
                 .filter(Boolean)
             ),
           ],
@@ -3606,26 +3659,55 @@ const RopoImportCreate = () => {
           })),
 
           // Format charges with taxes from API
-          charges_with_taxes_attributes: [
-            // Include charges from API (chargesFromApi)
-            ...chargesFromApi.map((charge) => ({
-              id: charge.id,
-              material_id: charge.material_id,
-              charge_name: charge.charge_name,
-              resource_id: charge.resource_id,
-              resource_type: charge.resource_type,
-              amount: parseFloat(charge.amount) || 0,
-              amount_inr: parseFloat(charge.amount_inr) || 0,
-              service_certificate: serviceCertificates[charge.id] || false,
-              service_provider_id: selectedServiceProviders[charge.id]?.value || null,
-              service_provider_name: selectedServiceProviders[charge.id]?.label || null,
-              remarks: chargeRemarks[charge.id] || "",
-              inclusive: charge.inclusive || false,
-              tax_category_id: charge.tax_category_id,
-              percentage: charge.percentage,
-            })),
-            // Include manually added charges
-            ...charges.map((charge) => {
+          // charges_with_taxes_attributes: [
+          //   // Include charges from API (chargesFromApi)
+          //   ...chargesFromApi.map((charge) => ({
+          //     id: charge.id,
+          //     material_id: charge.material_id,
+          //     charge_name: charge.charge_name,
+          //     resource_id: charge.resource_id,
+          //     resource_type: charge.resource_type,
+          //     amount: parseFloat(charge.amount) || 0,
+          //     amount_inr: parseFloat(charge.amount_inr) || 0,
+          //     service_certificate: serviceCertificates[charge.id] || false,
+          //     service_provider_id: selectedServiceProviders[charge.id]?.value || null,
+          //     service_provider_name: selectedServiceProviders[charge.id]?.label || null,
+          //     remarks: chargeRemarks[charge.id] || "",
+          //     inclusive: charge.inclusive || false,
+          //     tax_category_id: charge.tax_category_id,
+          //     percentage: charge.percentage,
+          //   })),
+          //   // Include manually added charges
+          //   ...charges.map((charge) => {
+          //     return {
+          //       charge_id: charge.charge_id || 0,
+          //       amount: parseFloat(charge.amount) || 0,
+          //       realised_amount: parseFloat(charge.realised_amount) || 0,
+          //       taxes_and_charges_attributes: [
+          //         ...(charge.taxes?.additionTaxes || []).map((tax) => ({
+          //           resource_id: parseInt(tax.taxType) || 0,
+          //           resource_type: "TaxCategory",
+          //           percentage:
+          //             parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+          //           inclusive: tax.inclusive || false,
+          //           amount: parseFloat(tax.amount) || 0,
+          //           addition: true,
+          //         })),
+          //         ...(charge.taxes?.deductionTaxes || []).map((tax) => ({
+          //           resource_id: parseInt(tax.taxType) || 0,
+          //           resource_type: "TaxCategory",
+          //           percentage:
+          //             parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+          //           inclusive: tax.inclusive || false,
+          //           amount: parseFloat(tax.amount) || 0,
+          //           addition: false,
+          //         })),
+          //       ],
+          //     };
+          //   }),
+          // ],
+
+          charges_with_taxes_attributes: charges.map((charge) => {
               return {
                 charge_id: charge.charge_id || 0,
                 amount: parseFloat(charge.amount) || 0,
@@ -3652,8 +3734,6 @@ const RopoImportCreate = () => {
                 ],
               };
             }),
-          ],
-
           // Resource term conditions
           resource_term_conditions_attributes: Array.isArray(generalTerms)
             ? generalTerms
@@ -3708,8 +3788,8 @@ const RopoImportCreate = () => {
 
       console.log("Purchase order created successfully:", response.data);
       alert("Purchase order created successfully!");
-      navigate(`/ropo-import-list
-        ?token=${token}`);
+      navigate(`/ropo-import-list?token=${token}`);
+
 
       // Optionally redirect or clear form
       // window.location.href = '/po-list'; // Redirect to PO list
@@ -5352,7 +5432,10 @@ const RopoImportCreate = () => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      placeholder="NR 0.00"
+                                      value={`USD ${calculateTotalDiscountAmount().toFixed(2)} (INR ${convertUsdToInr(
+                                        calculateTotalDiscountAmount(),
+                                        conversionRate
+                                      )})`}
                                       disabled
                                     />
                                   </div>
