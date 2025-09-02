@@ -5,21 +5,20 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import MultiSelector from "../components/base/Select/MultiSelector";
 import SelectBox from "../components/base/Select/SelectBox";
 import { baseURL } from "../confi/apiDomain";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
-
-const  RopoImportCreate = () => {
+const RopoImportCreate = () => {
   // State variables for the modal
   const [showModal, setShowModal] = useState(false);
-  const [exchangeRate, setExchangeRate] = useState(); 
+  const [exchangeRate, setExchangeRate] = useState();
   const [addMORModal, setAddMORModal] = useState(false);
   const [editRowIndex, setEditRowIndex] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [apiMaterialInventoryIds, setApiMaterialInventoryIds] = useState();
-   const navigate = useNavigate();
-   const urlParams = new URLSearchParams(location.search);
-   const token = urlParams.get("token");
-   
+  const navigate = useNavigate();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+
   // State for MOR modal dropdown options
   const [inventoryTypes2, setInventoryTypes2] = useState([]);
   const [selectedInventory2, setSelectedInventory2] = useState(null);
@@ -85,8 +84,6 @@ const  RopoImportCreate = () => {
     material: "",
   });
 
-
-
   // Terms and conditions state
   const [termsConditions, setTermsConditions] = useState([]);
   const [selectedConditionCategory, setSelectedConditionCategory] =
@@ -128,13 +125,21 @@ const  RopoImportCreate = () => {
   const [loadingCharges, setLoadingCharges] = useState(false);
   const [serviceCertificates, setServiceCertificates] = useState({});
   const [chargeRemarks, setChargeRemarks] = useState({});
-  
-  // State for advance calculations
-  const [supplierAdvancePercentage, setSupplierAdvancePercentage] = useState("");
-  const [serviceCertificateAdvancePercentage, setServiceCertificateAdvancePercentage] = useState("");
-  const [totalMaterialCost, setTotalMaterialCost] = useState(0);
-  
 
+  // State for advance calculations
+  const [supplierAdvancePercentage, setSupplierAdvancePercentage] =
+    useState("");
+  const [
+    serviceCertificateAdvancePercentage,
+    setServiceCertificateAdvancePercentage,
+  ] = useState("");
+  const [totalMaterialCost, setTotalMaterialCost] = useState(0);
+
+  // State to store calculated values for Rate & Taxes table
+  const [materialCalculatedValues, setMaterialCalculatedValues] = useState({});
+
+  // State for delivery schedules
+  const [deliverySchedules, setDeliverySchedules] = useState([]);
 
   // Taxes modal state
   const [showTaxesModal, setShowTaxesModal] = useState(false);
@@ -159,7 +164,7 @@ const  RopoImportCreate = () => {
   // Handle tab change
   const handleTabChange = (tabName) => {
     setActiveTab(tabName);
-    
+
     // Fetch charges data when Terms & Conditions tab is selected
     if (tabName === "terms-conditions" && submittedMaterials.length > 0) {
       fetchChargesData();
@@ -190,10 +195,94 @@ const  RopoImportCreate = () => {
       });
   }, []);
 
+  // Fetch currencies data on component mount
+  useEffect(() => {
+    axios
+      .get(`${baseURL}currencies.json?token=${token}`)
+      .then((response) => {
+        console.log("Currencies response:", response.data);
+        setCurrencies(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching currencies data:", error);
+        // Set fallback currencies if API fails
+        setCurrencies([
+          { id: 1, name: "America", currency: "usd" },
+          { id: 2, name: "Canada", currency: "cad" }
+        ]);
+      });
+  }, []);
+
+  // Fetch delivery schedules data
+  const fetchDeliverySchedules = useCallback(() => {
+    if (submittedMaterials && submittedMaterials.length > 0) {
+      const morInventoryIds = submittedMaterials.map(material => material.id).join(',');
+      const apiUrl = `${baseURL}purchase_orders/material_delivery_schedules.json?token=${token}&mor_inventory_ids=${morInventoryIds}&type=import`;
+      
+      console.log("Fetching delivery schedules from:", apiUrl);
+      
+      axios
+        .get(apiUrl)
+        .then((response) => {
+          console.log("Delivery schedules response:", response.data);
+          setDeliverySchedules(response.data.material_delivery_schedules || []);
+          setMaterialTermConditions(response.data.material_term_conditions || []);
+        })
+        .catch((error) => {
+          console.error("Error fetching delivery schedules:", error);
+          setDeliverySchedules([]);
+          setMaterialTermConditions([]);
+        });
+    }
+  }, [submittedMaterials, token, baseURL]);
+
+  // Fetch delivery schedules when submitted materials change
+  useEffect(() => {
+    fetchDeliverySchedules();
+  }, [fetchDeliverySchedules]);
+
+  // Function to consolidate charges by charge name
+  // This consolidates similar charges (e.g., handling charges, freight charges) across multiple materials
+  // into single rows with total amounts, instead of showing separate rows for each material
+  const getConsolidatedCharges = useCallback(() => {
+    if (!chargesFromApi || chargesFromApi.length === 0) return [];
+    
+    // Filter only TaxCharge type charges
+    const taxCharges = chargesFromApi.filter(charge => charge.resource_type === "TaxCharge");
+    
+    // Group charges by charge_name
+    const groupedCharges = taxCharges.reduce((acc, charge) => {
+      const chargeName = charge.charge_name || "Unknown";
+      
+      if (!acc[chargeName]) {
+        acc[chargeName] = {
+          charge_name: chargeName,
+          total_amount_usd: 0,
+          total_amount_inr: 0,
+          charge_ids: [],
+          charges: []
+        };
+      }
+      
+      // Add amounts
+      acc[chargeName].total_amount_usd += parseFloat(charge.amount || 0);
+      acc[chargeName].total_amount_inr += parseFloat(charge.amount_inr || 0);
+      acc[chargeName].charge_ids.push(charge.id);
+      acc[chargeName].charges.push(charge);
+      
+      return acc;
+    }, {});
+    
+    // Convert to array and sort by charge name
+    return Object.values(groupedCharges).sort((a, b) => a.charge_name.localeCompare(b.charge_name));
+  }, [chargesFromApi]);
+
   // Fetch inventory types for MOR modal
   useEffect(() => {
     axios
-      .get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`)
+      .get(
+        `${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`
+      )
       .then((response) => {
         if (Array.isArray(response.data)) {
           const options = response.data.map((inventory) => ({
@@ -201,7 +290,10 @@ const  RopoImportCreate = () => {
             label: inventory.name,
           }));
           setInventoryTypes2(options);
-        } else if (response.data && Array.isArray(response.data.inventory_types)) {
+        } else if (
+          response.data &&
+          Array.isArray(response.data.inventory_types)
+        ) {
           const options = response.data.inventory_types.map((inventory) => ({
             value: inventory.id,
             label: inventory.name,
@@ -221,7 +313,11 @@ const  RopoImportCreate = () => {
   useEffect(() => {
     if (selectedInventory2 || morFormData.materialType) {
       axios
-        .get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${selectedInventory2?.value || morFormData.materialType}&token=${token}`)
+        .get(
+          `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${
+            selectedInventory2?.value || morFormData.materialType
+          }&token=${token}`
+        )
         .then((response) => {
           if (Array.isArray(response.data)) {
             const options = response.data.map((subType) => ({
@@ -229,11 +325,16 @@ const  RopoImportCreate = () => {
               label: subType.name,
             }));
             setInventorySubTypes2(options);
-          } else if (response.data && Array.isArray(response.data.inventory_sub_types)) {
-            const options = response.data.inventory_sub_types.map((subType) => ({
-              value: subType.id,
-              label: subType.name,
-            }));
+          } else if (
+            response.data &&
+            Array.isArray(response.data.inventory_sub_types)
+          ) {
+            const options = response.data.inventory_sub_types.map(
+              (subType) => ({
+                value: subType.id,
+                label: subType.name,
+              })
+            );
             setInventorySubTypes2(options);
           } else {
             setInventorySubTypes2([]);
@@ -250,7 +351,11 @@ const  RopoImportCreate = () => {
   useEffect(() => {
     if (selectedInventory2 || morFormData.materialType) {
       axios
-        .get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${selectedInventory2?.value || morFormData.materialType}&q[material_category_eq]=material&token=${token}`)
+        .get(
+          `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${
+            selectedInventory2?.value || morFormData.materialType
+          }&q[material_category_eq]=material&token=${token}`
+        )
         .then((response) => {
           if (Array.isArray(response.data)) {
             const options = response.data.map((subType) => ({
@@ -258,7 +363,10 @@ const  RopoImportCreate = () => {
               label: subType.name,
             }));
             setInventoryMaterialTypes2(options);
-          } else if (response.data && Array.isArray(response.data.inventories)) {
+          } else if (
+            response.data &&
+            Array.isArray(response.data.inventories)
+          ) {
             const options = response.data.inventories.map((subType) => ({
               value: subType.id,
               label: subType.name,
@@ -327,6 +435,16 @@ const  RopoImportCreate = () => {
     setVendorGstin("");
   };
 
+  // Handle currency selection
+  const handleCurrencyChange = (selectedOption) => {
+    if (selectedOption) {
+      setSelectedCurrency({
+        code: selectedOption.value,
+        symbol: selectedOption.symbol
+      });
+    }
+  };
+
   // Handle project selection
   const handleProjectChange = (selectedOption) => {
     setSelectedProject(selectedOption);
@@ -337,12 +455,13 @@ const  RopoImportCreate = () => {
   const handleSiteChange = (selectedOption) => {
     setSelectedSite(selectedOption);
   };
-  // Fixed PO Currency (disabled, default USD)
-  const [poCurrency] = useState({ code: "USD", symbol: "$" });
-  
+  // Currencies state
+  const [currencies, setCurrencies] = useState([]);
+  const [selectedCurrency, setSelectedCurrency] = useState({ code: "USD", symbol: "$" });
+
   // State for conversion rate
   const [conversionRate, setConversionRate] = useState(82.5);
-  
+
   // Map companies to options for the dropdown
   const companyOptions = companies.map((company) => ({
     value: company.id,
@@ -353,6 +472,13 @@ const  RopoImportCreate = () => {
   const supplierOptions = suppliers.map((supplier) => ({
     value: supplier.id,
     label: supplier.organization_name || supplier.full_name,
+  }));
+
+  // Map currencies to options for the dropdown
+  const currencyOptions = currencies.map((currency) => ({
+    value: currency.currency.toUpperCase(),
+    label: `${currency.currency.toUpperCase()} (${currency.name})`,
+    symbol: currency.currency === "usd" ? "$" : currency.currency === "cad" ? "C$" : currency.currency.toUpperCase(),
   }));
 
   // State for dropdown options
@@ -367,7 +493,6 @@ const  RopoImportCreate = () => {
   const [selectedInventoryBrands, setSelectedInventoryBrands] = useState(null);
 
   // Get token from URL
-
 
   // Table data state
   const [tableData, setTableData] = useState([]);
@@ -436,7 +561,8 @@ const  RopoImportCreate = () => {
           toStr(row.uom) === toStr(formData.uom) &&
           toStr(row.brand) === toStr(formData.brand) &&
           toStr(row.colour) === toStr(formData.colour) &&
-          toStr(row.genericSpecification) === toStr(formData.genericSpecification)
+          toStr(row.genericSpecification) ===
+            toStr(formData.genericSpecification)
         );
       });
 
@@ -695,32 +821,42 @@ const  RopoImportCreate = () => {
       const params = new URLSearchParams();
       params.append("token", token);
       params.append("q[mor_type_eq]", "ropo");
-      if (selectedCompany?.value) params.append("q[company_id_in][]", selectedCompany.value);
-      if (morFormData.morNumber) params.append("q[id_in][]", morFormData.morNumber);
-      if (morFormData.morStartDate) params.append("q[mor_date_gteq][]", morFormData.morStartDate);
-      if (morFormData.morEndDate) params.append("q[mor_date_lteq][]", morFormData.morEndDate);
-      
+      if (selectedCompany?.value)
+        params.append("q[company_id_in][]", selectedCompany.value);
+      if (morFormData.morNumber)
+        params.append("q[id_in][]", morFormData.morNumber);
+      if (morFormData.morStartDate)
+        params.append("q[mor_date_gteq][]", morFormData.morStartDate);
+      if (morFormData.morEndDate)
+        params.append("q[mor_date_lteq][]", morFormData.morEndDate);
+
       // Add project and sub-project filters
       if (selectedProject && selectedProject.length > 0) {
-        selectedProject.forEach(project => {
+        selectedProject.forEach((project) => {
           params.append("q[project_id_in][]", project.value);
         });
       }
       if (selectedSite && selectedSite.length > 0) {
-        selectedSite.forEach(site => {
+        selectedSite.forEach((site) => {
           params.append("q[pms_site_id_in][]", site.value);
         });
       }
-      
+
       // Add material type filters
       if (morFormData.materialType) {
         params.append("q[material_type_id_in][]", morFormData.materialType);
       }
       if (morFormData.materialSubType) {
-        params.append("q[material_type_material_sub_type_id_in][]", morFormData.materialSubType);
+        params.append(
+          "q[material_type_material_sub_type_id_in][]",
+          morFormData.materialSubType
+        );
       }
       if (morFormData.material) {
-        params.append("q[mor_inventories_material_id_in][]", morFormData.material);
+        params.append(
+          "q[mor_inventories_material_id_in][]",
+          morFormData.material
+        );
       }
 
       const url = `${baseURL}material_order_requests/material_details.json?${params.toString()}`;
@@ -743,13 +879,13 @@ const  RopoImportCreate = () => {
             sub_project_name: mor.sub_project_name,
             status: mor.status,
             inventory_id: inv.id,
-            material_name: inv.material_name,
+            material_name: inv.material_name || inv.material,
             uom_name: inv.uom_name,
             uom_id: inv.uom_id,
             required_quantity: inv.required_quantity,
             prev_order_qty: inv.prev_order_qty,
             pending_qty: inv.pending_qty || "", // Use empty string if null
-      order_qty: inv.order_qty || "", // Use empty string if null
+            order_qty: inv.order_qty || "", // Use empty string if null
             generic_info_id: inv.generic_info_id,
             brand_id: inv.brand_id,
             colour_id: inv.colour_id,
@@ -792,13 +928,17 @@ const  RopoImportCreate = () => {
   // Handle project selection for MOR modal
   const handleMorSelectProject = (e, morId) => {
     const isChecked = e.target.checked;
-    const morMaterials = materialDetailsData.filter(m => m.mor_id === morId);
-    const morIndices = morMaterials.map(m => materialDetailsData.indexOf(m));
-    
+    const morMaterials = materialDetailsData.filter((m) => m.mor_id === morId);
+    const morIndices = morMaterials.map((m) => materialDetailsData.indexOf(m));
+
     if (isChecked) {
-      setSelectedMaterialItems(prev => [...new Set([...prev, ...morIndices])]);
+      setSelectedMaterialItems((prev) => [
+        ...new Set([...prev, ...morIndices]),
+      ]);
     } else {
-      setSelectedMaterialItems(prev => prev.filter(idx => !morIndices.includes(idx)));
+      setSelectedMaterialItems((prev) =>
+        prev.filter((idx) => !morIndices.includes(idx))
+      );
     }
   };
 
@@ -807,12 +947,14 @@ const  RopoImportCreate = () => {
     // Validation: Prevent negative values
     const numValue = parseFloat(value);
     if (value !== "" && (isNaN(numValue) || numValue < 0)) {
-      alert("Order quantity cannot be negative. Please enter a valid positive number.");
+      alert(
+        "Order quantity cannot be negative. Please enter a valid positive number."
+      );
       return;
     }
-    
-    setMaterialDetailsData(prev => 
-      prev.map((item, idx) => 
+
+    setMaterialDetailsData((prev) =>
+      prev.map((item, idx) =>
         idx === index ? { ...item, order_qty: value } : item
       )
     );
@@ -846,19 +988,25 @@ const  RopoImportCreate = () => {
     }
 
     try {
-      const selectedRows = selectedMaterialItems.map((idx) => materialDetailsData[idx]);
-      
+      const selectedRows = selectedMaterialItems.map(
+        (idx) => materialDetailsData[idx]
+      );
+
       // Validation: Check for duplicate materials
       const duplicateCheck = selectedRows.some((selectedRow) => {
         return submittedMaterials.some((existingMaterial) => {
           // Check if material with same mor_inventory_id already exists
-          return existingMaterial.mor_inventory_id === selectedRow.inventory_id ||
-                 existingMaterial.id === selectedRow.inventory_id;
+          return (
+            existingMaterial.mor_inventory_id === selectedRow.inventory_id ||
+            existingMaterial.id === selectedRow.inventory_id
+          );
         });
       });
 
       if (duplicateCheck) {
-        alert("Cannot add duplicate materials. Some selected materials are already added.");
+        alert(
+          "Cannot add duplicate materials. Some selected materials are already added."
+        );
         return;
       }
 
@@ -875,14 +1023,16 @@ const  RopoImportCreate = () => {
 
       // Validation: Check if all required fields are filled
       const missingFields = selectedRows.some((row) => {
-        return !row.material_name || !row.uom_name || !row.order_qty;
+        return !(row.material_name || row.material) || !row.uom_name || !row.order_qty;
       });
 
       if (missingFields) {
-        alert("Please ensure all materials have material name, UOM, and order quantity filled.");
+        alert(
+          "Please ensure all materials have material name, UOM, and order quantity filled."
+        );
         return;
       }
-      
+
       // Prepare materials array for API payload
       const materials = selectedRows.map((r) => ({
         mor_inventory_id: r.inventory_id,
@@ -890,14 +1040,14 @@ const  RopoImportCreate = () => {
         uom_id: r.uom_id || null,
         generic_info_id: r.generic_info_id || null,
         brand_id: r.brand_id || null,
-        colour_id: r.colour_id || null
+        colour_id: r.colour_id || null,
       }));
 
       // Prepare API payload
       const payload = {
         po_id: purchaseOrderId || null,
         company_id: selectedCompany?.value,
-        materials: materials
+        materials: materials,
       };
 
       console.log("Submitting materials with payload:", payload);
@@ -921,9 +1071,7 @@ const  RopoImportCreate = () => {
         : [];
 
       // Build a lookup from mor_inventory_id -> selected row info
-      const byMorInvId = new Map(
-        selectedRows.map((r) => [r.inventory_id, r])
-      );
+      const byMorInvId = new Map(selectedRows.map((r) => [r.inventory_id, r]));
 
       const mappedFromApi = apiMaterials.map((m) => {
         const base = byMorInvId.get(m.mor_inventory_id) || {};
@@ -936,7 +1084,7 @@ const  RopoImportCreate = () => {
           mor_date: base.mor_date,
           project_name: base.project_name,
           sub_project_name: base.sub_project_name,
-          material_name: base.material_name,
+          material_name: base.material_name || base.material,
           uom_name: base.uom_name,
           required_quantity: base.required_quantity,
           prev_order_qty: base.prev_order_qty,
@@ -944,33 +1092,39 @@ const  RopoImportCreate = () => {
         };
       });
 
-      const rowsToAdd = mappedFromApi.length > 0
-        ? mappedFromApi
-        : selectedRows.map((r) => ({
-            // Fallback: if API didn't return materials, use mor inventory id
-            id: r.inventory_id,
-            mor_inventory_id: r.inventory_id, // Add this for duplicate checking
-            mor_id: r.mor_id,
-            mor_number: r.mor_number,
-            mor_date: r.mor_date,
-            project_name: r.project_name,
-            sub_project_name: r.sub_project_name,
-            material_name: r.material_name,
-            uom_name: r.uom_name,
-            required_quantity: r.required_quantity,
-            prev_order_qty: r.prev_order_qty,
-            order_qty: r.order_qty,
-          }));
+      const rowsToAdd =
+        mappedFromApi.length > 0
+          ? mappedFromApi
+          : selectedRows.map((r) => ({
+              // Fallback: if API didn't return materials, use mor inventory id
+              id: r.inventory_id,
+              mor_inventory_id: r.inventory_id, // Add this for duplicate checking
+              mor_id: r.mor_id,
+              mor_number: r.mor_number,
+              mor_date: r.mor_date,
+              project_name: r.project_name,
+              sub_project_name: r.sub_project_name,
+              material_name: r.material_name || r.material,
+              uom_name: r.uom_name,
+              required_quantity: r.required_quantity,
+              prev_order_qty: r.prev_order_qty,
+              order_qty: r.order_qty,
+            }));
 
-    setSubmittedMaterials((prev) => {
+      setSubmittedMaterials((prev) => {
         const seen = new Set(prev.map((x) => `${x.id}`));
         const unique = rowsToAdd.filter((r) => !seen.has(`${r.id}`));
         return [...prev, ...unique];
       });
 
       alert(`Successfully added ${selectedRows.length} material(s)`);
-    setAddMORModal(false);
-    setSelectedMaterialItems([]);
+      setAddMORModal(false);
+      setSelectedMaterialItems([]);
+      
+      // Fetch delivery schedules after materials are added
+      setTimeout(() => {
+        fetchDeliverySchedules();
+      }, 100);
     } catch (error) {
       console.error("Error adding materials:", error);
       alert("Error adding materials. Please try again.");
@@ -981,13 +1135,15 @@ const  RopoImportCreate = () => {
   const handleOpenTaxModal = async (rowIndex) => {
     console.log("Opening tax modal for row:", rowIndex);
     console.log("Current tax options:", taxOptions);
-    
+
     // Validate conversion rate is set
     if (!conversionRate || conversionRate <= 0) {
-      alert("Please set the Conversion Rate (USD to INR) in the PO Details tab before opening tax modal.");
+      alert(
+        "Please set the Conversion Rate (USD to INR) in the PO Details tab before opening tax modal."
+      );
       return;
     }
-    
+
     setTableId(rowIndex);
     setShowTaxModal(true);
 
@@ -1007,7 +1163,7 @@ const  RopoImportCreate = () => {
         setTaxRateData((prev) => ({
           ...prev,
           [rowIndex]: {
-            material: rateData.material_name,
+            material: rateData.material,
             hsnCode: rateData.hsn_code,
             ratePerNos: rateData.rate_per_nos?.toString(),
             totalPoQty: rateData.order_qty?.toString(),
@@ -1030,14 +1186,15 @@ const  RopoImportCreate = () => {
                   const usdAmount = parseFloat(tax.amount) || 0;
                   taxChargePerUom = convertUsdToInr(usdAmount);
                 }
-                
+
                 return {
                   id: tax.id,
                   resource_id: tax.resource_id,
                   tax_category_id: tax.tax_category_id,
                   taxChargeType:
-                    taxOptions.find((option) => option.id === tax.tax_category_id)
-                      ?.value || tax.resource_type,
+                    taxOptions.find(
+                      (option) => option.id === tax.tax_category_id
+                    )?.value || tax.resource_type,
                   taxType: tax.resource_type,
                   taxChargePerUom: taxChargePerUom,
                   percentageId: tax.percentage_id || null,
@@ -1057,7 +1214,7 @@ const  RopoImportCreate = () => {
                   const usdAmount = parseFloat(tax.amount) || 0;
                   taxChargePerUom = convertUsdToInr(usdAmount);
                 }
-                
+
                 return {
                   id: tax.id,
                   resource_id: tax.resource_id,
@@ -1285,7 +1442,7 @@ const  RopoImportCreate = () => {
   //           currentTax.amount = "0";
   //           currentTax.taxChargePerUom = "";
   //           currentTax.percentageId = null; // Clear percentage ID
-            
+
   //         } else if (field === "taxChargePerUom") {
   //           // Auto-calculate amount based on tax type
   //           currentTax[field] = value;
@@ -1373,145 +1530,159 @@ const  RopoImportCreate = () => {
   //   [taxOptions]
   // );
 
-// In handleTaxChargeChange function, update the input validation logic
-const handleTaxChargeChange = useCallback(
-  (rowIndex, id, field, value, type) => {
-    setTaxRateData((prev) => {
-      const updatedData = { ...prev };
-      const taxDetails = type === "addition"
-        ? updatedData[rowIndex]?.addition_bid_material_tax_details || []
-        : updatedData[rowIndex]?.deduction_bid_material_tax_details || [];
+  // In handleTaxChargeChange function, update the input validation logic
+  const handleTaxChargeChange = useCallback(
+    (rowIndex, id, field, value, type) => {
+      setTaxRateData((prev) => {
+        const updatedData = { ...prev };
+        const taxDetails =
+          type === "addition"
+            ? updatedData[rowIndex]?.addition_bid_material_tax_details || []
+            : updatedData[rowIndex]?.deduction_bid_material_tax_details || [];
 
-      const taxIndex = taxDetails.findIndex((tax) => tax.id === id);
-      if (taxIndex !== -1) {
-        const currentTax = { ...taxDetails[taxIndex] };
-        const baseAmount = parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
+        const taxIndex = taxDetails.findIndex((tax) => tax.id === id);
+        if (taxIndex !== -1) {
+          const currentTax = { ...taxDetails[taxIndex] };
+          const baseAmount =
+            parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
 
-        if (field === "taxChargeType") {
-          const selectedTaxOption = type === "addition"
-            ? taxOptions.find((option) => option.value === value)
-            : deductionTaxOptions.find((option) => option.value === value);
+          if (field === "taxChargeType") {
+            const selectedTaxOption =
+              type === "addition"
+                ? taxOptions.find((option) => option.value === value)
+                : deductionTaxOptions.find((option) => option.value === value);
 
-          currentTax.taxType = selectedTaxOption?.type || "TaxCharge";
-          currentTax[field] = value;
-          currentTax.amount = "0";
-          currentTax.taxChargePerUom = "";
-          currentTax.percentageId = null;
-          currentTax.tax_category_id = selectedTaxOption?.id;
+            currentTax.taxType = selectedTaxOption?.type || "TaxCharge";
+            currentTax[field] = value;
+            currentTax.amount = "0";
+            currentTax.taxChargePerUom = "";
+            currentTax.percentageId = null;
+            currentTax.tax_category_id = selectedTaxOption?.id;
 
-          // Fetch tax percentages if it's a percentage-based tax (CGST, SGST, IGST, TDS)
-          if (selectedTaxOption?.id && isPercentageTax(value)) {
-            handleTaxCategoryChange(rowIndex, selectedTaxOption.id, currentTax.id);
-          }
+            // Fetch tax percentages if it's a percentage-based tax (CGST, SGST, IGST, TDS)
+            if (selectedTaxOption?.id && isPercentageTax(value)) {
+              handleTaxCategoryChange(
+                rowIndex,
+                selectedTaxOption.id,
+                currentTax.id
+              );
+            }
+          } else if (field === "taxChargePerUom") {
+            currentTax[field] = value;
 
-        } else if (field === "taxChargePerUom") {
-          currentTax[field] = value;
+            // For addition taxes, calculate amount based on input value
+            if (type === "addition") {
+              if (value && !isNaN(parseFloat(value))) {
+                // If it's a percentage, calculate the percentage amount
+                if (value.includes("%")) {
+                  const percentage = parseFloat(value.replace("%", ""));
+                  const calculatedAmount = calculateTaxAmount(
+                    percentage,
+                    baseAmount,
+                    Boolean(currentTax.inclusive)
+                  );
+                  currentTax.amount = calculatedAmount.toString();
 
-          // For addition taxes, calculate amount based on input value
-          if (type === "addition") {
-            if (value && !isNaN(parseFloat(value))) {
-              // If it's a percentage, calculate the percentage amount
-              if (value.includes("%")) {
-                const percentage = parseFloat(value.replace("%", ""));
-                const calculatedAmount = calculateTaxAmount(
-                  percentage,
-                  baseAmount,
-                  Boolean(currentTax.inclusive)
-                );
-                currentTax.amount = calculatedAmount.toString();
-                
-                // Find the percentage ID from materialTaxPercentages
-                const percentages = materialTaxPercentages[currentTax.id] || [];
-                const percentageData = percentages.find(
-                  (p) => p.percentage === percentage
-                );
-                if (percentageData) {
-                  currentTax.percentageId = percentageData.id;
+                  // Find the percentage ID from materialTaxPercentages
+                  const percentages =
+                    materialTaxPercentages[currentTax.id] || [];
+                  const percentageData = percentages.find(
+                    (p) => p.percentage === percentage
+                  );
+                  if (percentageData) {
+                    currentTax.percentageId = percentageData.id;
+                  }
+                } else {
+                  // If it's a fixed amount in INR, convert to USD for storage
+                  const inrValue = parseFloat(value) || 0;
+                  const usdValue = parseFloat(safeConvertInrToUsd(inrValue, conversionRate)) || 0;
+                  currentTax.amount = usdValue.toString();
                 }
               } else {
-                // If it's a fixed amount, use it directly
-                currentTax.amount = value;
+                currentTax.amount = "0";
               }
             } else {
-              currentTax.amount = "0";
+              // For deduction taxes, calculate amount based on input value
+              if (value && !isNaN(parseFloat(value))) {
+                if (value.includes("%")) {
+                  const percentage = parseFloat(value.replace("%", ""));
+                  const calculatedAmount = calculateTaxAmount(
+                    percentage,
+                    baseAmount,
+                    Boolean(currentTax.inclusive)
+                  );
+                  currentTax.amount = calculatedAmount.toString();
+
+                  // Find the percentage ID from materialTaxPercentages
+                  const percentages =
+                    materialTaxPercentages[currentTax.id] || [];
+                  const percentageData = percentages.find(
+                    (p) => p.percentage === percentage
+                  );
+                  if (percentageData) {
+                    currentTax.percentageId = percentageData.id;
+                  }
+                } else {
+                  // If it's a fixed amount in INR, convert to USD for storage
+                  const inrValue = parseFloat(value) || 0;
+                  const usdValue = parseFloat(safeConvertInrToUsd(inrValue, conversionRate)) || 0;
+                  currentTax.amount = usdValue.toString();
+                }
+              } else {
+                currentTax.amount = "0";
+              }
+            }
+          } else if (field === "amount") {
+            // Allow manual amount input for TaxCharge type taxes
+            if (currentTax.taxType === "TaxCharge") {
+              currentTax.amount = value;
+            }
+          } else if (field === "inclusive") {
+            // Toggle inclusive and recalculate when percentage-based
+            currentTax.inclusive = value;
+            const inputValue = currentTax.taxChargePerUom || "";
+            if (inputValue && inputValue.includes("%")) {
+              const percentage = parseFloat(inputValue.replace("%", "")) || 0;
+              const recalculated = calculateTaxAmount(
+                percentage,
+                baseAmount,
+                Boolean(value)
+              );
+              currentTax.amount = recalculated.toString();
             }
           } else {
-            // For deduction taxes, calculate amount based on input value
-            if (value && !isNaN(parseFloat(value))) {
-              if (value.includes("%")) {
-                const percentage = parseFloat(value.replace("%", ""));
-                const calculatedAmount = calculateTaxAmount(
-                  percentage,
-                  baseAmount,
-                  Boolean(currentTax.inclusive)
-                );
-                currentTax.amount = calculatedAmount.toString();
-                
-                // Find the percentage ID from materialTaxPercentages
-                const percentages = materialTaxPercentages[currentTax.id] || [];
-                const percentageData = percentages.find(
-                  (p) => p.percentage === percentage
-                );
-                if (percentageData) {
-                  currentTax.percentageId = percentageData.id;
-                }
-              } else {
-                currentTax.amount = value;
-              }
-            } else {
-              currentTax.amount = "0";
-            }
+            // Generic setter for any other simple fields
+            currentTax[field] = value;
           }
-        } else if (field === "amount") {
-          // Allow manual amount input for TaxCharge type taxes
-          if (currentTax.taxType === "TaxCharge") {
-            currentTax.amount = value;
+
+          taxDetails[taxIndex] = currentTax;
+          if (type === "addition") {
+            updatedData[rowIndex].addition_bid_material_tax_details =
+              taxDetails;
+          } else {
+            updatedData[rowIndex].deduction_bid_material_tax_details =
+              taxDetails;
           }
-        } else if (field === "inclusive") {
-          // Toggle inclusive and recalculate when percentage-based
-          currentTax.inclusive = value;
-          const inputValue = currentTax.taxChargePerUom || "";
-          if (inputValue && inputValue.includes("%")) {
-            const percentage = parseFloat(inputValue.replace("%", "")) || 0;
-            const recalculated = calculateTaxAmount(
-              percentage,
-              baseAmount,
-              Boolean(value)
-            );
-            currentTax.amount = recalculated.toString();
-          }
-        } else {
-          // Generic setter for any other simple fields
-          currentTax[field] = value;
+
+          // Recalculate net cost
+          const newNetCost = calculateNetCostWithTaxes(
+            updatedData[rowIndex]?.afterDiscountValue || 0,
+            updatedData[rowIndex]?.addition_bid_material_tax_details || [],
+            updatedData[rowIndex]?.deduction_bid_material_tax_details || []
+          );
+
+          updatedData[rowIndex].netCost = newNetCost.toString();
         }
 
-        taxDetails[taxIndex] = currentTax;
-        if (type === "addition") {
-          updatedData[rowIndex].addition_bid_material_tax_details = taxDetails;
-        } else {
-          updatedData[rowIndex].deduction_bid_material_tax_details = taxDetails;
-        }
+        return updatedData;
+      });
+    },
+    [taxOptions, deductionTaxOptions, materialTaxPercentages]
+  );
 
-        // Recalculate net cost
-        const newNetCost = calculateNetCostWithTaxes(
-          updatedData[rowIndex]?.afterDiscountValue || 0,
-          updatedData[rowIndex]?.addition_bid_material_tax_details || [],
-          updatedData[rowIndex]?.deduction_bid_material_tax_details || []
-        );
+  // Update the input field's disabled condition in the modal
 
-        updatedData[rowIndex].netCost = newNetCost.toString();
-      }
-
-      return updatedData;
-    });
-  },
-  [taxOptions, deductionTaxOptions, materialTaxPercentages]
-);
-
-// Update the input field's disabled condition in the modal
-
-
-const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
+  const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
     const percent = parseFloat(percentage) || 0;
     const amount = parseFloat(baseAmount) || 0;
 
@@ -1577,14 +1748,21 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
           ).map((tax) => {
             // Resolve resource_id prioritizing percentageId; if missing, derive from selected percentage value
             let resolvedResourceId = tax.percentageId;
-            if (!resolvedResourceId && tax.taxChargePerUom && tax.taxChargePerUom.includes("%")) {
-              const percentage = parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
+            if (
+              !resolvedResourceId &&
+              tax.taxChargePerUom &&
+              tax.taxChargePerUom.includes("%")
+            ) {
+              const percentage =
+                parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
               const percList = materialTaxPercentages[tax.id] || [];
               const found = percList.find((p) => p.percentage === percentage);
               if (found) resolvedResourceId = found.id;
             }
             if (!resolvedResourceId) {
-              resolvedResourceId = taxOptions.find((option) => option.value === tax.taxChargeType)?.id || tax.resource_id;
+              resolvedResourceId =
+                taxOptions.find((option) => option.value === tax.taxChargeType)
+                  ?.id || tax.resource_id;
             }
 
             // Calculate the amount to send in USD
@@ -1592,13 +1770,15 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
             let amountToSend = 0;
             if (tax.taxChargePerUom && tax.taxChargePerUom.includes("%")) {
               // If it's a percentage, calculate the percentage amount in USD
-              const percentage = parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
+              const percentage =
+                parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
               const baseAmount = currentData.afterDiscountValue || 0;
               amountToSend = (baseAmount * percentage) / 100;
             } else {
               // If it's a fixed amount, convert the INR value to USD using conversion rate
               const inrValue = parseFloat(tax.taxChargePerUom) || 0;
-              amountToSend = parseFloat(safeConvertInrToUsd(inrValue, conversionRate)) || 0;
+              amountToSend =
+                parseFloat(safeConvertInrToUsd(inrValue, conversionRate)) || 0;
             }
 
             const payload = {
@@ -1634,14 +1814,22 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
 
             // Resolve resource_id prioritizing percentageId; if missing, derive from selected percentage value
             let resolvedResourceId = tax.percentageId;
-            if (!resolvedResourceId && tax.taxChargePerUom && tax.taxChargePerUom.includes("%")) {
-              const percentage = parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
+            if (
+              !resolvedResourceId &&
+              tax.taxChargePerUom &&
+              tax.taxChargePerUom.includes("%")
+            ) {
+              const percentage =
+                parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
               const percList = materialTaxPercentages[tax.id] || [];
               const found = percList.find((p) => p.percentage === percentage);
               if (found) resolvedResourceId = found.id;
             }
             if (!resolvedResourceId) {
-              resolvedResourceId = deductionTaxOptions.find((option) => option.value === tax.taxChargeType)?.id || tax.resource_id;
+              resolvedResourceId =
+                deductionTaxOptions.find(
+                  (option) => option.value === tax.taxChargeType
+                )?.id || tax.resource_id;
             }
 
             // Calculate the amount to send in USD
@@ -1649,13 +1837,15 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
             let amountToSend = 0;
             if (tax.taxChargePerUom && tax.taxChargePerUom.includes("%")) {
               // If it's a percentage, calculate the percentage amount in USD
-              const percentage = parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
+              const percentage =
+                parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
               const baseAmount = currentData.afterDiscountValue || 0;
               amountToSend = (baseAmount * percentage) / 100;
             } else {
               // If it's a fixed amount, convert the INR value to USD using conversion rate
               const inrValue = parseFloat(tax.taxChargePerUom) || 0;
-              amountToSend = parseFloat(safeConvertInrToUsd(inrValue, conversionRate)) || 0;
+              amountToSend =
+                parseFloat(safeConvertInrToUsd(inrValue, conversionRate)) || 0;
             }
 
             const payload = {
@@ -1715,63 +1905,188 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
                 responseData.total_material_cost?.toString() ||
                 currentData.netCost,
               remark: responseData.remarks || currentData.remark,
-                              addition_bid_material_tax_details:
-                  responseData.addition_tax_details?.map((tax) => {
-                    // Convert USD amount back to INR for the input field
-                    let taxChargePerUom = "";
-                    if (tax.percentage) {
-                      // If it's a percentage, keep it as percentage
-                      taxChargePerUom = `${tax.percentage}%`;
-                    } else {
-                      // If it's a fixed amount, convert USD to INR for display
-                      const usdAmount = parseFloat(tax.amount) || 0;
-                      taxChargePerUom = convertUsdToInr(usdAmount);
-                    }
-                    
-                    return {
-                      id: tax.id,
-                      resource_id: tax.resource_id,
-                      tax_category_id: tax.tax_category_id,
-                      percentageId: tax.percentage_id,
-                      taxChargeType:
-                        taxOptions.find((option) => option.id === tax.tax_category_id)
-                          ?.value || "",
-                      taxType: tax.resource_type,
-                      taxChargePerUom: taxChargePerUom,
-                      inclusive: tax.inclusive,
-                      amount: tax.amount?.toString() || "0", // Keep USD amount for calculations
-                    };
-                  }) || currentData.addition_bid_material_tax_details,
-                              deduction_bid_material_tax_details:
-                  responseData.deduction_tax_details?.map((tax) => {
-                    // Convert USD amount back to INR for the input field
-                    let taxChargePerUom = "";
-                    if (tax.percentage) {
-                      // If it's a percentage, keep it as percentage
-                      taxChargePerUom = `${tax.percentage}%`;
-                    } else {
-                      // If it's a fixed amount, convert USD to INR for display
-                      const usdAmount = parseFloat(tax.amount) || 0;
-                      taxChargePerUom = convertUsdToInr(usdAmount);
-                    }
-                    
-                    return {
-                      id: tax.id,
-                      resource_id: tax.resource_id,
-                      tax_category_id: tax.tax_category_id,
-                      percentageId: tax.percentage_id,
-                      taxChargeType:
-                        deductionTaxOptions.find(
-                          (option) => option.id === tax.tax_category_id
-                        )?.value || "",
-                      taxType: tax.resource_type,
-                      taxChargePerUom: taxChargePerUom,
-                      inclusive: tax.inclusive,
-                      amount: tax.amount?.toString() || "0", // Keep USD amount for calculations
-                    };
-                  }) || currentData.deduction_bid_material_tax_details,
+              addition_bid_material_tax_details:
+                responseData.addition_tax_details?.map((tax) => {
+                  // Convert USD amount back to INR for the input field
+                  let taxChargePerUom = "";
+                  if (tax.percentage) {
+                    // If it's a percentage, keep it as percentage
+                    taxChargePerUom = `${tax.percentage}%`;
+                  } else {
+                    // If it's a fixed amount, convert USD to INR for display
+                    const usdAmount = parseFloat(tax.amount) || 0;
+                    taxChargePerUom = convertUsdToInr(usdAmount);
+                  }
+
+                  return {
+                    id: tax.id,
+                    resource_id: tax.resource_id,
+                    tax_category_id: tax.tax_category_id,
+                    percentageId: tax.percentage_id,
+                    taxChargeType:
+                      taxOptions.find(
+                        (option) => option.id === tax.tax_category_id
+                      )?.value || "",
+                    taxType: tax.resource_type,
+                    taxChargePerUom: taxChargePerUom,
+                    inclusive: tax.inclusive,
+                    amount: tax.amount?.toString() || "0", // Keep USD amount for calculations
+                  };
+                }) || currentData.addition_bid_material_tax_details,
+              deduction_bid_material_tax_details:
+                responseData.deduction_tax_details?.map((tax) => {
+                  // Convert USD amount back to INR for the input field
+                  let taxChargePerUom = "";
+                  if (tax.percentage) {
+                    // If it's a percentage, keep it as percentage
+                    taxChargePerUom = `${tax.percentage}%`;
+                  } else {
+                    // If it's a fixed amount, convert USD to INR for display
+                    const usdAmount = parseFloat(tax.amount) || 0;
+                    taxChargePerUom = convertUsdToInr(usdAmount);
+                  }
+
+                  return {
+                    id: tax.id,
+                    resource_id: tax.resource_id,
+                    tax_category_id: tax.tax_category_id,
+                    percentageId: tax.percentage_id,
+                    taxChargeType:
+                      deductionTaxOptions.find(
+                        (option) => option.id === tax.tax_category_id
+                      )?.value || "",
+                    taxType: tax.resource_type,
+                    taxChargePerUom: taxChargePerUom,
+                    inclusive: tax.inclusive,
+                    amount: tax.amount?.toString() || "0", // Keep USD amount for calculations
+                  };
+                }) || currentData.deduction_bid_material_tax_details,
             },
           }));
+
+          // After successfully saving tax changes, call the ROPO details API to refresh charges data for the specific material
+          if (submittedMaterials.length > 0) {
+            // Call the ROPO rate details API for the specific material that was just updated
+            try {
+              const ropoResponse = await axios.get(
+                `${baseURL}po_mor_inventories/${material.id}/ropo_rate_details.json?token=${token}`
+              );
+              
+              console.log("ROPO Rate Details API Response after save:", ropoResponse.data);
+              
+              // Update the charges data with the new information from the API
+              if (ropoResponse.data) {
+                const rateData = ropoResponse.data;
+                const updatedChargesData = [];
+                
+                // Process addition tax details
+                if (rateData.addition_tax_details && Array.isArray(rateData.addition_tax_details)) {
+                  rateData.addition_tax_details.forEach((tax) => {
+                    updatedChargesData.push({
+                      id: tax.id,
+                      material_id: material.id,
+                      material_name: material.material_name || material.material,
+                      charge_name: getTaxNameById(tax.resource_id),
+                      resource_id: tax.resource_id,
+                      resource_type: tax.resource_type,
+                      amount: tax.amount,
+                      amount_inr: convertUsdToInr(tax.amount, conversionRate),
+                      inclusive: tax.inclusive,
+                      tax_category_id: tax.tax_category_id,
+                      percentage: tax.percentage,
+                    });
+                  });
+                }
+
+                // Process deduction tax details
+                if (rateData.deduction_tax_details && Array.isArray(rateData.deduction_tax_details)) {
+                  rateData.deduction_tax_details.forEach((tax) => {
+                    updatedChargesData.push({
+                      id: tax.id,
+                      material_id: material.id,
+                      material_name: material.material_name || material.material,
+                      charge_name: getTaxNameById(tax.resource_id),
+                      resource_id: tax.resource_id,
+                      resource_type: tax.resource_type,
+                      amount: tax.amount,
+                      amount_inr: convertUsdToInr(tax.amount, conversionRate),
+                      inclusive: tax.inclusive,
+                      tax_category_id: tax.tax_category_id,
+                      percentage: tax.percentage,
+                    });
+                  });
+                }
+
+                // Update the charges data state with the new data
+                setChargesFromApi(prevCharges => {
+                  // Remove existing charges for this material and add the new ones
+                  const filteredCharges = prevCharges.filter(charge => charge.material_id !== material.id);
+                  return [...filteredCharges, ...updatedChargesData];
+                });
+
+                // Update total material cost if available
+                if (rateData.total_material_cost) {
+                  setTotalMaterialCost(prevTotal => {
+                    // Calculate the new total by adding the new material cost
+                    return prevTotal + parseFloat(rateData.total_material_cost);
+                  });
+                }
+
+                // Calculate and store values for Rate & Taxes table
+                const calculatedValues = {
+                  taxAddition: 0,
+                  totalChanges: 0,
+                  otherAddition: 0,
+                  otherDeductions: 0,
+                  allInclCost: parseFloat(rateData.total_material_cost) || 0,
+                  taxDeductions: 0,
+                };
+
+                // Calculate Tax Addition (sum of addition tax details)
+                if (rateData.addition_tax_details && Array.isArray(rateData.addition_tax_details)) {
+                  calculatedValues.taxAddition = rateData.addition_tax_details.reduce((sum, tax) => {
+                    return sum + (parseFloat(tax.amount) || 0);
+                  }, 0);
+                }
+
+                // Calculate Tax Deductions (sum of deduction tax details)
+                if (rateData.deduction_tax_details && Array.isArray(rateData.deduction_tax_details)) {
+                  calculatedValues.taxDeductions = rateData.deduction_tax_details.reduce((sum, tax) => {
+                    return sum + (parseFloat(tax.amount) || 0);
+                  }, 0);
+                }
+
+                // Calculate Other Addition (TaxCharge type additions)
+                if (rateData.addition_tax_details && Array.isArray(rateData.addition_tax_details)) {
+                  calculatedValues.otherAddition = rateData.addition_tax_details
+                    .filter(tax => tax.resource_type === "TaxCharge")
+                    .reduce((sum, tax) => {
+                      return sum + (parseFloat(tax.amount) || 0);
+                    }, 0);
+                }
+
+                // Calculate Other Deductions (TaxCharge type deductions)
+                if (rateData.deduction_tax_details && Array.isArray(rateData.deduction_tax_details)) {
+                  calculatedValues.otherDeductions = rateData.deduction_tax_details
+                    .filter(tax => tax.resource_type === "TaxCharge")
+                    .reduce((sum, tax) => {
+                      return sum + (parseFloat(tax.amount) || 0);
+                    }, 0);
+                }
+
+                // Calculate Total Changes (Tax Addition - Tax Deductions)
+                calculatedValues.totalChanges = calculatedValues.taxAddition - calculatedValues.taxDeductions;
+
+                // Store the calculated values for this material
+                setMaterialCalculatedValues(prev => ({
+                  ...prev,
+                  [material.id]: calculatedValues
+                }));
+              }
+            } catch (error) {
+              console.error("Error fetching ROPO rate details after save:", error);
+            }
+          }
 
           alert("Tax changes saved successfully!");
         }
@@ -1913,15 +2228,14 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
           .join(",");
 
         if (materialIds) {
+          // Use the new delivery schedules API which also returns material_term_conditions
           const response = await axios.get(
-            `${baseURL}po_mor_inventories/material_term_conditions.json?po_mor_inventory_ids=${materialIds}&token=${token}`
+            `${baseURL}purchase_orders/material_delivery_schedules.json?token=${token}&mor_inventory_ids=${materialIds}&type=import`
           );
           console.log("Material term conditions response:", response.data);
-          // If API returns { material_term_conditions: [...] }
+          // Extract material_term_conditions from the response
           setMaterialTermConditions(
-            Array.isArray(response.data)
-              ? response.data
-              : response.data.material_term_conditions || []
+            response.data.material_term_conditions || []
           );
         } else {
           setMaterialTermConditions([]);
@@ -2316,7 +2630,9 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
       // Validation: Prevent negative values
       const numValue = parseFloat(value);
       if (value !== "" && (isNaN(numValue) || numValue < 0)) {
-        alert("Rate per Nos cannot be negative. Please enter a valid positive number.");
+        alert(
+          "Rate per Nos cannot be negative. Please enter a valid positive number."
+        );
         return;
       }
 
@@ -2353,7 +2669,9 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
       // Validation: Prevent negative values and values over 100%
       const numValue = parseFloat(value);
       if (value !== "" && (isNaN(numValue) || numValue < 0 || numValue > 100)) {
-        alert("Discount percentage must be between 0 and 100. Please enter a valid percentage.");
+        alert(
+          "Discount percentage must be between 0 and 100. Please enter a valid percentage."
+        );
         return;
       }
 
@@ -2442,43 +2760,57 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
   };
 
   // Fetch tax percentages for specific material and tax category
-// In the tax percentage fetching section, add type checking and fallback
-const fetchTaxPercentagesByMaterial = async (pmsInventoryId, taxCategoryId) => {
-  try {
-    const response = await axios.get(
-      `${baseURL}tax_percentage_by_material.json?pms_inventory_id=${pmsInventoryId}&tax_category_id=${taxCategoryId}&token=${token}`
-    );
-    console.log("Tax percentages by material response:", response.data);
+  // In the tax percentage fetching section, add type checking and fallback
+  const fetchTaxPercentagesByMaterial = async (
+    pmsInventoryId,
+    taxCategoryId
+  ) => {
+    try {
+      const response = await axios.get(
+        `${baseURL}tax_percentage_by_material.json?pms_inventory_id=${pmsInventoryId}&tax_category_id=${taxCategoryId}&token=${token}`
+      );
+      console.log("Tax percentages by material response:", response.data);
 
-    // Check if response.data is an array
-    if (Array.isArray(response.data)) {
-      return response.data;
+      // Check if response.data is an array
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+      // If response.data has a percentages property that's an array
+      else if (Array.isArray(response.data?.percentages)) {
+        return response.data.percentages;
+      }
+      // If response.data is an object with nested data
+      else if (response.data && typeof response.data === "object") {
+        // Look for any array property that might contain the percentages
+        const percentagesArray = Object.values(response.data).find((val) =>
+          Array.isArray(val)
+        );
+        return percentagesArray || [];
+      }
+      // Fallback to empty array if no valid data structure is found
+      return [];
+    } catch (error) {
+      console.error("Error fetching tax percentages by material:", error);
+      return [];
     }
-    // If response.data has a percentages property that's an array
-    else if (Array.isArray(response.data?.percentages)) {
-      return response.data.percentages;
-    }
-    // If response.data is an object with nested data
-    else if (response.data && typeof response.data === 'object') {
-      // Look for any array property that might contain the percentages
-      const percentagesArray = Object.values(response.data).find(val => Array.isArray(val));
-      return percentagesArray || [];
-    }
-    // Fallback to empty array if no valid data structure is found
-    return [];
-
-  } catch (error) {
-    console.error("Error fetching tax percentages by material:", error);
-    return [];
-  }
-};
+  };
   // Handle terms form input changes
   const handleTermsFormChange = (field, value) => {
     // Validation: Prevent negative values for numeric fields
-    if (["creditPeriod", "poValidityPeriod", "advanceReminderDuration"].includes(field)) {
+    if (
+      ["creditPeriod", "poValidityPeriod", "advanceReminderDuration"].includes(
+        field
+      )
+    ) {
       const numValue = parseFloat(value);
       if (value !== "" && (isNaN(numValue) || numValue < 0)) {
-        alert(`${field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} cannot be negative. Please enter a valid positive number.`);
+        alert(
+          `${field
+            .replace(/([A-Z])/g, " $1")
+            .replace(/^./, (str) =>
+              str.toUpperCase()
+            )} cannot be negative. Please enter a valid positive number.`
+        );
         return;
       }
     }
@@ -2510,7 +2842,9 @@ const fetchTaxPercentagesByMaterial = async (pmsInventoryId, taxCategoryId) => {
     if (field === "amount") {
       const numValue = parseFloat(value);
       if (value !== "" && (isNaN(numValue) || numValue < 0)) {
-        alert("Amount cannot be negative. Please enter a valid positive number.");
+        alert(
+          "Amount cannot be negative. Please enter a valid positive number."
+        );
         return;
       }
     }
@@ -2555,7 +2889,9 @@ const fetchTaxPercentagesByMaterial = async (pmsInventoryId, taxCategoryId) => {
     if (field === "amount") {
       const numValue = parseFloat(value);
       if (value !== "" && (isNaN(numValue) || numValue < 0)) {
-        alert("Amount cannot be negative. Please enter a valid positive number.");
+        alert(
+          "Amount cannot be negative. Please enter a valid positive number."
+        );
         return;
       }
     }
@@ -2604,18 +2940,24 @@ const fetchTaxPercentagesByMaterial = async (pmsInventoryId, taxCategoryId) => {
     // Don't reset chargeTaxes to preserve data for reopening
   };
 
-
-
-const getTaxOptionNameById = (id) => {
-  const allOpts = [...(chargesAdditionTaxOptions || []), ...(chargesDeductionTaxOptions || [])];
-  const found = allOpts.find((o) => `${o.id}` === `${id}`);
-  return found?.name || "";
-};
-const isPercentageTax = (taxChargeType) => {
-  if (!taxChargeType) return false;
-  const taxType = taxChargeType.toLowerCase();
-  return taxType.includes("cgst") || taxType.includes("sgst") || taxType.includes("igst") || taxType.includes("tds");
-};
+  const getTaxOptionNameById = (id) => {
+    const allOpts = [
+      ...(chargesAdditionTaxOptions || []),
+      ...(chargesDeductionTaxOptions || []),
+    ];
+    const found = allOpts.find((o) => `${o.id}` === `${id}`);
+    return found?.name || "";
+  };
+  const isPercentageTax = (taxChargeType) => {
+    if (!taxChargeType) return false;
+    const taxType = taxChargeType.toLowerCase();
+    return (
+      taxType.includes("cgst") ||
+      taxType.includes("sgst") ||
+      taxType.includes("igst") ||
+      taxType.includes("tds")
+    );
+  };
 
   const addTaxRow = (type) => {
     const newTax = {
@@ -2863,29 +3205,32 @@ const isPercentageTax = (taxChargeType) => {
       setLoadingCharges(true);
       const chargesData = [];
       let totalCost = 0;
-      
+
       for (const material of submittedMaterials) {
         if (material.id) {
           // Make only ONE API call per material to get all the data
           const response = await axios.get(
             `${baseURL}po_mor_inventories/${material.id}/ropo_rate_details.json?token=${token}`
           );
-          
+
           if (response.data) {
             const rateData = response.data;
-            
+
             // Calculate total material cost from this single API call
             if (rateData.total_material_cost) {
               totalCost += parseFloat(rateData.total_material_cost) || 0;
             }
-            
+
             // Process addition tax details
-            if (rateData.addition_tax_details && Array.isArray(rateData.addition_tax_details)) {
-              rateData.addition_tax_details.forEach(tax => {
+            if (
+              rateData.addition_tax_details &&
+              Array.isArray(rateData.addition_tax_details)
+            ) {
+              rateData.addition_tax_details.forEach((tax) => {
                 chargesData.push({
                   id: tax.id,
                   material_id: material.id,
-                  material_name: material.material_name,
+                  material_name: material.material_name || material.material,
                   charge_name: getTaxNameById(tax.resource_id),
                   resource_id: tax.resource_id,
                   resource_type: tax.resource_type,
@@ -2893,18 +3238,21 @@ const isPercentageTax = (taxChargeType) => {
                   amount_inr: convertUsdToInr(tax.amount, conversionRate), // Convert USD to INR
                   inclusive: tax.inclusive,
                   tax_category_id: tax.tax_category_id,
-                  percentage: tax.percentage
+                  percentage: tax.percentage,
                 });
               });
             }
-            
+
             // Process deduction tax details
-            if (rateData.deduction_tax_details && Array.isArray(rateData.deduction_tax_details)) {
-              rateData.deduction_tax_details.forEach(tax => {
+            if (
+              rateData.deduction_tax_details &&
+              Array.isArray(rateData.deduction_tax_details)
+            ) {
+              rateData.deduction_tax_details.forEach((tax) => {
                 chargesData.push({
                   id: tax.id,
                   material_id: material.id,
-                  material_name: material.material_name,
+                  material_name: material.material_name || material.material,
                   charge_name: getTaxNameById(tax.resource_id),
                   resource_id: tax.resource_id,
                   resource_type: tax.resource_type,
@@ -2912,18 +3260,67 @@ const isPercentageTax = (taxChargeType) => {
                   amount_inr: convertUsdToInr(tax.amount, conversionRate), // Convert USD to INR
                   inclusive: tax.inclusive,
                   tax_category_id: tax.tax_category_id,
-                  percentage: tax.percentage
+                  percentage: tax.percentage,
                 });
               });
             }
           }
         }
       }
-      
+
       setChargesFromApi(chargesData);
       setTotalMaterialCost(totalCost);
       console.log("Charges data from API:", chargesData);
       console.log("Total material cost:", totalCost);
+
+      // Calculate and store values for Rate & Taxes table for each material
+      const calculatedValuesMap = {};
+      
+      for (const material of submittedMaterials) {
+        if (material.id) {
+          const materialCharges = chargesData.filter(charge => charge.material_id === material.id);
+          
+          const calculatedValues = {
+            taxAddition: 0,
+            totalChanges: 0,
+            otherAddition: 0,
+            otherDeductions: 0,
+            allInclCost: 0,
+            taxDeductions: 0,
+          };
+
+          // Calculate Tax Addition (sum of TaxCategory additions)
+          calculatedValues.taxAddition = materialCharges
+            .filter(charge => charge.resource_type === "TaxCategory")
+            .reduce((sum, charge) => sum + (parseFloat(charge.amount) || 0), 0);
+
+          // Calculate Tax Deductions (sum of TaxCategory deductions)
+          calculatedValues.taxDeductions = materialCharges
+            .filter(charge => charge.resource_type === "TaxCategory" && charge.amount < 0)
+            .reduce((sum, charge) => sum + Math.abs(parseFloat(charge.amount) || 0), 0);
+
+          // Calculate Other Addition (sum of TaxCharge additions)
+          calculatedValues.otherAddition = materialCharges
+            .filter(charge => charge.resource_type === "TaxCharge" && charge.amount > 0)
+            .reduce((sum, charge) => sum + (parseFloat(charge.amount) || 0), 0);
+
+          // Calculate Other Deductions (sum of TaxCharge deductions)
+          calculatedValues.otherDeductions = materialCharges
+            .filter(charge => charge.resource_type === "TaxCharge" && charge.amount < 0)
+            .reduce((sum, charge) => sum + Math.abs(parseFloat(charge.amount) || 0), 0);
+
+          // Calculate Total Changes
+          calculatedValues.totalChanges = calculatedValues.taxAddition - calculatedValues.taxDeductions;
+
+          // Calculate All Inclusive Cost (sum of all positive amounts)
+          calculatedValues.allInclCost = materialCharges
+            .reduce((sum, charge) => sum + Math.max(0, parseFloat(charge.amount) || 0), 0);
+
+          calculatedValuesMap[material.id] = calculatedValues;
+        }
+      }
+
+      setMaterialCalculatedValues(calculatedValuesMap);
     } catch (error) {
       console.error("Error fetching charges data:", error);
       setChargesFromApi([]);
@@ -2936,41 +3333,43 @@ const isPercentageTax = (taxChargeType) => {
   // Helper function to get tax name by resource ID
   const getTaxNameById = (resourceId) => {
     // Check in tax options
-    const taxOption = taxOptions.find(option => option.id === resourceId);
+    const taxOption = taxOptions.find((option) => option.id === resourceId);
     if (taxOption) return taxOption.label;
-    
+
     // Check in deduction tax options
-    const deductionOption = deductionTaxOptions.find(option => option.id === resourceId);
+    const deductionOption = deductionTaxOptions.find(
+      (option) => option.id === resourceId
+    );
     if (deductionOption) return deductionOption.label;
-    
+
     // Check in charge names
-    const chargeName = chargeNames.find(charge => charge.id === resourceId);
+    const chargeName = chargeNames.find((charge) => charge.id === resourceId);
     if (chargeName) return chargeName.name;
-    
+
     return "Unknown Charge";
   };
 
   // Handle service provider selection
   const handleServiceProviderChange = (chargeId, selectedOption) => {
-    setSelectedServiceProviders(prev => ({
+    setSelectedServiceProviders((prev) => ({
       ...prev,
-      [chargeId]: selectedOption
+      [chargeId]: selectedOption,
     }));
   };
 
   // Handle service certificate checkbox
   const handleServiceCertificateChange = (chargeId, checked) => {
-    setServiceCertificates(prev => ({
+    setServiceCertificates((prev) => ({
       ...prev,
-      [chargeId]: checked
+      [chargeId]: checked,
     }));
   };
 
   // Handle charge remarks
   const handleChargeRemarksChange = (chargeId, remarks) => {
-    setChargeRemarks(prev => ({
+    setChargeRemarks((prev) => ({
       ...prev,
-      [chargeId]: remarks
+      [chargeId]: remarks,
     }));
   };
 
@@ -2984,7 +3383,10 @@ const isPercentageTax = (taxChargeType) => {
   // Calculate service certificate advance amount
   const calculateServiceCertificateAdvanceAmount = () => {
     const percentage = parseFloat(serviceCertificateAdvancePercentage) || 0;
-    const grandTotal = chargesFromApi.reduce((sum, charge) => sum + (parseFloat(charge.amount_inr) || 0), 0);
+    const grandTotal = chargesFromApi.reduce(
+      (sum, charge) => sum + (parseFloat(charge.amount_inr) || 0),
+      0
+    );
     const amount = (grandTotal * percentage) / 100;
     return amount;
   };
@@ -3009,7 +3411,9 @@ const isPercentageTax = (taxChargeType) => {
     } else if (numValue >= 0 && numValue <= 100) {
       setServiceCertificateAdvancePercentage(value);
     } else {
-      alert("Service certificate advance percentage must be between 0 and 100.");
+      alert(
+        "Service certificate advance percentage must be between 0 and 100."
+      );
     }
   };
 
@@ -3047,13 +3451,15 @@ const isPercentageTax = (taxChargeType) => {
       }
 
       if (!conversionRate || conversionRate <= 0) {
-        alert("Please set the Conversion Rate (USD to INR) in the PO Details tab.");
+        alert(
+          "Please set the Conversion Rate (USD to INR) in the PO Details tab."
+        );
         setIsCreatingOrder(false);
         return;
       }
 
       // Prepare charges data for submission
-      const chargesSubmissionData = chargesFromApi.map(charge => ({
+      const chargesSubmissionData = chargesFromApi.map((charge) => ({
         id: charge.id,
         material_id: charge.material_id,
         charge_name: charge.charge_name,
@@ -3063,8 +3469,9 @@ const isPercentageTax = (taxChargeType) => {
         amount_inr: charge.amount_inr,
         service_certificate: serviceCertificates[charge.id] || false,
         service_provider_id: selectedServiceProviders[charge.id]?.value || null,
-        service_provider_name: selectedServiceProviders[charge.id]?.label || null,
-        remarks: chargeRemarks[charge.id] || ""
+        service_provider_name:
+          selectedServiceProviders[charge.id]?.label || null,
+        remarks: chargeRemarks[charge.id] || "",
       }));
 
       console.log("Charges data for submission:", chargesSubmissionData);
@@ -3079,7 +3486,7 @@ const isPercentageTax = (taxChargeType) => {
       //     material.pms_inventory_id || material.inventory_id || material.id;
       //   console.log(
       //     `Material ${
-      //       material.material_name || material.id
+      //       material.material_name || material.material || material.id
       //     }: inventory_id = ${inventoryId}`
       //   );
       //   return inventoryId;
@@ -3122,15 +3529,21 @@ const isPercentageTax = (taxChargeType) => {
           // total_value: 0,
           // total_discount: 0,
           // po_date: getLocalDateTime().split("T")[0], // Current date
-          credit_period: termsFormData.creditPeriod ? parseInt(termsFormData.creditPeriod) : null,
-po_validity_period: termsFormData.poValidityPeriod ? parseInt(termsFormData.poValidityPeriod) : null,
-advance_reminder_duration: termsFormData.advanceReminderDuration ? parseInt(termsFormData.advanceReminderDuration) : null,
-payment_terms: termsFormData.paymentTerms || null,
-payment_remarks: termsFormData.paymentRemarks || null,
-supplier_advance: null,
-survice_certificate_advance: null, 
-total_value: null,
-total_discount: null,
+          credit_period: termsFormData.creditPeriod
+            ? parseInt(termsFormData.creditPeriod)
+            : null,
+          po_validity_period: termsFormData.poValidityPeriod
+            ? parseInt(termsFormData.poValidityPeriod)
+            : null,
+          advance_reminder_duration: termsFormData.advanceReminderDuration
+            ? parseInt(termsFormData.advanceReminderDuration)
+            : null,
+          payment_terms: termsFormData.paymentTerms || null,
+          payment_remarks: termsFormData.paymentRemarks || null,
+          supplier_advance: null,
+          survice_certificate_advance: null,
+          total_value: null,
+          total_discount: null,
           po_date: getLocalDateTime().split("T")[0], // Current date
           company_id: selectedCompany?.value,
           po_type: "import",
@@ -3141,15 +3554,25 @@ total_discount: null,
           material_inventory_ids: apiMaterialInventoryIds,
 
           // Extract unique MOR IDs from submitted materials
-          mor_ids: [...new Set(submittedMaterials.map(material => material.mor_id).filter(Boolean))],
+          mor_ids: [
+            ...new Set(
+              submittedMaterials
+                .map((material) => material.mor_id)
+                .filter(Boolean)
+            ),
+          ],
 
           // Extract MOR inventory tax details from charges data
           mor_inventory_tax_details: chargesFromApi
-            .filter(charge => charge.resource_type === "TaxCategory" || charge.resource_type === "TaxCharge")
-            .map(charge => ({
+            .filter(
+              (charge) =>
+                charge.resource_type === "TaxCategory" ||
+                charge.resource_type === "TaxCharge"
+            )
+            .map((charge) => ({
               id: charge.id,
               remarks: charge.charge_name || "",
-              supplier_id: selectedSupplier?.value || null
+              supplier_id: selectedSupplier?.value || null,
             })),
 
           // Include purchase order ID if available (for updates)
@@ -3182,34 +3605,54 @@ total_discount: null,
             ],
           })),
 
-          // Format charges with taxes
-          charges_with_taxes_attributes: charges.map((charge) => {
-            return {
-              charge_id: charge.charge_id || 0,
+          // Format charges with taxes from API
+          charges_with_taxes_attributes: [
+            // Include charges from API (chargesFromApi)
+            ...chargesFromApi.map((charge) => ({
+              id: charge.id,
+              material_id: charge.material_id,
+              charge_name: charge.charge_name,
+              resource_id: charge.resource_id,
+              resource_type: charge.resource_type,
               amount: parseFloat(charge.amount) || 0,
-              realised_amount: parseFloat(charge.realised_amount) || 0,
-              taxes_and_charges_attributes: [
-                ...(charge.taxes?.additionTaxes || []).map((tax) => ({
-                  resource_id: parseInt(tax.taxType) || 0,
-                  resource_type: "TaxCategory",
-                  percentage:
-                    parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
-                  inclusive: tax.inclusive || false,
-                  amount: parseFloat(tax.amount) || 0,
-                  addition: true,
-                })),
-                ...(charge.taxes?.deductionTaxes || []).map((tax) => ({
-                  resource_id: parseInt(tax.taxType) || 0,
-                  resource_type: "TaxCategory",
-                  percentage:
-                    parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
-                  inclusive: tax.inclusive || false,
-                  amount: parseFloat(tax.amount) || 0,
-                  addition: false,
-                })),
-              ],
-            };
-          }),
+              amount_inr: parseFloat(charge.amount_inr) || 0,
+              service_certificate: serviceCertificates[charge.id] || false,
+              service_provider_id: selectedServiceProviders[charge.id]?.value || null,
+              service_provider_name: selectedServiceProviders[charge.id]?.label || null,
+              remarks: chargeRemarks[charge.id] || "",
+              inclusive: charge.inclusive || false,
+              tax_category_id: charge.tax_category_id,
+              percentage: charge.percentage,
+            })),
+            // Include manually added charges
+            ...charges.map((charge) => {
+              return {
+                charge_id: charge.charge_id || 0,
+                amount: parseFloat(charge.amount) || 0,
+                realised_amount: parseFloat(charge.realised_amount) || 0,
+                taxes_and_charges_attributes: [
+                  ...(charge.taxes?.additionTaxes || []).map((tax) => ({
+                    resource_id: parseInt(tax.taxType) || 0,
+                    resource_type: "TaxCategory",
+                    percentage:
+                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+                    inclusive: tax.inclusive || false,
+                    amount: parseFloat(tax.amount) || 0,
+                    addition: true,
+                  })),
+                  ...(charge.taxes?.deductionTaxes || []).map((tax) => ({
+                    resource_id: parseInt(tax.taxType) || 0,
+                    resource_type: "TaxCategory",
+                    percentage:
+                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+                    inclusive: tax.inclusive || false,
+                    amount: parseFloat(tax.amount) || 0,
+                    addition: false,
+                  })),
+                ],
+              };
+            }),
+          ],
 
           // Resource term conditions
           resource_term_conditions_attributes: Array.isArray(generalTerms)
@@ -3281,49 +3724,55 @@ total_discount: null,
   // ...existing code...
 
   // Currency helpers for modal
-// Exchange rate: 1 USD = 82.5 INR (default)
+  // Exchange rate: 1 USD = 82.5 INR (default)
 
-// Conversion functions with safety checks
-const convertInrToUsd = useCallback((inrValue, customRate = null) => {
-  if (!inrValue || isNaN(inrValue)) return "";
-  const rate = customRate || conversionRate || 82.5; // Use conversionRate instead of exchangeRate
-  // Proper formula: USD = INR / ExchangeRate
-  return (parseFloat(inrValue) / rate).toFixed(2);
-}, [conversionRate]);
+  // Conversion functions with safety checks
+  const convertInrToUsd = useCallback(
+    (inrValue, customRate = null) => {
+      if (!inrValue || isNaN(inrValue)) return "";
+      const rate = customRate || conversionRate || 82.5; // Use conversionRate instead of exchangeRate
+      // Proper formula: USD = INR / ExchangeRate
+      return (parseFloat(inrValue) / rate).toFixed(2);
+    },
+    [conversionRate]
+  );
 
-const convertUsdToInr = useCallback((usdValue, customRate = null) => {
-  if (!usdValue || isNaN(usdValue)) return "";
-  const rate = customRate || conversionRate || 82.5; // Use conversionRate instead of exchangeRate
-  // Proper formula: INR = USD * ExchangeRate
-  return (parseFloat(usdValue) * rate).toFixed(2);
-}, [conversionRate]);
+  const convertUsdToInr = useCallback(
+    (usdValue, customRate = null) => {
+      if (!usdValue || isNaN(usdValue)) return "";
+      const rate = customRate || conversionRate || 82.5; // Use conversionRate instead of exchangeRate
+      // Proper formula: INR = USD * ExchangeRate
+      return (parseFloat(usdValue) * rate).toFixed(2);
+    },
+    [conversionRate]
+  );
 
-// Safe conversion functions that can be used during initial render
-const safeConvertInrToUsd = (inrValue, customRate = null) => {
-  if (!inrValue || isNaN(inrValue)) return "";
-  const rate = customRate || conversionRate || 82.5;
-  return (parseFloat(inrValue) / rate).toFixed(2);
-};
+  // Safe conversion functions that can be used during initial render
+  const safeConvertInrToUsd = (inrValue, customRate = null) => {
+    if (!inrValue || isNaN(inrValue)) return "";
+    const rate = customRate || conversionRate || 82.5;
+    return (parseFloat(inrValue) / rate).toFixed(2);
+  };
 
-const safeConvertUsdToInr = (usdValue, customRate = null) => {
-  if (!usdValue || isNaN(usdValue)) return "";
-  const rate = customRate || conversionRate || 82.5;
-  return (parseFloat(usdValue) * rate).toFixed(2);
-};
+  const safeConvertUsdToInr = (usdValue, customRate = null) => {
+    if (!usdValue || isNaN(usdValue)) return "";
+    const rate = customRate || conversionRate || 82.5;
+    return (parseFloat(usdValue) * rate).toFixed(2);
+  };
 
-  // Calculate tax amount for addition taxes (Total Base Cost + Tax Amount) - all in USD
-const calculateAdditionTaxAmount = (baseCost, taxAmount) => {
-  const base = parseFloat(baseCost) || 0;
-  const tax = parseFloat(taxAmount) || 0;
-  return base + tax;
-};
+  // Calculate total amount for addition taxes (Base Cost + Tax Amount)
+  const calculateAdditionTaxAmount = (baseCost, taxAmount) => {
+    const base = parseFloat(baseCost) || 0;
+    const tax = parseFloat(taxAmount) || 0;
+    return base + tax;
+  };
 
-// Calculate tax amount for deduction taxes (Total Base Cost - Tax Amount) - all in USD
-const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
-  const base = parseFloat(baseCost) || 0;
-  const tax = parseFloat(taxAmount) || 0;
-  return Math.max(0, base - tax);
-};
+  // Calculate total amount for deduction taxes (Base Cost - Tax Amount)
+  const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
+    const base = parseFloat(baseCost) || 0;
+    const tax = parseFloat(taxAmount) || 0;
+    return Math.max(0, base - tax);
+  };
 
   return (
     <>
@@ -3496,7 +3945,9 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                             role="tablist"
                           >
                             <button
-                              className={`nav-link ${activeTab === "po-details" ? "active" : ""}`}
+                              className={`nav-link ${
+                                activeTab === "po-details" ? "active" : ""
+                              }`}
                               id="nav-home-tab"
                               data-bs-toggle="tab"
                               data-bs-target="#Domestic1"
@@ -3509,7 +3960,9 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                               PO Details
                             </button>
                             <button
-                              className={`nav-link ${activeTab === "rate-taxes" ? "active" : ""}`}
+                              className={`nav-link ${
+                                activeTab === "rate-taxes" ? "active" : ""
+                              }`}
                               id="nav-profile-tab"
                               data-bs-toggle="tab"
                               data-bs-target="#Domestic2"
@@ -3522,7 +3975,9 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                               Rate &amp; Taxes
                             </button>
                             <button
-                              className={`nav-link ${activeTab === "terms-conditions" ? "active" : ""}`}
+                              className={`nav-link ${
+                                activeTab === "terms-conditions" ? "active" : ""
+                              }`}
                               id="nav-contact-tab"
                               data-bs-toggle="tab"
                               data-bs-target="#Domestic3"
@@ -3530,7 +3985,9 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                               role="tab"
                               aria-controls="nav-contact"
                               aria-selected={activeTab === "terms-conditions"}
-                              onClick={() => handleTabChange("terms-conditions")}
+                              onClick={() =>
+                                handleTabChange("terms-conditions")
+                              }
                             >
                               Term &amp; Conditions
                             </button>
@@ -3538,7 +3995,9 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                         </nav>
                         <div className="tab-content" id="nav-tabContent">
                           <div
-                            className={`tab-pane fade ${activeTab === "po-details" ? "show active" : ""}`}
+                            className={`tab-pane fade ${
+                              activeTab === "po-details" ? "show active" : ""
+                            }`}
                             id="Domestic1"
                             role="tabpanel"
                             aria-labelledby="nav-home-tab"
@@ -3586,17 +4045,23 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                       type="date"
                                       value={poDate}
                                       onChange={(e) => {
-                                        const selectedDate = new Date(e.target.value);
+                                        const selectedDate = new Date(
+                                          e.target.value
+                                        );
                                         const today = new Date();
                                         today.setHours(0, 0, 0, 0);
-                                        
+
                                         if (selectedDate < today) {
-                                          alert("PO Date cannot be in the past. Please select today's date or a future date.");
+                                          alert(
+                                            "PO Date cannot be in the past. Please select today's date or a future date."
+                                          );
                                           return;
                                         }
                                         setPoDate(e.target.value);
                                       }}
-                                      min={new Date().toISOString().split('T')[0]}
+                                      min={
+                                        new Date().toISOString().split("T")[0]
+                                      }
                                     />
                                   </div>
                                 </div>
@@ -3661,7 +4126,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                     />
                                   </div>
                                 </div>
-                               
+
                                 {/* <div className="col-md-4 mt-2">
                                   <div className="form-group">
                                     <label className="po-fontBold">
@@ -3702,29 +4167,36 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                     />
                                   </div>
                                 </div>
-                                 <div className="col-md-4 mt-2">
+                                <div className="col-md-4 mt-2">
                                   <div className="form-group">
-                                    <label className="po-fontBold">PO Currency</label>
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      value={`${poCurrency.symbol} ${poCurrency.code}`}
-                                      readOnly
-                                      disabled
+                                    <label className="po-fontBold">
+                                      PO Currency
+                                    </label>
+                                    <SingleSelector
+                                      options={currencyOptions}
+                                      value={currencyOptions.find(option => option.value === selectedCurrency.code)}
+                                      onChange={handleCurrencyChange}
+                                      placeholder="Select Currency"
                                     />
                                   </div>
                                 </div>
-                                 <div className="col-md-4 mt-2">
+                                <div className="col-md-4 mt-2">
                                   <div className="form-group">
-                                    <label className="po-fontBold">Conversion Rate (USD to INR)</label>
+                                    <label className="po-fontBold">
+                                      Conversion Rate (USD to INR)
+                                    </label>
                                     <input
                                       className="form-control"
                                       type="number"
                                       value={conversionRate}
                                       onChange={(e) => {
-                                        const value = parseFloat(e.target.value);
+                                        const value = parseFloat(
+                                          e.target.value
+                                        );
                                         if (value <= 0) {
-                                          alert("Conversion rate must be greater than 0.");
+                                          alert(
+                                            "Conversion rate must be greater than 0."
+                                          );
                                           return;
                                         }
                                         setConversionRate(value || 82.5);
@@ -3772,7 +4244,9 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                     <tr>
                                       <th className="text-start">Sr. No</th>
                                       <th className="text-start">Project</th>
-                                      <th className="text-start">Sub-Project</th>
+                                      <th className="text-start">
+                                        Sub-Project
+                                      </th>
                                       <th className="text-start">MOR No.</th>
                                       <th className="text-start">Material</th>
                                       <th className="text-start">UOM</th>
@@ -3784,60 +4258,65 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                   <tbody>
                                     {submittedMaterials.length > 0 ? (
                                       submittedMaterials.map((row, index) => (
-                                          <tr key={index}>
-                                            <td className="text-start">
-                                              {index + 1}
-                                            </td>
-                                            <td className="text-start">
-                                              {row.project_name || ""}
-                                            </td>
-                                            <td className="text-start">
-                                              {row.sub_project_name || ""}
-                                            </td>
-                                            <td className="text-start">
-                                              {row.mor_number || ""}
-                                            </td>
-                                            <td className="text-start">
-                                              {row.material_name || ""}
-                                            </td>
-                                            <td className="text-start">
-                                              {row.uom_name || ""}
-                                            </td>
-                                            <td className="text-start">
-                                              {row.required_quantity ?? ""}
-                                            </td>
-                                            <td className="text-start">
-                                              {row.order_qty ?? ""}
-                                            </td>
-                                            <td className="text-start">
-                                              <button
-                                                className="btn mt-0 pt-0"
-                                                onClick={() => {
-                                                  setSubmittedMaterials((prev) => prev.filter((_, i) => i !== index));
-                                                }}
+                                        <tr key={index}>
+                                          <td className="text-start">
+                                            {index + 1}
+                                          </td>
+                                          <td className="text-start">
+                                            {row.project_name || ""}
+                                          </td>
+                                          <td className="text-start">
+                                            {row.sub_project_name || ""}
+                                          </td>
+                                          <td className="text-start">
+                                            {row.mor_number || ""}
+                                          </td>
+                                          <td className="text-start">
+                                            {row.material_name || row.material || ""}
+                                          </td>
+                                          <td className="text-start">
+                                            {row.uom_name || ""}
+                                          </td>
+                                          <td className="text-start">
+                                            {row.required_quantity ?? ""}
+                                          </td>
+                                          <td className="text-start">
+                                            {row.order_qty ?? ""}
+                                          </td>
+                                          <td className="text-start">
+                                            <button
+                                              className="btn mt-0 pt-0"
+                                              onClick={() => {
+                                                setSubmittedMaterials((prev) =>
+                                                  prev.filter(
+                                                    (_, i) => i !== index
+                                                  )
+                                                );
+                                                // Refresh delivery schedules after removing material
+                                                setTimeout(() => {
+                                                  fetchDeliverySchedules();
+                                                }, 100);
+                                              }}
+                                            >
+                                              <svg
+                                                width="16"
+                                                height="20"
+                                                viewBox="0 0 16 20"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
                                               >
-                                                 <svg
-                                                  width="16"
-                                                  height="20"
-                                                  viewBox="0 0 16 20"
-                                                  fill="none"
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                >
-                                                  <path
-                                                    d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533ZM7.52531 16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
-                                                    fill="#B25657"
-                                                  />
-                                                </svg>
-                                              </button>
-                                            </td>
-                                          </tr>
-                                        ))
+                                                <path
+                                                  d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533ZM7.52531 16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
+                                                  fill="#B25657"
+                                                />
+                                              </svg>
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      ))
                                     ) : (
                                       <tr>
-                                        <td
-                                          colSpan="9"
-                                          className="text-center"
-                                        >
+                                        <td colSpan="9" className="text-center">
                                           No data added yet.
                                         </td>
                                       </tr>
@@ -3851,12 +4330,19 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                               <button
                                 className="purple-btn2 px-4 py-2"
                                 onClick={() => {
-                                  if (!submittedMaterials || submittedMaterials.length === 0) {
-                                    alert("Please add at least one material before proceeding to Rate & Taxes.");
+                                  if (
+                                    !submittedMaterials ||
+                                    submittedMaterials.length === 0
+                                  ) {
+                                    alert(
+                                      "Please add at least one material before proceeding to Rate & Taxes."
+                                    );
                                     return;
                                   }
                                   setActiveTab("rate-taxes");
-                                  const rateTaxesTab = document.querySelector('[data-bs-target="#Domestic2"]');
+                                  const rateTaxesTab = document.querySelector(
+                                    '[data-bs-target="#Domestic2"]'
+                                  );
                                   if (rateTaxesTab) rateTaxesTab.click();
                                 }}
                                 disabled={false}
@@ -3866,7 +4352,9 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                             </div>
                           </div>
                           <div
-                            className={`tab-pane fade ${activeTab === "rate-taxes" ? "show active" : ""}`}
+                            className={`tab-pane fade ${
+                              activeTab === "rate-taxes" ? "show active" : ""
+                            }`}
                             id="Domestic2"
                             role="tabpanel"
                             aria-labelledby="nav-profile-tab"
@@ -3926,29 +4414,47 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                 <tbody>
                                   {submittedMaterials.length > 0 ? (
                                     submittedMaterials.map(
-                                      (material, index) => (
-                                        <tr key={material.id}>
-                                          <td>{index + 1}</td>
-                                          <td>{material.material_name}</td>
-                                          <td>{material.uom_name}</td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td
-                                            className="text-decoration-underline"
-                                            style={{ cursor: "pointer" }}
-                                            onClick={() =>
-                                              handleOpenTaxModal(index)
-                                            }
-                                          >
-                                            select
-                                          </td>
-                                        </tr>
-                                      )
+                                      (material, index) => {
+                                        const calculatedValues = materialCalculatedValues[material.id] || {};
+                                        return (
+                                          <tr key={material.id}>
+                                            <td>{index + 1}</td>
+                                            <td>{material.material_name || material.material}</td>
+                                            <td>{material.uom_name}</td>
+                                            <td>{material.order_qty || ""}</td>
+                                            <td>USD {calculatedValues.taxAddition?.toFixed(2) || "0.00"} (INR {(() => {
+                                              const inrValue = parseFloat(convertUsdToInr(calculatedValues.taxAddition || 0, conversionRate));
+                                              return isNaN(inrValue) ? "0.00" : inrValue.toFixed(2);
+                                            })()})</td>
+                                            <td></td>
+                                            <td>USD {calculatedValues.otherAddition?.toFixed(2) || "0.00"} (INR {(() => {
+                                              const inrValue = parseFloat(convertUsdToInr(calculatedValues.otherAddition || 0, conversionRate));
+                                              return isNaN(inrValue) ? "0.00" : inrValue.toFixed(2);
+                                            })()})</td>
+                                            <td>USD {calculatedValues.otherDeductions?.toFixed(2) || "0.00"} (INR {(() => {
+                                              const inrValue = parseFloat(convertUsdToInr(calculatedValues.otherDeductions || 0, conversionRate));
+                                              return isNaN(inrValue) ? "0.00" : inrValue.toFixed(2);
+                                            })()})</td>
+                                            <td>USD {calculatedValues.allInclCost?.toFixed(2) || "0.00"} (INR {(() => {
+                                              const inrValue = parseFloat(convertUsdToInr(calculatedValues.allInclCost || 0, conversionRate));
+                                              return isNaN(inrValue) ? "0.00" : inrValue.toFixed(2);
+                                            })()})</td>
+                                            <td>USD {calculatedValues.taxDeductions?.toFixed(2) || "0.00"} (INR {(() => {
+                                              const inrValue = parseFloat(convertUsdToInr(calculatedValues.taxDeductions || 0, conversionRate));
+                                              return isNaN(inrValue) ? "0.00" : inrValue.toFixed(2);
+                                            })()})</td>
+                                            <td
+                                              className="text-decoration-underline"
+                                              style={{ cursor: "pointer" }}
+                                              onClick={() =>
+                                                handleOpenTaxModal(index)
+                                              }
+                                            >
+                                              select
+                                            </td>
+                                          </tr>
+                                        );
+                                      }
                                     )
                                   ) : (
                                     <tr>
@@ -4013,27 +4519,343 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                               </table>
                             </div>
 
+                            {/* Tax Addition and Charges Tables */}
+                            <div className="tbl-container me-2 mt-3">
+                              <table className="w-100">
+                                <thead>
+                                  <tr>
+                                    <th rowSpan={2}>Charges And Taxes</th>
+                                    <th colSpan={2}>Amount</th>
+                                    <th rowSpan={2}>Payable Currency</th>
+                                    <th rowSpan={2}>Service Certificate</th>
+                                    <th rowSpan={2}>Select Service Provider</th>
+                                    <th rowSpan={2}>Remarks</th>
+                                  </tr>
+                                  <tr>
+                                    <th>INR</th>
+                                    <th>USD</th>
+                                  </tr>
+                                  <tr>
+                                    <th colSpan={7}>Tax Addition(Exclusive)</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {loadingCharges ? (
+                                    <tr>
+                                      <td colSpan={7} className="text-center">
+                                        <div
+                                          className="spinner-border spinner-border-sm me-2"
+                                          role="status"
+                                        >
+                                          <span className="visually-hidden">
+                                            Loading...
+                                          </span>
+                                        </div>
+                                        Loading charges data...
+                                      </td>
+                                    </tr>
+                                  ) : chargesFromApi.filter(
+                                      (charge) =>
+                                        charge.resource_type === "TaxCategory"
+                                    ).length > 0 ? (
+                                    chargesFromApi
+                                      .filter(
+                                        (charge) =>
+                                          charge.resource_type === "TaxCategory"
+                                      )
+                                      .map((charge, index) => (
+                                        <tr key={`tax-${charge.id}-${index}`}>
+                                          <td>{charge.charge_name}</td>
+                                          <td>
+                                            INR {charge.amount_inr || "0.00"}
+                                          </td>
+                                          <td>USD {charge.amount || "0.00"}</td>
+                                          <td>USD</td>
+                                          <td>
+                                            <input
+                                              type="checkbox"
+                                              checked={
+                                                serviceCertificates[
+                                                  charge.id
+                                                ] || false
+                                              }
+                                              onChange={(e) =>
+                                                handleServiceCertificateChange(
+                                                  charge.id,
+                                                  e.target.checked
+                                                )
+                                              }
+                                            />
+                                          </td>
+                                          <td>
+                                            <SingleSelector
+                                              options={supplierOptions}
+                                              value={
+                                                selectedServiceProviders[
+                                                  charge.id
+                                                ] || null
+                                              }
+                                              onChange={(selectedOption) =>
+                                                handleServiceProviderChange(
+                                                  charge.id,
+                                                  selectedOption
+                                                )
+                                              }
+                                              placeholder="Select Service Provider"
+                                            />
+                                          </td>
+                                          <td>
+                                            <textarea
+                                              className="form-control"
+                                              rows={2}
+                                              placeholder="Enter remarks"
+                                              value={
+                                                chargeRemarks[charge.id] || ""
+                                              }
+                                              onChange={(e) =>
+                                                handleChargeRemarksChange(
+                                                  charge.id,
+                                                  e.target.value
+                                                )
+                                              }
+                                            />
+                                          </td>
+                                        </tr>
+                                      ))
+                                  ) : (
+                                    <tr>
+                                      <td colSpan={7} className="text-center">
+                                        No Records Found.
+                                      </td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+                            <div className="tbl-container me-2 mt-3">
+                              <table className="w-100">
+                                <thead>
+                                  <tr>
+                                    <th colSpan={6}>Charges (Exclusive)</th>
+                                  </tr>
+                                  <tr>
+                                    <th>Charge Name</th>
+                                    <th>Amount (INR)</th>
+                                    <th>Amount (USD)</th>
+                                    <th>Service Certificate</th>
+                                    <th>Service Provider</th>
+                                    <th>Remarks</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {loadingCharges ? (
+                                    <tr>
+                                      <td colSpan={6} className="text-center">
+                                        <div
+                                          className="spinner-border spinner-border-sm me-2"
+                                          role="status"
+                                        >
+                                          <span className="visually-hidden">
+                                            Loading...
+                                          </span>
+                                        </div>
+                                        Loading charges data...
+                                      </td>
+                                    </tr>
+                                  ) : getConsolidatedCharges().length > 0 ? (
+                                    getConsolidatedCharges().map((consolidatedCharge, index) => (
+                                      <tr key={`consolidated-${index}`}>
+                                        <td>{consolidatedCharge.charge_name}</td>
+                                        <td>
+                                          INR {consolidatedCharge.total_amount_inr.toFixed(2)}
+                                        </td>
+                                        <td>
+                                          USD {consolidatedCharge.total_amount_usd.toFixed(2)}
+                                        </td>
+                                        <td>
+                                          <input
+                                            type="checkbox"
+                                            checked={
+                                              consolidatedCharge.charge_ids.every(id => 
+                                                serviceCertificates[id]
+                                              ) || false
+                                            }
+                                            onChange={(e) => {
+                                              // Update all related charges
+                                              consolidatedCharge.charge_ids.forEach(id => {
+                                                handleServiceCertificateChange(id, e.target.checked);
+                                              });
+                                            }}
+                                          />
+                                        </td>
+                                        <td>
+                                          <SingleSelector
+                                            options={supplierOptions}
+                                            value={
+                                              selectedServiceProviders[
+                                                consolidatedCharge.charge_ids[0]
+                                              ] || null
+                                            }
+                                            onChange={(selectedOption) => {
+                                              // Update all related charges with same service provider
+                                              consolidatedCharge.charge_ids.forEach(id => {
+                                                handleServiceProviderChange(id, selectedOption);
+                                              });
+                                            }}
+                                            placeholder="Select Service Provider"
+                                          />
+                                        </td>
+                                        <td>
+                                          <textarea
+                                            className="form-control"
+                                            rows={2}
+                                            placeholder="Enter remarks"
+                                            value={
+                                              chargeRemarks[consolidatedCharge.charge_ids[0]] || ""
+                                            }
+                                            onChange={(e) => {
+                                              // Update all related charges with same remarks
+                                              consolidatedCharge.charge_ids.forEach(id => {
+                                                handleChargeRemarksChange(id, e.target.value);
+                                              });
+                                            }}
+                                          />
+                                        </td>
+                                      </tr>
+                                    ))
+                                  ) : (
+                                    <tr>
+                                      <td colSpan={6} className="text-center">
+                                        No Records Found.
+                                      </td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+
+                            {/* Summary Section */}
+                            {!loadingCharges && chargesFromApi.length > 0 && (
+                              <div className="row mt-3">
+                                <div className="col-md-6">
+                                  <div className="card">
+                                    <div className="card-header">
+                                      <h6 className="mb-0">Charges Summary</h6>
+                                    </div>
+                                    <div className="card-body">
+                                      <div className="row">
+                                        <div className="col-6">
+                                          <strong>Total Tax Addition:</strong>
+                                        </div>
+                                        <div className="col-6">
+                                          INR{" "}
+                                          {chargesFromApi
+                                            .filter(
+                                              (charge) =>
+                                                charge.resource_type ===
+                                                "TaxCategory"
+                                            )
+                                            .reduce(
+                                              (sum, charge) =>
+                                                sum +
+                                                (parseFloat(
+                                                  charge.amount_inr
+                                                ) || 0),
+                                              0
+                                            )
+                                            .toFixed(2)}
+                                        </div>
+                                      </div>
+                                      <div className="row">
+                                        <div className="col-6">
+                                          <strong>Total Charges:</strong>
+                                        </div>
+                                        <div className="col-6">
+                                          INR{" "}
+                                          {chargesFromApi
+                                            .filter(
+                                              (charge) =>
+                                                charge.resource_type ===
+                                                "TaxCharge"
+                                            )
+                                            .reduce(
+                                              (sum, charge) =>
+                                                sum +
+                                                (parseFloat(
+                                                  charge.amount_inr
+                                                ) || 0),
+                                              0
+                                            )
+                                            .toFixed(2)}
+                                        </div>
+                                      </div>
+                                      <hr />
+                                      <div className="row">
+                                        <div className="col-6">
+                                          <strong>Grand Total:</strong>
+                                        </div>
+                                        <div className="col-6">
+                                          INR{" "}
+                                          {chargesFromApi
+                                            .reduce(
+                                              (sum, charge) =>
+                                                sum +
+                                                (parseFloat(
+                                                  charge.amount_inr
+                                                ) || 0),
+                                              0
+                                            )
+                                            .toFixed(2)}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
                             {/* Charges Section */}
                             <div className="mt-4">
                               <div className="d-flex justify-content-between align-items-center">
                                 <h5 className="mt-3">Charges</h5>
-                                <button
-                                  type="button"
-                                  className="btn purple-btn2"
-                                  onClick={addCharge}
-                                >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width={16}
-                                    height={16}
-                                    fill="currentColor"
-                                    className="bi bi-plus"
-                                    viewBox="0 0 16 16"
+                                <div className="d-flex gap-2">
+                                  <button
+                                    type="button"
+                                    className="btn purple-btn2"
+                                    onClick={refreshChargesData}
+                                    title="Refresh charges data from API"
                                   >
-                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                  </svg>
-                                  Add
-                                </button>
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width={16}
+                                      height={16}
+                                      fill="currentColor"
+                                      className="bi bi-arrow-clockwise"
+                                      viewBox="0 0 16 16"
+                                    >
+                                      <path fillRule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                      <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                                    </svg>
+                                    Refresh
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn purple-btn2"
+                                    onClick={addCharge}
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width={16}
+                                      height={16}
+                                      fill="currentColor"
+                                      className="bi bi-plus"
+                                      viewBox="0 0 16 16"
+                                    >
+                                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                    </svg>
+                                    Add
+                                  </button>
+                                </div>
                               </div>
 
                               <div className="tbl-container me-2 mt-3">
@@ -4269,13 +5091,15 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                 </table>
                               </div>
                               {/* )} */}
-                              
+
                               {/* Update Button */}
                               <div className="d-flex justify-content-center mt-3">
                                 <button
                                   type="button"
                                   className="purple-btn2"
-                                  onClick={() => setActiveTab("terms-conditions")}
+                                  onClick={() =>
+                                    setActiveTab("terms-conditions")
+                                  }
                                 >
                                   Update
                                 </button>
@@ -4283,7 +5107,11 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                             </div>
                           </div>
                           <div
-                            className={`tab-pane fade ${activeTab === "terms-conditions" ? "show active" : ""}`}
+                            className={`tab-pane fade ${
+                              activeTab === "terms-conditions"
+                                ? "show active"
+                                : ""
+                            }`}
                             id="Domestic3"
                             role="tabpanel"
                             aria-labelledby="nav-contact-tab"
@@ -4474,211 +5302,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                 </tbody>
                               </table>
                             </div> */}
-                             <div className="tbl-container me-2 mt-3">
-                            <table className="w-100 table table-bordered">
-                              <thead>
-                                <tr>
-                                  <th rowSpan={2}>Charges And Taxes</th>
-                                  <th colSpan={2}>Amount</th>
-                                  <th rowSpan={2}>Payable Currency</th>
-                                  <th rowSpan={2}>Service Certificate</th>
-                                  <th rowSpan={2}>Select Service Provider</th>
-                                  <th rowSpan={2}>Remarks</th>
-                                </tr>
-                                <tr>
-                                  <th>INR</th>
-                                  <th>USD</th>
-                                </tr>
-                                <tr>
-                                  <th colSpan={7}>Tax Addition(Exclusive)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {loadingCharges ? (
-                                  <tr>
-                                    <td colSpan={7} className="text-center">
-                                      <div className="spinner-border spinner-border-sm me-2" role="status">
-                                        <span className="visually-hidden">Loading...</span>
-                                      </div>
-                                      Loading charges data...
-                                    </td>
-                                  </tr>
-                                ) : chargesFromApi.filter(charge => charge.resource_type === "TaxCategory").length > 0 ? (
-                                  chargesFromApi
-                                    .filter(charge => charge.resource_type === "TaxCategory")
-                                    .map((charge, index) => (
-                                      <tr key={`tax-${charge.id}-${index}`}>
-                                        <td>{charge.charge_name}</td>
-                                        <td>INR {charge.amount_inr || "0.00"}</td>
-                                        <td>USD {charge.amount || "0.00"}</td>
-                                        <td>USD</td>
-                                        <td>
-                                          <input 
-                                            type="checkbox" 
-                                            checked={serviceCertificates[charge.id] || false}
-                                            onChange={(e) => handleServiceCertificateChange(charge.id, e.target.checked)}
-                                          />
-                                        </td>
-                                        <td>
-                                          <SingleSelector
-                                            options={supplierOptions}
-                                            value={selectedServiceProviders[charge.id] || null}
-                                            onChange={(selectedOption) => 
-                                              handleServiceProviderChange(charge.id, selectedOption)
-                                            }
-                                            placeholder="Select Service Provider"
-                                          />
-                                        </td>
-                                        <td>
-                                          <textarea
-                                            className="form-control"
-                                            rows={2}
-                                            placeholder="Enter remarks"
-                                            value={chargeRemarks[charge.id] || ""}
-                                            onChange={(e) => handleChargeRemarksChange(charge.id, e.target.value)}
-                                          />
-                                        </td>
-                                      </tr>
-                                    ))
-                                ) : (
-                                  <tr>
-                                    <td colSpan={7} className="text-center">
-                                      No tax addition data available.
-                                    </td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100 table table-bordered">
-                              <thead>
-                                <tr>
-                                  <th>Charges And Taxes</th>
-                                  <th colSpan={2}>Amount</th>
-                                  <th>Payable Currency</th>
-                                  <th>Service Certificate</th>
-                                  <th>Select Service Provider</th>
-                                  <th>Remarks</th>
-                                </tr>
-                                <tr>
-                                  <th></th>
-                                  <th>INR</th>
-                                  <th>USD</th>
-                                  <th></th>
-                                  <th></th>
-                                  <th></th>
-                                  <th></th>
-                                </tr>
-                                <tr>
-                                  <th colSpan={7}>Charges (Exclusive)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {loadingCharges ? (
-                                  <tr>
-                                    <td colSpan={7} className="text-center">
-                                      <div className="spinner-border spinner-border-sm me-2" role="status">
-                                        <span className="visually-hidden">Loading...</span>
-                                      </div>
-                                      Loading charges data...
-                                    </td>
-                                  </tr>
-                                ) : chargesFromApi.filter(charge => charge.resource_type === "TaxCharge").length > 0 ? (
-                                  chargesFromApi
-                                    .filter(charge => charge.resource_type === "TaxCharge")
-                                    .map((charge, index) => (
-                                    <tr key={`${charge.id}-${index}`}>
-                                      <td>{charge.charge_name}</td>
-                                      <td>INR {charge.amount_inr || "0.00"}</td>
-                                      <td>USD {charge.amount || "0.00"}</td>
-                                      <td>USD</td>
-                                      <td>
-                                        <input 
-                                          type="checkbox" 
-                                          checked={serviceCertificates[charge.id] || false}
-                                          onChange={(e) => handleServiceCertificateChange(charge.id, e.target.checked)}
-                                        />
-                                      </td>
-                                      <td>
-                                        <SingleSelector
-                                          options={supplierOptions}
-                                          value={selectedServiceProviders[charge.id] || null}
-                                          onChange={(selectedOption) => 
-                                            handleServiceProviderChange(charge.id, selectedOption)
-                                          }
-                                          placeholder="Select Service Provider"
-                                        />
-                                      </td>
-                                      <td>
-                                        <textarea
-                                          className="form-control"
-                                          rows={2}
-                                          placeholder="Enter remarks"
-                                          value={chargeRemarks[charge.id] || ""}
-                                          onChange={(e) => handleChargeRemarksChange(charge.id, e.target.value)}
-                                        />
-                                      </td>
-                                    </tr>
-                                  ))
-                                ) : (
-                                  <tr>
-                                    <td colSpan={7} className="text-center">
-                                      No charges data available.
-                                    </td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                          
-                          {/* Summary Section */}
-                          {!loadingCharges && chargesFromApi.length > 0 && (
-                            <div className="row mt-3">
-                              <div className="col-md-6">
-                                <div className="card">
-                                  <div className="card-header">
-                                    <h6 className="mb-0">Charges Summary</h6>
-                                  </div>
-                                  <div className="card-body">
-                                    <div className="row">
-                                      <div className="col-6">
-                                        <strong>Total Tax Addition:</strong>
-                                      </div>
-                                      <div className="col-6">
-                                        INR {chargesFromApi
-                                          .filter(charge => charge.resource_type === "TaxCategory")
-                                          .reduce((sum, charge) => sum + (parseFloat(charge.amount_inr) || 0), 0)
-                                          .toFixed(2)}
-                                      </div>
-                                    </div>
-                                    <div className="row">
-                                      <div className="col-6">
-                                        <strong>Total Charges:</strong>
-                                      </div>
-                                      <div className="col-6">
-                                        INR {chargesFromApi
-                                          .filter(charge => charge.resource_type === "TaxCharge")
-                                          .reduce((sum, charge) => sum + (parseFloat(charge.amount_inr) || 0), 0)
-                                          .toFixed(2)}
-                                      </div>
-                                    </div>
-                                    <hr />
-                                    <div className="row">
-                                      <div className="col-6">
-                                        <strong>Grand Total:</strong>
-                                      </div>
-                                      <div className="col-6">
-                                        INR {chargesFromApi
-                                          .reduce((sum, charge) => sum + (parseFloat(charge.amount_inr) || 0), 0)
-                                          .toFixed(2)}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
+
                             <div className="card-body">
                               <div className="row">
                                 <div className="col-md-6 mt-0">
@@ -4689,7 +5313,12 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      value={`USD ${totalMaterialCost.toFixed(2)} (INR ${convertUsdToInr(totalMaterialCost, conversionRate)})`}
+                                      value={`USD ${totalMaterialCost.toFixed(
+                                        2
+                                      )} (INR ${convertUsdToInr(
+                                        totalMaterialCost,
+                                        conversionRate
+                                      )})`}
                                       disabled
                                     />
                                   </div>
@@ -4703,7 +5332,11 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                       className="form-control"
                                       type="number"
                                       value={supplierAdvancePercentage}
-                                      onChange={(e) => handleSupplierAdvancePercentageChange(e.target.value)}
+                                      onChange={(e) =>
+                                        handleSupplierAdvancePercentageChange(
+                                          e.target.value
+                                        )
+                                      }
                                       placeholder="0"
                                       min="0"
                                       max="100"
@@ -4734,7 +5367,12 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      value={`USD ${calculateSupplierAdvanceAmount().toFixed(2)} (INR ${convertUsdToInr(calculateSupplierAdvanceAmount(), conversionRate)})`}
+                                      value={`USD ${calculateSupplierAdvanceAmount().toFixed(
+                                        2
+                                      )} (INR ${convertUsdToInr(
+                                        calculateSupplierAdvanceAmount(),
+                                        conversionRate
+                                      )})`}
                                       disabled
                                     />
                                   </div>
@@ -4747,8 +5385,14 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                     <input
                                       className="form-control"
                                       type="number"
-                                      value={serviceCertificateAdvancePercentage}
-                                      onChange={(e) => handleServiceCertificateAdvancePercentageChange(e.target.value)}
+                                      value={
+                                        serviceCertificateAdvancePercentage
+                                      }
+                                      onChange={(e) =>
+                                        handleServiceCertificateAdvancePercentageChange(
+                                          e.target.value
+                                        )
+                                      }
                                       placeholder="0"
                                       min="0"
                                       max="100"
@@ -4764,7 +5408,12 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      value={`USD ${calculateServiceCertificateAdvanceAmount().toFixed(2)} (INR ${convertUsdToInr(calculateServiceCertificateAdvanceAmount(), conversionRate)})`}
+                                      value={`USD ${calculateServiceCertificateAdvanceAmount().toFixed(
+                                        2
+                                      )} (INR ${convertUsdToInr(
+                                        calculateServiceCertificateAdvanceAmount(),
+                                        conversionRate
+                                      )})`}
                                       disabled
                                     />
                                   </div>
@@ -4795,7 +5444,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                               </tbody>
                             </table>
                           </div> */}
-                            {/* <div className="mt-3 d-flex justify-content-between align-items-center">
+                             <div className="mt-3 d-flex justify-content-between align-items-center">
                             <h5 className=" mt-3">Delivery Schedule</h5>
                             <button className="purple-btn2"> Add</button>
                           </div>
@@ -4814,25 +5463,41 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr>
-                                  <td>05-03-2024</td>
-                                  <td>40</td>
-                                  <td />
-                                  <td />
-                                  <td />
-                                  <td />
-                                  <td />
-                                  <td />
-                                </tr>
+                                {deliverySchedules && deliverySchedules.length > 0 ? (
+                                  deliverySchedules.map((schedule, index) => (
+                                    <tr key={schedule.id || index}>
+                                      <td>{schedule.mor_number || "N/A"}</td>
+                                      <td>{schedule.material_formatted_name || "N/A"}</td>
+                                      <td>{schedule.expected_date ? new Date(schedule.expected_date).toLocaleDateString() : "N/A"}</td>
+                                      <td>{schedule.po_delivery_date ? new Date(schedule.po_delivery_date).toLocaleDateString() : "N/A"}</td>
+                                      <td>{schedule.expected_quantity || 0}</td>
+                                      <td>{schedule.store_address || "N/A"}</td>
+                                      <td>{schedule.store_name || "N/A"}</td>
+                                      <td>
+                                        <input
+                                          type="text"
+                                          className="form-control"
+                                          placeholder="Add remarks"
+                                        />
+                                      </td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan="8" className="text-center">
+                                      No delivery schedules available.
+                                    </td>
+                                  </tr>
+                                )}
                               </tbody>
                             </table>
-                          </div> */}
+                          </div> 
                             {/* General Term & Conditions Section */}
                             <div className="mt-3 d-flex justify-content-between align-items-center">
                               <h5 className="">
                                 General Term &amp; Conditions
                               </h5>
-                              <button
+                              {/* <button
                                 className="purple-btn2 me-2"
                                 onClick={refreshChargesData}
                                 title="Refresh charges data from API"
@@ -4841,7 +5506,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                   refresh
                                 </span>
                                 Refresh Charges
-                              </button>
+                              </button> */}
                               <button
                                 className="purple-btn2"
                                 style={{ minWidth: 100 }}
@@ -5046,7 +5711,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                 </tbody>
                               </table>
                             </div>
-                            
+
                             {/* Document Attachment Section - Only visible on Terms & Conditions tab */}
                             {activeTab === "terms-conditions" && (
                               <>
@@ -5090,8 +5755,13 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                         <th className="main2-th">File Type</th>
                                         <th className="main2-th">File Name </th>
                                         <th className="main2-th">Upload At</th>
-                                        <th className="main2-th">Upload File</th>
-                                        <th className="main2-th" style={{ width: 100 }}>
+                                        <th className="main2-th">
+                                          Upload File
+                                        </th>
+                                        <th
+                                          className="main2-th"
+                                          style={{ width: 100 }}
+                                        >
                                           Action
                                         </th>
                                       </tr>
@@ -5114,7 +5784,10 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                               required
                                               value={att.fileName}
                                               onChange={(e) =>
-                                                handleFileNameChange(att.id, e.target.value)
+                                                handleFileNameChange(
+                                                  att.id,
+                                                  e.target.value
+                                                )
                                               }
                                             />
                                           </td>
@@ -5134,13 +5807,18 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                                 type="file"
                                                 className="form-control"
                                                 required
-                                                onChange={(e) => handleFileChange(e, att.id)}
+                                                onChange={(e) =>
+                                                  handleFileChange(e, att.id)
+                                                }
                                               />
                                             )}
                                           </td>
                                           <td className="document">
                                             <div
-                                              style={{ display: "flex", alignItems: "center" }}
+                                              style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                              }}
                                             >
                                               <div className="attachment-placeholder">
                                                 {att.isExisting && (
@@ -5161,12 +5839,17 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                                       </a>
                                                     </div>
                                                     <div className="file-name">
-                                                      <a href={att.fileUrl} download>
+                                                      <a
+                                                        href={att.fileUrl}
+                                                        download
+                                                      >
                                                         <span className="material-symbols-outlined">
                                                           file_download
                                                         </span>
                                                       </a>
-                                                      <span>{att.fileName}</span>
+                                                      <span>
+                                                        {att.fileName}
+                                                      </span>
                                                     </div>
                                                   </div>
                                                 )}
@@ -5174,7 +5857,9 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                               <button
                                                 type="button"
                                                 className="btn btn-sm btn-link text-danger"
-                                                onClick={() => handleRemove(att.id)}
+                                                onClick={() =>
+                                                  handleRemove(att.id)
+                                                }
                                               >
                                                 <span className="material-symbols-outlined">
                                                   cancel
@@ -5219,12 +5904,22 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                 <div className="row mt-4 justify-content-end align-items-center mx-2">
                                   <div className="col-md-3">
                                     <div className="form-group d-flex gap-3 align-items-center mx-3">
-                                      <label style={{ fontSize: "0.95rem", color: "black" }}>
+                                      <label
+                                        style={{
+                                          fontSize: "0.95rem",
+                                          color: "black",
+                                        }}
+                                      >
                                         Status
                                       </label>
                                       <SingleSelector
-                                        options={[{ value: "draft", label: "Draft" }]}
-                                        value={{ value: "draft", label: "Draft" }}
+                                        options={[
+                                          { value: "draft", label: "Draft" },
+                                        ]}
+                                        value={{
+                                          value: "draft",
+                                          label: "Draft",
+                                        }}
                                         placeholder="Select Status"
                                         isClearable={false}
                                         isDisabled={true}
@@ -5240,11 +5935,15 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                       onClick={handleCreatePurchaseOrder}
                                       disabled={isCreatingOrder}
                                     >
-                                      {isCreatingOrder ? "Creating..." : "Submit"}
+                                      {isCreatingOrder
+                                        ? "Creating..."
+                                        : "Submit"}
                                     </button>
                                   </div>
                                   <div className="col-md-2">
-                                    <button className="purple-btn1 w-100">Cancel</button>
+                                    <button className="purple-btn1 w-100">
+                                      Cancel
+                                    </button>
                                   </div>
                                 </div>
                               </>
@@ -5268,7 +5967,6 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
               </div>
 
               {/* Document Attachment Section - Only visible on Terms & Conditions tab */}
-
             </div>
           </div>
         </div>
@@ -5630,79 +6328,98 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
               <div className="col-md-4 mt-0">
                 <div className="form-group">
                   <label>MOR No.</label>
-              <input
-                className="form-control"
-                value={morFormData.morNumber}
-                onChange={(e) => setMorFormData((p) => ({ ...p, morNumber: e.target.value }))}
-                placeholder="Enter MOR No"
-              />
-            </div>
+                  <input
+                    className="form-control"
+                    value={morFormData.morNumber}
+                    onChange={(e) =>
+                      setMorFormData((p) => ({
+                        ...p,
+                        morNumber: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter MOR No"
+                  />
+                </div>
               </div>
 
               <div className="col-md-4 mt-2">
                 <div className="form-group">
                   <label>MOR Start Date</label>
-              <input
-                className="form-control"
+                  <input
+                    className="form-control"
                     type="date"
-                value={morFormData.morStartDate}
+                    value={morFormData.morStartDate}
                     onChange={(e) => {
                       const selectedDate = new Date(e.target.value);
                       const today = new Date();
                       today.setHours(0, 0, 0, 0);
-                      
+
                       if (selectedDate < today) {
-                        alert("MOR Start Date cannot be in the past. Please select today's date or a future date.");
+                        alert(
+                          "MOR Start Date cannot be in the past. Please select today's date or a future date."
+                        );
                         return;
                       }
-                      
+
                       // If end date is set, ensure start date is before end date
-                      if (morFormData.morEndDate && e.target.value > morFormData.morEndDate) {
-                        alert("MOR Start Date must be before or equal to MOR End Date.");
+                      if (
+                        morFormData.morEndDate &&
+                        e.target.value > morFormData.morEndDate
+                      ) {
+                        alert(
+                          "MOR Start Date must be before or equal to MOR End Date."
+                        );
                         return;
                       }
-                      
+
                       setMorFormData((prev) => ({
                         ...prev,
                         morStartDate: e.target.value,
                       }));
                     }}
-                    min={new Date().toISOString().split('T')[0]}
-              />
-            </div>
+                    min={new Date().toISOString().split("T")[0]}
+                  />
+                </div>
               </div>
               <div className="col-md-4 mt-2">
                 <div className="form-group">
                   <label>MOR End Date</label>
-              <input
-                className="form-control"
+                  <input
+                    className="form-control"
                     type="date"
-                value={morFormData.morEndDate}
+                    value={morFormData.morEndDate}
                     onChange={(e) => {
                       const selectedDate = new Date(e.target.value);
                       const today = new Date();
                       today.setHours(0, 0, 0, 0);
-                      
+
                       if (selectedDate < today) {
-                        alert("MOR End Date cannot be in the past. Please select today's date or a future date.");
+                        alert(
+                          "MOR End Date cannot be in the past. Please select today's date or a future date."
+                        );
                         return;
                       }
-                      
+
                       // If start date is set, ensure end date is after start date
-                      if (morFormData.morStartDate && e.target.value < morFormData.morStartDate) {
-                        alert("MOR End Date must be after or equal to MOR Start Date.");
+                      if (
+                        morFormData.morStartDate &&
+                        e.target.value < morFormData.morStartDate
+                      ) {
+                        alert(
+                          "MOR End Date must be after or equal to MOR Start Date."
+                        );
                         return;
                       }
-                      
+
                       setMorFormData((prev) => ({
                         ...prev,
                         morEndDate: e.target.value,
                       }));
                     }}
-                    min={new Date().toISOString().split('T')[0]}
-              />
-            </div>
-            </div>
+                    min={new Date().toISOString().split("T")[0]}
+                  />
+                </div>
+              </div>
               <div className="col-md-4 mt-2">
                 <div className="form-group">
                   <label className="po-fontBold">
@@ -5718,7 +6435,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                       handleMorSelectorChange("materialType", selectedOption)
                     }
                   />
-          </div>
+                </div>
               </div>
               <div className="col-md-4 mt-3">
                 <div className="form-group">
@@ -5732,10 +6449,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                     )}
                     placeholder="Select Material Sub Type"
                     onChange={(selectedOption) =>
-                      handleMorSelectorChange(
-                        "materialSubType",
-                        selectedOption
-                      )
+                      handleMorSelectorChange("materialSubType", selectedOption)
                     }
                   />
                 </div>
@@ -5759,7 +6473,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
               </div>
             </div>
 
-                        <div className="mt-1 justify-content-center d-flex gap-2">
+            <div className="mt-1 justify-content-center d-flex gap-2">
               <button className="purple-btn1" onClick={handleMorSearch}>
                 Search
               </button>
@@ -5767,7 +6481,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                 Reset
               </button>
             </div>
-            
+
             <div className="tbl-container me-2 mt-3">
               {loadingMaterialDetails ? (
                 <div className="text-center p-4">
@@ -5776,9 +6490,9 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                   </div>
                 </div>
               ) : (
-            <table className="w-100">
-              <thead>
-                <tr>
+                <table className="w-100">
+                  <thead>
+                    <tr>
                       <th rowSpan="2">
                         <input
                           type="checkbox"
@@ -5789,7 +6503,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                           }
                           onChange={handleMorSelectAllMaterials}
                         />
-                  </th>
+                      </th>
                       <th rowSpan="2">Project SubProject</th>
                       <th rowSpan="2">MOR Number</th>
                       <th rowSpan="2">MOR Date</th>
@@ -5799,16 +6513,16 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                       <th>
                         <input type="checkbox" />
                       </th>
-                  <th>Material</th>
-                  <th>UOM</th>
-                  <th>Required Qty</th>
+                      <th>Material</th>
+                      <th>UOM</th>
+                      <th>Required Qty</th>
                       <th>Prev Order Qty</th>
                       <th>Pending Qty</th>
                       <th>Order Qty</th>
                       <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
+                    </tr>
+                  </thead>
+                  <tbody>
                     {materialDetailsData.length > 0 ? (
                       materialDetailsData.map((item, index) => (
                         <tr
@@ -5817,8 +6531,8 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                           {/* Left-most checkbox: render only for first row of the project block */}
                           <td>
                             {item.isFirstMaterial ? (
-                        <input
-                          type="checkbox"
+                              <input
+                                type="checkbox"
                                 checked={materialDetailsData
                                   .filter((m) => m.mor_id === item.mor_id)
                                   .every((m) =>
@@ -5826,10 +6540,12 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                       materialDetailsData.indexOf(m)
                                     )
                                   )}
-                                 onChange={(e) => handleMorSelectProject(e, item.mor_id)}
+                                onChange={(e) =>
+                                  handleMorSelectProject(e, item.mor_id)
+                                }
                               />
                             ) : null}
-                      </td>
+                          </td>
 
                           {/* Project/Subproject cell (merged rows) */}
                           {item.isFirstMaterial ? (
@@ -5866,7 +6582,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                               }
                             />
                           </td>
-                          <td>{item.material_name || ""}</td>
+                          <td>{item.material_name || item.material || ""}</td>
                           <td>{item.uom_name || ""}</td>
                           <td>{item.required_quantity || ""}</td>
                           <td>{item.prev_order_qty || ""}</td>
@@ -5876,23 +6592,25 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                               type="number"
                               className="form-control form-control-sm"
                               value={item.order_qty || ""}
-                              onChange={(e) => handleOrderQtyChange(index, e.target.value)}
+                              onChange={(e) =>
+                                handleOrderQtyChange(index, e.target.value)
+                              }
                               placeholder="Enter Qty"
                               min="0"
                             />
                           </td>
                           <td>{item.status || ""}</td>
-                    </tr>
-                  ))
-                ) : (
+                        </tr>
+                      ))
+                    ) : (
                       <tr>
                         <td colSpan="12" className="text-center">
                           No data available
                         </td>
                       </tr>
-                )}
-              </tbody>
-            </table>
+                    )}
+                  </tbody>
+                </table>
               )}
             </div>
           </div>
@@ -6126,7 +6844,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                   <input
                     type="text"
                     className="form-control"
-                    value={taxRateData[tableId]?.material_name|| ""}
+                    value={taxRateData[tableId]?.material || ""}
                     readOnly
                     disabled={true}
                   />
@@ -6173,17 +6891,18 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                   />
                 </div>
               </div>
-             
             </div>
 
             {/* <div className="row mb-3"> */}
-             
+
             {/* </div> */}
 
             <div className="row mb-3">
-               <div className="col-md-6">
+              <div className="col-md-6">
                 <div className="mb-3">
-                  <label className="form-label fw-bold">Conversion Rate (USD to INR)</label>
+                  <label className="form-label fw-bold">
+                    Conversion Rate (USD to INR)
+                  </label>
                   <input
                     type="number"
                     className="form-control"
@@ -6207,11 +6926,10 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                   />
                 </div>
               </div>
-             
             </div>
 
             <div className="row mb-3">
-               <div className="col-md-6">
+              <div className="col-md-6">
                 <div className="mb-3">
                   <label className="form-label fw-bold">Material Cost</label>
                   <input
@@ -6235,11 +6953,10 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                   />
                 </div>
               </div>
-            
             </div>
 
             <div className="row mb-3">
-                <div className="col-md-6">
+              <div className="col-md-6">
                 <div className="mb-3">
                   <label className="form-label fw-bold">
                     After Discount Value
@@ -6308,9 +7025,10 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                           <input
                             type="number"
                             className="form-control "
-                            value={
-                              safeConvertUsdToInr(taxRateData[tableId]?.afterDiscountValue, conversionRate)
-                            }
+                            value={safeConvertUsdToInr(
+                              taxRateData[tableId]?.afterDiscountValue,
+                              conversionRate
+                            )}
                             readOnly
                             disabled={true}
                           />
@@ -6355,7 +7073,10 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                 className="form-control"
                                 value={
                                   item.taxChargeType ||
-                                  (taxOptions.find((option) => option.id === item.tax_category_id)?.value || "")
+                                  taxOptions.find(
+                                    (option) => option.id === item.tax_category_id
+                                  )?.value ||
+                                  ""
                                 }
                                 onChange={(e) => {
                                   const selectedValue = e.target.value;
@@ -6386,22 +7107,39 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                     disabled={(() => {
                                       const current =
                                         item.taxChargeType ||
-                                        taxOptions.find((o) => o.id === item.tax_category_id)?.value || "";
+                                        taxOptions.find(
+                                          (o) => o.id === item.tax_category_id
+                                        )?.value ||
+                                        "";
                                       const disabledSet = (
-                                        taxRateData[tableId]?.addition_bid_material_tax_details?.reduce(
+                                        taxRateData[
+                                          tableId
+                                        ]?.addition_bid_material_tax_details?.reduce(
                                           (acc, detail) => {
-                                            if (detail._destroy || detail.id === item.id) return acc;
+                                            if (
+                                              detail._destroy ||
+                                              detail.id === item.id
+                                            )
+                                              return acc;
                                             const t = detail.taxChargeType;
-                                            if (t === "CGST") acc.push("CGST", "IGST");
-                                            if (t === "SGST") acc.push("SGST", "IGST");
-                                            if (t === "IGST") acc.push("CGST", "SGST");
+                                            if (t === "CGST")
+                                              acc.push("CGST", "IGST");
+                                            if (t === "SGST")
+                                              acc.push("SGST", "IGST");
+                                            if (t === "IGST")
+                                              acc.push("CGST", "SGST");
                                             if (t) acc.push(t);
                                             return acc;
                                           },
                                           []
                                         ) || []
-                                      ).filter((v, i, self) => self.indexOf(v) === i);
-                                      return disabledSet.includes(opt.value) && opt.value !== current;
+                                      ).filter(
+                                        (v, i, self) => self.indexOf(v) === i
+                                      );
+                                      return (
+                                        disabledSet.includes(opt.value) &&
+                                        opt.value !== current
+                                      );
                                     })()}
                                   >
                                     {opt.label}
@@ -6410,7 +7148,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                               </select>
                             </td>
 
-                                                        <td>
+                            <td>
                               {isPercentageTax(item.taxChargeType) ? (
                                 <select
                                   className="form-control"
@@ -6424,18 +7162,27 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                       "addition"
                                     )
                                   }
-                                  disabled={(materialTaxPercentages[item.id] || []).length === 0}
+                                  disabled={
+                                    (materialTaxPercentages[item.id] || [])
+                                      .length === 0
+                                  }
                                 >
-                                  <option value="">{
-                                    (materialTaxPercentages[item.id] || []).length === 0
+                                  <option value="">
+                                    {(materialTaxPercentages[item.id] || [])
+                                      .length === 0
                                       ? "No percentages available"
-                                      : "Select percentage"
-                                  }</option>
-                                  {(materialTaxPercentages[item.id] || []).map((percent) => (
-                                    <option key={percent.id} value={`${percent.percentage}%`}>
-                                      {percent.percentage}%
-                                    </option>
-                                  ))}
+                                      : "Select percentage"}
+                                  </option>
+                                  {(materialTaxPercentages[item.id] || []).map(
+                                    (percent) => (
+                                      <option
+                                        key={percent.id}
+                                        value={`${percent.percentage}%`}
+                                      >
+                                        {percent.percentage}%
+                                      </option>
+                                    )
+                                  )}
                                 </select>
                               ) : (
                                 <input
@@ -6493,13 +7240,18 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                 className="form-control"
                                 value={
                                   // For ALL addition taxes, show Total Base Cost + Tax Amount in INR
-                                  safeConvertUsdToInr(
-                                    calculateAdditionTaxAmount(
+                                  (() => {
+                                    const baseCostInr = safeConvertUsdToInr(
                                       taxRateData[tableId]?.afterDiscountValue || 0,
-                                      item.amount || 0
-                                    ),
-                                    conversionRate
-                                  )
+                                      conversionRate
+                                    );
+                                    // Convert the stored USD amount back to INR for display
+                                    const taxAmountInr = safeConvertUsdToInr(
+                                      item.amount || 0,
+                                      conversionRate
+                                    );
+                                    return (parseFloat(baseCostInr) + parseFloat(taxAmountInr)).toFixed(2);
+                                  })()
                                 }
                                 onChange={(e) =>
                                   handleTaxChargeChange(
@@ -6520,10 +7272,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                 className="form-control"
                                 value={
                                   // For ALL addition taxes, show Total Base Cost + Tax Amount in USD
-                                  calculateAdditionTaxAmount(
-                                    taxRateData[tableId]?.afterDiscountValue || 0,
-                                    item.amount || 0
-                                  )
+                                  (parseFloat(taxRateData[tableId]?.afterDiscountValue || 0) + parseFloat(item.amount || 0)).toFixed(2)
                                 }
                                 readOnly
                                 disabled={true}
@@ -6603,7 +7352,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                 )}
                               />
                             </td>
-                                                        <td>
+                            <td>
                               <select
                                 className="form-control"
                                 value={item?.taxChargePerUom || ""}
@@ -6616,18 +7365,27 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                     "deduction"
                                   )
                                 }
-                                disabled={(materialTaxPercentages[item.id] || []).length === 0}
+                                disabled={
+                                  (materialTaxPercentages[item.id] || [])
+                                    .length === 0
+                                }
                               >
-                                <option value="">{
-                                  (materialTaxPercentages[item.id] || []).length === 0
+                                <option value="">
+                                  {(materialTaxPercentages[item.id] || [])
+                                    .length === 0
                                     ? "No percentages available"
-                                    : "Select percentage"
-                                }</option>
-                                {(materialTaxPercentages[item.id] || []).map((percent) => (
-                                  <option key={percent.id} value={`${percent.percentage}%`}>
-                                    {percent.percentage}%
-                                  </option>
-                                ))}
+                                    : "Select percentage"}
+                                </option>
+                                {(materialTaxPercentages[item.id] || []).map(
+                                  (percent) => (
+                                    <option
+                                      key={percent.id}
+                                      value={`${percent.percentage}%`}
+                                    >
+                                      {percent.percentage}%
+                                    </option>
+                                  )
+                                )}
                               </select>
                             </td>
                             <td>
@@ -6655,13 +7413,18 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                 className="form-control"
                                 value={
                                   // For deduction taxes, show Total Base Cost - Tax Amount in INR
-                                  safeConvertUsdToInr(
-                                    calculateDeductionTaxAmount(
+                                  (() => {
+                                    const baseCostInr = safeConvertUsdToInr(
                                       taxRateData[tableId]?.afterDiscountValue || 0,
-                                      item.amount || 0
-                                    ),
-                                    conversionRate
-                                  )
+                                      conversionRate
+                                    );
+                                    // Convert the stored USD amount back to INR for display
+                                    const taxAmountInr = safeConvertUsdToInr(
+                                      item.amount || 0,
+                                      conversionRate
+                                    );
+                                    return Math.max(0, parseFloat(baseCostInr) - parseFloat(taxAmountInr)).toFixed(2);
+                                  })()
                                 }
                                 onChange={(e) =>
                                   handleTaxChargeChange(
@@ -6682,10 +7445,7 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                                 className="form-control"
                                 value={
                                   // For deduction taxes, show Total Base Cost - Tax Amount in USD
-                                  calculateDeductionTaxAmount(
-                                    taxRateData[tableId]?.afterDiscountValue || 0,
-                                    item.amount || 0
-                                  )
+                                  Math.max(0, parseFloat(taxRateData[tableId]?.afterDiscountValue || 0) - parseFloat(item.amount || 0)).toFixed(2)
                                 }
                                 readOnly
                                 disabled={true}
@@ -6717,7 +7477,10 @@ const calculateDeductionTaxAmount = (baseCost, taxAmount) => {
                           <input
                             type="text"
                             className="form-control"
-                            value={safeConvertUsdToInr(taxRateData[tableId]?.netCost, conversionRate)}
+                            value={safeConvertUsdToInr(
+                              taxRateData[tableId]?.netCost,
+                              conversionRate
+                            )}
                             readOnly
                             disabled={true}
                           />
