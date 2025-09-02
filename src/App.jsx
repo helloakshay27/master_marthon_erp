@@ -139,6 +139,9 @@ import RopoImportDetails from "./pages/ropo-import-details";
 import RopoImportCreate from "./pages/ropo-import-create";
 import RopoImportEdit from "./pages/ropo-import-edit";
 import RopoImportList from "./pages/ropo-import-list";
+import MaterialQCList from "./pages/material-qc-list";
+import MaterialQCCreate from "./pages/material-qc-create";
+import MaterialQCDetails from "./pages/material-qc-details";
 
 function App() {
   return (
@@ -146,6 +149,9 @@ function App() {
       <div>
         <Routes>
           <Route path="/" element={<Members />} />
+          <Route path="/material-qc-list" element={<MaterialQCList />} />
+           <Route path="/material-qc-create" element={<MaterialQCCreate />} />
+           <Route path="/material-qc-details" element={<MaterialQCDetails />} />
           <Route path="/invite-vendor" element={<InviteVendor />} />
           <Route path="/ropo-import-create" element={<RopoImportCreate />} />
           <Route

@@ -16,6 +16,18 @@ function Members() {
             style={{ marginBottom: "200px" }}
           >
             <div className="m-3">
+               <h1>Material QC</h1>
+              <ul>
+                <li>
+                  <Link to="/material-qc-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"> Material QC List</Link>
+                </li>
+                <li>
+                  <Link to="/material-qc-create"> Material QC Create</Link>
+                </li>
+                 <li>
+                  <Link to="/material-qc-details"> Material QC Details</Link>
+                </li>
+              </ul>
               <h1>Labour master</h1>
               <ul>
                 <li>
