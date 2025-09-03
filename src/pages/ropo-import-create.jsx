@@ -228,8 +228,8 @@ const RopoImportCreate = () => {
         .then((response) => {
           console.log("Delivery schedules response:", response.data);
           setDeliverySchedules(response.data.material_delivery_schedules || []);
-          // Also fetch Material Specific Term & Conditions from dedicated API
-          fetchMaterialSpecificConditions(morInventoryIds);
+          // Populate Material Specific Term & Conditions from same response
+          setMaterialTermConditions(response.data.material_term_conditions || []);
         })
         .catch((error) => {
           console.error("Error fetching delivery schedules:", error);
@@ -239,36 +239,9 @@ const RopoImportCreate = () => {
     }
   }, [submittedMaterials, token, baseURL]);
 
-  // Fetch Material Specific Term & Conditions by MOR Inventory IDs (dedicated endpoint)
-  const fetchMaterialSpecificConditions = async (morInventoryIdsCsv) => {
-    try {
-      if (!morInventoryIdsCsv) {
-        setMaterialTermConditions([]);
-        return;
-      }
-      const url = `${baseURL}po_mor_inventories/material_term_conditions.json?po_mor_inventory_ids=${morInventoryIdsCsv}&token=${token}`;
-      console.log("Fetching material term conditions from:", url);
-      const response = await axios.get(url);
-      const conditions = response.data?.material_term_conditions || [];
-      setMaterialTermConditions(conditions);
-    } catch (error) {
-      console.error("Error fetching material term conditions:", error);
-      setMaterialTermConditions([]);
-    }
-  };
+  // Removed dedicated material term conditions fetch; we use the delivery schedules response
 
-  // Fetch material term conditions when submitted materials change (dedicated API)
-  useEffect(() => {
-    const morInventoryIds = submittedMaterials
-      .map((material) => material.mor_inventory_id)
-      .filter(Boolean)
-      .join(",");
-    if (morInventoryIds) {
-      fetchMaterialSpecificConditions(morInventoryIds);
-    } else {
-      setMaterialTermConditions([]);
-    }
-  }, [submittedMaterials]);
+  // Fetch material term conditions when submitted materials change -> handled by fetchDeliverySchedules
 
   // Fetch delivery schedules when submitted materials change
   useEffect(() => {
@@ -488,6 +461,47 @@ const RopoImportCreate = () => {
     setSelectedProject(selectedOption);
     setSelectedSite(null); // Reset site selection when project changes
   };
+
+  // Populate Sub-project (sites) when Project(s) change in MOR modal
+  useEffect(() => {
+    try {
+      // selectedProject can be a single value or an array (MultiSelector)
+      const selectedProjectIds = Array.isArray(selectedProject)
+        ? selectedProject.map((p) => p.value)
+        : selectedProject?.value
+        ? [selectedProject.value]
+        : [];
+
+      if (!selectedCompany?.value || selectedProjectIds.length === 0) {
+        setSiteOptions([]);
+        return;
+      }
+
+      // Find the selected company in the nested companies data
+      const company = (companies || []).find(
+        (c) => `${c.id}` === `${selectedCompany.value}`
+      );
+      const companyProjects = company?.projects || [];
+
+      // Collect unique sites across the selected projects
+      const uniqueSitesMap = new Map();
+      companyProjects
+        .filter((p) => selectedProjectIds.includes(p.id))
+        .forEach((proj) => {
+          (proj.pms_sites || []).forEach((site) => {
+            const key = String(site.id);
+            if (!uniqueSitesMap.has(key)) {
+              uniqueSitesMap.set(key, { value: site.id, label: site.name });
+            }
+          });
+        });
+
+      setSiteOptions(Array.from(uniqueSitesMap.values()));
+    } catch (err) {
+      console.error("Error building site options:", err);
+      setSiteOptions([]);
+    }
+  }, [selectedProject, selectedCompany, companies]);
 
   // Handle site selection
   const handleSiteChange = (selectedOption) => {
@@ -869,7 +883,7 @@ const RopoImportCreate = () => {
     try {
       const params = new URLSearchParams();
       params.append("token", token);
-      params.append("q[mor_type_eq]", "ropo");
+      params.append("q[mor_type_eq]", "import");
       if (selectedCompany?.value)
         params.append("q[company_id_in][]", selectedCompany.value);
       if (morFormData.morNumber)
@@ -1007,6 +1021,125 @@ const RopoImportCreate = () => {
         idx === index ? { ...item, order_qty: value } : item
       )
     );
+  };
+
+  // Delivery Schedule helpers and validators
+  const getOrderQtyForSchedule = (schedule) => {
+    try {
+      const matchedById = (submittedMaterials || []).find((m) => {
+        const schedId = schedule?.po_mor_inventory_id || schedule?.mor_inventory_id || schedule?.material_id;
+        return schedId != null && `${m.id}` === `${schedId}`;
+      });
+
+      const materialName = schedule?.material_formatted_name || schedule?.material_name;
+      const matchedByName = matchedById
+        ? null
+        : (submittedMaterials || []).find(
+            (m) => (m.material_name || m.material) === materialName
+          );
+
+      const match = matchedById || matchedByName;
+      return (
+        parseFloat(match?.order_qty) ||
+        parseFloat(match?.required_quantity) ||
+        0
+      );
+    } catch (e) {
+      return 0;
+    }
+  };
+
+  const handleScheduleDateChange = (rowIndex, value) => {
+    setDeliverySchedules((prev) => {
+      const list = [...prev];
+      const row = { ...list[rowIndex] };
+      const expected = row?.expected_date ? new Date(row.expected_date) : null;
+      if (expected) {
+        const minDate = new Date(expected);
+        const maxDate = new Date(expected);
+        maxDate.setFullYear(maxDate.getFullYear() + 1);
+
+        const picked = new Date(value);
+        // Normalize times
+        minDate.setHours(0, 0, 0, 0);
+        maxDate.setHours(23, 59, 59, 999);
+        picked.setHours(12, 0, 0, 0);
+
+        if (picked < minDate || picked > maxDate) {
+          alert(
+            `PO Delivery Date must be between ${minDate
+              .toISOString()
+              .split('T')[0]} and ${maxDate.toISOString().split('T')[0]} (within 1 year of MOR Delivery Schedule).`
+          );
+          return prev;
+        }
+      }
+      row.po_delivery_date = value;
+      list[rowIndex] = row;
+      return list;
+    });
+  };
+
+  const handleSchedulePoQtyChange = (rowIndex, value) => {
+    const entered = value === '' ? '' : parseFloat(value);
+    if (entered !== '' && (isNaN(entered) || entered < 0)) {
+      alert('PO Delivery Qty must be a non-negative number.');
+      return;
+    }
+
+    setDeliverySchedules((prev) => {
+      const list = [...prev];
+      const row = { ...list[rowIndex] };
+      const maxQty = getOrderQtyForSchedule(row);
+      if (entered !== '' && entered > maxQty) {
+        alert(`PO Delivery Qty cannot exceed current Order Qty (${maxQty}).`);
+        return prev;
+      }
+      row.po_delivery_qty = value;
+      list[rowIndex] = row;
+      return list;
+    });
+  };
+
+  const handleScheduleStoreNameChange = (rowIndex, value) => {
+    setDeliverySchedules((prev) => {
+      const list = [...prev];
+      const row = { ...list[rowIndex] };
+      row.store_name = value;
+      list[rowIndex] = row;
+      return list;
+    });
+  };
+
+  const handleScheduleRemarksChange = (rowIndex, value) => {
+    setDeliverySchedules((prev) => {
+      const list = [...prev];
+      const row = { ...list[rowIndex] };
+      row.remarks = value;
+      list[rowIndex] = row;
+      return list;
+    });
+  };
+
+  const getScheduleMaterialKey = (s) =>
+    `${s?.material_id || s?.po_mor_inventory_id || s?.mor_inventory_id || s?.material_formatted_name || s?.material_name || ''}`;
+
+  const isScheduleRowVisible = (s, index) => {
+    try {
+      const key = getScheduleMaterialKey(s);
+      if (!key) return true;
+      const orderQty = getOrderQtyForSchedule(s) || 0;
+      const totalEntered = (deliverySchedules || [])
+        .filter((x) => getScheduleMaterialKey(x) === key)
+        .reduce((sum, x) => sum + (parseFloat(x.po_delivery_qty) || 0), 0);
+      if (orderQty <= 0) return true;
+      if (totalEntered >= orderQty) {
+        return (parseFloat(s.po_delivery_qty) || 0) > 0;
+      }
+      return true;
+    } catch (e) {
+      return true;
+    }
   };
 
   // MOR Modal related functions
@@ -2336,40 +2469,10 @@ const RopoImportCreate = () => {
     fetchTermsConditions();
   }, []);
 
-  // Fetch material term conditions when submitted materials change
+  // Fetch material term conditions when submitted materials change -> handled by fetchDeliverySchedules
   useEffect(() => {
-    const fetchMaterialTermConditions = async () => {
-      try {
-        // Get material IDs from submitted materials
-        console.log(
-          "submittedMaterials for term conditions:",
-          submittedMaterials
-        );
-        const materialIds = submittedMaterials
-          .map((material) => material.id)
-          .join(",");
-
-        if (materialIds) {
-          // Use the new delivery schedules API which also returns material_term_conditions
-          const response = await axios.get(
-            `${baseURL}purchase_orders/material_delivery_schedules.json?token=${token}&mor_inventory_ids=${materialIds}&type=import`
-          );
-          console.log("Material term conditions response:", response.data);
-          // Extract material_term_conditions from the response
-          setMaterialTermConditions(
-            response.data.material_term_conditions || []
-          );
-        } else {
-          setMaterialTermConditions([]);
-        }
-      } catch (error) {
-        console.error("Error fetching material term conditions:", error);
-        setMaterialTermConditions([]);
-      }
-    };
-
-    fetchMaterialTermConditions();
-  }, [submittedMaterials]);
+    fetchDeliverySchedules();
+  }, [submittedMaterials, fetchDeliverySchedules]);
 
   // Fetch charges data when submitted materials change and we're on terms tab
   useEffect(() => {
@@ -3764,12 +3867,12 @@ const RopoImportCreate = () => {
           payable_to_service_provider:
             parseFloat(
               (chargesFromApi || [])
-                .filter(
-                  (charge) =>
+            .filter(
+              (charge) =>
                     charge &&
-                    charge.resource_type === "TaxCharge" &&
-                    Boolean(charge.inclusive)
-                )
+                charge.resource_type === "TaxCharge" &&
+                Boolean(charge.inclusive)
+            )
                 .reduce(
                   (sum, charge) => sum + (parseFloat(charge.amount) || 0),
                   0
@@ -3939,6 +4042,24 @@ const RopoImportCreate = () => {
             : [],
 
           attachments: attachmentsPayload || [],
+
+          // Delivery Schedules payload
+          delivery_schedules_attributes: (deliverySchedules || [])
+            .filter((s) => {
+              // Exclude schedules with no quantity or date
+              const qty = parseFloat(s.po_delivery_qty) || 0;
+              const hasDate = Boolean(s.po_delivery_date);
+              return qty > 0 && hasDate && isScheduleRowVisible(s);
+            })
+            .map((s) => ({
+              po_delivery_date: new Date(s.po_delivery_date).toISOString().split('T')[0],
+              order_qty: parseFloat(s.po_delivery_qty) || 0,
+              mor_inventory_schedule_id: s.mor_inventory_schedule_id || s.id || null,
+              delivery_address: s.store_address || '',
+              store_name: s.store_name || '',
+              remarks: s.remarks || '',
+              _destroy: false,
+            })),
 
           // Attachments
           // attachments: Array.isArray(attachments)
@@ -4172,6 +4293,7 @@ const RopoImportCreate = () => {
                               type="radio"
                               name="contentSelector"
                               defaultValue="content3"
+                              defaultChecked
                             />
                             <label className="form-check-label">IMPORT</label>
                           </div>
@@ -4185,7 +4307,7 @@ const RopoImportCreate = () => {
                 <div className="card ms-3">
                   <div className="card-body">
                     <div className=" text-center">
-                      <h4>PO for New Material (ROPO Import)</h4>
+                      <h4>PO for New Material (Import)</h4>
                     </div>
 
                     <section className="mor p-2 pt-2">
@@ -4654,22 +4776,22 @@ const RopoImportCreate = () => {
                                 <thead>
                                   <tr>
                                     <th>Sr. No</th>
-                                    <th>Material</th>
+                                    <th style={{ minWidth: "220px" }}>Material</th>
                                     <th>UOM</th>
                                     <th>PO Qty</th>
                                     <th>Adjusted Qty</th>
                                     <th>Tolerance Qty</th>
-                                    <th>Material Rate</th>
-                                    <th>Material Cost</th>
+                                    <th style={{ minWidth: "160px" }}>Material Rate</th>
+                                    <th style={{ minWidth: "160px" }}>Material Cost</th>
                                     <th>Discount(%)</th>
-                                    <th>Discount Rate</th>
-                                    <th>After Discount Value</th>
-                                    <th>Tax Addition</th>
-                                    <th>Tax Deduction</th>
-                                    <th>Total Charges</th>
-                                    <th>Total Base Cost</th>
-                                    <th>All Incl. Cost</th>
-                                    <th>Select Tax</th>
+                                    <th style={{ minWidth: "160px" }}>Discount Rate</th>
+                                    <th style={{ minWidth: "180px" }}>After Discount Value</th>
+                                    <th style={{ minWidth: "160px" }}>Tax Addition</th>
+                                    <th style={{ minWidth: "160px" }}>Tax Deduction</th>
+                                    <th style={{ minWidth: "160px" }}>Total Charges</th>
+                                    <th style={{ minWidth: "160px" }}>Total Base Cost</th>
+                                    <th style={{ minWidth: "160px" }}>All Incl. Cost</th>
+                                    <th style={{ minWidth: "120px" }}>Select Tax</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -4791,7 +4913,7 @@ const RopoImportCreate = () => {
                                   )}
                                 </tbody>
                               </table>
-                            </div>
+                            </div> 
                             <div className=" ">
                               <h5 className=" mt-3">
                                 Tax &amp; Charges Summary
@@ -5739,6 +5861,7 @@ const RopoImportCreate = () => {
                                     <th>MOR Delivery Schedule</th>
                                     <th>PO Delivery Date</th>
                                     <th>Sch. Delivery Qty</th>
+                                    <th>PO Delivery Qty</th>
                                     <th>Delivery Address</th>
                                     <th>Store Name</th>
                                     <th>Remarks</th>
@@ -5748,6 +5871,7 @@ const RopoImportCreate = () => {
                                   {deliverySchedules &&
                                   deliverySchedules.length > 0 ? (
                                     deliverySchedules.map((schedule, index) => (
+                                      isScheduleRowVisible(schedule, index) ? (
                                       <tr key={schedule.id || index}>
                                         <td>{schedule.mor_number || "N/A"}</td>
                                         <td>
@@ -5762,27 +5886,67 @@ const RopoImportCreate = () => {
                                             : "N/A"}
                                         </td>
                                         <td>
-                                          {schedule.po_delivery_date
-                                            ? new Date(
-                                                schedule.po_delivery_date
-                                              ).toLocaleDateString()
-                                            : "N/A"}
+                                          {(() => {
+                                            const expectedStr = schedule.expected_date
+                                              ? new Date(schedule.expected_date).toISOString().split('T')[0]
+                                              : '';
+                                            const maxStr = (() => {
+                                              if (!schedule.expected_date) return '';
+                                              const d = new Date(schedule.expected_date);
+                                              d.setFullYear(d.getFullYear() + 1);
+                                              return d.toISOString().split('T')[0];
+                                            })();
+                                            const valueStr = schedule.po_delivery_date
+                                              ? new Date(schedule.po_delivery_date).toISOString().split('T')[0]
+                                              : '';
+                                            return (
+                                              <input
+                                                type="date"
+                                                className="form-control"
+                                                value={valueStr}
+                                                min={expectedStr || undefined}
+                                                max={maxStr || undefined}
+                                                onChange={(e) => handleScheduleDateChange(index, e.target.value)}
+                                              />
+                                            );
+                                          })()}
                                         </td>
                                         <td>
                                           {schedule.expected_quantity || 0}
                                         </td>
                                         <td>
+                                          <input
+                                            type="number"
+                                            className="form-control"
+                                            value={schedule.po_delivery_qty ?? ''}
+                                            onChange={(e) => handleSchedulePoQtyChange(index, e.target.value)}
+                                            min="0"
+                                            step="0.01"
+                                          />
+                                        </td>
+                                        <td>
                                           {schedule.store_address || "N/A"}
                                         </td>
-                                        <td>{schedule.store_name || "N/A"}</td>
+                                        <td>
+                                          <input
+                                            type="text"
+                                            className="form-control"
+                                            value={schedule.store_name || ''}
+                                            onChange={(e) => handleScheduleStoreNameChange(index, e.target.value)}
+                                            placeholder="Enter store name"
+                                          />
+                                        </td>
                                         <td>
                                           <input
                                             type="text"
                                             className="form-control"
                                             placeholder="Add remarks"
+                                            value={schedule.remarks || ''}
+                                            onChange={(e) => handleScheduleRemarksChange(index, e.target.value)}
                                           />
                                         </td>
                                       </tr>
+                                      ) : null
                                     ))
                                   ) : (
                                     <tr>

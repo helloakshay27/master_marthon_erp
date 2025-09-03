@@ -35,6 +35,7 @@ const RopoImportDetails = () => {
   const [charges, setCharges] = useState([]);
   const [otherCosts, setOtherCosts] = useState([]);
   const [chargeNames, setChargeNames] = useState([]);
+  const [exclusiveCharges, setExclusiveCharges] = useState([]);
   
   // State for attachments
   const [attachments, setAttachments] = useState([]);
@@ -259,6 +260,17 @@ const RopoImportDetails = () => {
         },
       }));
       setOtherCosts(formattedOtherCosts);
+    }
+
+    // Populate Charges (Exclusive) table from mor_inventory_tax_details
+    if (Array.isArray(data.mor_inventory_tax_details)) {
+      const exclusive = data.mor_inventory_tax_details.filter((row) => {
+        if (!row) return false;
+        return row.resource_type === "TaxCharge" && Boolean(row.addition) && !Boolean(row.inclusive);
+      });
+      setExclusiveCharges(exclusive);
+    } else {
+      setExclusiveCharges([]);
     }
 
     // Populate attachments
@@ -1160,35 +1172,7 @@ const RopoImportDetails = () => {
                           aria-labelledby="nav-profile-tab"
                           tabIndex={0}
                         >
-                          <div className=" mt-3">
-                            <h5 className=" ">Quotation Details</h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Quotation No.</th>
-                                  <th>Supplier Ref. No</th>
-                                  <th>Material</th>
-                                  <th>Brand</th>
-                                  <th>UOM</th>
-                                  <th>All Incl. Rate</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td className="text-decoration-underline">
-                                    Quotation 9655295
-                                  </td>
-                                  <td>65985</td>
-                                  <td>Plain White Sperenza Tiles</td>
-                                  <td>Sperenza</td>
-                                  <td>Nos</td>
-                                  <td>600</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
+                         
                           <div className=" ">
                             <h5 className="mt-3 ">Rate &amp; Taxes</h5>
                           </div>
@@ -1291,6 +1275,74 @@ const RopoImportDetails = () => {
                               </tbody>
                             </table>
                           </div>
+
+ <div className="tbl-container me-2 mt-3">
+                            <table className="w-100">
+                              <thead>
+                                <tr>
+                                  <th rowSpan={2}>Charges And Taxes</th>
+                                  <th colSpan={2}>Amount</th>
+                                  <th rowSpan={2}>Payable Currency</th>
+                                  <th rowSpan={2}>Service Certificate</th>
+                                  <th rowSpan={2}>Select Service Provider</th>
+                                  <th rowSpan={2}>Remarks</th>
+                                </tr>
+                                <tr>
+                                  <th>INR</th>
+                                  <th>USD</th>
+                                </tr>
+                                <tr>
+                                  <th colSpan={7}>Tax Addition(Exclusive)</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td colSpan={7}>No Records Found.</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                       
+
+
+                             <div className="tbl-container me-2 mt-3">
+                            <table className="w-100">
+                              <thead>
+                                <tr>
+                                  <th colSpan={6}>Charges (Exclusive)</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {exclusiveCharges && exclusiveCharges.length > 0 ? (
+                                  exclusiveCharges.map((row) => (
+                                    <tr key={row.id}>
+                                      <td>{row.resource_name || "-"}</td>
+                                      <td colSpan={1}>INR {parseFloat(row.amount_in_inr || 0).toFixed(2)}</td>
+                                      <td colSpan={1}>{(ropoData?.po_currency || "USD").toUpperCase()} {parseFloat(row.amount || 0).toFixed(2)}</td>
+                                      <td>
+                                        <input type="checkbox" checked={Boolean(row.inclusive)} disabled />
+                                      </td>
+                                      <td colSpan={2}>
+                                        <textarea
+                                          className="form-control"
+                                          rows={2}
+                                          value={row.remarks || ""}
+                                          readOnly
+                                          disabled
+                                        />
+                                      </td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan={6} className="text-center">No exclusive charges available</td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+
+
                           <div className="mt-4">
                              <div className="d-flex justify-content-between align-items-center">
                                <h5 className="mt-3">Charges</h5>
@@ -1519,75 +1571,7 @@ const RopoImportDetails = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th rowSpan={2}>Charges And Taxes</th>
-                                  <th colSpan={2}>Amount</th>
-                                  <th rowSpan={2}>Payable Currency</th>
-                                  <th rowSpan={2}>Service Certificate</th>
-                                  <th rowSpan={2}>Select Service Provider</th>
-                                  <th rowSpan={2}>Remarks</th>
-                                </tr>
-                                <tr>
-                                  <th>INR</th>
-                                  <th>USD</th>
-                                </tr>
-                                <tr>
-                                  <th colSpan={7}>Tax Addition(Exclusive)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td colSpan={7}>No Records Found.</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th colSpan={6}>Charges (Exclusive)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>Custom Duty </td>
-                                  <td colSpan={1}>INR 0.00</td>
-                                  <td colSpan={1}>USD 4.83</td>{" "}
-                                  <td>
-                                    <input type="checkbox" />
-                                  </td>
-                                  <td colSpan={2}>
-                                    <textarea
-                                      className="form-control"
-                                      id="exampleFormControlTextarea1"
-                                      rows={2}
-                                      defaultValue={""}
-                                    />
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td>C AND F CHARGES </td>
-                                  <td colSpan={1}>INR 0.00</td>
-                                  <td colSpan={1}>USD 4.83</td>
-                                  <td>
-                                    <input type="checkbox" />
-                                  </td>
-                                  <td colSpan={2}>
-                                    <textarea
-                                      className="form-control"
-                                      id="exampleFormControlTextarea1"
-                                      rows={2}
-                                      defaultValue={""}
-                                    />
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
+                         
                           <div className="card-body">
                             <div className="row">
                               <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
