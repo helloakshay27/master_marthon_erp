@@ -512,7 +512,7 @@ const RopoImportEdit = () => {
   // Fetch delivery schedules data
   const fetchDeliverySchedules = useCallback(() => {
     if (submittedMaterials && submittedMaterials.length > 0) {
-      const morInventoryIds = submittedMaterials.map(material => material.id).join(',');
+      const morInventoryIds = submittedMaterials.map(material => material.mor_inventory_id).join(',');
       const apiUrl = `${baseURL}purchase_orders/material_delivery_schedules.json?token=${token}&mor_inventory_ids=${morInventoryIds}&type=import`;
       
       console.log("Fetching delivery schedules from:", apiUrl);
@@ -755,6 +755,9 @@ const RopoImportEdit = () => {
   const [currencies, setCurrencies] = useState([]);
   const [selectedCurrency, setSelectedCurrency] = useState({ code: "USD", symbol: "$" });
 
+  // Dynamic PO currency code for display (e.g., USD, CAD)
+  const poCurrencyCode = selectedCurrency?.code || "USD";
+
   // State for conversion rate
   const [conversionRate, setConversionRate] = useState(82.5);
 
@@ -773,7 +776,7 @@ const RopoImportEdit = () => {
   // Map currencies to options for the dropdown
   const currencyOptions = currencies.map((currency) => ({
     value: currency.currency.toUpperCase(),
-    label: `${currency.currency.toUpperCase()} (${currency.name})`,
+    label: currency.name,
     symbol: currency.currency === "usd" ? "$" : currency.currency === "cad" ? "C$" : currency.currency.toUpperCase(),
   }));
 
@@ -1458,7 +1461,7 @@ const RopoImportEdit = () => {
     // Validate conversion rate is set
     if (!conversionRate || conversionRate <= 0) {
       alert(
-        "Please set the Conversion Rate (USD to INR) in the PO Details tab before opening tax modal."
+        `Please set the Conversion Rate (${poCurrencyCode} to INR) in the PO Details tab before opening tax modal.`
       );
       return;
     }
@@ -1482,7 +1485,12 @@ const RopoImportEdit = () => {
         setTaxRateData((prev) => ({
           ...prev,
           [rowIndex]: {
-            material: rateData.material,
+            material:
+              rateData.material ||
+              submittedMaterials[rowIndex]?.material_name ||
+              submittedMaterials[rowIndex]?.material?.material_name ||
+              submittedMaterials[rowIndex]?.material ||
+              "",
             hsnCode: rateData.hsn_code,
             ratePerNos: rateData.rate_per_nos?.toString(),
             totalPoQty: rateData.order_qty?.toString(),
@@ -3745,11 +3753,10 @@ const RopoImportEdit = () => {
   // Calculate service certificate advance amount
   const calculateServiceCertificateAdvanceAmount = () => {
     const percentage = parseFloat(serviceCertificateAdvancePercentage) || 0;
-    // Base should be addition of all materials' material_cost (USD)
-    const baseUsd = submittedMaterials.reduce((sum, _mat, idx) => {
-      const materialCost = parseFloat(taxRateData[idx]?.materialCost) || 0;
-      return sum + materialCost;
-    }, 0);
+    // Base should be sum of TaxCharge additions (handling/freight/other additions) in USD across materials
+    const baseUsd = (chargesFromApi || [])
+      .filter((c) => c && c.resource_type === "TaxCharge" && (parseFloat(c.amount) || 0) > 0)
+      .reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
     const amount = (baseUsd * percentage) / 100;
     return amount;
   };
@@ -4594,7 +4601,7 @@ const RopoImportEdit = () => {
                                 <div className="col-md-4 mt-2">
                                   <div className="form-group">
                                     <label className="po-fontBold">
-                                      Conversion Rate (USD to INR)
+                                      {`Conversion Rate (${poCurrencyCode} to INR)`}
                                     </label>
                                     <input
                                       className="form-control"
@@ -4810,87 +4817,115 @@ const RopoImportEdit = () => {
                                 <thead>
                                   <tr>
                                     <th>Sr. No</th>
-                                    <th>Material Description</th>
-
+                                    <th>Material</th>
                                     <th>UOM</th>
                                     <th>PO Qty</th>
-
+                                    <th>Adjusted Qty</th>
+                                    <th>Tolerance Qty</th>
+                                    <th>Material Rate</th>
+                                    <th>Material Cost</th>
+                                    <th>Discount(%)</th>
+                                    <th>Discount Rate</th>
+                                    <th>After Discount Value</th>
                                     <th>Tax Addition</th>
-                                    <th>Total Changes</th>
-                                    <th>Other Addition</th>
-                                    <th>Other Deductions</th>
+                                    <th>Tax Deduction</th>
+                                    <th>Total Charges</th>
+                                    <th>Total Base Cost</th>
                                     <th>All Incl. Cost</th>
-                                    <th>Tax Deductions</th>
                                     <th>Select Tax</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {submittedMaterials.length > 0 ? (
-                                    submittedMaterials.map(
-                                      (material, index) => {
-                                        const calculatedValues = materialCalculatedValues[material.id] || {};
-                                        return (
-                                          <tr key={material.id}>
-                                            <td>{index + 1}</td>
-                                            <td>{material.material_name || material.material?.material_name || ""}</td>
-                                            <td>{material.uom_name}</td>
-                                            <td>{material.order_qty || ""}</td>
-                                            <td>USD {calculatedValues.taxAddition?.toFixed(2) || "0.00"} (INR {(() => {
-                                              const inrValue = parseFloat(convertUsdToInr(calculatedValues.taxAddition || 0, conversionRate));
-                                              return isNaN(inrValue) ? "0.00" : inrValue.toFixed(2);
-                                            })()})</td>
-                                            <td></td>
-                                            <td>USD {calculatedValues.otherAddition?.toFixed(2) || "0.00"} (INR {(() => {
-                                              const inrValue = parseFloat(convertUsdToInr(calculatedValues.otherAddition || 0, conversionRate));
-                                              return isNaN(inrValue) ? "0.00" : inrValue.toFixed(2);
-                                            })()})</td>
-                                            <td>USD {calculatedValues.otherDeductions?.toFixed(2) || "0.00"} (INR {(() => {
-                                              const inrValue = parseFloat(convertUsdToInr(calculatedValues.otherDeductions || 0, conversionRate));
-                                              return isNaN(inrValue) ? "0.00" : inrValue.toFixed(2);
-                                            })()})</td>
-                                            <td>USD {calculatedValues.allInclCost?.toFixed(2) || "0.00"} (INR {(() => {
-                                              const inrValue = parseFloat(convertUsdToInr(calculatedValues.allInclCost || 0, conversionRate));
-                                              return isNaN(inrValue) ? "0.00" : inrValue.toFixed(2);
-                                            })()})</td>
-                                            <td>USD {calculatedValues.taxDeductions?.toFixed(2) || "0.00"} (INR {(() => {
-                                              const inrValue = parseFloat(convertUsdToInr(calculatedValues.taxDeductions || 0, conversionRate));
-                                              return isNaN(inrValue) ? "0.00" : inrValue.toFixed(2);
-                                            })()})</td>
-                                            <td
-                                              className="text-decoration-underline"
-                                              style={{ cursor: "pointer" }}
-                                              onClick={() =>
-                                                handleOpenTaxModal(index)
-                                              }
-                                            >
-                                              select
-                                            </td>
-                                          </tr>
-                                        );
-                                      }
-                                    )
+                                    submittedMaterials.map((material, index) => {
+                                      const calculatedValues = materialCalculatedValues[material.id] || {};
+                                      const rateRow = taxRateData[index] || {};
+                                      const totalCharges = (
+                                        (parseFloat(calculatedValues.otherAddition) || 0) -
+                                        (parseFloat(calculatedValues.otherDeductions) || 0)
+                                      ).toFixed(2);
+                                      return (
+                                        <tr key={material.id}>
+                                          <td>{index + 1}</td>
+                                          <td>{material.material_name || material.material?.material_name || ""}</td>
+                                          <td>{material.uom_name}</td>
+                                          <td>{material.order_qty || ""}</td>
+                                          <td>{material.adjusted_qty ?? ""}</td>
+                                          <td>{material.tolerance_qty ?? ""}</td>
+                                          <td>
+                                            {poCurrencyCode} {parseFloat(rateRow.ratePerNos || 0).toFixed(2)} (INR {(() => {
+                                              const inr = parseFloat(convertUsdToInr(rateRow.ratePerNos || 0, conversionRate));
+                                              return isNaN(inr) ? "0.00" : inr.toFixed(2);
+                                            })()})
+                                          </td>
+                                          <td>
+                                            {poCurrencyCode} {parseFloat(rateRow.materialCost || 0).toFixed(2)} (INR {(() => {
+                                              const inr = parseFloat(convertUsdToInr(rateRow.materialCost || 0, conversionRate));
+                                              return isNaN(inr) ? "0.00" : inr.toFixed(2);
+                                            })()})
+                                          </td>
+                                          <td>{parseFloat(rateRow.discount || 0).toFixed(2)}</td>
+                                          <td>
+                                            {poCurrencyCode} {parseFloat(rateRow.discountRate || 0).toFixed(2)} (INR {(() => {
+                                              const inr = parseFloat(convertUsdToInr(rateRow.discountRate || 0, conversionRate));
+                                              return isNaN(inr) ? "0.00" : inr.toFixed(2);
+                                            })()})
+                                          </td>
+                                          <td>
+                                            {poCurrencyCode} {parseFloat(rateRow.afterDiscountValue || 0).toFixed(2)} (INR {(() => {
+                                              const inr = parseFloat(convertUsdToInr(rateRow.afterDiscountValue || 0, conversionRate));
+                                              return isNaN(inr) ? "0.00" : inr.toFixed(2);
+                                            })()})
+                                          </td>
+                                          <td>
+                                            {poCurrencyCode} {calculatedValues.taxAddition?.toFixed(2) || "0.00"} (INR {(() => {
+                                              const usd = parseFloat(calculatedValues.taxAddition || 0);
+                                              const inr = parseFloat(convertUsdToInr(usd, conversionRate));
+                                              return isNaN(inr) ? "0.00" : inr.toFixed(2);
+                                            })()})
+                                          </td>
+                                          <td>
+                                            {poCurrencyCode} {calculatedValues.taxDeductions?.toFixed(2) || "0.00"} (INR {(() => {
+                                              const usd = parseFloat(calculatedValues.taxDeductions || 0);
+                                              const inr = parseFloat(convertUsdToInr(usd, conversionRate));
+                                              return isNaN(inr) ? "0.00" : inr.toFixed(2);
+                                            })()})
+                                          </td>
+                                          <td>
+                                            {poCurrencyCode} {totalCharges} (INR {(() => {
+                                              const usd = parseFloat(totalCharges) || 0;
+                                              const inr = parseFloat(convertUsdToInr(usd, conversionRate));
+                                              return isNaN(inr) ? "0.00" : inr.toFixed(2);
+                                            })()})
+                                          </td>
+                                          <td>
+                                            {poCurrencyCode} {parseFloat(rateRow.afterDiscountValue || 0).toFixed(2)} (INR {(() => {
+                                              const inr = parseFloat(convertUsdToInr(rateRow.afterDiscountValue || 0, conversionRate));
+                                              return isNaN(inr) ? "0.00" : inr.toFixed(2);
+                                            })()})
+                                          </td>
+                                          <td>
+                                            {poCurrencyCode} {(
+                                              parseFloat(rateRow.netCost || rateRow.total_material_cost || 0)
+                                            ).toFixed(2)} (INR {(() => {
+                                              const usd = parseFloat(rateRow.netCost || rateRow.total_material_cost || 0) || 0;
+                                              const inr = parseFloat(convertUsdToInr(usd, conversionRate));
+                                              return isNaN(inr) ? "0.00" : inr.toFixed(2);
+                                            })()})
+                                          </td>
+                                          <td
+                                            className="text-decoration-underline"
+                                            style={{ cursor: "pointer" }}
+                                            onClick={() => handleOpenTaxModal(index)}
+                                          >
+                                            select
+                                          </td>
+                                        </tr>
+                                      );
+                                    })
                                   ) : (
                                     <tr>
-                                      {/* <td>1</td>
-                                      <td>Plain White Sperenza Tiles</td>
-                                      <td>300 x 300 mm</td>
-                                      <td>nos</td>
-                                    <td>USD 9.67</td>
-                                    <td>INR 800</td>
-                                    <td>108</td>
-                                    <td>708</td>
-                                    <td>108</td>
-                                    <td>708</td>
-                                    <td
-                                      className="text-decoration-underline"
-                                        style={{ cursor: "pointer" }}
-                                        onClick={() => handleOpenTaxModal(0)}
-                                    >
-                                      select
-                                      </td> */}
-                                      <td colSpan="11" className="text-center">
-                                        No materials added yet.
-                                      </td>
+                                      <td colSpan="17" className="text-center">No materials added yet.</td>
                                     </tr>
                                   )}
                                 </tbody>
@@ -4910,7 +4945,7 @@ const RopoImportEdit = () => {
                                   </tr>
                                   <tr>
                                     <th>INR</th>
-                                    <th>USD</th>
+                                    <th>{poCurrencyCode}</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -4990,8 +5025,8 @@ const RopoImportEdit = () => {
                                           <td>
                                             INR {charge.amount_inr || "0.00"}
                                           </td>
-                                          <td>USD {charge.amount || "0.00"}</td>
-                                          <td>USD</td>
+                                          <td>{poCurrencyCode} {charge.amount || "0.00"}</td>
+                                          <td>{poCurrencyCode}</td>
                                           <td>
                                             <input
                                               type="checkbox"
@@ -5062,7 +5097,7 @@ const RopoImportEdit = () => {
                                   <tr>
                                     <th>Charge Name</th>
                                     <th>Amount (INR)</th>
-                                    <th>Amount (USD)</th>
+                                    <th>Amount ({poCurrencyCode})</th>
                                     <th>Service Certificate</th>
                                     <th>Service Provider</th>
                                     <th>Remarks</th>
@@ -5091,7 +5126,7 @@ const RopoImportEdit = () => {
                                           INR {consolidatedCharge.total_amount_inr.toFixed(2)}
                                         </td>
                                         <td>
-                                          USD {consolidatedCharge.total_amount_usd.toFixed(2)}
+                                          {poCurrencyCode} {consolidatedCharge.total_amount_usd.toFixed(2)}
                                         </td>
                                         <td>
                                           <input
@@ -5734,7 +5769,7 @@ const RopoImportEdit = () => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      value={`USD ${totalMaterialCost.toFixed(
+                                      value={`${poCurrencyCode} ${totalMaterialCost.toFixed(
                                         2
                                       )} (INR ${convertUsdToInr(
                                         totalMaterialCost,
@@ -5773,7 +5808,7 @@ const RopoImportEdit = () => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      value={`USD ${calculateTotalDiscountAmount().toFixed(2)} (INR ${convertUsdToInr(
+                                      value={`${poCurrencyCode} ${calculateTotalDiscountAmount().toFixed(2)} (INR ${convertUsdToInr(
                                         calculateTotalDiscountAmount(),
                                         conversionRate
                                       )})`}
@@ -5791,7 +5826,7 @@ const RopoImportEdit = () => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      value={`USD ${calculateSupplierAdvanceAmount().toFixed(
+                                      value={`${poCurrencyCode} ${calculateSupplierAdvanceAmount().toFixed(
                                         2
                                       )} (INR ${convertUsdToInr(
                                         calculateSupplierAdvanceAmount(),
@@ -5832,7 +5867,7 @@ const RopoImportEdit = () => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      value={`USD ${calculateServiceCertificateAdvanceAmount().toFixed(
+                                      value={`${poCurrencyCode} ${calculateServiceCertificateAdvanceAmount().toFixed(
                                         2
                                       )} (INR ${convertUsdToInr(
                                         calculateServiceCertificateAdvanceAmount(),
@@ -7431,10 +7466,10 @@ const RopoImportEdit = () => {
                       <tr>
                         <th></th>
                         <th>INR</th>
-                        <th>USD</th>
+                        <th>{poCurrencyCode}</th>
                         <th></th>
                         <th>INR</th>
-                        <th>USD</th>
+                        <th>{poCurrencyCode}</th>
                         <th></th>
                       </tr>
                     </thead>
