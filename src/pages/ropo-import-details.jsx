@@ -866,7 +866,7 @@ const RopoImportDetails = () => {
                                  <div className="d-flex gap-2 justify-content-end mb-3">
                                     {ropoData?.selected_status === "Draft" && (
                                       <Link
-                                        to={`/ropo-edit/${id}?token=${token}`}
+                                        to={`/ropo-import-edit/${id}?token=${token}`}
                                         className="d-flex align-items-center"
                                         style={{ borderColor: "#8b0203" }}
                                       >
@@ -3436,7 +3436,8 @@ const RopoImportDetails = () => {
                     type="text"
                     className="form-control"
                     value={taxRateData[tableId]?.ratePerNos || ""}
-                    onChange={(e) => handleRatePerNosChange(e.target.value)}
+                    readOnly
+                    disabled={true}
                   />
                 </div>
               </div>
@@ -3481,9 +3482,8 @@ const RopoImportDetails = () => {
                     type="text"
                     className="form-control"
                     value={taxRateData[tableId]?.discount || ""}
-                    onChange={(e) =>
-                      handleDiscountPercentageChange(e.target.value)
-                    }
+                    readOnly
+                    disabled={true}
                   />
                 </div>
               </div>
@@ -3538,15 +3538,8 @@ const RopoImportDetails = () => {
                     className="form-control"
                     rows={3}
                     value={taxRateData[tableId]?.remark || ""}
-                    onChange={(e) => {
-                      setTaxRateData((prev) => ({
-                        ...prev,
-                        [tableId]: {
-                          ...prev[tableId],
-                          remark: e.target.value,
-                        },
-                      }));
-                    }}
+                    readOnly
+                    disabled={true}
                   />
                 </div>
               </div>
@@ -3621,12 +3614,7 @@ const RopoImportDetails = () => {
                          <td></td>
                         <td></td>
                         <td className="text-center">
-                          <button
-                            className="btn btn-outline-danger btn-sm"
-                            onClick={() => addAdditionTaxCharge(tableId)}
-                          >
-                            <span>+</span>
-                          </button>
+                           <span>-</span>
                         </td>
                        </tr>
                       {taxRateData[tableId]?.addition_bid_material_tax_details
@@ -3634,7 +3622,8 @@ const RopoImportDetails = () => {
                         .map((item, rowIndex) => (
                           <tr key={`${rowIndex}-${item.id}`}>
                            <td>
-                             <select
+                             <input
+                               type="text"
                                className="form-control"
                                 value={
                                   item.taxChargeType ||
@@ -3643,143 +3632,28 @@ const RopoImportDetails = () => {
                                   )?.value ||
                                   ""
                                 }
-                                onChange={(e) => {
-                                  const selectedValue = e.target.value;
-                                  const selectedOption = taxOptions.find(
-                                    (option) => option.value === selectedValue
-                                  );
-                                  handleTaxChargeChange(
-                                    tableId,
-                                    item.id,
-                                    "taxChargeType",
-                                    selectedOption?.value || selectedValue,
-                                    "addition"
-                                  );
-                                  if (selectedOption?.id) {
-                                    handleTaxCategoryChange(
-                                      tableId,
-                                      selectedOption.id,
-                                      item.id
-                                    );
-                                  }
-                                }}
-                              >
-                                <option value="">Select Tax</option>
-                                {taxOptions.map((opt) => (
-                                  <option
-                                    key={opt.id}
-                                    value={opt.value}
-                                    disabled={(() => {
-                                      const current =
-                                        item.taxChargeType ||
-                                        taxOptions.find(
-                                          (o) => o.id === item.tax_category_id
-                                        )?.value ||
-                                        "";
-                                      const disabledSet = (
-                                        taxRateData[
-                                          tableId
-                                        ]?.addition_bid_material_tax_details?.reduce(
-                                          (acc, detail) => {
-                                            if (
-                                              detail._destroy ||
-                                              detail.id === item.id
-                                            )
-                                              return acc;
-                                            const t = detail.taxChargeType;
-                                            if (t === "CGST")
-                                              acc.push("CGST", "IGST");
-                                            if (t === "SGST")
-                                              acc.push("SGST", "IGST");
-                                            if (t === "IGST")
-                                              acc.push("CGST", "SGST");
-                                            if (t) acc.push(t);
-                                            return acc;
-                                          },
-                                          []
-                                        ) || []
-                                      ).filter(
-                                        (v, i, self) => self.indexOf(v) === i
-                                      );
-                                      return (
-                                        disabledSet.includes(opt.value) &&
-                                        opt.value !== current
-                                      );
-                                    })()}
-                                  >
-                                    {opt.label}
-                                 </option>
-                               ))}
-                             </select>
+                               readOnly
+                               disabled={true}
+                             />
                            </td>
 
                            <td>
-                              {isPercentageTax(item.taxChargeType) ? (
-                             <select
-                               className="form-control"
-                                  value={item?.taxChargePerUom || ""}
-                                  onChange={(e) =>
-                                    handleTaxChargeChange(
-                                      tableId,
-                                      item.id,
-                                      "taxChargePerUom",
-                                      e.target.value,
-                                      "addition"
-                                    )
-                                  }
-                                  disabled={
-                                    (materialTaxPercentages[item.id] || [])
-                                      .length === 0
-                                  }
-                                >
-                                  <option value="">
-                                    {(materialTaxPercentages[item.id] || [])
-                                      .length === 0
-                                      ? "No percentages available"
-                                      : "Select percentage"}
-                                  </option>
-                                  {(materialTaxPercentages[item.id] || []).map(
-                                    (percent) => (
-                                      <option
-                                        key={percent.id}
-                                        value={`${percent.percentage}%`}
-                                      >
-                                        {percent.percentage}%
-                                     </option>
-                                   )
-                                 )}
-                             </select>
-                              ) : (
                                 <input
-                                  type="number"
+                               type="text"
                                   className="form-control"
                                   value={item?.taxChargePerUom || ""}
-                                  onChange={(e) =>
-                                    handleTaxChargeChange(
-                                      tableId,
-                                      item.id,
-                                      "taxChargePerUom",
-                                      e.target.value,
-                                      "addition"
-                                    )
-                                  }
-                                  placeholder="Enter amount"
-                                />
-                              )}
+                               readOnly
+                               disabled={true}
+                             />
                            </td>
                            <td>
-                              {isPercentageTax(item.taxChargeType) ? (
-                                <span></span>
-                              ) : (
                                 <input
-                                  type="number"
+                               type="text"
                                   className="form-control"
                                   value={convertInrToUsd(item?.taxChargePerUom)}
                                   readOnly
                                   disabled={true}
-                                  placeholder="Auto calculated"
                                 />
-                              )}
                             </td>
 
                             <td className="text-center">
@@ -3838,12 +3712,7 @@ const RopoImportDetails = () => {
                             </td>
 
                            <td className="text-center">
-                             <button
-                                className="btn btn-outline-danger btn-sm"
-                               disabled
-                             >
-                                <span>×</span>
-                             </button>
+                             <span>-</span>
                            </td>
                          </tr>
                        ))}
@@ -3856,12 +3725,7 @@ const RopoImportDetails = () => {
                          <td></td>
                          <td></td>
                          <td className="text-center">
-                           <button
-                            className="btn btn-outline-danger btn-sm"
-                            onClick={() => addDeductionTaxCharge(tableId)}
-                           >
-                            <span>+</span>
-                           </button>
+                           <span>-</span>
                          </td>
                        </tr>
 
@@ -3870,74 +3734,22 @@ const RopoImportDetails = () => {
                         .map((item) => (
                           <tr key={item.id}>
                             <td>
-                              <SelectBox
-                                options={deductionTaxOptions || []}
+                              <input
+                                type="text"
+                                className="form-control"
                                 value={item.taxChargeType || ""}
-                                defaultValue={item.taxChargeType || ""}
-                                onChange={(value) => {
-                                  handleTaxChargeChange(
-                                    tableId,
-                                    item.id,
-                                    "taxChargeType",
-                                    value,
-                                    "deduction"
-                                  );
-
-                                  // Fetch tax percentages for the selected category
-                                  const selectedOption =
-                                    deductionTaxOptions.find(
-                                      (option) => option.value === value
-                                    );
-                                  if (selectedOption?.id) {
-                                    handleTaxCategoryChange(
-                                      tableId,
-                                      selectedOption.id,
-                                      item.id
-                                    );
-                                  }
-                                }}
-                                disabledOptions={taxRateData[
-                                  tableId
-                                ]?.deduction_bid_material_tax_details?.map(
-                                  (item) => item.taxChargeType
-                                )}
+                                readOnly
+                                disabled={true}
                               />
                            </td>
                            <td>
-                             <select
+                             <input
+                               type="text"
                                className="form-control"
                                 value={item?.taxChargePerUom || ""}
-                                onChange={(e) =>
-                                  handleTaxChargeChange(
-                                    tableId,
-                                    item.id,
-                                    "taxChargePerUom",
-                                    e.target.value,
-                                    "deduction"
-                                  )
-                                }
-                                disabled={
-                                  (materialTaxPercentages[item.id] || [])
-                                    .length === 0
-                                }
-                              >
-                                <option value="">
-                                  {(materialTaxPercentages[item.id] || [])
-                                    .length === 0
-                                    ? "No percentages available"
-                                    : "Select percentage"}
-                                </option>
-                                {(materialTaxPercentages[item.id] || []).map(
-                                  (percent) => (
-                                    <option
-                                      key={percent.id}
-                                      value={`${percent.percentage}%`}
-                                    >
-                                      {percent.percentage}%
-                                     </option>
-                                   )
-                                 )}
-                             </select>
+                               readOnly
+                               disabled={true}
+                             />
                            </td>
                            <td>
                               <span></span>
@@ -3947,15 +3759,7 @@ const RopoImportDetails = () => {
                                type="checkbox"
                                 className="form-check-input"
                                 checked={item.inclusive}
-                                onChange={(e) =>
-                                  handleTaxChargeChange(
-                                    tableId,
-                                    item.id,
-                                    "inclusive",
-                                    e.target.checked,
-                                    "deduction"
-                                  )
-                                }
+                               disabled
                              />
                            </td>
                            <td>
@@ -4004,18 +3808,7 @@ const RopoImportDetails = () => {
                              />
                            </td>
                            <td className="text-center">
-                             <button
-                                className="btn btn-outline-danger btn-sm"
-                                onClick={() =>
-                                  removeTaxChargeItem(
-                                    tableId,
-                                    item.id,
-                                    "deduction"
-                                  )
-                                }
-                              >
-                                <span>×</span>
-                             </button>
+                             <span>-</span>
                            </td>
                          </tr>
                        ))}
@@ -4079,417 +3872,6 @@ const RopoImportDetails = () => {
          </Modal.Footer>
        </Modal>
 
-       {/* Tax Modal for Material Taxes */}
-       <Modal
-         show={showTaxModal}
-         onHide={handleCloseTaxModal}
-         size="lg"
-         centered
-       >
-         <Modal.Header closeButton>
-           <Modal.Title>View Tax & Rate</Modal.Title>
-         </Modal.Header>
-         <Modal.Body>
-           <div className="container-fluid p-0">
-             {console.log("Modal is rendering, tableId:", tableId)}
-             {console.log("Tax options in modal:", taxOptions)}
-             <div className="row mb-3">
-               <div className="col-md-6">
-                 <div className="mb-3">
-                   <label className="form-label fw-bold">Material</label>
-                   <input
-                     type="text"
-                     className="form-control"
-                     value={taxRateData[tableId]?.material || ""}
-                     readOnly
-                     disabled={true}
-                   />
-                 </div>
-               </div>
-               <div className="col-md-6">
-                 <div className="mb-3">
-                   <label className="form-label fw-bold">HSN Code</label>
-                   <input
-                     type="text"
-                     className="form-control"
-                     value={taxRateData[tableId]?.hsnCode || ""}
-                     readOnly
-                     disabled={true}
-                   />
-                 </div>
-               </div>
-             </div>
-
-             <div className="row mb-3">
-               <div className="col-md-6">
-                 <div className="mb-3">
-                   <label className="form-label fw-bold">Rate per Nos</label>
-                   <input
-                     type="text"
-                     className="form-control"
-                     value={taxRateData[tableId]?.ratePerNos || ""}
-                     disabled
-                   />
-                 </div>
-               </div>
-               <div className="col-md-6">
-                 <div className="mb-3">
-                   <label className="form-label fw-bold">Total PO Qty</label>
-                   <input
-                     type="text"
-                     className="form-control"
-                     value={taxRateData[tableId]?.totalPoQty || ""}
-                     readOnly
-                     disabled={true}
-                   />
-                 </div>
-               </div>
-             </div>
-
-             <div className="row mb-3">
-               <div className="col-md-6">
-                 <div className="mb-3">
-                   <label className="form-label fw-bold">Discount (%)</label>
-                   <input
-                     type="text"
-                     className="form-control"
-                     value={taxRateData[tableId]?.discount || ""}
-                     disabled
-                   />
-                 </div>
-               </div>
-               <div className="col-md-6">
-                 <div className="mb-3">
-                   <label className="form-label fw-bold">Material Cost</label>
-                   <input
-                     type="text"
-                     className="form-control"
-                     value={taxRateData[tableId]?.materialCost || ""}
-                     readOnly
-                     disabled={true}
-                   />
-                 </div>
-               </div>
-             </div>
-
-             <div className="row mb-3">
-               <div className="col-md-6">
-                 <div className="mb-3">
-                   <label className="form-label fw-bold">Discount Rate</label>
-                   <input
-                     type="text"
-                     className="form-control"
-                     value={taxRateData[tableId]?.discountRate || ""}
-                     readOnly
-                     disabled={true}
-                   />
-                 </div>
-               </div>
-               <div className="col-md-6">
-                 <div className="mb-3">
-                   <label className="form-label fw-bold">
-                     After Discount Value
-                   </label>
-                   <input
-                     type="text"
-                     className="form-control"
-                     value={taxRateData[tableId]?.afterDiscountValue || ""}
-                     readOnly
-                     disabled={true}
-                   />
-                 </div>
-               </div>
-             </div>
-
-             <div className="row mb-3">
-               <div className="col-md-6">
-                 <div className="mb-3">
-                   <label className="form-label fw-bold">Remark</label>
-                   <textarea
-                     className="form-control"
-                     rows={3}
-                     value={taxRateData[tableId]?.remark || ""}
-                     disabled={true}
-                   />
-                 </div>
-               </div>
-             </div>
-
-             {/* Tax Charges Table */}
-             <div className="row mt-4">
-               <div className="col-12">
-                 <div className="table-responsive">
-                   <table className="table table-bordered">
-                     <thead className="tax-table-header">
-                       <tr>
-                         <th>Tax / Charge Type</th>
-                         <th>Tax / Charges per UOM (INR)</th>
-                         <th>Inclusive</th>
-                         <th>Amount</th>
-                         <th>Action</th>
-                       </tr>
-                     </thead>
-                     <tbody>
-                       {/* Total Base Cost Row */}
-                       <tr>
-                         <td>Total Base Cost</td>
-                         <td></td>
-                         <td></td>
-                         <td>
-                           <input
-                             type="number"
-                             className="form-control "
-                             value={
-                               taxRateData[tableId]?.afterDiscountValue || ""
-                             }
-                             readOnly
-                             disabled={true}
-                           />
-                         </td>
-                         <td></td>
-                       </tr>
-
-                       {/* Addition Tax & Charges Row */}
-                       <tr>
-                         <td>Addition Tax & Charges</td>
-                         <td></td>
-                         <td></td>
-                         <td></td>
-                         <td className="text-center">
-                           <button
-                             className="btn btn-outline-danger btn-sm"
-                           >
-                             <span>+</span>
-                           </button>
-                         </td>
-                       </tr>
-                       {taxRateData[tableId]?.addition_bid_material_tax_details
-                         ?.filter((item) => !item._destroy)
-                         .map((item, rowIndex) => (
-                           <tr key={`${rowIndex}-${item.id}`}>
-                             <td>
-                               <select
-                                 className="form-control"
-                                 disabled
-                                 value={
-                                   item.taxChargeType ||
-                                   taxOptions.find(
-                                     (opt) => opt.id === item.tax_category_id
-                                   )?.value ||
-                                   taxOptions.find(
-                                     (opt) => opt.id === item.resource_id
-                                   )?.value ||
-                                   ""
-                                 }
-                               >
-                                 <option value="">Select Tax</option>
-                                 {taxOptions.map((opt) => (
-                                   <option key={opt.id} value={opt.value}>
-                                     {opt.label}
-                                   </option>
-                                 ))}
-                               </select>
-                             </td>
-
-                             <td>
-                               <select
-                                 className="form-control"
-                                 disabled
-                                 value={
-                                   item?.taxChargePerUom ||
-                                   (() => {
-                                     const found = (
-                                       materialTaxPercentages[item.id] || []
-                                     ).find(
-                                       (p) => p.id === item.tax_category_id
-                                     );
-                                     return found ? `${found.percentage}%` : "";
-                                   })() ||
-                                   ""
-                                 }
-                               >
-                                 <option value="">
-                                   {(materialTaxPercentages[item.id] || [])
-                                     .length === 0
-                                     ? "No percentages available"
-                                     : "Select percentage"}
-                                 </option>
-                                 {(materialTaxPercentages[item.id] || []).map(
-                                   (percent) => (
-                                     <option
-                                       key={percent.id}
-                                       value={`${percent.percentage}%`}
-                                     >
-                                       {percent.percentage}%
-                                     </option>
-                                   )
-                                 )}
-                               </select>
-                             </td>
-
-                             <td className="text-center">
-                               <input
-                                 type="checkbox"
-                                 className="form-check-input"
-                                 checked={item.inclusive}
-                               />
-                             </td>
-
-                             <td>
-                               <input
-                                 type="text"
-                                 className="form-control"
-                                 value={item.amount || ""}
-                                 disabled
-                               />
-                             </td>
-
-                             <td className="text-center">
-                               <button
-                                 className="btn btn-outline-danger btn-sm"
-                               >
-                                 <span>×</span>
-                               </button>
-                             </td>
-                           </tr>
-                         ))}
-
-                       <tr>
-                         <td>Deduction Tax</td>
-                         <td></td>
-                         <td></td>
-                         <td></td>
-                         <td className="text-center">
-                           <button
-                             className="btn btn-outline-danger btn-sm"
-                           >
-                             <span>+</span>
-                           </button>
-                         </td>
-                       </tr>
-
-                       {taxRateData[tableId]?.deduction_bid_material_tax_details
-                         ?.filter((item) => !item._destroy)
-                         .map((item) => (
-                           <tr key={item.id}>
-                             <td>
-                               <select
-                                 className="form-control"
-                                 disabled
-                                 value={
-                                   item.taxChargeType ||
-                                   deductionTaxOptions.find(
-                                     (opt) => opt.id == item.tax_category_id
-                                   )?.value ||
-                                   deductionTaxOptions.find(
-                                     (opt) => opt.id == item.resource_id
-                                   )?.value ||
-                                   ""
-                                 }
-                               >
-                                 <option value="">Select Tax & Charges</option>
-                                 {deductionTaxOptions
-                                   .filter((opt) => opt.value)
-                                   .map((opt) => (
-                                     <option key={opt.id} value={opt.value}>
-                                       {opt.label}
-                                     </option>
-                                   ))}
-                               </select>
-                             </td>
-                             <td>
-                               <select
-                                 className="form-control"
-                                 disabled
-                                 value={
-                                   item?.taxChargePerUom ||
-                                   (() => {
-                                     const found = (
-                                       materialTaxPercentages[item.id] || []
-                                     ).find(
-                                       (p) => p.id === item.tax_category_id
-                                     );
-                                     return found ? `${found.percentage}%` : "";
-                                   })() ||
-                                   ""
-                                 }
-                               >
-                                 <option value="">
-                                   {(materialTaxPercentages[item.id] || [])
-                                     .length === 0
-                                     ? "No percentages available"
-                                     : "Select percentage"}
-                                 </option>
-                                 {(materialTaxPercentages[item.id] || []).map(
-                                   (percent) => (
-                                     <option
-                                       key={percent.id}
-                                       value={`${percent.percentage}%`}
-                                     >
-                                       {percent.percentage}%
-                                     </option>
-                                   )
-                                 )}
-                               </select>
-                             </td>
-                             <td className="text-center">
-                               <input
-                                 type="checkbox"
-                                 className="form-check-input"
-                                 checked={item.inclusive}
-                                 disabled
-                               />
-                             </td>
-                             <td>
-                               <input
-                                 type="text"
-                                 className="form-control"
-                                 value={item.amount || ""}
-                                 disabled
-                                 placeholder="Auto-calculated"
-                               />
-                             </td>
-                             <td className="text-center">
-                               <button
-                                 className="btn btn-outline-danger btn-sm"
-                               >
-                                 <span>×</span>
-                               </button>
-                             </td>
-                           </tr>
-                         ))}
-                       <tr>
-                         <td>Net Cost</td>
-                         <td></td>
-                         <td></td>
-                         <td className="text-center">
-                           <input
-                             type="text"
-                             className="form-control"
-                             value={taxRateData[tableId]?.netCost || ""}
-                             readOnly
-                             disabled={true}
-                           />
-                         </td>
-                         <td></td>
-                       </tr>
-                     </tbody>
-                   </table>
-                 </div>
-               </div>
-             </div>
-           </div>
-         </Modal.Body>
-         <Modal.Footer className="justify-content-center">
-           <button
-             variant="secondary"
-             onClick={handleCloseTaxModal}
-             className="purple-btn1"
-           >
-             Close
-           </button>
-         </Modal.Footer>
-       </Modal>
 
        {/* Approval Modal */}
        <Modal
