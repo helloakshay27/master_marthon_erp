@@ -228,9 +228,8 @@ const RopoImportCreate = () => {
         .then((response) => {
           console.log("Delivery schedules response:", response.data);
           setDeliverySchedules(response.data.material_delivery_schedules || []);
-          setMaterialTermConditions(
-            response.data.material_term_conditions || []
-          );
+          // Also fetch Material Specific Term & Conditions from dedicated API
+          fetchMaterialSpecificConditions(morInventoryIds);
         })
         .catch((error) => {
           console.error("Error fetching delivery schedules:", error);
@@ -239,6 +238,37 @@ const RopoImportCreate = () => {
         });
     }
   }, [submittedMaterials, token, baseURL]);
+
+  // Fetch Material Specific Term & Conditions by MOR Inventory IDs (dedicated endpoint)
+  const fetchMaterialSpecificConditions = async (morInventoryIdsCsv) => {
+    try {
+      if (!morInventoryIdsCsv) {
+        setMaterialTermConditions([]);
+        return;
+      }
+      const url = `${baseURL}po_mor_inventories/material_term_conditions.json?po_mor_inventory_ids=${morInventoryIdsCsv}&token=${token}`;
+      console.log("Fetching material term conditions from:", url);
+      const response = await axios.get(url);
+      const conditions = response.data?.material_term_conditions || [];
+      setMaterialTermConditions(conditions);
+    } catch (error) {
+      console.error("Error fetching material term conditions:", error);
+      setMaterialTermConditions([]);
+    }
+  };
+
+  // Fetch material term conditions when submitted materials change (dedicated API)
+  useEffect(() => {
+    const morInventoryIds = submittedMaterials
+      .map((material) => material.mor_inventory_id)
+      .filter(Boolean)
+      .join(",");
+    if (morInventoryIds) {
+      fetchMaterialSpecificConditions(morInventoryIds);
+    } else {
+      setMaterialTermConditions([]);
+    }
+  }, [submittedMaterials]);
 
   // Fetch delivery schedules when submitted materials change
   useEffect(() => {
@@ -3714,10 +3744,10 @@ const RopoImportCreate = () => {
             : null,
           payment_terms: termsFormData.paymentTerms || null,
           payment_remarks: termsFormData.paymentRemarks || null,
-          supplier_advance: null,
-          survice_certificate_advance: null,
-          total_value: null,
-          total_discount: null,
+          supplier_advance: parseFloat(calculateSupplierAdvanceAmount() || 0),
+          survice_certificate_advance: parseFloat(calculateServiceCertificateAdvanceAmount() || 0),
+          total_discount: parseFloat(calculateTotalDiscountAmount() || 0),
+          total_value: parseFloat(totalMaterialCost || 0),
           po_date: getLocalDateTime().split("T")[0], // Current date
           company_id: selectedCompany?.value,
           po_type: "import",
@@ -3731,13 +3761,20 @@ const RopoImportCreate = () => {
               parseFloat(taxRateData[idx]?.materialCost) || 0;
             return sum + materialCost;
           }, 0),
-          payable_to_service_provider: chargesFromApi
-            .filter(
-              (charge) =>
-                charge.resource_type === "TaxCharge" &&
-                Boolean(charge.inclusive)
-            )
-            .reduce((sum, charge) => sum + (parseFloat(charge.amount) || 0), 0),
+          payable_to_service_provider:
+            parseFloat(
+              (chargesFromApi || [])
+                .filter(
+                  (charge) =>
+                    charge &&
+                    charge.resource_type === "TaxCharge" &&
+                    Boolean(charge.inclusive)
+                )
+                .reduce(
+                  (sum, charge) => sum + (parseFloat(charge.amount) || 0),
+                  0
+                )
+            ) || 0,
           remark: termsFormData.remark || "",
           comments: termsFormData.comments || "",
           material_inventory_ids: apiMaterialInventoryIds,
@@ -3924,7 +3961,7 @@ const RopoImportCreate = () => {
 
       console.log("Purchase order created successfully:", response.data);
       alert("Purchase order created successfully!");
-      navigate(`/ropo-import-list?token=${token}`);
+      // navigate(`/ropo-import-list?token=${token}`);
 
       // Optionally redirect or clear form
       // window.location.href = '/po-list'; // Redirect to PO list
@@ -7723,16 +7760,7 @@ const RopoImportCreate = () => {
                               <input
                                 type="text"
                                 className="form-control"
-                                value={
-                                  // For deduction taxes, show Total Base Cost - Tax Amount in USD
-                                  Math.max(
-                                    0,
-                                    parseFloat(
-                                      taxRateData[tableId]
-                                        ?.afterDiscountValue || 0
-                                    ) - parseFloat(item.amount || 0)
-                                  ).toFixed(2)
-                                }
+                                value={(Math.max(0, (parseFloat(taxRateData[tableId]?.afterDiscountValue || 0) - parseFloat(item.amount || 0)))).toFixed(2)}
                                 readOnly
                                 disabled={true}
                                 placeholder="Auto calculated"

@@ -522,7 +522,8 @@ const RopoImportEdit = () => {
         .then((response) => {
           console.log("Delivery schedules response:", response.data);
           setDeliverySchedules(response.data.material_delivery_schedules || []);
-          setMaterialTermConditions(response.data.material_term_conditions || []);
+          // Also fetch Material Specific Term & Conditions from dedicated API
+          fetchMaterialSpecificConditions(morInventoryIds);
         })
         .catch((error) => {
           console.error("Error fetching delivery schedules:", error);
@@ -531,6 +532,24 @@ const RopoImportEdit = () => {
         });
     }
   }, [submittedMaterials, token, baseURL]);
+
+  // Fetch Material Specific Term & Conditions by MOR Inventory IDs
+  const fetchMaterialSpecificConditions = async (morInventoryIdsCsv) => {
+    try {
+      if (!morInventoryIdsCsv) {
+        setMaterialTermConditions([]);
+        return;
+      }
+      const url = `${baseURL}po_mor_inventories/material_term_conditions.json?po_mor_inventory_ids=${morInventoryIdsCsv}&token=${token}`;
+      console.log("Fetching material term conditions from:", url);
+      const response = await axios.get(url);
+      const conditions = response.data?.material_term_conditions || [];
+      setMaterialTermConditions(conditions);
+    } catch (error) {
+      console.error("Error fetching material term conditions:", error);
+      setMaterialTermConditions([]);
+    }
+  };
 
   // Fetch delivery schedules when submitted materials change
   useEffect(() => {
@@ -2541,39 +2560,17 @@ const RopoImportEdit = () => {
     fetchTermsConditions();
   }, []);
 
-  // Fetch material term conditions when submitted materials change
+  // Fetch material term conditions when submitted materials change (dedicated API)
   useEffect(() => {
-    const fetchMaterialTermConditions = async () => {
-      try {
-        // Get material IDs from submitted materials
-        console.log(
-          "submittedMaterials for term conditions:",
-          submittedMaterials
-        );
-        const materialIds = submittedMaterials
-          .map((material) => material.id)
+    const morInventoryIds = submittedMaterials
+      .map((material) => material.mor_inventory_id)
+      .filter(Boolean)
           .join(",");
-
-        if (materialIds) {
-          // Use the new delivery schedules API which also returns material_term_conditions
-          const response = await axios.get(
-            `${baseURL}purchase_orders/material_delivery_schedules.json?token=${token}&mor_inventory_ids=${materialIds}&type=import`
-          );
-          console.log("Material term conditions response:", response.data);
-          // Extract material_term_conditions from the response
-          setMaterialTermConditions(
-            response.data.material_term_conditions || []
-          );
+    if (morInventoryIds) {
+      fetchMaterialSpecificConditions(morInventoryIds);
         } else {
           setMaterialTermConditions([]);
         }
-      } catch (error) {
-        console.error("Error fetching material term conditions:", error);
-        setMaterialTermConditions([]);
-      }
-    };
-
-    fetchMaterialTermConditions();
   }, [submittedMaterials]);
 
   // Fetch charges data when submitted materials change and we're on terms tab
@@ -3918,10 +3915,10 @@ const RopoImportEdit = () => {
             : null,
           payment_terms: termsFormData.paymentTerms || null,
           payment_remarks: termsFormData.paymentRemarks || null,
-          supplier_advance: null,
-          survice_certificate_advance: null,
-          total_value: null,
-          total_discount: null,
+          supplier_advance: parseFloat(calculateSupplierAdvanceAmount() || 0),
+          survice_certificate_advance: parseFloat(calculateServiceCertificateAdvanceAmount() || 0),
+          total_discount: parseFloat(calculateTotalDiscountAmount() || 0),
+          total_value: parseFloat(totalMaterialCost || 0),
           po_date: getLocalDateTime().split("T")[0], // Current date
           company_id: selectedCompany?.value,
           po_type: "import",
@@ -4838,18 +4835,18 @@ const RopoImportEdit = () => {
                                 <tbody>
                                   {submittedMaterials.length > 0 ? (
                                     submittedMaterials.map((material, index) => {
-                                      const calculatedValues = materialCalculatedValues[material.id] || {};
+                                        const calculatedValues = materialCalculatedValues[material.id] || {};
                                       const rateRow = taxRateData[index] || {};
                                       const totalCharges = (
                                         (parseFloat(calculatedValues.otherAddition) || 0) -
                                         (parseFloat(calculatedValues.otherDeductions) || 0)
                                       ).toFixed(2);
-                                      return (
-                                        <tr key={material.id}>
-                                          <td>{index + 1}</td>
-                                          <td>{material.material_name || material.material?.material_name || ""}</td>
-                                          <td>{material.uom_name}</td>
-                                          <td>{material.order_qty || ""}</td>
+                                        return (
+                                          <tr key={material.id}>
+                                            <td>{index + 1}</td>
+                                            <td>{material.material_name || material.material?.material_name || ""}</td>
+                                            <td>{material.uom_name}</td>
+                                            <td>{material.order_qty || ""}</td>
                                           <td>{material.adjusted_qty ?? ""}</td>
                                           <td>{material.tolerance_qty ?? ""}</td>
                                           <td>
@@ -4913,15 +4910,15 @@ const RopoImportEdit = () => {
                                               return isNaN(inr) ? "0.00" : inr.toFixed(2);
                                             })()})
                                           </td>
-                                          <td
-                                            className="text-decoration-underline"
-                                            style={{ cursor: "pointer" }}
+                                            <td
+                                              className="text-decoration-underline"
+                                              style={{ cursor: "pointer" }}
                                             onClick={() => handleOpenTaxModal(index)}
-                                          >
-                                            select
-                                          </td>
-                                        </tr>
-                                      );
+                                            >
+                                              select
+                                            </td>
+                                          </tr>
+                                        );
                                     })
                                   ) : (
                                     <tr>
