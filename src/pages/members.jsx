@@ -16,7 +16,7 @@ function Members() {
             style={{ marginBottom: "200px" }}
           >
             <div className="m-3">
-               <h1>Material QC</h1>
+              <h1>Material QC</h1>
               <ul>
                 <li>
                   <Link to="/material-qc-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"> Material QC List</Link>
@@ -24,7 +24,7 @@ function Members() {
                 <li>
                   <Link to="/material-qc-create"> Material QC Create</Link>
                 </li>
-                 <li>
+                <li>
                   <Link to="/material-qc-details"> Material QC Details</Link>
                 </li>
               </ul>
@@ -40,7 +40,7 @@ function Members() {
 
               <h1>ROPO</h1>
               <ul>
-                 <li>
+                <li>
                   <Link to="/ropo-import-details/:id">
                     {" "}
                     ROPO Import Detail
@@ -52,7 +52,7 @@ function Members() {
                     ROPO Import Create
                   </Link>
                 </li>
-                 <li>
+                <li>
                   <Link to="/ropo-import-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
                     {" "}
                     ROPO Import List
@@ -95,12 +95,12 @@ function Members() {
                   </Link>
 
                 </li>
-                 <li>
+                <li>
                   <Link to="/ropo-mapping-detail/:id?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
                     {" "}
                     ROPO Mapping Detail
                   </Link>
-                  
+
                 </li>
                 {/* <li>
                   <Link to="/gate-pass-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
@@ -426,7 +426,7 @@ function Members() {
                     Estimation creation List Page
                   </Link>
                 </li>
-                  <li>
+                <li>
                   <Link to="/estimation-creation-details">Estimation creation Details</Link>
                 </li>
                 <li>
@@ -456,6 +456,12 @@ function Members() {
                   </Link>
                 </li>
                 <li>
+                  <Link to="/estimation-comparision-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Estimation comparision list
+                  </Link>
+                </li>
+
+                <li>
                   <Link to="/estimation-approvol-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
                     Estimation approval list
                   </Link>
@@ -466,7 +472,7 @@ function Members() {
                   </Link>
                 </li>
                 ____________________
- <li>
+                <li>
                   <Link to="/estimation-creation-test">Estimation creation test new</Link>
                 </li>
                 <li>

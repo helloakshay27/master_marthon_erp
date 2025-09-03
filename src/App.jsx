@@ -142,6 +142,7 @@ import RopoImportList from "./pages/ropo-import-list";
 import MaterialQCList from "./pages/material-qc-list";
 import MaterialQCCreate from "./pages/material-qc-create";
 import MaterialQCDetails from "./pages/material-qc-details";
+import EstimationComparisionList from "./pages/estimation-comparision-list";
 
 function App() {
   return (
@@ -283,6 +284,14 @@ function App() {
             element={<BOQDetailsPageMaster />}
           />
           {/* estimation */}
+          <Route
+              path="/estimation-comparision/:id"
+              element={<EstimationComparision />}
+            />
+            <Route
+              path="/estimation-comparision-list"
+              element={<EstimationComparisionList />}
+            />
           <Route path="/estimation-list" element={<EstimationList />} />
           <Route
             path="/estimation-creation-list"
@@ -387,10 +396,7 @@ function App() {
               element={<EstimationDetailsWings />}
             />
 
-            <Route
-              path="/estimation-comparision"
-              element={<EstimationComparision />}
-            />
+            
             <Route
               path="/estimation-approval-details"
               element={<EstimationApprovalDetails />}
