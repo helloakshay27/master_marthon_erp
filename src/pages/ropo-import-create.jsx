@@ -4913,7 +4913,7 @@ const RopoImportCreate = () => {
                                   )}
                                 </tbody>
                               </table>
-                            </div> 
+                            </div>
                             <div className=" ">
                               <h5 className=" mt-3">
                                 Tax &amp; Charges Summary

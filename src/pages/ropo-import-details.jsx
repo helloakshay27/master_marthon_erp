@@ -92,8 +92,8 @@ const RopoImportDetails = () => {
   const safeConvertUsdToInr = useCallback((usdValue, conversionRate) => {
     const usd = parseFloat(usdValue);
     const rate = parseFloat(conversionRate);
-    if (!isFinite(usd) || !isFinite(rate)) return "";
-    return (usd * rate).toFixed(2);
+    if (!isFinite(usd) || !isFinite(rate)) return 0;
+    return parseFloat((usd * rate).toFixed(2));
   }, []);
 
   // Convert INR → USD using current PO conversion rate
@@ -266,7 +266,7 @@ const RopoImportDetails = () => {
     if (Array.isArray(data.mor_inventory_tax_details)) {
       const exclusive = data.mor_inventory_tax_details.filter((row) => {
         if (!row) return false;
-        return row.resource_type === "TaxCharge" && Boolean(row.addition) && !Boolean(row.inclusive);
+        return row.resource_type === "TaxCharge" && Boolean(row.addition);
       });
       setExclusiveCharges(exclusive);
     } else {
@@ -402,12 +402,39 @@ const RopoImportDetails = () => {
 
     const baseCost = parseFloat(item?.amount) || 0;
 
-    // Load previously saved tax data if it exists
-    const savedTaxes = item?.taxes || {
-      additionTaxes: [],
-      deductionTaxes: [],
-      netCost: baseCost.toFixed(2),
-    };
+    // Load taxes from API response if available
+    let savedTaxes;
+    if (item?.taxes?.additionTaxes || item?.taxes?.deductionTaxes) {
+      // Convert API taxes to modal format
+      const additionTaxes = (item.taxes?.additionTaxes || []).map((tax) => ({
+        id: tax.id,
+        taxType: tax.taxType?.toString() || "",
+        taxPercentage: tax.taxPercentage || "",
+        inclusive: tax.inclusive || false,
+        amount: tax.amount?.toString() || "",
+      }));
+      
+      const deductionTaxes = (item.taxes?.deductionTaxes || []).map((tax) => ({
+        id: tax.id,
+        taxType: tax.taxType?.toString() || "",
+        taxPercentage: tax.taxPercentage || "",
+        inclusive: tax.inclusive || false,
+        amount: tax.amount?.toString() || "",
+      }));
+
+      savedTaxes = {
+        additionTaxes: additionTaxes,
+        deductionTaxes: deductionTaxes,
+        netCost: item.taxes?.netCost || baseCost.toFixed(2),
+      };
+    } else {
+      // Load previously saved tax data if it exists
+      savedTaxes = item?.taxes || {
+        additionTaxes: [],
+        deductionTaxes: [],
+        netCost: baseCost.toFixed(2),
+      };
+    }
 
     setChargeTaxes({
       additionTaxes: savedTaxes.additionTaxes || [],
@@ -481,6 +508,7 @@ const RopoImportDetails = () => {
                   taxType: tax.resource_type,
                   taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
                   percentageId: tax.percentage_id || null,
+                  percentage: tax.percentage || null,
                   inclusive: tax.inclusive,
                   amount: tax.amount?.toString() || "0",
                 };
@@ -502,6 +530,7 @@ const RopoImportDetails = () => {
                   taxType: tax.resource_type,
                   taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
                   percentageId: tax.percentage_id || null,
+                  percentage: tax.percentage || null,
                   inclusive: tax.inclusive,
                   amount: tax.amount?.toString() || "0",
                 };
@@ -585,7 +614,6 @@ const RopoImportDetails = () => {
             material: material?.material || "Sample Material",
             hsnCode: "",
             ratePerNos: "",
-            totalPoQty: "",
             discount: "",
             materialCost: "",
             discountRate: "",
@@ -640,6 +668,78 @@ const RopoImportDetails = () => {
       }
     );
     return taxCategory ? taxCategory.percentages || [] : [];
+  };
+
+  // Tax modal functions
+  const addTaxRow = (type) => {
+    const newTax = {
+      id: Date.now(),
+      taxType: "",
+      taxPercentage: "",
+      inclusive: false,
+      amount: "",
+    };
+
+    if (type === "addition") {
+      setChargeTaxes((prev) => ({
+        ...prev,
+        additionTaxes: [...prev.additionTaxes, newTax],
+      }));
+    } else {
+      setChargeTaxes((prev) => ({
+        ...prev,
+        deductionTaxes: [...prev.deductionTaxes, newTax],
+      }));
+    }
+  };
+
+  const removeTaxRow = (type, taxId) => {
+    if (type === "addition") {
+      setChargeTaxes((prev) => ({
+        ...prev,
+        additionTaxes: prev.additionTaxes.filter((tax) => tax.id !== taxId),
+      }));
+    } else {
+      setChargeTaxes((prev) => ({
+        ...prev,
+        deductionTaxes: prev.deductionTaxes.filter((tax) => tax.id !== taxId),
+      }));
+    }
+  };
+
+  const handleTaxChange = (type, taxId, field, value) => {
+    if (type === "addition") {
+      setChargeTaxes((prev) => {
+        const updatedAdditionTaxes = prev.additionTaxes.map((tax) => {
+          if (tax.id === taxId) {
+            return { ...tax, [field]: value };
+          }
+          return tax;
+        });
+        return {
+          ...prev,
+          additionTaxes: updatedAdditionTaxes,
+        };
+      });
+    } else {
+      setChargeTaxes((prev) => {
+        const updatedDeductionTaxes = prev.deductionTaxes.map((tax) => {
+          if (tax.id === taxId) {
+            return { ...tax, [field]: value };
+          }
+          return tax;
+        });
+        return {
+          ...prev,
+          deductionTaxes: updatedDeductionTaxes,
+        };
+      });
+    }
+  };
+
+  const handleSaveTaxes = () => {
+    // For details page, we just close the modal since we can't edit
+    handleCloseTaxesModal();
   };
 
   // Handle status submission
@@ -1180,21 +1280,23 @@ const RopoImportDetails = () => {
                             <table className="w-100">
                               <thead>
                                 <tr>
-                                  <th>Sr. No</th>
-                                  <th>Material Description</th>
-                                  <th>UOM</th>
-                                  <th>PO Qty</th>
-                                  <th>Material Rate</th>
-                                  <th>Material Cost</th>
-                                  <th>Discount(%)</th>
-                                  <th>Discount Rate</th>
-                                  <th>After Discount Value</th>
-                                  <th>Tax Addition</th>
-                                  <th>Tax Deduction</th>
-                                  <th>Total Charges</th>
-                                  <th>Total Base Cost</th>
-                                  <th>All Incl. Cost</th>
-                                  <th>Select Tax</th>
+                                <th>Sr. No</th>
+                                    <th style={{ minWidth: "220px" }}>Material</th>
+                                    <th>UOM</th>
+                                    <th>PO Qty</th>
+                                    <th>Adjusted Qty</th>
+                                    <th>Tolerance Qty</th>
+                                    <th style={{ minWidth: "160px" }}>Material Rate</th>
+                                    <th style={{ minWidth: "160px" }}>Material Cost</th>
+                                    <th>Discount(%)</th>
+                                    <th style={{ minWidth: "160px" }}>Discount Rate</th>
+                                    <th style={{ minWidth: "180px" }}>After Discount Value</th>
+                                    <th style={{ minWidth: "160px" }}>Tax Addition</th>
+                                    <th style={{ minWidth: "160px" }}>Tax Deduction</th>
+                                    <th style={{ minWidth: "160px" }}>Total Charges</th>
+                                    <th style={{ minWidth: "160px" }}>Total Base Cost</th>
+                                    <th style={{ minWidth: "160px" }}>All Incl. Cost</th>
+                                    <th style={{ minWidth: "120px" }}>Select Tax</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -1205,6 +1307,8 @@ const RopoImportDetails = () => {
                                       <td>{item.material || "-"}</td>
                                       <td>{item.uom || "-"}</td>
                                       <td>{item.po_qty || "-"}</td>
+                                      <td>{item.adjusted_qty || "-"}</td>
+                                      <td>{item.tolerance_qty || "-"}</td>
                                       <td>{formatUsdInInr(item.material_rate, item.material_rate_in_inr)}</td>
                                       <td>{formatUsdInInr(item.material_cost, item.material_cost_in_inr)}</td>
                                       <td>{item.discount_percentage || "-"}</td>
@@ -1226,7 +1330,7 @@ const RopoImportDetails = () => {
                                   ))
                                 ) : (
                                   <tr>
-                                    <td colSpan="15" className="text-center">
+                                    <td colSpan="17" className="text-center">
                                       No rate and taxes data available
                                     </td>
                                   </tr>
@@ -1311,18 +1415,38 @@ const RopoImportDetails = () => {
                                 <tr>
                                   <th colSpan={6}>Charges (Exclusive)</th>
                                 </tr>
+
+                                <tr>
+                                  <th>Charge Name</th>
+                                  <th>Amount (INR)</th>
+                                  <th>Amount ({ropoData?.po_currency || "USD"})</th>
+                                  <th>Service Certificate</th>
+                                  <th>Service Provider</th>
+                                  <th>Remarks</th>
+                                </tr>
                               </thead>
                               <tbody>
                                 {exclusiveCharges && exclusiveCharges.length > 0 ? (
                                   exclusiveCharges.map((row) => (
                                     <tr key={row.id}>
                                       <td>{row.resource_name || "-"}</td>
-                                      <td colSpan={1}>INR {parseFloat(row.amount_in_inr || 0).toFixed(2)}</td>
-                                      <td colSpan={1}>{(ropoData?.po_currency || "USD").toUpperCase()} {parseFloat(row.amount || 0).toFixed(2)}</td>
                                       <td>
-                                        <input type="checkbox" checked={Boolean(row.inclusive)} disabled />
+                                        INR {parseFloat(row.amount_in_inr || 0).toFixed(2)}
                                       </td>
-                                      <td colSpan={2}>
+                                      <td>
+                                        {(ropoData?.po_currency || "USD").toUpperCase()} {parseFloat(row.amount || 0).toFixed(2)}
+                                      </td>
+                                      <td>
+                                        <input 
+                                          type="checkbox" 
+                                          checked={Boolean(row.inclusive)} 
+                                          disabled 
+                                        />
+                                      </td>
+                                      <td>
+                                        {row.supplier_name || "-"}
+                                      </td>
+                                      <td>
                                         <textarea
                                           className="form-control"
                                           rows={2}
@@ -1351,9 +1475,9 @@ const RopoImportDetails = () => {
                                <table className="w-100">
                                  <thead>
                                    <tr>
-                                     <th>Charges And Taxes</th>
+                                     <th>Charge Name</th>
                                      <th>Amount</th>
-                                     <th>Scope</th>
+                                     <th>Realised Amount</th>
                                      <th>Taxes</th>
                                    </tr>
                                  </thead>
@@ -1362,18 +1486,13 @@ const RopoImportDetails = () => {
                                      charges.map((charge) => (
                                        <tr key={charge.id}>
                                          <td>
-                                           <select
-                                             className="form-control form-select mySelect"
-                                             value={charge.charge_name}
+                                           <input
+                                             type="text"
+                                             className="form-control"
+                                             value={chargeNames.find(cn => cn.id === charge.charge_id)?.name || charge.charge_name || ""}
                                              disabled={true}
-                                           >
-                                             <option value="">Select Charge</option>
-                                             {chargeNames.map((chargeName) => (
-                                               <option key={chargeName.id} value={chargeName.name}>
-                                                 {chargeName.name}
-                                               </option>
-                                             ))}
-                                           </select>
+                                             readOnly
+                                           />
                                          </td>
                                          <td>
                                            <input
@@ -1385,15 +1504,13 @@ const RopoImportDetails = () => {
                                            />
                                          </td>
                                          <td>
-                                           <select
-                                             className="form-control form-select mySelect"
-                                             value={charge.scope || ""}
-                                             disabled={true}
-                                           >
-                                             <option value="">Select Scope</option>
-                                             <option value="By Vendor">By Vendor</option>
-                                             <option value="By Marathon">By Marathon</option>
-                                           </select>
+                                           <input
+                                             type="number"
+                                             className="form-control forname-control decimal-input"
+                                             value={charge.realised_amount}
+                                             disabled
+                                             placeholder="Auto-calculated"
+                                           />
                                          </td>
                                          <td>
                                            <button
@@ -1435,8 +1552,8 @@ const RopoImportDetails = () => {
                                     Details
                                   </th>
                                   <th>Cost</th>
-                                     <th>Scope</th>
-                                     <th>Taxes</th>
+                                  <th>Scope</th>
+                                  <th>Taxes</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -1444,16 +1561,13 @@ const RopoImportDetails = () => {
                                      otherCosts.map((cost) => (
                                        <tr key={cost.id}>
                                          <td>
-                                           <select
-                                             className="form-control form-select mySelect"
-                                             value={cost.cost_name}
+                                           <input
+                                             type="text"
+                                             className="form-control"
+                                             value={cost.cost_name || ""}
                                              disabled={true}
-                                           >
-                                             <option value="">Select Type</option>
-                                             <option value="Transportation">Transportation</option>
-                                             <option value="Loading">Loading</option>
-                                             <option value="Unloading">Unloading</option>
-                                           </select>
+                                             readOnly
+                                           />
                                          </td>
                                          <td>
                                            <input
@@ -1489,14 +1603,14 @@ const RopoImportDetails = () => {
                                              Add Taxes and Charges
                                            </button>
                                          </td>
-                                </tr>
+                                       </tr>
                                      ))
                                    ) : (
-                                <tr>
+                                     <tr>
                                        <td colSpan={4} className="text-center">
                                          No other costs available
                                        </td>
-                                </tr>
+                                     </tr>
                                    )}
                               </tbody>
                             </table>
@@ -1580,7 +1694,7 @@ const RopoImportDetails = () => {
                                 </div>
                                 <div className="col-6">
                                   <label className="text">
-                                    <span className="me-3">:-</span>Material
+                                    <span className="me-3">:-</span>{ropoData?.total_value || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -1590,8 +1704,7 @@ const RopoImportDetails = () => {
                                 </div>
                                 <div className="col-6">
                                   <label className="text">
-                                    <span className="me-3">:-</span>Sanvo
-                                    Resorts Pvt. Ltd.-II
+                                    <span className="me-3">:-</span>{ropoData?.terms_and_conditions?.supplier_advance || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -1601,8 +1714,7 @@ const RopoImportDetails = () => {
                                 </div>
                                 <div className="col-6">
                                   <label className="text">
-                                    <span className="me-3">:-</span>Nexzone -
-                                    Phase II
+                                    <span className="me-3">:-</span>{ropoData?.total_discount || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -1612,7 +1724,7 @@ const RopoImportDetails = () => {
                                 </div>
                                 <div className="col-6">
                                   <label className="text">
-                                    <span className="me-3">:-</span>82423
+                                    <span className="me-3">:-</span>{ropoData?.terms_and_conditions?.supplier_advance_amount || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -1624,7 +1736,7 @@ const RopoImportDetails = () => {
                                 </div>
                                 <div className="col-6">
                                   <label className="text">
-                                    <span className="me-3">:-</span>82423
+                                    <span className="me-3">:-</span>{ropoData?.terms_and_conditions?.survice_certificate_advance || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -1636,7 +1748,7 @@ const RopoImportDetails = () => {
                                 </div>
                                 <div className="col-6">
                                   <label className="text">
-                                    <span className="me-3">:-</span>82423
+                                    <span className="me-3">:-</span>{ropoData?.terms_and_conditions?.service_certificate_advance_amount || "-"}
                                   </label>
                                 </div>
                               </div>
@@ -1696,6 +1808,49 @@ const RopoImportDetails = () => {
                               </tbody>
                             </table>
                           </div> */}
+                          <div className="mt-3 d-flex justify-content-between align-items-center">
+                            <h5 className=" mt-3">Delivery Schedule</h5>
+                          </div>
+                          <div className="tbl-container me-2 mt-2">
+                            <table className="w-100">
+                              <thead>
+                                <tr>
+                                  <th>MOR No.</th>
+                                  <th>Material</th>
+                                  <th>MOR Delivery Schedule</th>
+                                  <th>PO Delivery Date</th>
+                                  <th>Sch. Delivery Qty</th>
+                                  <th>PO Delivery Qty</th>
+                                  <th>Delivery Address</th>
+                                  <th>Store Name</th>
+                                  <th>Remarks</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {ropoData?.delivery_schedules && ropoData.delivery_schedules.length > 0 ? (
+                                  ropoData.delivery_schedules.map((schedule, index) => (
+                                    <tr key={schedule.id || index}>
+                                      <td>{schedule.mor_number || "-"}</td>
+                                      <td>{schedule.material || "-"}</td>
+                                      <td>{schedule.mor_delivery_schedule || "-"}</td>
+                                      <td>{schedule.po_delivery_date || "-"}</td>
+                                      <td>{schedule.sch_delivery_qty || "-"}</td>
+                                      <td>{schedule.po_delivery_qty || "-"}</td>
+                                      <td>{schedule.delivery_address || "-"}</td>
+                                      <td>{schedule.store_name || "-"}</td>
+                                      <td>{schedule.remarks || "-"}</td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan={9} className="text-center">
+                                      No delivery schedules available.
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
                           <div className="mt-3 ">
                             <h5 className=" ">General Term &amp; Conditions</h5>
                           </div>
@@ -1708,10 +1863,18 @@ const RopoImportDetails = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr>
-                                  <td />
-                                  <td />
-                                </tr>
+                                {ropoData?.resource_term_conditions && ropoData.resource_term_conditions.length > 0 ? (
+                                  ropoData.resource_term_conditions.map((term, index) => (
+                                    <tr key={term.id || index}>
+                                      <td>{term.condition_category || "-"}</td>
+                                      <td>{term.condition || "-"}</td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan={2} className="text-center">No general terms and conditions available</td>
+                                  </tr>
+                                )}
                               </tbody>
                             </table>
                           </div>
@@ -1730,11 +1893,19 @@ const RopoImportDetails = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr>
-                                  <td />
-                                  <td />
-                                  <td />
-                                </tr>
+                                {ropoData?.resource_material_term_conditions && ropoData.resource_material_term_conditions.length > 0 ? (
+                                  ropoData.resource_material_term_conditions.map((term, index) => (
+                                    <tr key={term.id || index}>
+                                      <td>{term.material_sub_type || "-"}</td>
+                                      <td>{term.condition_category || "-"}</td>
+                                      <td>{term.condition || "-"}</td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan={3} className="text-center">No material specific terms and conditions available</td>
+                                  </tr>
+                                )}
                               </tbody>
                             </table>
                           </div>
@@ -3621,11 +3792,11 @@ const RopoImportDetails = () => {
                              />
                            </td>
 
-                           <td>
-                                <input
+                                                                                 <td>
+                             <input
                                type="text"
-                                  className="form-control"
-                                  value={item?.taxChargePerUom || ""}
+                               className="form-control"
+                               value={safeConvertUsdToInr(item.amount || 0, ropoData?.conversion_rate)}
                                readOnly
                                disabled={true}
                              />
@@ -3634,7 +3805,7 @@ const RopoImportDetails = () => {
                                 <input
                                type="text"
                                   className="form-control"
-                                  value={convertInrToUsd(item?.taxChargePerUom)}
+                                  value={parseFloat(item.amount || 0).toFixed(2)}
                                   readOnly
                                   disabled={true}
                                 />
@@ -3730,13 +3901,19 @@ const RopoImportDetails = () => {
                              <input
                                type="text"
                                className="form-control"
-                                value={item?.taxChargePerUom || ""}
+                                value={safeConvertUsdToInr(item.amount || 0, ropoData?.conversion_rate).toFixed(2)}
                                readOnly
                                disabled={true}
                              />
                            </td>
                            <td>
-                              <span></span>
+                              <input
+                               type="text"
+                               className="form-control"
+                                value={parseFloat(item.amount || 0).toFixed(2)}
+                                readOnly
+                                disabled={true}
+                              />
                             </td>
                             <td className="text-center">
                              <input
@@ -3853,6 +4030,198 @@ const RopoImportDetails = () => {
             Save Changes
           </button> */}
         
+         </Modal.Footer>
+       </Modal>
+
+       {/* Taxes Modal */}
+       <Modal
+         show={showTaxesModal}
+         onHide={handleCloseTaxesModal}
+         size="lg"
+         centered
+       >
+         <Modal.Header closeButton>
+           <Modal.Title>Add Taxes and Charges</Modal.Title>
+         </Modal.Header>
+
+         <Modal.Body>
+           <div className="table-responsive">
+             <table className="table table-bordered">
+               <thead className="tax-table-header">
+                 <tr>
+                   <th>Tax / Charge Type</th>
+                   <th>Tax / Charges per UOM (INR)</th>
+                   <th>Inclusive</th>
+                   <th>Amount</th>
+                   <th>Action</th>
+                 </tr>
+               </thead>
+
+               <tbody>
+                 <tr>
+                   <td>Total Base Cost</td>
+                   <td></td>
+                   <td></td>
+                   <td>
+                     <input
+                       type="number"
+                       className="form-control base_cost"
+                       value={chargeTaxes.baseCost}
+                       readOnly
+                       disabled
+                     />
+                   </td>
+                   <td></td>
+                 </tr>
+
+                 {/* Addition Tax & Charges Section */}
+                 <tr className="addition-anchor">
+                   <td>Addition Tax & Charges</td>
+                   <td></td>
+                   <td></td>
+                   <td></td>
+                   <td className="text-center">
+                     <span>-</span>
+                   </td>
+                 </tr>
+
+                 {/* Addition Tax Rows */}
+                 {chargeTaxes.additionTaxes.map((tax) => (
+                   <tr key={tax.id}>
+                     <td>
+                       <input
+                         type="text"
+                         className="form-control"
+                         value={chargesAdditionTaxOptions.find(opt => opt.id.toString() === tax.taxType)?.name || ""}
+                         disabled={true}
+                         readOnly
+                       />
+                     </td>
+
+                     <td>
+                       <input
+                         type="text"
+                         className="form-control"
+                         value={tax.taxPercentage ? `${tax.taxPercentage}%` : ""}
+                         disabled={true}
+                         readOnly
+                       />
+                     </td>
+
+                     <td>
+                       <input
+                         type="checkbox"
+                         checked={tax.inclusive}
+                         disabled={true}
+                         readOnly
+                       />
+                     </td>
+
+                     <td>
+                       <input
+                         type="number"
+                         className="form-control"
+                         value={tax.amount}
+                         disabled={true}
+                         readOnly
+                         placeholder="Auto-calculated"
+                       />
+                     </td>
+
+                     <td className="text-center">
+                       <span>-</span>
+                     </td>
+                   </tr>
+                 ))}
+
+                 {/* Deduction Tax Section */}
+                 <tr className="deduction-anchor">
+                   <td>Deduction Tax</td>
+                   <td></td>
+                   <td></td>
+                   <td></td>
+                   <td className="text-center">
+                     <span>-</span>
+                   </td>
+                 </tr>
+
+                 {/* Deduction Tax Rows */}
+                 {chargeTaxes.deductionTaxes.map((tax) => (
+                   <tr key={tax.id}>
+                     <td>
+                       <input
+                         type="text"
+                         className="form-control"
+                         value={chargesDeductionTaxOptions.find(opt => opt.id.toString() === tax.taxType)?.name || ""}
+                         disabled={true}
+                         readOnly
+                       />
+                     </td>
+
+                     <td>
+                       <input
+                         type="text"
+                         className="form-control"
+                         value={tax.taxPercentage ? `${tax.taxPercentage}%` : ""}
+                         disabled={true}
+                         readOnly
+                       />
+                     </td>
+
+                     <td>
+                       <input
+                         type="checkbox"
+                         checked={tax.inclusive}
+                         disabled={true}
+                         readOnly
+                       />
+                     </td>
+
+                     <td>
+                       <input
+                         type="number"
+                         className="form-control"
+                         value={tax.amount}
+                         disabled={true}
+                         readOnly
+                         placeholder="Auto-calculated"
+                       />
+                     </td>
+
+                     <td className="text-center">
+                       <span>-</span>
+                     </td>
+                   </tr>
+                 ))}
+
+                 <tr>
+                   <td>Net Cost</td>
+                   <td></td>
+                   <td></td>
+                   <td className="text-center">
+                     <input
+                       type="text"
+                       className="form-control net-cost"
+                       value={chargeTaxes.netCost}
+                       readOnly
+                       disabled
+                     />
+                   </td>
+                   <td></td>
+                 </tr>
+               </tbody>
+             </table>
+           </div>
+         </Modal.Body>
+
+         <Modal.Footer className="justify-content-center">
+           <button
+             type="button"
+             className="purple-btn1"
+             onClick={handleCloseTaxesModal}
+           >
+             Close
+           </button>
          </Modal.Footer>
        </Modal>
 

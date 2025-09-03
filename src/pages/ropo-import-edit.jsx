@@ -238,6 +238,112 @@ const RopoImportEdit = () => {
 
   const [deliverySchedules, setDeliverySchedules] = useState([]);
 
+  // Delivery Schedule helpers and validators
+  const getOrderQtyForSchedule = (schedule) => {
+    try {
+      const schedMorId = schedule?.mor_inventory_id || schedule?.po_mor_inventory_id || schedule?.material_id;
+      const matched = (submittedMaterials || []).find(
+        (m) => `${m.mor_inventory_id}` === `${schedMorId}`
+      );
+      return (
+        parseFloat(matched?.order_qty) ||
+        parseFloat(matched?.required_quantity) ||
+        0
+      );
+    } catch (e) {
+      return 0;
+    }
+  };
+
+  const handleScheduleDateChange = (rowIndex, value) => {
+    setDeliverySchedules((prev) => {
+      const list = [...prev];
+      const row = { ...list[rowIndex] };
+      const expected = row?.expected_date ? new Date(row.expected_date) : null;
+      if (expected) {
+        const minDate = new Date(expected);
+        const maxDate = new Date(expected);
+        maxDate.setFullYear(maxDate.getFullYear() + 1);
+        const picked = new Date(value);
+        minDate.setHours(0, 0, 0, 0);
+        maxDate.setHours(23, 59, 59, 999);
+        picked.setHours(12, 0, 0, 0);
+        if (picked < minDate || picked > maxDate) {
+          alert(
+            `PO Delivery Date must be between ${minDate
+              .toISOString()
+              .split('T')[0]} and ${maxDate.toISOString().split('T')[0]} (within 1 year of MOR Delivery Schedule).`
+          );
+          return prev;
+        }
+      }
+      row.po_delivery_date = value;
+      list[rowIndex] = row;
+      return list;
+    });
+  };
+
+  const handleSchedulePoQtyChange = (rowIndex, value) => {
+    const entered = value === '' ? '' : parseFloat(value);
+    if (entered !== '' && (isNaN(entered) || entered < 0)) {
+      alert('PO Delivery Qty must be a non-negative number.');
+      return;
+    }
+    setDeliverySchedules((prev) => {
+      const list = [...prev];
+      const row = { ...list[rowIndex] };
+      const maxQty = getOrderQtyForSchedule(row);
+      if (entered !== '' && entered > maxQty) {
+        alert(`PO Delivery Qty cannot exceed current Order Qty (${maxQty}).`);
+        return prev;
+      }
+      row.po_delivery_qty = value;
+      list[rowIndex] = row;
+      return list;
+    });
+  };
+
+  const handleScheduleStoreNameChange = (rowIndex, value) => {
+    setDeliverySchedules((prev) => {
+      const list = [...prev];
+      const row = { ...list[rowIndex] };
+      row.store_name = value;
+      list[rowIndex] = row;
+      return list;
+    });
+  };
+
+  const handleScheduleRemarksChange = (rowIndex, value) => {
+    setDeliverySchedules((prev) => {
+      const list = [...prev];
+      const row = { ...list[rowIndex] };
+      row.remarks = value;
+      list[rowIndex] = row;
+      return list;
+    });
+  };
+
+  const getScheduleMaterialKey = (s) =>
+    `${s?.mor_inventory_id || s?.po_mor_inventory_id || s?.material_id || s?.material_formatted_name || ''}`;
+
+  const isScheduleRowVisible = (s) => {
+    try {
+      const key = getScheduleMaterialKey(s);
+      if (!key) return true;
+      const orderQty = getOrderQtyForSchedule(s) || 0;
+      const totalEntered = (deliverySchedules || [])
+        .filter((x) => getScheduleMaterialKey(x) === key)
+        .reduce((sum, x) => sum + (parseFloat(x.po_delivery_qty) || 0), 0);
+      if (orderQty <= 0) return true;
+      if (totalEntered >= orderQty) {
+        return (parseFloat(s.po_delivery_qty) || 0) > 0;
+      }
+      return true;
+    } catch (e) {
+      return true;
+    }
+  };
+
   // Taxes modal state
 
   const [showTaxesModal, setShowTaxesModal] = useState(false);
@@ -446,6 +552,11 @@ const RopoImportEdit = () => {
     setSelectedCompany(companyOption);
 
     setSelectedSupplier(supplierOption);
+
+    // Populate Delivery Schedules from API response
+    if (data.delivery_schedules) {
+      setDeliverySchedules(data.delivery_schedules);
+    }
 
     // Fetch and populate projects and sites
 
@@ -817,7 +928,15 @@ const RopoImportEdit = () => {
         .then((response) => {
           console.log("Delivery schedules response:", response.data);
 
-          setDeliverySchedules(response.data.material_delivery_schedules || []);
+          // Only set delivery schedules if we don't already have them from main API response
+          setDeliverySchedules((prev) => {
+            // If we already have delivery schedules from main API response, don't override
+            if (prev && prev.length > 0) {
+              console.log("Keeping existing delivery schedules from main API response");
+              return prev;
+            }
+            return response.data.material_delivery_schedules || [];
+          });
           // Populate Material Specific Term & Conditions from the same response
           setMaterialTermConditions(response.data.material_term_conditions || []);
         })
@@ -3686,19 +3805,10 @@ const RopoImportEdit = () => {
     fetchTermsConditions();
   }, []);
 
-  // Fetch material term conditions when submitted materials change (dedicated API)
+  // Fetch material term conditions when submitted materials change -> handled by fetchDeliverySchedules
   useEffect(() => {
-    const morInventoryIds = submittedMaterials
-      .map((material) => material.mor_inventory_id)
-      .filter(Boolean)
-          .join(",");
-
-    if (morInventoryIds) {
-      fetchMaterialSpecificConditions(morInventoryIds);
-        } else {
-          setMaterialTermConditions([]);
-        }
-  }, [submittedMaterials]);
+    fetchDeliverySchedules();
+  }, [submittedMaterials, fetchDeliverySchedules]);
 
   // Fetch charges data when submitted materials change and we're on terms tab
 
@@ -5824,6 +5934,23 @@ const RopoImportEdit = () => {
 
           attachments: attachmentsPayload || [],
 
+          // Delivery Schedules payload
+          delivery_schedules_attributes: (deliverySchedules || [])
+            .filter((s) => {
+              const qty = parseFloat(s.po_delivery_qty) || 0;
+              const hasDate = Boolean(s.po_delivery_date);
+              return qty > 0 && hasDate && isScheduleRowVisible(s);
+            })
+            .map((s) => ({
+              po_delivery_date: new Date(s.po_delivery_date).toISOString().split('T')[0],
+              order_qty: parseFloat(s.po_delivery_qty) || 0,
+              mor_inventory_schedule_id: s.mor_inventory_schedule_id || s.id || null,
+              delivery_address: s.store_address || '',
+              store_name: s.store_name || '',
+              remarks: s.remarks || '',
+              _destroy: false,
+            })),
+
           // Attachments
 
           // attachments: Array.isArray(attachments)
@@ -6751,29 +6878,23 @@ const RopoImportEdit = () => {
                               <table className="w-100">
                                 <thead>
                                   <tr>
-                                    <th>Sr. No</th>
-
-                                    <th>Material</th>
+                                  <th>Sr. No</th>
+                                    <th style={{ minWidth: "220px" }}>Material</th>
                                     <th>UOM</th>
-
                                     <th>PO Qty</th>
-
                                     <th>Adjusted Qty</th>
                                     <th>Tolerance Qty</th>
-                                    <th>Material Rate</th>
-                                    <th>Material Cost</th>
+                                    <th style={{ minWidth: "160px" }}>Material Rate</th>
+                                    <th style={{ minWidth: "160px" }}>Material Cost</th>
                                     <th>Discount(%)</th>
-                                    <th>Discount Rate</th>
-                                    <th>After Discount Value</th>
-                                    <th>Tax Addition</th>
-
-                                    <th>Tax Deduction</th>
-                                    <th>Total Charges</th>
-
-                                    <th>Total Base Cost</th>
-                                    <th>All Incl. Cost</th>
-
-                                    <th>Select Tax</th>
+                                    <th style={{ minWidth: "160px" }}>Discount Rate</th>
+                                    <th style={{ minWidth: "180px" }}>After Discount Value</th>
+                                    <th style={{ minWidth: "160px" }}>Tax Addition</th>
+                                    <th style={{ minWidth: "160px" }}>Tax Deduction</th>
+                                    <th style={{ minWidth: "160px" }}>Total Charges</th>
+                                    <th style={{ minWidth: "160px" }}>Total Base Cost</th>
+                                    <th style={{ minWidth: "160px" }}>All Incl. Cost</th>
+                                    <th style={{ minWidth: "120px" }}>Select Tax</th>
                                   </tr>
                                 </thead>
 
@@ -7107,7 +7228,6 @@ const RopoImportEdit = () => {
                                 </tbody>
                               </table>
                             </div>
-
                             {/* Tax Addition and Charges Tables */}
 
                             <div className="tbl-container me-2 mt-3">
@@ -7115,29 +7235,20 @@ const RopoImportEdit = () => {
                                 <thead>
                                   <tr>
                                     <th rowSpan={2}>Charges And Taxes</th>
-
                                     <th colSpan={2}>Amount</th>
-
                                     <th rowSpan={2}>Payable Currency</th>
-
                                     <th rowSpan={2}>Service Certificate</th>
-
                                     <th rowSpan={2}>Select Service Provider</th>
-
                                     <th rowSpan={2}>Remarks</th>
                                   </tr>
-
                                   <tr>
                                     <th>INR</th>
-
                                     <th>USD</th>
                                   </tr>
-
                                   <tr>
                                     <th colSpan={7}>Tax Addition(Exclusive)</th>
                                   </tr>
                                 </thead>
-
                                 <tbody>
                                   {loadingCharges ? (
                                     <tr>
@@ -7163,15 +7274,12 @@ const RopoImportEdit = () => {
                                         (charge) =>
                                           charge.resource_type === "TaxCategory"
                                       )
-
                                       .map((charge, index) => (
                                         <tr key={`tax-${charge.id}-${index}`}>
                                           <td>{charge.charge_name}</td>
-
                                           <td>
                                             INR {charge.amount_inr || "0.00"}
                                           </td>
-
                                           <td>
                                             {poCurrencyCode}{" "}
                                             {charge.amount || "0.00"}
@@ -7194,7 +7302,6 @@ const RopoImportEdit = () => {
                                               }
                                             />
                                           </td>
-
                                           <td>
                                             <SingleSelector
                                               options={supplierOptions}
@@ -7390,105 +7497,7 @@ const RopoImportEdit = () => {
                               </table>
                             </div>
 
-                            {/* Summary Section */}
-
-                            {!loadingCharges && chargesFromApi.length > 0 && (
-                              <div className="row mt-3">
-                                <div className="col-md-6">
-                                  <div className="card">
-                                    <div className="card-header">
-                                      <h6 className="mb-0">Charges Summary</h6>
-                                    </div>
-
-                                    <div className="card-body">
-                                      <div className="row">
-                                        <div className="col-6">
-                                          <strong>Total Tax Addition:</strong>
-                                        </div>
-
-                                        <div className="col-6">
-                                          INR{" "}
-                                          {chargesFromApi
-
-                                            .filter(
-                                              (charge) =>
-                                                charge.resource_type ===
-                                                "TaxCategory"
-                                            )
-
-                                            .reduce(
-                                              (sum, charge) =>
-                                                sum +
-                                                (parseFloat(
-                                                  charge.amount_inr
-                                                ) || 0),
-
-                                              0
-                                            )
-
-                                            .toFixed(2)}
-                                        </div>
-                                      </div>
-
-                                      <div className="row">
-                                        <div className="col-6">
-                                          <strong>Total Charges:</strong>
-                                        </div>
-
-                                        <div className="col-6">
-                                          INR{" "}
-                                          {chargesFromApi
-
-                                            .filter(
-                                              (charge) =>
-                                                charge.resource_type ===
-                                                "TaxCharge"
-                                            )
-
-                                            .reduce(
-                                              (sum, charge) =>
-                                                sum +
-                                                (parseFloat(
-                                                  charge.amount_inr
-                                                ) || 0),
-
-                                              0
-                                            )
-
-                                            .toFixed(2)}
-                                        </div>
-                                      </div>
-
-                                      <hr />
-
-                                      <div className="row">
-                                        <div className="col-6">
-                                          <strong>Grand Total:</strong>
-                                        </div>
-
-                                        <div className="col-6">
-                                          INR{" "}
-                                          {chargesFromApi
-
-                                            .reduce(
-                                              (sum, charge) =>
-                                                sum +
-                                                (parseFloat(
-                                                  charge.amount_inr
-                                                ) || 0),
-
-                                              0
-                                            )
-
-                                            .toFixed(2)}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
+                            {/* Summary Section
                             {/* Charges Section */}
 
                             <div className="mt-4">
@@ -7496,29 +7505,7 @@ const RopoImportEdit = () => {
                                 <h5 className="mt-3">Charges</h5>
 
                                 <div className="d-flex gap-2">
-                                  <button
-                                    type="button"
-                                    className="btn purple-btn2"
-                                    onClick={refreshChargesData}
-                                    title="Refresh charges data from API"
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width={16}
-                                      height={16}
-                                      fill="currentColor"
-                                      className="bi bi-arrow-clockwise"
-                                      viewBox="0 0 16 16"
-                                    >
-                                      <path
-                                        fillRule="evenodd"
-                                        d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"
-                                      />
-
-                                      <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
-                                    </svg>
-                                    Refresh
-                                  </button>
+                                
 
                                   <button
                                     type="button"
@@ -7652,7 +7639,6 @@ const RopoImportEdit = () => {
                                 </table>
                               </div>
                             </div>
-
                             <div className="mt-4">
                               <div className="d-flex justify-content-between align-items-center">
                                 <h5 className="mt-3">Other Cost</h5>
@@ -7829,7 +7815,6 @@ const RopoImportEdit = () => {
                               </div>
                             </div>
                           </div>
-
                           <div
                             className={`tab-pane fade ${
                               activeTab === "terms-conditions"
@@ -8305,7 +8290,6 @@ const RopoImportEdit = () => {
 
                              <div className="mt-3 d-flex justify-content-between align-items-center">
                             <h5 className=" mt-3">Delivery Schedule</h5>
-
                             <button className="purple-btn2"> Add</button>
                           </div>
 
@@ -8322,6 +8306,7 @@ const RopoImportEdit = () => {
                                   <th>PO Delivery Date</th>
 
                                   <th>Sch. Delivery Qty</th>
+                                  <th>PO Delivery Qty</th>
 
                                   <th>Delivery Address</th>
 
@@ -8336,51 +8321,91 @@ const RopoImportEdit = () => {
                                   deliverySchedules.length > 0 ? (
                                   deliverySchedules.map((schedule, index) => (
                                     <tr key={schedule.id || index}>
-                                      <td>{schedule.mor_number || "N/A"}</td>
-
-                                        <td>
-                                          {schedule.material_formatted_name ||
-                                            "N/A"}
-                                        </td>
-
-                                        <td>
-                                          {schedule.expected_date
-                                            ? new Date(
-                                                schedule.expected_date
-                                              ).toLocaleDateString()
-                                            : "N/A"}
-                                        </td>
-
-                                        <td>
-                                          {schedule.po_delivery_date
-                                            ? new Date(
-                                                schedule.po_delivery_date
-                                              ).toLocaleDateString()
-                                            : "N/A"}
-                                        </td>
-
-                                        <td>
-                                          {schedule.expected_quantity || 0}
-                                        </td>
-
-                                        <td>
-                                          {schedule.store_address || "N/A"}
-                                        </td>
-
-                                      <td>{schedule.store_name || "N/A"}</td>
-
+                                      <td>{schedule.mor_number || "-"}</td>
+                                      <td>{schedule.material || schedule.material_formatted_name || "-"}</td>
+                                      <td>{schedule.mor_delivery_schedule || (schedule.expected_date ? new Date(schedule.expected_date).toLocaleDateString() : "-")}</td>
+                                      <td>
+                                        {(() => {
+                                          const expectedStr = schedule.expected_date || schedule.mor_delivery_schedule
+                                            ? (() => {
+                                                const dateStr = schedule.expected_date || schedule.mor_delivery_schedule;
+                                                if (dateStr.includes('/')) {
+                                                  const [day, month, year] = dateStr.split('/');
+                                                  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                                                }
+                                                return new Date(dateStr).toISOString().split('T')[0];
+                                              })()
+                                            : '';
+                                          const maxStr = (() => {
+                                            const dateStr = schedule.expected_date || schedule.mor_delivery_schedule;
+                                            if (!dateStr) return '';
+                                            let d;
+                                            if (dateStr.includes('/')) {
+                                              const [day, month, year] = dateStr.split('/');
+                                              d = new Date(year, month - 1, day);
+                                            } else {
+                                              d = new Date(dateStr);
+                                            }
+                                            d.setFullYear(d.getFullYear() + 1);
+                                            return d.toISOString().split('T')[0];
+                                          })();
+                                          const valueStr = schedule.po_delivery_date
+                                            ? (() => {
+                                                // Handle both "06/09/2025" and "2025-09-06" formats
+                                                if (schedule.po_delivery_date.includes('/')) {
+                                                  const [day, month, year] = schedule.po_delivery_date.split('/');
+                                                  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                                                }
+                                                return new Date(schedule.po_delivery_date).toISOString().split('T')[0];
+                                              })()
+                                            : '';
+                                          return (
+                                            <input
+                                              type="date"
+                                              className="form-control"
+                                              value={valueStr}
+                                              min={expectedStr || undefined}
+                                              max={maxStr || undefined}
+                                              onChange={(e) => handleScheduleDateChange(index, e.target.value)}
+                                            />
+                                          );
+                                        })()}
+                                      </td>
+                                      <td>{schedule.sch_delivery_qty || schedule.expected_quantity || "-"}</td>
+                                      <td>
+                                        <input
+                                          type="number"
+                                          className="form-control"
+                                          value={schedule.po_delivery_qty ?? ''}
+                                          onChange={(e) => handleSchedulePoQtyChange(index, e.target.value)}
+                                          min="0"
+                                          step="0.01"
+                                        />
+                                      </td>
+                                      <td>{schedule.delivery_address || schedule.store_address || "-"}</td>
+                                      <td>
+                                        <input
+                                          type="text"
+                                          className="form-control"
+                                          value={schedule.store_name || ''}
+                                          onChange={(e) => handleScheduleStoreNameChange(index, e.target.value)}
+                                          placeholder="Enter store name"
+                                        />
+                                      </td>
                                       <td>
                                         <input
                                           type="text"
                                           className="form-control"
                                           placeholder="Add remarks"
+                                          value={schedule.remarks || ''}
+                                          onChange={(e) => handleScheduleRemarksChange(index, e.target.value)}
                                         />
                                       </td>
                                     </tr>
                                   ))
                                 ) : (
                                   <tr>
-                                    <td colSpan="8" className="text-center">
+                                    <td colSpan="9" className="text-center">
                                       No delivery schedules available.
                                     </td>
                                   </tr>
@@ -8396,25 +8421,7 @@ const RopoImportEdit = () => {
                                 General Term &amp; Conditions
                               </h5>
 
-                              {/* <button
-
-                                className="purple-btn2 me-2"
-
-                                onClick={refreshChargesData}
-
-                                title="Refresh charges data from API"
-
-                              >
-
-                                <span className="material-symbols-outlined align-text-top me-1">
-
-                                  refresh
-
-                                </span>
-
-                                Refresh Charges
-
-                              </button> */}
+                    
 
                               <button
                                 className="purple-btn2"
