@@ -14,6 +14,9 @@ import { estimationListColumns, estimationListData } from "../constant/data";
 import { auditLogColumns, auditLogData } from "../constant/data";
 import { baseURL } from "../confi/apiDomain";
 import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 
 
 
@@ -468,11 +471,150 @@ const EstimationCreationEdit = () => {
 
     const [lastMaterialDetails, setLastMaterialDetails] = useState([]);
 
+    // const handleCreateRows = (
+    //     subCategory3Idx = modalSubCategory3Idx,
+    //     subCategory4Idx = modalSubCategory4Idx,
+    //     subCategory5Idx = modalSubCategory5Idx
+    // ) => {
+    //     setSubProjectDetails(prev => {
+    //         const updated = { ...prev };
+    //         let targetArr;
+    //         let levelIds = {
+    //             level_one_id: null,
+    //             level_two_id: null,
+    //             level_three_id: null,
+    //             level_four_id: null,
+    //             level_five_id: null,
+    //         };
+
+    //         // 🛠 Level ID mapping
+    //         if (
+    //             modalSubCategoryIdx === null &&
+    //             subCategory3Idx === null &&
+    //             subCategory4Idx === null &&
+    //             subCategory5Idx === null
+    //         ) {
+    //             const category = updated.categories[modalCategoryIdx];
+    //             targetArr = category.material_type_details;
+    //             levelIds.level_one_id = category.id;
+    //         } else if (
+    //             modalSubCategoryIdx !== null &&
+    //             subCategory3Idx === null &&
+    //             subCategory4Idx === null &&
+    //             subCategory5Idx === null
+    //         ) {
+    //             const subCat2 = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx];
+    //             targetArr = subCat2.material_type_details;
+    //             levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
+    //             levelIds.level_two_id = subCat2.id;
+    //         } else if (
+    //             modalSubCategoryIdx !== null &&
+    //             subCategory3Idx !== null &&
+    //             subCategory4Idx === null &&
+    //             subCategory5Idx === null
+    //         ) {
+    //             const subCat3 = updated.categories[modalCategoryIdx]
+    //                 .sub_categories_2[modalSubCategoryIdx]
+    //                 .sub_categories_3[subCategory3Idx];
+    //             targetArr = subCat3.material_type_details;
+    //             levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
+    //             levelIds.level_two_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].id;
+    //             levelIds.level_three_id = subCat3.id;
+    //         } else if (
+    //             modalSubCategoryIdx !== null &&
+    //             subCategory3Idx !== null &&
+    //             subCategory4Idx !== null &&
+    //             subCategory5Idx === null
+    //         ) {
+    //             const subCat4 = updated.categories[modalCategoryIdx]
+    //                 .sub_categories_2[modalSubCategoryIdx]
+    //                 .sub_categories_3[subCategory3Idx]
+    //                 .sub_categories_4[subCategory4Idx];
+    //             targetArr = subCat4.material_type_details;
+    //             levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
+    //             levelIds.level_two_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].id;
+    //             levelIds.level_three_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].id;
+    //             levelIds.level_four_id = subCat4.id;
+    //         } else if (
+    //             modalSubCategoryIdx !== null &&
+    //             subCategory3Idx !== null &&
+    //             subCategory4Idx !== null &&
+    //             subCategory5Idx !== null
+    //         ) {
+    //             const subCat5 = updated.categories[modalCategoryIdx]
+    //                 .sub_categories_2[modalSubCategoryIdx]
+    //                 .sub_categories_3[subCategory3Idx]
+    //                 .sub_categories_4[subCategory4Idx]
+    //                 .sub_categories_5[subCategory5Idx];
+    //             targetArr = subCat5.material_type_details;
+    //             levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
+    //             levelIds.level_two_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].id;
+    //             levelIds.level_three_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].id;
+    //             levelIds.level_four_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].id;
+    //             levelIds.level_five_id = subCat5.id;
+    //         }
+
+    //         if (!targetArr) return prev;
+
+    //         // Loop through all modalRows
+    //         modalRows.forEach(row => {
+    //             // Duplicate check
+    //             let isDuplicate = false;
+    //             if (row.type === "material") {
+    //                 isDuplicate = targetArr.some(item =>
+    //                     item.type === "material" &&
+    //                     item.name === row.materialTypeLabel &&
+    //                     item.specification === row.specificationLabel
+    //                 );
+    //             } else if (row.type === "labour") {
+    //                 isDuplicate = targetArr.some(item =>
+    //                     item.type === "labour" &&
+    //                     item.labourActLabel === row.labourTypeLabel
+    //                 );
+    //             } else if (row.type === "composite") {
+    //                 isDuplicate = targetArr.some(item =>
+    //                     item.type === "composite" &&
+    //                     item.compositeValue === row.compositeValue
+    //                 );
+    //             }
+
+    //             if (!isDuplicate) {
+    //                 targetArr.push({
+    //                     id: Date.now() + Math.random(),
+    //                     materilTypeId: row.materialType,
+    //                     name: row.materialTypeLabel,
+    //                     specificationId: row.specification,
+    //                     specification: row.specificationLabel,
+    //                     labourAct: row.labourType,
+    //                     labourActLabel: row.labourTypeLabel,
+    //                     compositeValue: row.compositeValue,
+    //                     type: row.type,
+    //                     location: "",
+    //                     qty: "",
+    //                     rate: row.rate,
+    //                     wastage: "",
+    //                 });
+    //             }
+    //         });
+
+    //         // ✅ Store both level IDs and targetArr in state
+    //         setLastCreatedLevelIds(levelIds);
+    //         setLastMaterialDetails([...targetArr]);
+
+    //         return updated;
+    //     });
+
+    //     setShowAddModal(false);
+    // };
+
+
     const handleCreateRows = (
         subCategory3Idx = modalSubCategory3Idx,
         subCategory4Idx = modalSubCategory4Idx,
         subCategory5Idx = modalSubCategory5Idx
     ) => {
+        let duplicateFound = false;
+        let duplicateType = "";
         setSubProjectDetails(prev => {
             const updated = { ...prev };
             let targetArr;
@@ -553,45 +695,90 @@ const EstimationCreationEdit = () => {
 
             if (!targetArr) return prev;
 
-            // Loop through all modalRows
+            // Only add non-duplicate rows with required field validation
+            console.log("modal rows here :", modalRows)
             modalRows.forEach(row => {
-                // Duplicate check
                 let isDuplicate = false;
-                if (row.type === "material") {
-                    isDuplicate = targetArr.some(item =>
-                        item.type === "material" &&
-                        item.name === row.materialTypeLabel &&
-                        item.specification === row.specificationLabel
-                    );
-                } else if (row.type === "labour") {
-                    isDuplicate = targetArr.some(item =>
-                        item.type === "labour" &&
-                        item.labourActLabel === row.labourTypeLabel
-                    );
-                } else if (row.type === "composite") {
-                    isDuplicate = targetArr.some(item =>
-                        item.type === "composite" &&
-                        item.compositeValue === row.compositeValue
-                    );
+                // Validation for required fields
+                if (row.type === "material" && !row.materialType) {
+                    toast.error("Material type is required for material.");
+                    return;
+                }
+                if (row.type === "labour" && !row.labourType) {
+                    toast.error("Labour activity is required for labour.");
+                    return;
+                }
+                if (row.type === "composite" && !row.compositeValue) {
+                    toast.error("Composite value is required for composite.");
+                    return;
                 }
 
-                if (!isDuplicate) {
-                    targetArr.push({
-                        id: Date.now() + Math.random(),
-                        materilTypeId: row.materialType,
-                        name: row.materialTypeLabel,
-                        specificationId: row.specification,
-                        specification: row.specificationLabel,
-                        labourAct: row.labourType,
-                        labourActLabel: row.labourTypeLabel,
-                        compositeValue: row.compositeValue,
-                        type: row.type,
-                        location: "",
-                        qty: "",
-                        rate: row.rate,
-                        wastage: "",
+                if (row.type === "material") {
+                    isDuplicate = targetArr.some(item => {
+                        // Compare both API-loaded and new modalRows using mapped fields
+                        const itemMaterialType = item.materialType || item.materilTypeId || "";
+                        const itemMaterialTypeLabel = item.materialTypeLabel || item.name || "";
+                        const itemSpecification = item.specification || item.specificationId || item.generic_info_id || "";
+                        const itemSpecificationLabel = item.specificationLabel || item.specification || item.generic_info || "";
+                        return (
+                            item.type === "material" &&
+                            itemMaterialTypeLabel === row.materialTypeLabel &&
+                            itemSpecificationLabel === row.specificationLabel
+                        );
                     });
+                    if (isDuplicate) {
+                        duplicateFound = true;
+                        duplicateType = "material";
+                        toast.error("Duplicate material type and specification detected! Cannot add this combination.");
+                        return; // skip adding
+                    }
+                } else if (row.type === "labour") {
+                    isDuplicate = targetArr.some(item => {
+                        const itemLabourType = item.labourType || item.labourAct || "";
+                        const itemLabourTypeLabel = item.labourTypeLabel || item.labourActLabel || "";
+                        return (
+                            item.type === "labour" &&
+                            itemLabourTypeLabel === row.labourTypeLabel
+                        );
+                    });
+                    if (isDuplicate) {
+                        duplicateFound = true;
+                        duplicateType = "labour";
+                        toast.error("Duplicate labour activity detected! Cannot add this activity.");
+                        return;
+                    }
+                } else if (row.type === "composite") {
+                    isDuplicate = targetArr.some(item => {
+                        const itemCompositeValue = item.compositeValue || item.composite_name || "";
+                        return (
+                            item.type === "composite" &&
+                            itemCompositeValue === row.compositeValue
+                        );
+                    });
+                    if (isDuplicate) {
+                        duplicateFound = true;
+                        duplicateType = "composite";
+                        toast.error("Duplicate composite name detected! Cannot add this composite.");
+                        return;
+                    }
                 }
+
+                // Only add if not duplicate and required fields are present
+                targetArr.push({
+                    id: Date.now() + Math.random(),
+                    materilTypeId: row.materialType,
+                    name: row.materialTypeLabel,
+                    specificationId: row.specification,
+                    specification: row.specificationLabel,
+                    labourAct: row.labourType,
+                    labourActLabel: row.labourTypeLabel,
+                    compositeValue: row.compositeValue,
+                    type: row.type,
+                    location: "",
+                    qty: "",
+                    rate: row.rate,
+                    wastage: "",
+                });
             });
 
             // ✅ Store both level IDs and targetArr in state
@@ -605,10 +792,12 @@ const EstimationCreationEdit = () => {
     };
 
 
+
+
     // console.log("last ids:", lastCreatedLevelIds)
     // console.log("last material details:", lastMaterialDetails)
     const [deleted, setDeleted] = useState([]); // Store deleted items as objects with type and id
-  const [removedCategoryIds, setRemovedCategoryIds] = useState([]); // For removed main categories
+    const [removedCategoryIds, setRemovedCategoryIds] = useState([]); // For removed main categories
 
     const handleRemoveMainCategoryRow = (catIdx, itemIdx) => {
         setSubProjectDetails(prev => {
@@ -712,7 +901,7 @@ const EstimationCreationEdit = () => {
         });
     };
 
-    console.log("removedMainCategoryIds:", deleted)
+    // console.log("removedMainCategoryIds:", deleted)
 
     const handleEditMainCategoryField = (catIdx, field, value) => {
         const updatedDetails = { ...subProjectDetails };
@@ -1401,12 +1590,13 @@ const EstimationCreationEdit = () => {
                 material_type_details: cat.item_details?.map(item => ({
                     ...item,
                     materialType: item.material_type_id || item.materilTypeId || "",
-                    materialTypeLabel: item.material_type || "",
-                    specification: item.generic_info_id || "",
-                    specificationLabel: item.generic_info || "",
-                    labourType: item.labour_activity || "",
-                    labourTypeLabel: item.labour_activity || "",
-                    compositeValue: item.composite_name || "",
+                    // Always set materialTypeLabel and specificationLabel for duplicate validation
+                    materialTypeLabel: item.material_type || item.name || "",
+                    specification: item.generic_info_id || item.specificationId || "",
+                    specificationLabel: item.generic_info || item.specification || "",
+                    labourType: item.labour_activity || item.labourAct || "",
+                    labourTypeLabel: item.labour_activity || item.labourActLabel || "",
+                    compositeValue: item.composite_name || item.compositeValue || "",
                     rate: item.rate || "",
                     type: item.type || "material",
                     qty: item.excl_wastage_qty || "",
@@ -1436,12 +1626,19 @@ const EstimationCreationEdit = () => {
                     material_type_details: sub.item_details?.map(item => ({
                         ...item,
                         materialType: item.materialTypeId || item.materilTypeId || "",
-                        materialTypeLabel: item.name || "",
-                        specification: item.specificationId || "",
-                        specificationLabel: item.specification || "",
-                        labourType: item.labourAct || "",
-                        labourTypeLabel: item.labourActLabel || "",
-                        compositeValue: item.compositeValue || "",
+                        // materialTypeLabel: item.name || "",
+                        // specification: item.specificationId || "",
+                        // specificationLabel: item.specification || "",
+                        // labourType: item.labourAct || "",
+                        // labourTypeLabel: item.labourActLabel || "",
+                        // compositeValue: item.compositeValue || "",
+
+                        materialTypeLabel: item.material_type || item.name || "",
+                        specification: item.generic_info_id || item.specificationId || "",
+                        specificationLabel: item.generic_info || item.specification || "",
+                        labourType: item.labour_activity || item.labourAct || "",
+                        labourTypeLabel: item.labour_activity || item.labourActLabel || "",
+                        compositeValue: item.composite_name || item.compositeValue || "",
                         rate: item.rate || "",
                         type: item.type || "material",
                         qty: item.excl_wastage_qty || "",
@@ -1470,12 +1667,19 @@ const EstimationCreationEdit = () => {
                         material_type_details: sub3.item_details?.map(item => ({
                             ...item,
                             materialType: item.materialTypeId || item.materilTypeId || "",
-                            materialTypeLabel: item.name || "",
-                            specification: item.specificationId || "",
-                            specificationLabel: item.specification || "",
-                            labourType: item.labourAct || "",
-                            labourTypeLabel: item.labourActLabel || "",
-                            compositeValue: item.compositeValue || "",
+                            // materialTypeLabel: item.name || "",
+                            // specification: item.specificationId || "",
+                            // specificationLabel: item.specification || "",
+                            // labourType: item.labourAct || "",
+                            // labourTypeLabel: item.labourActLabel || "",
+                            // compositeValue: item.compositeValue || "",
+
+                            materialTypeLabel: item.material_type || item.name || "",
+                            specification: item.generic_info_id || item.specificationId || "",
+                            specificationLabel: item.generic_info || item.specification || "",
+                            labourType: item.labour_activity || item.labourAct || "",
+                            labourTypeLabel: item.labour_activity || item.labourActLabel || "",
+                            compositeValue: item.composite_name || item.compositeValue || "",
                             rate: item.rate || "",
                             type: item.type || "material",
                             qty: item.excl_wastage_qty || "",
@@ -1504,12 +1708,19 @@ const EstimationCreationEdit = () => {
                             material_type_details: sub4.item_details?.map(item => ({
                                 ...item,
                                 materialType: item.materialTypeId || item.materilTypeId || "",
-                                materialTypeLabel: item.name || "",
-                                specification: item.specificationId || "",
-                                specificationLabel: item.specification || "",
-                                labourType: item.labourAct || "",
-                                labourTypeLabel: item.labourActLabel || "",
-                                compositeValue: item.compositeValue || "",
+                                // materialTypeLabel: item.name || "",
+                                // specification: item.specificationId || "",
+                                // specificationLabel: item.specification || "",
+                                // labourType: item.labourAct || "",
+                                // labourTypeLabel: item.labourActLabel || "",
+                                // compositeValue: item.compositeValue || "",
+                                materialTypeLabel: item.material_type || item.name || "",
+                                specification: item.generic_info_id || item.specificationId || "",
+                                specificationLabel: item.generic_info || item.specification || "",
+                                labourType: item.labour_activity || item.labourAct || "",
+                                labourTypeLabel: item.labour_activity || item.labourActLabel || "",
+                                compositeValue: item.composite_name || item.compositeValue || "",
+
                                 rate: item.rate || "",
                                 type: item.type || "material",
                                 qty: item.excl_wastage_qty || "",
@@ -1537,12 +1748,20 @@ const EstimationCreationEdit = () => {
                                 material_type_details: sub5.item_details?.map(item => ({
                                     ...item,
                                     materialType: item.materialTypeId || item.materilTypeId || "",
-                                    materialTypeLabel: item.name || "",
-                                    specification: item.specificationId || "",
-                                    specificationLabel: item.specification || "",
-                                    labourType: item.labourAct || "",
-                                    labourTypeLabel: item.labourActLabel || "",
-                                    compositeValue: item.compositeValue || "",
+
+                                    // materialTypeLabel: item.name || "",
+                                    // specification: item.specificationId || "",
+                                    // specificationLabel: item.specification || "",
+                                    // labourType: item.labourAct || "",
+                                    // labourTypeLabel: item.labourActLabel || "",
+                                    // compositeValue: item.compositeValue || "",
+
+                                    materialTypeLabel: item.material_type || item.name || "",
+                                    specification: item.generic_info_id || item.specificationId || "",
+                                    specificationLabel: item.generic_info || item.specification || "",
+                                    labourType: item.labour_activity || item.labourAct || "",
+                                    labourTypeLabel: item.labour_activity || item.labourActLabel || "",
+                                    compositeValue: item.composite_name || item.compositeValue || "",
                                     rate: item.rate || "",
                                     type: item.type || "material",
                                     qty: item.excl_wastage_qty || "",
@@ -1566,7 +1785,7 @@ const EstimationCreationEdit = () => {
             const res = await axios.get(
                 `${baseURL}estimation_details/${id}/budget_info.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
             );
-            console.log("response cat:", res.data);
+            // console.log("response cat:", res.data);
             // setSubProjectDetails(res.data);
             setSubProjectDetails(mapApiToForm(res?.data));
             setBudgetType(res.data?.budget_type || "");
@@ -1582,478 +1801,13 @@ const EstimationCreationEdit = () => {
 
 
 
+    
+
     // console.log("cat :",subProjectDetails.categories)
-
-    // const mappedData = [];
-
-    // subProjectDetails?.categories?.forEach(level1 => {
-    //     // Level 1 data
-    //     if (level1.material_type_details?.length) {
-    //         mappedData.push({
-    //             name: level1.items,
-    //             location: level1.location || "",
-    //             qty: level1.qty || "",
-    //             unit_of_measure_id: level1.uom || null,
-    //             level_one_id: level1.id || null,
-    //             level_two_id: null,
-    //             level_three_id: null,
-    //             level_four_id: null,
-    //             level_five_id: null,
-    //             // materials: level1.material_type_details
-
-    //             item_details: (level1.material_type_details || []).map(item => ({
-    //                 type: item.type,
-    //                 material_type_id: item.materilTypeId || null,
-    //                 generic_info_id: item.specificationId || null,
-    //                 labour_activity_id: item.labourAct || null,
-    //                 name: item.compositeValue || null,
-    //                 factor: item.factor || 0,
-    //                 excl_wastage_qty: item.qty || 0,
-    //                 incl_wastage_qty: item.qtyInclWastage || 0,
-    //                 unit_of_measure_id: item.uom || null,
-    //                 wastage: item.wastage || 0,
-    //                 rate: item.rate || 0,
-    //                 amount: item.amount || 0,
-    //                 cost_per_unit: item.costPerUnit || 0
-    //             }))
-    //         });
-    //     }
-    //     // Level 2
-    //     level1.sub_categories_2?.forEach(level2 => {
-    //         if (level2.material_type_details?.length) {
-    //             mappedData.push({
-    //                 name: level2.items,
-    //                 location: level2.location || "",
-    //                 qty: level2.qty || "",
-    //                 unit_of_measure_id: level2.uom || null,
-    //                 level_one_id: level1.id || null,
-    //                 level_two_id: level2.id || null,
-    //                 level_three_id: null,
-    //                 level_four_id: null,
-    //                 level_five_id: null,
-    //                 item_details: (level2.material_type_details || []).map(item => ({
-    //                     type: item.type,
-    //                     material_type_id: item.materilTypeId || null,
-    //                     generic_info_id: item.specificationId || null,
-    //                     labour_activity_id: item.labourAct || null,
-    //                     name: item.compositeValue || null,
-    //                     factor: item.factor || 0,
-    //                     excl_wastage_qty: item.qty || 0,
-    //                     incl_wastage_qty: item.qtyInclWastage || 0,
-    //                     unit_of_measure_id: item.uom || null,
-    //                     wastage: item.wastage || 0,
-    //                     rate: item.rate || 0,
-    //                     amount: item.amount || 0,
-    //                     cost_per_unit: item.costPerUnit || 0
-    //                 }))
-    //             });
-    //         }
-
-    //         // Level 3
-    //         level2.sub_categories_3?.forEach(level3 => {
-    //             if (level3.material_type_details?.length) {
-    //                 mappedData.push({
-    //                     name: level3.items,
-    //                     location: level3.location || "",
-    //                     qty: level3.qty || "",
-    //                     unit_of_measure_id: level3.uom || null,
-    //                     level_one_id: level1.id || null,
-    //                     level_two_id: level2.id || null,
-    //                     level_three_id: level3.id || null,
-    //                     level_four_id: null,
-    //                     level_five_id: null,
-    //                     item_details: (level3.material_type_details || []).map(item => ({
-    //                         type: item.type,
-    //                         material_type_id: item.materilTypeId || null,
-    //                         generic_info_id: item.specificationId || null,
-    //                         labour_activity_id: item.labourAct || null,
-    //                         name: item.compositeValue || null,
-    //                         factor: item.factor || 0,
-    //                         excl_wastage_qty: item.qty || 0,
-    //                         incl_wastage_qty: item.qtyInclWastage || 0,
-    //                         unit_of_measure_id: item.uom || null,
-    //                         wastage: item.wastage || 0,
-    //                         rate: item.rate || 0,
-    //                         amount: item.amount || 0,
-    //                         cost_per_unit: item.costPerUnit || 0
-    //                     }))
-    //                 });
-    //             }
-
-    //             // Level 4
-    //             level3.sub_categories_4?.forEach(level4 => {
-    //                 if (level4.material_type_details?.length) {
-    //                     mappedData.push({
-    //                         name: level4.items,
-    //                         location: level4.location || "",
-    //                         qty: level4.qty || "",
-    //                         unit_of_measure_id: level4.uom || null,
-    //                         level_one_id: level1.id || null,
-    //                         level_two_id: level2.id || null,
-    //                         level_three_id: level3.id || null,
-    //                         level_four_id: level4.id || null,
-    //                         level_five_id: null,
-    //                         item_details: (level4.material_type_details || []).map(item => ({
-    //                             type: item.type,
-    //                             material_type_id: item.materilTypeId || null,
-    //                             generic_info_id: item.specificationId || null,
-    //                             labour_activity_id: item.labourAct || null,
-    //                             name: item.compositeValue || null,
-    //                             factor: item.factor || 0,
-    //                             excl_wastage_qty: item.qty || 0,
-    //                             incl_wastage_qty: item.qtyInclWastage || 0,
-    //                             unit_of_measure_id: item.uom || null,
-    //                             wastage: item.wastage || 0,
-    //                             rate: item.rate || 0,
-    //                             amount: item.amount || 0,
-    //                             cost_per_unit: item.costPerUnit || 0
-    //                         }))
-    //                     });
-    //                 }
-
-    //                 // Level 5
-    //                 level4.sub_categories_5?.forEach(level5 => {
-    //                     if (level5.material_type_details?.length) {
-    //                         mappedData.push({
-    //                             name: level5.items,
-    //                             location: level5.location || "",
-    //                             qty: level5.qty || "",
-    //                             unit_of_measure_id: level5.uom || null,
-    //                             level_one_id: level1.id || null,
-    //                             level_two_id: level2.id || null,
-    //                             level_three_id: level3.id || null,
-    //                             level_four_id: level4.id || null,
-    //                             level_five_id: level5.id || null,
-    //                             item_details: (level5.material_type_details || []).map(item => ({
-    //                                 type: item.type,
-    //                                 material_type_id: item.materilTypeId || null,
-    //                                 generic_info_id: item.specificationId || null,
-    //                                 labour_activity_id: item.labourAct || null,
-    //                                 name: item.compositeValue || null,
-    //                                 factor: item.factor || 0,
-    //                                 excl_wastage_qty: item.qty || 0,
-    //                                 incl_wastage_qty: item.qtyInclWastage || 0,
-    //                                 unit_of_measure_id: item.uom || null,
-    //                                 wastage: item.wastage || 0,
-    //                                 rate: item.rate || 0,
-    //                                 amount: item.amount || 0,
-    //                                 cost_per_unit: item.costPerUnit || 0
-    //                             }))
-    //                         });
-    //                     }
-
-
-    //                 });
-    //             });
-    //         });
-    //     });
-    // });
 
     // ...existing code...
 
     const mappedData = [];
-    // subProjectDetails?.categories?.forEach(level1 => {
-    //     // Level 1 data
-    //     if (level1.material_type_details?.length) {
-    //         const hasEstimationId = !!level1.estimation_item?.id;
-    //         mappedData.push({
-    //             id: (typeof level1.estimation_item?.id === "number" && level1.estimation_item.id.toString().startsWith("1755860")) ? null : (level1.estimation_item?.id || null),
-    //             name: level1.items || "",
-    //             location: level1.location || "",
-    //             qty: level1.qty || "",
-    //             unit_of_measure_id: level1.uom || "",
-    //             level_one_id: hasEstimationId ? null : (level1.id || null),
-    //             level_two_id: null,
-    //             level_three_id: null,
-    //             level_four_id: null,
-    //             level_five_id: null,
-    //             item_details: (level1.material_type_details || []).map(item => {
-    //                 if (item.type === "material") {
-    //                     return {
-    //                         id: item.materilTypeId ? null : (item.id || ""),
-    //                         type: "material",
-    //                         material_type_id: item.materilTypeId || item.material_type_id || "",
-    //                         generic_info_id: item.specificationId || item.generic_info_id || "",
-    //                         factor: item.factor || "",
-    //                         excl_wastage_qty: item.qty || "",
-    //                         incl_wastage_qty: item.qtyInclWastage || "",
-    //                         unit_of_measure_id: item.uom || "",
-    //                         wastage: item.wastage || "",
-    //                         rate: item.rate || "",
-    //                         amount: item.amount || "",
-    //                         cost_per_unit: item.costPerUnit || ""
-    //                     };
-    //                 } else if (item.type === "labour") {
-    //                     return {
-    //                         id: item.labourAct ? null : (item.id || ""),
-    //                         type: "labour",
-    //                         labour_activity_id: item.labourAct || item.labour_activity_id || "",
-    //                         factor: item.factor || "",
-    //                         excl_wastage_qty: item.qty || "",
-    //                         incl_wastage_qty: item.qtyInclWastage || "",
-    //                         unit_of_measure_id: item.uom || "",
-    //                         wastage: item.wastage || "",
-    //                         rate: item.rate || "",
-    //                         amount: item.amount || "",
-    //                         cost_per_unit: item.costPerUnit || ""
-    //                     };
-    //                 } else if (item.type === "composite") {
-    //                     return {
-    //                         id: item.compositeValue ? null : (item.id || ""),
-    //                         type: "composite",
-    //                         name: item.compositeValue || item.composite_name || "",
-    //                         factor: item.factor || "",
-    //                         excl_wastage_qty: item.qty || "",
-    //                         incl_wastage_qty: item.qtyInclWastage || "",
-    //                         unit_of_measure_id: item.uom || "",
-    //                         wastage: item.wastage || "",
-    //                         rate: item.rate || "",
-    //                         amount: item.amount || "",
-    //                         cost_per_unit: item.costPerUnit || ""
-    //                     };
-    //                 }
-    //                 return {};
-    //             })
-    //         });
-    //     }
-    //     // Level 2
-    //     level1.sub_categories_2?.forEach(level2 => {
-    //         if (level2.material_type_details?.length) {
-    //             mappedData.push({
-    //                 id: (typeof level2.estimation_item?.id === "number" && level2.estimation_item.id.toString().startsWith("1755860")) ? null : (level2.estimation_item?.id || null),
-    //                 name: level2.items || "",
-    //                 location: level2.location || "",
-    //                 qty: level2.qty || "",
-    //                 unit_of_measure_id: level2.uom || "",
-    //                 item_details: (level2.material_type_details || []).map(item => {
-    //                     if (item.type === "material") {
-    //                         return {
-    //                             id: item.materilTypeId ? null : (item.id || ""),
-    //                             type: "material",
-    //                             material_type_id: item.materilTypeId || item.material_type_id || "",
-    //                             generic_info_id: item.specificationId || item.generic_info_id || "",
-    //                             factor: item.factor || "",
-    //                             excl_wastage_qty: item.qty || "",
-    //                             incl_wastage_qty: item.qtyInclWastage || "",
-    //                             unit_of_measure_id: item.uom || "",
-    //                             wastage: item.wastage || "",
-    //                             rate: item.rate || "",
-    //                             amount: item.amount || "",
-    //                             cost_per_unit: item.costPerUnit || ""
-    //                         };
-    //                     } else if (item.type === "labour") {
-    //                         return {
-    //                             id: item.labourAct ? null : (item.id || ""),
-    //                             type: "labour",
-    //                             labour_activity_id: item.labourAct || item.labour_activity_id || "",
-    //                             factor: item.factor || "",
-    //                             excl_wastage_qty: item.qty || "",
-    //                             incl_wastage_qty: item.qtyInclWastage || "",
-    //                             unit_of_measure_id: item.uom || "",
-    //                             wastage: item.wastage || "",
-    //                             rate: item.rate || "",
-    //                             amount: item.amount || "",
-    //                             cost_per_unit: item.costPerUnit || ""
-    //                         };
-    //                     } else if (item.type === "composite") {
-    //                         return {
-    //                             id: item.compositeValue ? null : (item.id || ""),
-    //                             type: "composite",
-    //                             name: item.compositeValue || item.composite_name || "",
-    //                             factor: item.factor || "",
-    //                             excl_wastage_qty: item.qty || "",
-    //                             incl_wastage_qty: item.qtyInclWastage || "",
-    //                             unit_of_measure_id: item.uom || "",
-    //                             wastage: item.wastage || "",
-    //                             rate: item.rate || "",
-    //                             amount: item.amount || "",
-    //                             cost_per_unit: item.costPerUnit || ""
-    //                         };
-    //                     }
-    //                     return {};
-    //                 })
-    //             });
-    //         }
-    //         // Level 3
-    //         level2.sub_categories_3?.forEach(level3 => {
-    //             if (level3.material_type_details?.length) {
-    //                 mappedData.push({
-    //                     id: (typeof level3.estimation_item?.id === "number" && level3.estimation_item.id.toString().startsWith("1755860")) ? null : (level3.estimation_item?.id || null),
-    //                     name: level3.items || "",
-    //                     location: level3.location || "",
-    //                     qty: level3.qty || "",
-    //                     unit_of_measure_id: level3.uom || "",
-    //                     item_details: (level3.material_type_details || []).map(item => {
-    //                         if (item.type === "material") {
-    //                             return {
-    //                                 id: item.materilTypeId ? null : (item.id || ""),
-    //                                 type: "material",
-    //                                 material_type_id: item.materilTypeId || item.material_type_id || "",
-    //                                 generic_info_id: item.specificationId || item.generic_info_id || "",
-    //                                 factor: item.factor || "",
-    //                                 excl_wastage_qty: item.qty || "",
-    //                                 incl_wastage_qty: item.qtyInclWastage || "",
-    //                                 unit_of_measure_id: item.uom || "",
-    //                                 wastage: item.wastage || "",
-    //                                 rate: item.rate || "",
-    //                                 amount: item.amount || "",
-    //                                 cost_per_unit: item.costPerUnit || ""
-    //                             };
-    //                         } else if (item.type === "labour") {
-    //                             return {
-    //                                 id: item.labourAct ? null : (item.id || ""),
-    //                                 type: "labour",
-    //                                 labour_activity_id: item.labourAct || item.labour_activity_id || "",
-    //                                 factor: item.factor || "",
-    //                                 excl_wastage_qty: item.qty || "",
-    //                                 incl_wastage_qty: item.qtyInclWastage || "",
-    //                                 unit_of_measure_id: item.uom || "",
-    //                                 wastage: item.wastage || "",
-    //                                 rate: item.rate || "",
-    //                                 amount: item.amount || "",
-    //                                 cost_per_unit: item.costPerUnit || ""
-    //                             };
-    //                         } else if (item.type === "composite") {
-    //                             return {
-    //                                 id: item.compositeValue ? null : (item.id || ""),
-    //                                 type: "composite",
-    //                                 name: item.compositeValue || item.composite_name || "",
-    //                                 factor: item.factor || "",
-    //                                 excl_wastage_qty: item.qty || "",
-    //                                 incl_wastage_qty: item.qtyInclWastage || "",
-    //                                 unit_of_measure_id: item.uom || "",
-    //                                 wastage: item.wastage || "",
-    //                                 rate: item.rate || "",
-    //                                 amount: item.amount || "",
-    //                                 cost_per_unit: item.costPerUnit || ""
-    //                             };
-    //                         }
-    //                         return {};
-    //                     })
-    //                 });
-    //             }
-    //             // Level 4
-    //             level3.sub_categories_4?.forEach(level4 => {
-    //                 if (level4.material_type_details?.length) {
-    //                     mappedData.push({
-    //                         id: (typeof level4.estimation_item?.id === "number" && level4.estimation_item.id.toString().startsWith("1755860")) ? null : (level4.estimation_item?.id || null),
-    //                         name: level4.items || "",
-    //                         location: level4.location || "",
-    //                         qty: level4.qty || "",
-    //                         unit_of_measure_id: level4.uom || "",
-    //                         item_details: (level4.material_type_details || []).map(item => {
-    //                             if (item.type === "material") {
-    //                                 return {
-    //                                     id: item.materilTypeId ? null : (item.id || ""),
-    //                                     type: "material",
-    //                                     material_type_id: item.materilTypeId || item.material_type_id || "",
-    //                                     generic_info_id: item.specificationId || item.generic_info_id || "",
-    //                                     factor: item.factor || "",
-    //                                     excl_wastage_qty: item.qty || "",
-    //                                     incl_wastage_qty: item.qtyInclWastage || "",
-    //                                     unit_of_measure_id: item.uom || "",
-    //                                     wastage: item.wastage || "",
-    //                                     rate: item.rate || "",
-    //                                     amount: item.amount || "",
-    //                                     cost_per_unit: item.costPerUnit || ""
-    //                                 };
-    //                             } else if (item.type === "labour") {
-    //                                 return {
-    //                                     id: item.labourAct ? null : (item.id || ""),
-    //                                     type: "labour",
-    //                                     labour_activity_id: item.labourAct || item.labour_activity_id || "",
-    //                                     factor: item.factor || "",
-    //                                     excl_wastage_qty: item.qty || "",
-    //                                     incl_wastage_qty: item.qtyInclWastage || "",
-    //                                     unit_of_measure_id: item.uom || "",
-    //                                     wastage: item.wastage || "",
-    //                                     rate: item.rate || "",
-    //                                     amount: item.amount || "",
-    //                                     cost_per_unit: item.costPerUnit || ""
-    //                                 };
-    //                             } else if (item.type === "composite") {
-    //                                 return {
-    //                                     id: item.compositeValue ? null : (item.id || ""),
-    //                                     type: "composite",
-    //                                     name: item.compositeValue || item.composite_name || "",
-    //                                     factor: item.factor || "",
-    //                                     excl_wastage_qty: item.qty || "",
-    //                                     incl_wastage_qty: item.qtyInclWastage || "",
-    //                                     unit_of_measure_id: item.uom || "",
-    //                                     wastage: item.wastage || "",
-    //                                     rate: item.rate || "",
-    //                                     amount: item.amount || "",
-    //                                     cost_per_unit: item.costPerUnit || ""
-    //                                 };
-    //                             }
-    //                             return {};
-    //                         })
-    //                     });
-    //                 }
-    //                 // Level 5
-    //                 level4.sub_categories_5?.forEach(level5 => {
-    //                     if (level5.material_type_details?.length) {
-    //                         mappedData.push({
-    //                             id: (typeof level5.estimation_item?.id === "number" && level5.estimation_item.id.toString().startsWith("1755860")) ? null : (level5.estimation_item?.id || null),
-    //                             name: level5.items || "",
-    //                             location: level5.location || "",
-    //                             qty: level5.qty || "",
-    //                             unit_of_measure_id: level5.uom || "",
-    //                             item_details: (level5.material_type_details || []).map(item => {
-    //                                 if (item.type === "material") {
-    //                                     return {
-    //                                         id: item.materilTypeId ? null : (item.id || ""),
-    //                                         type: "material",
-    //                                         material_type_id: item.materilTypeId || item.material_type_id || "",
-    //                                         generic_info_id: item.specificationId || item.generic_info_id || "",
-    //                                         factor: item.factor || "",
-    //                                         excl_wastage_qty: item.qty || "",
-    //                                         incl_wastage_qty: item.qtyInclWastage || "",
-    //                                         unit_of_measure_id: item.uom || "",
-    //                                         wastage: item.wastage || "",
-    //                                         rate: item.rate || "",
-    //                                         amount: item.amount || "",
-    //                                         cost_per_unit: item.costPerUnit || ""
-    //                                     };
-    //                                 } else if (item.type === "labour") {
-    //                                     return {
-    //                                         id: item.labourAct ? null : (item.id || ""),
-    //                                         type: "labour",
-    //                                         labour_activity_id: item.labourAct || item.labour_activity_id || "",
-    //                                         factor: item.factor || "",
-    //                                         excl_wastage_qty: item.qty || "",
-    //                                         incl_wastage_qty: item.qtyInclWastage || "",
-    //                                         unit_of_measure_id: item.uom || "",
-    //                                         wastage: item.wastage || "",
-    //                                         rate: item.rate || "",
-    //                                         amount: item.amount || "",
-    //                                         cost_per_unit: item.costPerUnit || ""
-    //                                     };
-    //                                 } else if (item.type === "composite") {
-    //                                     return {
-    //                                         id: item.compositeValue ? null : (item.id || ""),
-    //                                         type: "composite",
-    //                                         name: item.compositeValue || item.composite_name || "",
-    //                                         factor: item.factor || "",
-    //                                         excl_wastage_qty: item.qty || "",
-    //                                         incl_wastage_qty: item.qtyInclWastage || "",
-    //                                         unit_of_measure_id: item.uom || "",
-    //                                         wastage: item.wastage || "",
-    //                                         rate: item.rate || "",
-    //                                         amount: item.amount || "",
-    //                                         cost_per_unit: item.costPerUnit || ""
-    //                                     };
-    //                                 }
-    //                                 return {};
-    //                             })
-    //                         });
-    //                     }
-    //                 });
-    //             });
-    //         });
-    //     });
-    // })
-
 
     subProjectDetails?.categories?.forEach(level1 => {
         // Level 1 data
@@ -2182,7 +1936,7 @@ const EstimationCreationEdit = () => {
                         }
                         return {};
                     }),
-                     deleted: deleted || []
+                    deleted: deleted || []
                 });
             }
             // Level 3
@@ -2247,7 +2001,7 @@ const EstimationCreationEdit = () => {
                             }
                             return {};
                         }),
-                         deleted: deleted || []
+                        deleted: deleted || []
                     });
                 }
                 // Level 4
@@ -2312,7 +2066,7 @@ const EstimationCreationEdit = () => {
                                 }
                                 return {};
                             }),
-                             deleted: deleted || []
+                            deleted: deleted || []
                         });
                     }
                     // Level 5
@@ -2377,7 +2131,7 @@ const EstimationCreationEdit = () => {
                                     }
                                     return {};
                                 }),
-                                 deleted: deleted || []
+                                deleted: deleted || []
                             });
                         }
                     });
@@ -2405,7 +2159,7 @@ const EstimationCreationEdit = () => {
         estimation_items: mappedData,
         deleted: removedCategoryIds || []
     };
-    console.log("payload create budget****:", payload)
+    // console.log("payload create budget****:", payload)
 
 
     const handleSubmit = async () => {
@@ -2762,7 +2516,7 @@ const EstimationCreationEdit = () => {
         });
     };
 
-  
+
 
     // Remove Main Category (Level 1)
     const handleRemoveMainCategory = (catIdx) => {
@@ -2859,7 +2613,7 @@ const EstimationCreationEdit = () => {
         });
     };
 
-    console.log("removed cat id:", removedCategoryIds)
+    // console.log("removed cat id:", removedCategoryIds)
 
     const handleAddSubCategory3 = (catIdx, subCatIdx) => {
         const newSubCat3 = {
@@ -3064,33 +2818,6 @@ const EstimationCreationEdit = () => {
     }, []); // runs once on mount
 
 
-
-
-
-
-
-    // useEffect(() => {
-    //     if (!subProjectDetails || !subProjectDetails.categories) return;
-
-    //     // Only run if subCategoryOptions is not set yet
-    //     const hasOptions = subProjectDetails.categories.every(cat => Array.isArray(cat.subCategoryOptions));
-    //     if (hasOptions) return;
-
-    //     setSubProjectDetails(prev => {
-    //         if (!prev || !prev.categories) return prev;
-    //         const updated = { ...prev };
-    //         updated.categories = updated.categories.map(cat => ({
-    //             ...cat,
-    //             subCategoryOptions: (cat.sub_categories_2 || []).map(subCat => ({
-    //                 value: subCat.id,
-    //                 label: subCat.name,
-    //                 sub_categories_3: subCat.sub_categories_3 || [],
-    //             })),
-    //         }));
-    //         return updated;
-    //     });
-    // }, [subProjectDetails]);
-
     return (
         <>
             <div className="website-content overflow-auto">
@@ -3193,7 +2920,7 @@ const EstimationCreationEdit = () => {
                                         </label>
                                     </div>
                                 </div>
-                                 <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                                     <div className="col-6">
                                         <label>Status</label>
                                     </div>
@@ -3387,28 +3114,13 @@ const EstimationCreationEdit = () => {
                                                                     Main Category
                                                                 </td>
                                                                 <td>
-                                                                    {/* {category.name} */}
 
-                                                                    {/* <SingleSelector
-                                                                    options={workCategories?.map((category) => ({
-                                                                                            value: category.id,
-                                                                                            label: category.name,
-                                                                                            work_sub_categories: category.work_sub_categories, // Include subcategories in the category option
-                                                                                          }))}
-                                                                    // value={mainCategoryOptions.find(opt => opt.value === category.id)}
-                                                                     value={selectedCategory}
-                                                                    placeholder="Select Main Category"
-                                                                    // onChange={selectedOption =>
-
-                                                                    //     handleEditMainCategoryField2(catIdx, "id", selectedOption?.value || "")
-                                                                    // }
-                                                                     onChange={handleCategoryChange}
-                                                                /> */}
                                                                     <SingleSelector
                                                                         options={workCategories.map(cat => ({
                                                                             value: cat.id,
                                                                             label: cat.name,
-                                                                            sub_categories_2: cat.sub_categories_2
+                                                                            sub_categories_2: cat.sub_categories_2,
+                                                                            isDisabled: subProjectDetails.categories.some(c => c.id === cat.id && c.id !== category.id)
                                                                         }))}
                                                                         value={workCategories.find(opt => opt.id === category.id) ? { value: category.id, label: category.name } : null}
                                                                         onChange={selectedOption => handleMainCategorySelect(catIdx, selectedOption)}
@@ -3618,13 +3330,7 @@ const EstimationCreationEdit = () => {
                                                                                 }
                                                                             />
 
-                                                                            {/* <SingleSelector
-                                                              options={unitOfMeasures} // Providing the options to the select component
-                                                              onChange={handleUnitChange} // Setting the handler when an option is selected
-                                                              value={selectedUnit} // Setting the selected value
-                                                              placeholder={`Select UOM`} // Dynamic placeholder
-                                                              
-                                                            /> */}
+
                                                                         </td>
                                                                         {/* <td></td> */}
                                                                         <td>
@@ -3689,29 +3395,29 @@ const EstimationCreationEdit = () => {
                                                                             />
                                                                         </td>
                                                                         <td>
-  {(item.can_delete || item.name || item.specification || item.labourActLabel  || item.compositeValue  )   && (                                                                         
-                                                                            <button
-                                                                                className="btn btn-link p-0"
-                                                                                onClick={() => handleRemoveMainCategoryRow(catIdx, itemIdx)}
-                                                                            >
-                                                                                <svg
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                    width="24"
-                                                                                    height="48"
-                                                                                    viewBox="0 0 24 48"
-                                                                                    fill="none"
-                                                                                    stroke="currentColor"
-                                                                                    stroke-width="2"
-                                                                                    stroke-linecap="round"
-                                                                                    stroke-linejoin="round"
+                                                                            {(item.can_delete !== false) && (
+                                                                                <button
+                                                                                    className="btn btn-link p-0"
+                                                                                    onClick={() => handleRemoveMainCategoryRow(catIdx, itemIdx)}
                                                                                 >
+                                                                                    <svg
+                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                        width="24"
+                                                                                        height="48"
+                                                                                        viewBox="0 0 24 48"
+                                                                                        fill="none"
+                                                                                        stroke="currentColor"
+                                                                                        stroke-width="2"
+                                                                                        stroke-linecap="round"
+                                                                                        stroke-linejoin="round"
+                                                                                    >
 
-                                                                                    {/* <!-- Minus Icon (Bottom) --> */}
-                                                                                    <line x1="8" y1="34" x2="16" y2="34" />
-                                                                                </svg>
+                                                                                        {/* <!-- Minus Icon (Bottom) --> */}
+                                                                                        <line x1="8" y1="34" x2="16" y2="34" />
+                                                                                    </svg>
 
-                                                                            </button>
- )}
+                                                                                </button>
+                                                                            )}
                                                                         </td>
                                                                     </tr>
                                                                 ))
@@ -3782,40 +3488,17 @@ const EstimationCreationEdit = () => {
                                                                                 </button>
                                                                                 Sub-Category Level 2</td>
                                                                             <td>
-                                                                                {/* <SingleSelector
-                                                                                options={subCategoryOptions}
-                                                                                value={subCategoryOptions.find(opt => opt.value === selectedSubCategory?.value)}
-                                                                                placeholder="Select Sub Category"
-                                                                                onChange={selectedOption => setSelectedSubCategory(selectedOption)}
-                                                                            /> */}
-                                                                                {/* <SingleSelector
-                                                                                                      options={subCategoryOptions}
-                                                                                                      onChange={handleSubCategoryChange}
-                                                                                                      value={selectedSubCategory}
-                                                                                                      placeholder={`Select Sub-category lvl 2`} // Dynamic placeholder
-                                                                                                    /> */}
 
-
-                                                                                {/* <SingleSelector
-  options={category.subCategoryOptions || []}
-  value={category.selectedSubCategory}
-  onChange={selectedOption => handleSubCategorySelect(catIdx, selectedOption)}
-  placeholder="Select Sub-category lvl 2"
-/> */}
-
-                                                                                {/* <SingleSelector
-  options={category.subCategoryOptions || []}
-  value={subCategory.selectedSubCategory}
-  onChange={selectedOption => handleSubCategorySelect(catIdx, subCatIdx, selectedOption)}
-  placeholder="Select Sub-category lvl 2"
-/> */}
 
                                                                                 <SingleSelector
                                                                                     options={
                                                                                         (category.subCategoryOptions || []).map(subCat => ({
                                                                                             value: subCat.value,
                                                                                             label: subCat.label,
-                                                                                            sub_categories_3: subCat.sub_categories_3 // pass for next level
+                                                                                            sub_categories_3: subCat.sub_categories_3,// pass for next level
+                                                                                            isDisabled: category.sub_categories_2?.some(
+                                                                                                c2 => c2.id === subCat.value && c2.id !== subCategory.id
+                                                                                            )
                                                                                         }))
                                                                                     }
                                                                                     value={
@@ -4058,18 +3741,18 @@ const EstimationCreationEdit = () => {
                                                                                         />
                                                                                     </td>
                                                                                     <td>
-                                                                                         {(item.can_delete || item.name || item.specification || item.labourActLabel  || item.compositeValue  )   && ( 
-                                                                                        <button
-                                                                                            className="btn btn-link p-0"
-                                                                                            onClick={() => handleRemoveSubCategory2Row(catIdx, subCatIdx, itemIdx)}
-                                                                                            aria-label="Remove row from sub-category 2"
-                                                                                        >
-                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
-                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
-                                                                                            </svg>
-                                                                                        </button>
-                                                                                         )}
+                                                                                        {(item.can_delete !== false) && (
+                                                                                            <button
+                                                                                                className="btn btn-link p-0"
+                                                                                                onClick={() => handleRemoveSubCategory2Row(catIdx, subCatIdx, itemIdx)}
+                                                                                                aria-label="Remove row from sub-category 2"
+                                                                                            >
+                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                    {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                    <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                </svg>
+                                                                                            </button>
+                                                                                        )}
                                                                                     </td>
                                                                                 </tr>
                                                                             ))
@@ -4137,19 +3820,17 @@ const EstimationCreationEdit = () => {
                                                                                                 </button>
                                                                                                 Sub-Category Level 3</td>
                                                                                             <td>
-                                                                                                {/* <SingleSelector
-                                                                                                                      options={subCategoryLevel3Options}
-                                                                                                                      onChange={handleLevel3Change}
-                                                                                                                      value={selectedSubCategoryLevel3}
-                                                                                                                      placeholder={`Select Sub-category lvl 3`} // Dynamic placeholder
-                                                                                                                    /> */}
+
 
                                                                                                 <SingleSelector
                                                                                                     options={
                                                                                                         (subCategory.subCategoryLevel3Options || []).map(subCat3 => ({
                                                                                                             value: subCat3.value,
                                                                                                             label: subCat3.label,
-                                                                                                            sub_categories_4: subCat3.sub_categories_4 // pass for next level
+                                                                                                            sub_categories_4: subCat3.sub_categories_4,// pass for next level
+                                                                                                            isDisabled: subCategory.sub_categories_3?.some(
+                                                                                                                c3 => c3.id === subCat3.value && c3.id !== subCategory3.id
+                                                                                                            )
                                                                                                         }))
                                                                                                     }
                                                                                                     value={
@@ -4379,18 +4060,18 @@ const EstimationCreationEdit = () => {
                                                                                                         />
                                                                                                     </td>
                                                                                                     <td>
-                                                                                                         {(item.can_delete || item.name || item.specification || item.labourActLabel  || item.compositeValue  )   && ( 
-                                                                                                        <button
-                                                                                                            className="btn btn-link p-0"
-                                                                                                            onClick={() => handleRemoveSubCategory3Row(catIdx, subCatIdx, subCategory3Idx, itemIdx)}
-                                                                                                            aria-label="Remove row from sub-category 3"
-                                                                                                        >
-                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
-                                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
-                                                                                                            </svg>
-                                                                                                        </button>
-                                                                                                         )}
+                                                                                                        {(item.can_delete !== false) && (
+                                                                                                            <button
+                                                                                                                className="btn btn-link p-0"
+                                                                                                                onClick={() => handleRemoveSubCategory3Row(catIdx, subCatIdx, subCategory3Idx, itemIdx)}
+                                                                                                                aria-label="Remove row from sub-category 3"
+                                                                                                            >
+                                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                    {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                                    <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                                </svg>
+                                                                                                            </button>
+                                                                                                        )}
                                                                                                     </td>
                                                                                                 </tr>
                                                                                             ))
@@ -4455,7 +4136,7 @@ const EstimationCreationEdit = () => {
                                                                                                                     onClick={() => handleRemoveSubCategory4(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx)}
                                                                                                                     aria-label="Remove sub-category 4"
                                                                                                                     title="Remove Sub Category level 4"
-                                                                                                                     disabled={isOtherLevelFrozen(category, "sub4", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx })}
+                                                                                                                    disabled={isOtherLevelFrozen(category, "sub4", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx })}
                                                                                                                 >
                                                                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                                                         <line x1="5" y1="8" x2="11" y2="8" />
@@ -4464,19 +4145,16 @@ const EstimationCreationEdit = () => {
                                                                                                                 Sub-Category Level 4
                                                                                                             </td>
                                                                                                             <td>
-                                                                                                                {/* <SingleSelector
-                                                                                                                                      options={subCategoryLevel4Options}
-                                                                                                                                      onChange={handleLevel4Change}
-                                                                                                                                      value={selectedSubCategoryLevel4}
-                                                                                                                                      placeholder={`Select Sub-category lvl 4`} // Dynamic placeholder
-                                                                                                                                    /> */}
 
                                                                                                                 <SingleSelector
                                                                                                                     options={
                                                                                                                         (subCategory3.subCategoryLevel4Options || []).map(subCat4 => ({
                                                                                                                             value: subCat4.value,
                                                                                                                             label: subCat4.label,
-                                                                                                                            sub_categories_5: subCat4.sub_categories_5 // pass for next level
+                                                                                                                            sub_categories_5: subCat4.sub_categories_5,// pass for next level
+                                                                                                                            isDisabled: subCategory3.sub_categories_4?.some(
+                                                                                                                                c4 => c4.id === subCat4.value && c4.id !== subCategory4.id
+                                                                                                                            )
                                                                                                                         }))
                                                                                                                     }
                                                                                                                     value={
@@ -4683,18 +4361,18 @@ const EstimationCreationEdit = () => {
                                                                                                                     </td>
 
                                                                                                                     <td>
-                                                                                                                         {(item.can_delete || item.name || item.specification || item.labourActLabel  || item.compositeValue  )   && ( 
-                                                                                                                        <button
-                                                                                                                            className="btn btn-link p-0"
-                                                                                                                            onClick={() => handleRemoveSubCategory4Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx)}
-                                                                                                                            aria-label="Remove row from sub-category 4"
-                                                                                                                        >
-                                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
-                                                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
-                                                                                                                            </svg>
-                                                                                                                        </button>
-                                                                                                                         )}
+                                                                                                                        { (item.can_delete !== false) && (
+                                                                                                                            <button
+                                                                                                                                className="btn btn-link p-0"
+                                                                                                                                onClick={() => handleRemoveSubCategory4Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx)}
+                                                                                                                                aria-label="Remove row from sub-category 4"
+                                                                                                                            >
+                                                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                                    {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                                                    <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                                                </svg>
+                                                                                                                            </button>
+                                                                                                                        )}
                                                                                                                     </td>
                                                                                                                 </tr>
                                                                                                             ))
@@ -4821,7 +4499,10 @@ const EstimationCreationEdit = () => {
                                                                                                                                     options={
                                                                                                                                         (subCategory4.subCategoryLevel5Options || []).map(subCat5 => ({
                                                                                                                                             value: subCat5.value,
-                                                                                                                                            label: subCat5.label
+                                                                                                                                            label: subCat5.label,
+                                                                                                                                            isDisabled: subCategory4.sub_categories_5?.some(
+                                                                                                                                                c5 => c5.id === subCat5.value && c5.id !== subCategory5.id
+                                                                                                                                            )
                                                                                                                                         }))
                                                                                                                                     }
                                                                                                                                     value={
@@ -5013,18 +4694,18 @@ const EstimationCreationEdit = () => {
                                                                                                                                         />
                                                                                                                                     </td>
                                                                                                                                     <td>
-                                                                                                                                         {(item.can_delete || item.name || item.specification || item.labourActLabel  || item.compositeValue  )   && ( 
-                                                                                                                                        <button
-                                                                                                                                            className="btn btn-link p-0"
-                                                                                                                                            onClick={() => handleRemoveSubCategory5Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx)}
-                                                                                                                                            aria-label="Remove row from sub-category 5"
-                                                                                                                                        >
-                                                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
-                                                                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
-                                                                                                                                            </svg>
-                                                                                                                                        </button>
-                                                                                                                                         )}
+                                                                                                                                        { (item.can_delete !== false) && (
+                                                                                                                                            <button
+                                                                                                                                                className="btn btn-link p-0"
+                                                                                                                                                onClick={() => handleRemoveSubCategory5Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx)}
+                                                                                                                                                aria-label="Remove row from sub-category 5"
+                                                                                                                                            >
+                                                                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                                                    {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                                                                    <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                                                                </svg>
+                                                                                                                                            </button>
+                                                                                                                                        )}
                                                                                                                                     </td>
                                                                                                                                 </tr>
                                                                                                                             ))
@@ -5199,31 +4880,17 @@ const EstimationCreationEdit = () => {
                                                                             <line x1="5" y1="8" x2="11" y2="8" />
                                                                         </svg>
                                                                     </button>
-                                                                
+
                                                                     Main Category</td>
                                                                 <td>
-                                                                    {/* {category.name} */}
 
-                                                                    {/* <SingleSelector
-                                                                    options={workCategories?.map((category) => ({
-                                                                                            value: category.id,
-                                                                                            label: category.name,
-                                                                                            work_sub_categories: category.work_sub_categories, // Include subcategories in the category option
-                                                                                          }))}
-                                                                    // value={mainCategoryOptions.find(opt => opt.value === category.id)}
-                                                                     value={selectedCategory}
-                                                                    placeholder="Select Main Category"
-                                                                    // onChange={selectedOption =>
 
-                                                                    //     handleEditMainCategoryField2(catIdx, "id", selectedOption?.value || "")
-                                                                    // }
-                                                                     onChange={handleCategoryChange}
-                                                                /> */}
                                                                     <SingleSelector
                                                                         options={workCategories.map(cat => ({
                                                                             value: cat.id,
                                                                             label: cat.name,
-                                                                            sub_categories_2: cat.sub_categories_2
+                                                                            sub_categories_2: cat.sub_categories_2,
+                                                                            isDisabled: subProjectDetails.categories.some(c => c.id === cat.id && c.id !== category.id)
                                                                         }))}
                                                                         value={workCategories.find(opt => opt.id === category.id) ? { value: category.id, label: category.name } : null}
                                                                         onChange={selectedOption => handleMainCategorySelect(catIdx, selectedOption)}
@@ -5422,13 +5089,7 @@ const EstimationCreationEdit = () => {
                                                                                 }
                                                                             />
 
-                                                                            {/* <SingleSelector
-                                                              options={unitOfMeasures} // Providing the options to the select component
-                                                              onChange={handleUnitChange} // Setting the handler when an option is selected
-                                                              value={selectedUnit} // Setting the selected value
-                                                              placeholder={`Select UOM`} // Dynamic placeholder
-                                                              
-                                                            /> */}
+
                                                                         </td>
                                                                         {/* <td></td> */}
                                                                         <td>
@@ -5467,29 +5128,29 @@ const EstimationCreationEdit = () => {
                                                                         </td>
 
                                                                         <td>
-                                                                             {(item.can_delete || item.name || item.specification || item.labourActLabel  || item.compositeValue  )   && ( 
-                                                                            <button
-                                                                                className="btn btn-link p-0"
-                                                                                onClick={() => handleRemoveMainCategoryRow(catIdx, itemIdx)}
-                                                                            >
-                                                                                <svg
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                    width="24"
-                                                                                    height="48"
-                                                                                    viewBox="0 0 24 48"
-                                                                                    fill="none"
-                                                                                    stroke="currentColor"
-                                                                                    stroke-width="2"
-                                                                                    stroke-linecap="round"
-                                                                                    stroke-linejoin="round"
+                                                                            { (item.can_delete !== false) && (
+                                                                                <button
+                                                                                    className="btn btn-link p-0"
+                                                                                    onClick={() => handleRemoveMainCategoryRow(catIdx, itemIdx)}
                                                                                 >
+                                                                                    <svg
+                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                        width="24"
+                                                                                        height="48"
+                                                                                        viewBox="0 0 24 48"
+                                                                                        fill="none"
+                                                                                        stroke="currentColor"
+                                                                                        stroke-width="2"
+                                                                                        stroke-linecap="round"
+                                                                                        stroke-linejoin="round"
+                                                                                    >
 
-                                                                                    {/* <!-- Minus Icon (Bottom) --> */}
-                                                                                    <line x1="8" y1="34" x2="16" y2="34" />
-                                                                                </svg>
+                                                                                        {/* <!-- Minus Icon (Bottom) --> */}
+                                                                                        <line x1="8" y1="34" x2="16" y2="34" />
+                                                                                    </svg>
 
-                                                                            </button>
-                                                                             )}
+                                                                                </button>
+                                                                            )}
                                                                         </td>
                                                                     </tr>
                                                                 ))
@@ -5560,40 +5221,16 @@ const EstimationCreationEdit = () => {
                                                                                 </button>
                                                                                 Sub-Category Level 2</td>
                                                                             <td>
-                                                                                {/* <SingleSelector
-                                                                                options={subCategoryOptions}
-                                                                                value={subCategoryOptions.find(opt => opt.value === selectedSubCategory?.value)}
-                                                                                placeholder="Select Sub Category"
-                                                                                onChange={selectedOption => setSelectedSubCategory(selectedOption)}
-                                                                            /> */}
-                                                                                {/* <SingleSelector
-                                                                                                      options={subCategoryOptions}
-                                                                                                      onChange={handleSubCategoryChange}
-                                                                                                      value={selectedSubCategory}
-                                                                                                      placeholder={`Select Sub-category lvl 2`} // Dynamic placeholder
-                                                                                                    /> */}
-
-
-                                                                                {/* <SingleSelector
-  options={category.subCategoryOptions || []}
-  value={category.selectedSubCategory}
-  onChange={selectedOption => handleSubCategorySelect(catIdx, selectedOption)}
-  placeholder="Select Sub-category lvl 2"
-/> */}
-
-                                                                                {/* <SingleSelector
-  options={category.subCategoryOptions || []}
-  value={subCategory.selectedSubCategory}
-  onChange={selectedOption => handleSubCategorySelect(catIdx, subCatIdx, selectedOption)}
-  placeholder="Select Sub-category lvl 2"
-/> */}
 
                                                                                 <SingleSelector
                                                                                     options={
                                                                                         (category.subCategoryOptions || []).map(subCat => ({
                                                                                             value: subCat.value,
                                                                                             label: subCat.label,
-                                                                                            sub_categories_3: subCat.sub_categories_3 // pass for next level
+                                                                                            sub_categories_3: subCat.sub_categories_3, // pass for next level
+                                                                                            isDisabled: category.sub_categories_2?.some(
+                                                                                                c2 => c2.id === subCat.value && c2.id !== subCategory.id
+                                                                                            )
                                                                                         }))
                                                                                     }
                                                                                     value={
@@ -5804,18 +5441,18 @@ const EstimationCreationEdit = () => {
                                                                                     </td>
 
                                                                                     <td>
-                                                                                         {(item.can_delete || item.name || item.specification || item.labourActLabel  || item.compositeValue  )   && ( 
-                                                                                        <button
-                                                                                            className="btn btn-link p-0"
-                                                                                            onClick={() => handleRemoveSubCategory2Row(catIdx, subCatIdx, itemIdx)}
-                                                                                            aria-label="Remove row from sub-category 2"
-                                                                                        >
-                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
-                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
-                                                                                            </svg>
-                                                                                        </button>
-                                                                                         )}
+                                                                                        { (item.can_delete !== false) && (
+                                                                                            <button
+                                                                                                className="btn btn-link p-0"
+                                                                                                onClick={() => handleRemoveSubCategory2Row(catIdx, subCatIdx, itemIdx)}
+                                                                                                aria-label="Remove row from sub-category 2"
+                                                                                            >
+                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                    {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                    <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                </svg>
+                                                                                            </button>
+                                                                                        )}
                                                                                     </td>
                                                                                 </tr>
                                                                             ))
@@ -5883,19 +5520,16 @@ const EstimationCreationEdit = () => {
                                                                                                 </button>
                                                                                                 Sub-Category Level 3</td>
                                                                                             <td>
-                                                                                                {/* <SingleSelector
-                                                                                                                      options={subCategoryLevel3Options}
-                                                                                                                      onChange={handleLevel3Change}
-                                                                                                                      value={selectedSubCategoryLevel3}
-                                                                                                                      placeholder={`Select Sub-category lvl 3`} // Dynamic placeholder
-                                                                                                                    /> */}
 
                                                                                                 <SingleSelector
                                                                                                     options={
                                                                                                         (subCategory.subCategoryLevel3Options || []).map(subCat3 => ({
                                                                                                             value: subCat3.value,
                                                                                                             label: subCat3.label,
-                                                                                                            sub_categories_4: subCat3.sub_categories_4 // pass for next level
+                                                                                                            sub_categories_4: subCat3.sub_categories_4,// pass for next level
+                                                                                                            isDisabled: subCategory.sub_categories_3?.some(
+                                                                                                                c3 => c3.id === subCat3.value && c3.id !== subCategory3.id
+                                                                                                            )
                                                                                                         }))
                                                                                                     }
                                                                                                     value={
@@ -6092,18 +5726,18 @@ const EstimationCreationEdit = () => {
                                                                                                     </td>
 
                                                                                                     <td>
-                                                                                                         {(item.can_delete || item.name || item.specification || item.labourActLabel  || item.compositeValue  )   && ( 
-                                                                                                        <button
-                                                                                                            className="btn btn-link p-0"
-                                                                                                            onClick={() => handleRemoveSubCategory3Row(catIdx, subCatIdx, subCategory3Idx, itemIdx)}
-                                                                                                            aria-label="Remove row from sub-category 3"
-                                                                                                        >
-                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
-                                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
-                                                                                                            </svg>
-                                                                                                        </button>
-                                                                                                         )}
+                                                                                                        { (item.can_delete !== false) && (
+                                                                                                            <button
+                                                                                                                className="btn btn-link p-0"
+                                                                                                                onClick={() => handleRemoveSubCategory3Row(catIdx, subCatIdx, subCategory3Idx, itemIdx)}
+                                                                                                                aria-label="Remove row from sub-category 3"
+                                                                                                            >
+                                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                    {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                                    <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                                </svg>
+                                                                                                            </button>
+                                                                                                        )}
                                                                                                     </td>
                                                                                                 </tr>
                                                                                             ))
@@ -6169,7 +5803,7 @@ const EstimationCreationEdit = () => {
                                                                                                                     onClick={() => handleRemoveSubCategory4(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx)}
                                                                                                                     aria-label="Remove sub-category 4"
                                                                                                                     title="Remove Sub Category level 4"
-                                                                                                                     disabled={isOtherLevelFrozen(category, "sub4", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx })}
+                                                                                                                    disabled={isOtherLevelFrozen(category, "sub4", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx })}
                                                                                                                 >
                                                                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                                                         <line x1="5" y1="8" x2="11" y2="8" />
@@ -6178,19 +5812,16 @@ const EstimationCreationEdit = () => {
                                                                                                                 Sub-Category Level 4
                                                                                                             </td>
                                                                                                             <td>
-                                                                                                                {/* <SingleSelector
-                                                                                                                                      options={subCategoryLevel4Options}
-                                                                                                                                      onChange={handleLevel4Change}
-                                                                                                                                      value={selectedSubCategoryLevel4}
-                                                                                                                                      placeholder={`Select Sub-category lvl 4`} // Dynamic placeholder
-                                                                                                                                    /> */}
 
                                                                                                                 <SingleSelector
                                                                                                                     options={
                                                                                                                         (subCategory3.subCategoryLevel4Options || []).map(subCat4 => ({
                                                                                                                             value: subCat4.value,
                                                                                                                             label: subCat4.label,
-                                                                                                                            sub_categories_5: subCat4.sub_categories_5 // pass for next level
+                                                                                                                            sub_categories_5: subCat4.sub_categories_5, // pass for next level
+                                                                                                                            isDisabled: subCategory3.sub_categories_4?.some(
+                                                                                                                                c4 => c4.id === subCat4.value && c4.id !== subCategory4.id
+                                                                                                                            )
                                                                                                                         }))
                                                                                                                     }
                                                                                                                     value={
@@ -6366,18 +5997,18 @@ const EstimationCreationEdit = () => {
 
 
                                                                                                                     <td>
-                                                                                                                         {(item.can_delete || item.name || item.specification || item.labourActLabel  || item.compositeValue  )   && ( 
-                                                                                                                        <button
-                                                                                                                            className="btn btn-link p-0"
-                                                                                                                            onClick={() => handleRemoveSubCategory4Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx)}
-                                                                                                                            aria-label="Remove row from sub-category 4"
-                                                                                                                        >
-                                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
-                                                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
-                                                                                                                            </svg>
-                                                                                                                        </button>
-                                                                                                                         )}
+                                                                                                                        {(item.can_delete !== false) && (
+                                                                                                                            <button
+                                                                                                                                className="btn btn-link p-0"
+                                                                                                                                onClick={() => handleRemoveSubCategory4Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx)}
+                                                                                                                                aria-label="Remove row from sub-category 4"
+                                                                                                                            >
+                                                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                                    {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                                                    <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                                                </svg>
+                                                                                                                            </button>
+                                                                                                                        )}
                                                                                                                     </td>
                                                                                                                 </tr>
                                                                                                             ))
@@ -6497,18 +6128,15 @@ const EstimationCreationEdit = () => {
                                                                                                                                 Sub-Category Level 5
                                                                                                                             </td>
                                                                                                                             <td>
-                                                                                                                                {/* <SingleSelector
-                                                                                                                                                  options={subCategoryLevel5Options}
-                                                                                                                                                  onChange={handleLevel5Change}
-                                                                                                                                                  value={selectedSubCategoryLevel5}
-                                                                                                                                                  placeholder={`Select Sub-category lvl 5`} // Dynamic placeholder
-                                                                                                                                                /> */}
 
                                                                                                                                 <SingleSelector
                                                                                                                                     options={
                                                                                                                                         (subCategory4.subCategoryLevel5Options || []).map(subCat5 => ({
                                                                                                                                             value: subCat5.value,
-                                                                                                                                            label: subCat5.label
+                                                                                                                                            label: subCat5.label,
+                                                                                                                                            isDisabled: subCategory4.sub_categories_5?.some(
+                                                                                                                                                c5 => c5.id === subCat5.value && c5.id !== subCategory5.id
+                                                                                                                                            )
                                                                                                                                         }))
                                                                                                                                     }
                                                                                                                                     value={
@@ -6668,18 +6296,18 @@ const EstimationCreationEdit = () => {
                                                                                                                                     </td>
 
                                                                                                                                     <td>
-                                                                                                                                         {(item.can_delete || item.name || item.specification || item.labourActLabel  || item.compositeValue  )   && ( 
-                                                                                                                                        <button
-                                                                                                                                            className="btn btn-link p-0"
-                                                                                                                                            onClick={() => handleRemoveSubCategory5Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx)}
-                                                                                                                                            aria-label="Remove row from sub-category 5"
-                                                                                                                                        >
-                                                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
-                                                                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
-                                                                                                                                            </svg>
-                                                                                                                                        </button>
-                                                                                                                                         )}
+                                                                                                                                        {(item.can_delete !== false) && (
+                                                                                                                                            <button
+                                                                                                                                                className="btn btn-link p-0"
+                                                                                                                                                onClick={() => handleRemoveSubCategory5Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx)}
+                                                                                                                                                aria-label="Remove row from sub-category 5"
+                                                                                                                                            >
+                                                                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                                                    {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                                                                    <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                                                                </svg>
+                                                                                                                                            </button>
+                                                                                                                                        )}
                                                                                                                                     </td>
                                                                                                                                 </tr>
                                                                                                                             ))
@@ -6900,7 +6528,7 @@ const EstimationCreationEdit = () => {
                     </button>
                 </Modal.Footer>
             </Modal>
-
+            <ToastContainer />
         </>
     );
 };
