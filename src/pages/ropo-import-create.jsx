@@ -518,7 +518,7 @@ const RopoImportCreate = () => {
   const poCurrencyCode = selectedCurrency?.code || "USD";
 
   // State for conversion rate
-  const [conversionRate, setConversionRate] = useState(82.5);
+  const [conversionRate, setConversionRate] = useState();
 
   // Map companies to options for the dropdown
   const companyOptions = companies.map((company) => ({
@@ -3765,6 +3765,24 @@ const RopoImportCreate = () => {
         return;
       }
 
+      // Validate Delivery Schedules: if present, each visible row must have both PO Delivery Date and a positive PO Delivery Qty
+      const hasSchedules = Array.isArray(deliverySchedules) && deliverySchedules.length > 0;
+      if (hasSchedules) {
+        const anyInvalid = deliverySchedules.some((s, idx) => {
+          if (!isScheduleRowVisible(s, idx)) return false;
+          const hasDate = Boolean(s.po_delivery_date);
+          const qty = parseFloat(s.po_delivery_qty);
+          return !(hasDate && Number.isFinite(qty) && qty > 0);
+        });
+        if (anyInvalid) {
+          alert(
+            "Please enter both PO Delivery Date and a positive PO Delivery Qty for all Delivery Schedule rows."
+          );
+          setIsCreatingOrder(false);
+          return;
+        }
+      }
+
       // Prepare charges data for submission
       const chargesSubmissionData = chargesFromApi.map((charge) => ({
         id: charge.id,
@@ -4082,7 +4100,7 @@ const RopoImportCreate = () => {
 
       console.log("Purchase order created successfully:", response.data);
       alert("Purchase order created successfully!");
-      // navigate(`/ropo-import-list?token=${token}`);
+      navigate(`/ropo-import-list?token=${token}`);
 
       // Optionally redirect or clear form
       // window.location.href = '/po-list'; // Redirect to PO list
@@ -4103,8 +4121,8 @@ const RopoImportCreate = () => {
   const convertInrToUsd = useCallback(
     (inrValue, customRate = null) => {
       if (!inrValue || isNaN(inrValue)) return "";
-      const rate = customRate || conversionRate || 82.5; // Use conversionRate instead of exchangeRate
-      // Proper formula: USD = INR / ExchangeRate
+      const rate = customRate || conversionRate;
+      if (!rate || isNaN(rate) || rate <= 0) return "";
       return (parseFloat(inrValue) / rate).toFixed(2);
     },
     [conversionRate]
@@ -4113,8 +4131,8 @@ const RopoImportCreate = () => {
   const convertUsdToInr = useCallback(
     (usdValue, customRate = null) => {
       if (!usdValue || isNaN(usdValue)) return "";
-      const rate = customRate || conversionRate || 82.5; // Use conversionRate instead of exchangeRate
-      // Proper formula: INR = USD * ExchangeRate
+      const rate = customRate || conversionRate;
+      if (!rate || isNaN(rate) || rate <= 0) return "";
       return (parseFloat(usdValue) * rate).toFixed(2);
     },
     [conversionRate]
@@ -4123,13 +4141,15 @@ const RopoImportCreate = () => {
   // Safe conversion functions that can be used during initial render
   const safeConvertInrToUsd = (inrValue, customRate = null) => {
     if (!inrValue || isNaN(inrValue)) return "";
-    const rate = customRate || conversionRate || 82.5;
+    const rate = customRate || conversionRate;
+    if (!rate || isNaN(rate) || rate <= 0) return "";
     return (parseFloat(inrValue) / rate).toFixed(2);
   };
 
   const safeConvertUsdToInr = (usdValue, customRate = null) => {
     if (!usdValue || isNaN(usdValue)) return "";
-    const rate = customRate || conversionRate || 82.5;
+    const rate = customRate || conversionRate;
+    if (!rate || isNaN(rate) || rate <= 0) return "";
     return (parseFloat(usdValue) * rate).toFixed(2);
   };
 
@@ -4565,18 +4585,18 @@ const RopoImportCreate = () => {
                                     <input
                                       className="form-control"
                                       type="number"
-                                      value={conversionRate}
+                                      value={conversionRate ?? ""}
                                       onChange={(e) => {
-                                        const value = parseFloat(
-                                          e.target.value
-                                        );
-                                        if (value <= 0) {
-                                          alert(
-                                            "Conversion rate must be greater than 0."
-                                          );
+                                        const value = parseFloat(e.target.value);
+                                        if (e.target.value === "") {
+                                          setConversionRate("");
                                           return;
                                         }
-                                        setConversionRate(value || 82.5);
+                                        if (!Number.isFinite(value) || value <= 0) {
+                                          alert("Conversion rate must be greater than 0.");
+                                          return;
+                                        }
+                                        setConversionRate(value);
                                       }}
                                       placeholder="Enter conversion rate"
                                       step="0.01"
@@ -7335,7 +7355,7 @@ const RopoImportCreate = () => {
                 <div className="mb-3">
                   <label className="form-label fw-bold">
                     {" "}
-                    Rate per Nos <span> *</span>
+                    Rate per Nos ({poCurrencyCode}) <span> *</span>
                   </label>
                   <input
                     type="text"
@@ -7397,7 +7417,7 @@ const RopoImportCreate = () => {
             <div className="row mb-3">
               <div className="col-md-6">
                 <div className="mb-3">
-                  <label className="form-label fw-bold">Material Cost</label>
+                  <label className="form-label fw-bold">Material Cost ({poCurrencyCode})</label>
                   <input
                     type="text"
                     className="form-control"
@@ -7409,7 +7429,7 @@ const RopoImportCreate = () => {
               </div>
               <div className="col-md-6">
                 <div className="mb-3">
-                  <label className="form-label fw-bold">Discount Rate</label>
+                  <label className="form-label fw-bold">Discount Rate ({poCurrencyCode})</label>
                   <input
                     type="text"
                     className="form-control"
@@ -7425,7 +7445,7 @@ const RopoImportCreate = () => {
               <div className="col-md-6">
                 <div className="mb-3">
                   <label className="form-label fw-bold">
-                    After Discount Value
+                    After Discount Value ({poCurrencyCode})
                   </label>
                   <input
                     type="text"

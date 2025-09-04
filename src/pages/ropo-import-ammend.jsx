@@ -12,7 +12,7 @@ import { baseURL } from "../confi/apiDomain";
 
 import { useNavigate } from "react-router-dom";
 
-const RopoImportEdit = () => {
+const RopoImportAmmend = () => {
   // State variables for the modal
 
   const [showModal, setShowModal] = useState(false);
@@ -10874,4 +10874,4 @@ const RopoImportEdit = () => {
   );
 };
 
-export default RopoImportEdit;
+export default RopoImportAmmend;

@@ -143,6 +143,7 @@ import MaterialQCList from "./pages/material-qc-list";
 import MaterialQCCreate from "./pages/material-qc-create";
 import MaterialQCDetails from "./pages/material-qc-details";
 import EstimationComparisionList from "./pages/estimation-comparision-list";
+import RopoImportAmmend from "./pages/ropo-import-ammend";
 
 function App() {
   return (
@@ -151,8 +152,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Members />} />
           <Route path="/material-qc-list" element={<MaterialQCList />} />
-           <Route path="/material-qc-create" element={<MaterialQCCreate />} />
-           <Route path="/material-qc-details" element={<MaterialQCDetails />} />
+          <Route path="/material-qc-create" element={<MaterialQCCreate />} />
+          <Route path="/material-qc-details" element={<MaterialQCDetails />} />
           <Route path="/invite-vendor" element={<InviteVendor />} />
           <Route path="/ropo-import-create" element={<RopoImportCreate />} />
           <Route
@@ -168,6 +169,10 @@ function App() {
             element={<RopoMappingDetail />}
           />
           <Route path="/ropo-mapping-edit/:id" element={<RopoMappingEdit />} />
+          <Route
+            path="/ropo-mapping-ammend/:id"
+            element={<RopoImportAmmend />}
+          />
           <Route path="/add-mor" element={<AddMor />} />
           <Route path="/add-po" element={<AddPo />} />
           <Route path="/po-list" element={<PoList />} />
@@ -285,13 +290,13 @@ function App() {
           />
           {/* estimation */}
           <Route
-              path="/estimation-comparision/:id"
-              element={<EstimationComparision />}
-            />
-            <Route
-              path="/estimation-comparision-list"
-              element={<EstimationComparisionList />}
-            />
+            path="/estimation-comparision/:id"
+            element={<EstimationComparision />}
+          />
+          <Route
+            path="/estimation-comparision-list"
+            element={<EstimationComparisionList />}
+          />
           <Route path="/estimation-list" element={<EstimationList />} />
           <Route
             path="/estimation-creation-list"
@@ -305,7 +310,10 @@ function App() {
             path="/estimation-creation-edit/:id"
             element={<EstimationCreationEdit />}
           />
-           <Route path="/estimation-creation-approval/:id" element={<EstimationCreationApproval />} />
+          <Route
+            path="/estimation-creation-approval/:id"
+            element={<EstimationCreationApproval />}
+          />
           <Route
             path="/estimation-creation-details/:id"
             element={<EstimationCreationDetails />}
@@ -396,7 +404,6 @@ function App() {
               element={<EstimationDetailsWings />}
             />
 
-            
             <Route
               path="/estimation-approval-details"
               element={<EstimationApprovalDetails />}
