@@ -2509,41 +2509,47 @@ const creditAdjustment = parseFloat(calculateCreditNoteAdjustment()) || 0;
 // }, [selectedPO]);
 
 useEffect(() => {
-  if (Array.isArray(pendingAdvances) && pendingAdvances.length > 0) {
-    // Only include advances that are not fully recovered
+  if (Array.isArray(pendingAdvances) && pendingAdvances.length > 0 && selectedPO) {
+    // Only include advances that are not fully recovered and match selected PO number
     const eligibleNotes = pendingAdvances.filter(
       (note) =>
-        parseFloat(note.advance_amount || 0) !==
-        parseFloat(note.recovered_amount || 0)
+        parseFloat(note.advance_amount || 0) !== parseFloat(note.recovered_amount || 0) &&
+        note.po_number === selectedPO.po_number
     );
     setSelectedAdvanceNotes(eligibleNotes);
+  } else {
+    setSelectedAdvanceNotes([]);
   }
-}, [pendingAdvances]);
+}, [pendingAdvances, selectedPO]);
 
 
 useEffect(() => {
-  if (Array.isArray(debitNotes) && debitNotes.length > 0) {
-    // Only include debit notes that are not fully recovered
+  if (Array.isArray(debitNotes) && debitNotes.length > 0 && selectedPO) {
+    // Only include debit notes that are not fully recovered and match selected PO number
     const eligibleNotes = debitNotes.filter(
       (note) =>
-        parseFloat(note.debit_note_amount || 0) !==
-        parseFloat(note.recovered_amount || 0)
+        parseFloat(note.debit_note_amount || 0) !== parseFloat(note.recovered_amount || 0) &&
+        note.po_number === selectedPO.po_number
     );
     setSelectedDebitNotes(eligibleNotes);
+  } else {
+    setSelectedDebitNotes([]);
   }
-}, [debitNotes]);
+}, [debitNotes, selectedPO]);
 
 useEffect(() => {
-  if (Array.isArray(creditNotes) && creditNotes.length > 0) {
-    // Only include credit notes that are not fully recovered
+  if (Array.isArray(creditNotes) && creditNotes.length > 0 && selectedPO) {
+    // Only include credit notes that are not fully recovered and match selected PO number
     const eligibleNotes = creditNotes.filter(
       (note) =>
-        parseFloat(note.credit_note_amount || 0) !==
-        parseFloat(note.recovery_till_date || 0)
+        parseFloat(note.credit_note_amount || 0) !== parseFloat(note.recovery_till_date || 0) &&
+        note.po_number === selectedPO.po_number
     );
     setSelectedCreditNotes(eligibleNotes);
+  } else {
+    setSelectedCreditNotes([]);
   }
-}, [creditNotes]);
+}, [creditNotes, selectedPO]);
 
   return (
     <>

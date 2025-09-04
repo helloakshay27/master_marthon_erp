@@ -548,8 +548,8 @@ const DebitNoteList = () => {
     gstin: true,
     pan_no: true,
     debit_note_amount: true,
-    deduction_tax: true,
-    addition_tax: true,
+    // deduction_tax: true,
+    // addition_tax: true,
     total_amount: true,
     status: true,
     due_date: true,
@@ -616,9 +616,9 @@ const DebitNoteList = () => {
     { field: "gstin", headerName: "GSTIN No.", width: 150 },
     { field: "pan_no", headerName: "PAN No.", width: 150 },
     { field: "debit_note_amount", headerName: "Debit Note Amount", width: 150 },
-    { field: "deduction_tax", headerName: "Deduction Tax", width: 150 },
+    // { field: "deduction_tax", headerName: "Deduction Tax", width: 150 },
 
-    { field: "addition_tax", headerName: "Addition Tax", width: 150 },
+    // { field: "addition_tax", headerName: "Addition Tax", width: 150 },
     { field: "total_amount", headerName: "Total Amount", width: 150 },
     { field: "status", headerName: "Status", width: 150 },
     { field: "due_date", headerName: "Due Date", width: 150 },
@@ -707,7 +707,7 @@ display:none !important;
       </style>
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
-          <a href="">Home &gt; Billing &gt; MOR &gt; Credit Note List</a>
+          <a href="">Home &gt; Billing &gt; MOR &gt; Debit  Note List</a>
           <h5 className="mt-4 fw-bold">Debit Note List</h5>
           <div className="material-boxes mt-3">
             <div className="container-fluid">

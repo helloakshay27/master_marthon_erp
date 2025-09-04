@@ -2342,17 +2342,17 @@ const BillBookingEdit = () => {
     }
   };
 
-  // const validateCreditRecovery = (note, value) => {
-  //   const recovery = parseFloat(value) || 0;
-  //   const creditAmount = parseFloat(note.credit_note_amount) || 0;
+  const validateCreditRecovery = (note, value) => {
+    const recovery = parseFloat(value) || 0;
+    const creditAmount = parseFloat(note.credit_note_amount) || 0;
 
-  //   // const outstandingAmount = parseFloat(note.outstanding_current_date) || 0;
-  //   if (recovery > creditAmount) {
-  //     alert("Recovery amount cannot exceed credit amount");
-  //     return false;
-  //   }
-  //   return true;
-  // };
+    // const outstandingAmount = parseFloat(note.outstanding_current_date) || 0;
+    if (recovery > creditAmount) {
+      alert("Recovery amount cannot exceed credit amount");
+      return false;
+    }
+    return true;
+  };
 
   const validateDebitRecovery = (note, value) => {
     // const recovery = parseFloat(value) || 0;

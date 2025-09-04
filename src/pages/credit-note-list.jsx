@@ -570,7 +570,7 @@ const CreditNoteList = () => {
     credit_note_no: true,
     credit_note_date: true,
 
-    credit_note_type: true,
+    // credit_note_type: true,
     created_at: true,
 
     po_number: true,
@@ -580,8 +580,8 @@ const CreditNoteList = () => {
     gstin: true,
     pan_no: true,
     credit_note_amount: true,
-    deduction_tax: true,
-    addition_tax: true,
+    // deduction_tax: true,
+    // addition_tax: true,
     total_amount: true,
     status: true,
     due_date: true,
@@ -624,7 +624,7 @@ const CreditNoteList = () => {
         return <span>{formattedDate}</span>;
       },
     },
-    { field: "credit_note_type", headerName: "Credit Note Type", width: 150 },
+    // { field: "credit_note_type", headerName: "Credit Note Type", width: 150 },
     {
       field: "created_at",
       headerName: "Created On",
@@ -653,9 +653,9 @@ const CreditNoteList = () => {
       headerName: "Credit Note Ammount",
       width: 150,
     },
-    { field: "deduction_tax", headerName: "Deduction Tax", width: 150 },
+    // { field: "deduction_tax", headerName: "Deduction Tax", width: 150 },
 
-    { field: "addition_tax", headerName: "Addition Tax", width: 150 },
+    // { field: "addition_tax", headerName: "Addition Tax", width: 150 },
     { field: "total_amount", headerName: "Total Amount", width: 150 },
     { field: "status", headerName: "Status", width: 150 },
     { field: "due_date", headerName: "Due Date", width: 150 },
