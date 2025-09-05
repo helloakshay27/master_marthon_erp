@@ -1016,6 +1016,14 @@ const RopoImportCreate = () => {
       return;
     }
 
+    // Validation: Prevent entering order qty greater than pending qty
+    const rowAtIndex = materialDetailsData[index];
+    const pendingQty = parseFloat(rowAtIndex?.pending_qty) || 0;
+    if (value !== "" && Number.isFinite(numValue) && numValue > pendingQty) {
+      alert(`Order quantity cannot exceed Pending Qty (${pendingQty}).`);
+      return;
+    }
+
     setMaterialDetailsData((prev) =>
       prev.map((item, idx) =>
         idx === index ? { ...item, order_qty: value } : item
@@ -3670,10 +3678,10 @@ const RopoImportCreate = () => {
   // Calculate supplier advance amount
   const calculateSupplierAdvanceAmount = () => {
     const percentage = parseFloat(supplierAdvancePercentage) || 0;
-    // Base should be addition of all materials' material_cost (USD)
+    // Base should be addition of all materials' after_discount_value (USD)
     const baseUsd = submittedMaterials.reduce((sum, _mat, idx) => {
-      const materialCost = parseFloat(taxRateData[idx]?.materialCost) || 0;
-      return sum + materialCost;
+      const afterDiscountValue = parseFloat(taxRateData[idx]?.afterDiscountValue) || 0;
+      return sum + afterDiscountValue;
     }, 0);
     const amount = (baseUsd * percentage) / 100;
     return amount;
@@ -3865,8 +3873,8 @@ const RopoImportCreate = () => {
             : null,
           payment_terms: termsFormData.paymentTerms || null,
           payment_remarks: termsFormData.paymentRemarks || null,
-          supplier_advance: parseFloat(calculateSupplierAdvanceAmount() || 0),
-          survice_certificate_advance: parseFloat(calculateServiceCertificateAdvanceAmount() || 0),
+          supplier_advance: parseFloat(supplierAdvancePercentage || 0),
+          survice_certificate_advance: parseFloat(serviceCertificateAdvancePercentage || 0),
           total_discount: parseFloat(calculateTotalDiscountAmount() || 0),
           total_value: parseFloat(totalMaterialCost || 0),
           po_date: getLocalDateTime().split("T")[0], // Current date
@@ -4100,7 +4108,7 @@ const RopoImportCreate = () => {
 
       console.log("Purchase order created successfully:", response.data);
       alert("Purchase order created successfully!");
-      navigate(`/ropo-import-list?token=${token}`);
+      // navigate(`/ropo-import-list?token=${token}`);
 
       // Optionally redirect or clear form
       // window.location.href = '/po-list'; // Redirect to PO list
@@ -7072,7 +7080,9 @@ const RopoImportCreate = () => {
                           <td>{item.uom_name || ""}</td>
                           <td>{item.required_quantity || ""}</td>
                           <td>{item.prev_order_qty || ""}</td>
-                          <td>{item.pending_quantity || ""}</td>
+                          <td>{
+                            item.pending_qty ?? item.pending_quantity ?? ""
+                          }</td>
                           <td>
                             <input
                               type="number"

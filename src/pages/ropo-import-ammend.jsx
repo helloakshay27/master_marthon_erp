@@ -1,109 +1,71 @@
 import React, { useState, useEffect, useCallback } from "react";
 
 import { Modal, Button, Form } from "react-bootstrap";
-
 import axios from "axios";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import MultiSelector from "../components/base/Select/MultiSelector";
-
 import SelectBox from "../components/base/Select/SelectBox";
-
 import { baseURL } from "../confi/apiDomain";
-
 import { useNavigate } from "react-router-dom";
 
 const RopoImportAmmend = () => {
+  // Read-only mode for amend page - only allow editing order qty in MOR modal
+  const isReadOnly = true;
+
   // State variables for the modal
 
   const [showModal, setShowModal] = useState(false);
-
   const [exchangeRate, setExchangeRate] = useState();
-
   const [addMORModal, setAddMORModal] = useState(false);
-
   const [editRowIndex, setEditRowIndex] = useState(null);
-
   const [fieldErrors, setFieldErrors] = useState({});
-
   const [apiMaterialInventoryIds, setApiMaterialInventoryIds] = useState();
-
   const navigate = useNavigate();
-
   const urlParams = new URLSearchParams(location.search);
-
   const token = urlParams.get("token");
-
   const poId = urlParams.get("id") || window.location.pathname.split("/").pop();
 
   // State for MOR modal dropdown options
 
   const [inventoryTypes2, setInventoryTypes2] = useState([]);
-
   const [selectedInventory2, setSelectedInventory2] = useState(null);
-
   const [inventorySubTypes2, setInventorySubTypes2] = useState([]);
-
   const [selectedSubType2, setSelectedSubType2] = useState(null);
-
   const [inventoryMaterialTypes2, setInventoryMaterialTypes2] = useState([]);
-
   const [selectedInventoryMaterialTypes2, setSelectedInventoryMaterialTypes2] =
     useState(null);
-
   // Tax modal state variables
-
   const [showTaxModal, setShowTaxModal] = useState(false);
-
   const [tableId, setTableId] = useState(null);
-
   const [taxRateData, setTaxRateData] = useState({});
-
   const [taxOptions, setTaxOptions] = useState([]);
-
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
-
   const [taxPercentageOptions, setTaxPercentageOptions] = useState([]);
-
   const [materialTaxPercentages, setMaterialTaxPercentages] = useState({});
 
   // Form data state
 
   const [formData, setFormData] = useState({
     materialType: "",
-
     materialSubType: "",
-
-    material: "",
-
+    material: "",    
     genericSpecification: "",
-
     colour: "",
-
     brand: "",
-
     effectiveDate: "",
-
     rate: "",
-
     uom: "",
   });
 
   // States to store data company, project ,subproject ,wing
 
   const [companies, setCompanies] = useState([]);
-
   const [projects, setProjects] = useState([]);
-
   const [selectedCompany, setSelectedCompany] = useState(null);
-
   const [selectedProject, setSelectedProject] = useState(null);
-
   const [selectedSite, setSelectedSite] = useState(null);
-
   const [selectedWing, setSelectedWing] = useState(null);
-
   const [siteOptions, setSiteOptions] = useState([]);
-
   const [wingsOptions, setWingsOptions] = useState([]);
 
   // PO form state
@@ -117,111 +79,77 @@ const RopoImportAmmend = () => {
   // Material data from API response
 
   const [submittedMaterials, setSubmittedMaterials] = useState([]);
-
   const [purchaseOrderId, setPurchaseOrderId] = useState(null);
 
   // MOR modal data
 
   const [materialDetailsData, setMaterialDetailsData] = useState([]);
-
   const [selectedMaterialItems, setSelectedMaterialItems] = useState([]);
-
   const [loadingMaterialDetails, setLoadingMaterialDetails] = useState(false);
-
   const [morFormData, setMorFormData] = useState({
     morNumber: "",
-
     morStartDate: "",
-
     morEndDate: "",
-
     projectIds: [],
-
     siteIds: [],
-
     materialType: "",
-
     materialSubType: "",
-
     material: "",
   });
 
   // Terms and conditions state
 
   const [termsConditions, setTermsConditions] = useState([]);
-
   const [selectedConditionCategory, setSelectedConditionCategory] =
     useState(null);
-
   const [conditionCategories, setConditionCategories] = useState([]);
-
   const [materialTermConditions, setMaterialTermConditions] = useState([]);
-
   // Supplier state
 
   const [suppliers, setSuppliers] = useState([]);
-
   const [selectedSupplier, setSelectedSupplier] = useState(null);
-
   const [vendorGstin, setVendorGstin] = useState("");
 
   // Loading state
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
 
   // Tax summary state
 
   const [taxSummary, setTaxSummary] = useState({});
-
-  // Active tab state
-
   const [activeTab, setActiveTab] = useState("po-details"); // "po-details", "rate-taxes", "terms-conditions"
 
   // Terms and conditions form state
 
   const [termsFormData, setTermsFormData] = useState({
     creditPeriod: "",
-
     poValidityPeriod: "",
-
     advanceReminderDuration: "",
-
     paymentTerms: "",
-
     paymentRemarks: "",
-
     remark: "",
-
     comments: "",
   });
 
   // Charges state
 
   const [charges, setCharges] = useState([]);
-
   const [otherCosts, setOtherCosts] = useState([]);
-
   const [chargeNames, setChargeNames] = useState([]);
 
   // New state for charges from API
 
   const [chargesFromApi, setChargesFromApi] = useState([]);
-
   const [selectedServiceProviders, setSelectedServiceProviders] = useState({});
-
   const [loadingCharges, setLoadingCharges] = useState(false);
-
   const [serviceCertificates, setServiceCertificates] = useState({});
-
   const [chargeRemarks, setChargeRemarks] = useState({});
 
   // State for advance calculations
 
   const [supplierAdvancePercentage, setSupplierAdvancePercentage] =
     useState("");
-
   const [
     serviceCertificateAdvancePercentage,
 
@@ -457,7 +385,7 @@ const RopoImportAmmend = () => {
   const fetchEditData = async () => {
     try {
       const response = await axios.get(
-        `${baseURL}purchase_orders/${poId}/ropo_detail.json?token=${token}&po_type=import`
+        `${baseURL}purchase_orders/${poId}/ropo_detail.json?token=${token}&po_type=import&type=amend`
       );
 
       const data = response.data;
@@ -876,6 +804,15 @@ const RopoImportAmmend = () => {
 
         serviceCertificateAdvance: terms.survice_certificate_advance || "",
       }));
+
+      // Set advance percentage state variables
+      setSupplierAdvancePercentage(terms.supplier_advance?.toString() || "");
+      setServiceCertificateAdvancePercentage(terms.survice_certificate_advance?.toString() || "");
+    }
+
+    // Set conversion rate from API response
+    if (data.conversion_rate) {
+      setConversionRate(data.conversion_rate.toString());
     }
 
     // Populate resource term conditions
@@ -1256,7 +1193,7 @@ const RopoImportAmmend = () => {
 
   // State for conversion rate
 
-  const [conversionRate, setConversionRate] = useState(82.5);
+  const [conversionRate, setConversionRate] = useState("");
 
   // Map companies to options for the dropdown
 
@@ -1762,11 +1699,14 @@ const RopoImportAmmend = () => {
       const params = new URLSearchParams();
 
       params.append("token", token);
-
-      params.append("q[mor_type_eq]", "ropo");
-
-      if (selectedCompany?.value)
-        params.append("q[company_id_in][]", selectedCompany.value);
+      params.append("q[mor_type_eq]", "import");
+      if (selectedCompany?.value) {
+        params.append("q[company_id_eq]", selectedCompany.value);
+      }
+      if (poId) {
+        params.append("po_id", poId);
+        params.append("type", "amend");
+      }
 
       if (morFormData.morNumber)
         params.append("q[id_in][]", morFormData.morNumber);
@@ -1875,7 +1815,37 @@ const RopoImportAmmend = () => {
         });
       });
 
-      setMaterialDetailsData(rows);
+      // Preselect already-added materials and carry over their order qty
+      const existingByInventoryId = new Map(
+        (Array.isArray(submittedMaterials) ? submittedMaterials : []).map((m) => [
+          String(m.mor_inventory_id || m.inventory_id || m.id),
+          m,
+        ])
+      );
+
+      const preselectedIndices = [];
+      const adjustedRows = rows.map((r, idx) => {
+        const key = String(r.inventory_id);
+        if (existingByInventoryId.has(key)) {
+          preselectedIndices.push(idx);
+          const existing = existingByInventoryId.get(key);
+          const carriedOrderQty =
+            existing.order_qty ?? existing.poOrderQty ?? existing.po_order_qty;
+          return {
+            ...r,
+            order_qty:
+              carriedOrderQty !== undefined && carriedOrderQty !== null && carriedOrderQty !== ""
+                ? carriedOrderQty
+                : r.order_qty,
+          };
+        }
+        return r;
+      });
+
+      setMaterialDetailsData(adjustedRows);
+      if (preselectedIndices.length > 0) {
+        setSelectedMaterialItems(preselectedIndices);
+      }
     } catch (e) {
       console.error("Failed to fetch MOR material details", e);
 
@@ -1945,21 +1915,26 @@ const RopoImportAmmend = () => {
 
   const handleOrderQtyChange = (index, value) => {
     // Validation: Prevent negative values
-
     const numValue = parseFloat(value);
-
     if (value !== "" && (isNaN(numValue) || numValue < 0)) {
       alert(
         "Order quantity cannot be negative. Please enter a valid positive number."
       );
+      return;
+    }
 
+    // Validation: Prevent entering order qty greater than (pending qty + prev order qty)
+    const rowAtIndex = materialDetailsData[index];
+    const pendingQty = parseFloat(rowAtIndex?.pending_qty ?? rowAtIndex?.pending_quantity) || 0;
+    const prevOrdered = parseFloat(rowAtIndex?.prev_order_qty) || 0;
+    const maxAllowed = pendingQty + prevOrdered;
+    if (value !== "" && Number.isFinite(numValue) && numValue > maxAllowed) {
+      alert(`Order quantity cannot exceed Pending Qty + Prev Order Qty (${maxAllowed}).`);
       return;
     }
 
     setMaterialDetailsData((prev) =>
-      prev.map((item, idx) =>
-        idx === index ? { ...item, order_qty: value } : item
-      )
+      prev.map((item, idx) => (idx === index ? { ...item, order_qty: value } : item))
     );
   };
 
@@ -2003,26 +1978,7 @@ const RopoImportAmmend = () => {
         (idx) => materialDetailsData[idx]
       );
 
-      // Validation: Check for duplicate materials
-
-      const duplicateCheck = selectedRows.some((selectedRow) => {
-        return submittedMaterials.some((existingMaterial) => {
-          // Check if material with same mor_inventory_id already exists
-
-          return (
-            existingMaterial.mor_inventory_id === selectedRow.inventory_id ||
-            existingMaterial.id === selectedRow.inventory_id
-          );
-        });
-      });
-
-      if (duplicateCheck) {
-        alert(
-          "Cannot add duplicate materials. Some selected materials are already added."
-        );
-
-        return;
-      }
+      // Do not block duplicates; we'll merge with existing to update order qty
 
       // Validation: Check for negative or zero order quantities
 
@@ -2068,38 +2024,51 @@ const RopoImportAmmend = () => {
 
       const normalizedFromSubmitted = previouslySubmitted.map((r) => ({
         mor_inventory_id: r.mor_inventory_id || r.inventory_id || r.id,
-
+        po_mor_inventory_id: r.id, // ensure updates for existing
         order_qty: r.order_qty || r.required_quantity || 0,
-
         uom_id: r.uom_id || null,
-
         generic_info_id: r.generic_info_id || null,
-
         brand_id: r.brand_id || null,
-
         colour_id: r.colour_id || null,
       }));
 
-      const normalizedFromSelected = selectedRows.map((r) => ({
-        mor_inventory_id: r.mor_inventory_id || r.inventory_id,
+      const existingByMorInv = new Map(
+        previouslySubmitted.map((m) => [
+          String(m.mor_inventory_id || m.inventory_id || m.id),
+          m,
+        ])
+      );
 
+      const normalizedFromSelected = selectedRows.map((r) => {
+        const morInvId = r.mor_inventory_id || r.inventory_id;
+        const existing = existingByMorInv.get(String(morInvId));
+        return {
+          mor_inventory_id: morInvId,
+          po_mor_inventory_id: existing ? existing.id : undefined,
         order_qty: r.order_qty || r.required_quantity || 0,
-
         uom_id: r.uom_id || null,
-
         generic_info_id: r.generic_info_id || null,
-
         brand_id: r.brand_id || null,
-
         colour_id: r.colour_id || null,
-      }));
+        };
+      });
 
       const dedupMap = new Map();
 
       [...normalizedFromSubmitted, ...normalizedFromSelected].forEach((m) => {
         if (!m || m.mor_inventory_id == null) return;
 
-        dedupMap.set(String(m.mor_inventory_id), m);
+        const key = String(m.mor_inventory_id);
+        const prev = dedupMap.get(key);
+        if (prev) {
+          dedupMap.set(key, {
+            ...prev,
+            ...m,
+            po_mor_inventory_id: prev.po_mor_inventory_id || m.po_mor_inventory_id,
+          });
+        } else {
+          dedupMap.set(key, m);
+        }
       });
 
       const materials = Array.from(dedupMap.values());
@@ -2107,7 +2076,7 @@ const RopoImportAmmend = () => {
       // Prepare API payload
 
       const payload = {
-        po_id: purchaseOrderId || null,
+        po_id: purchaseOrderId || poId || null,
 
         company_id: selectedCompany?.value,
 
@@ -2178,39 +2147,42 @@ const RopoImportAmmend = () => {
         mappedFromApi.length > 0
           ? mappedFromApi
           : selectedRows.map((r) => ({
-              // Fallback: if API didn't return materials, use mor inventory id
-
               id: r.inventory_id,
-
-              mor_inventory_id: r.inventory_id, // Add this for duplicate checking
-
+              mor_inventory_id: r.inventory_id,
               mor_id: r.mor_id,
-
               mor_number: r.mor_number,
-
               mor_date: r.mor_date,
-
               project_name: r.project_name,
-
               sub_project_name: r.sub_project_name,
-
               material_name: r.material_name || r.material,
-
               uom_name: r.uom_name,
-
               required_quantity: r.required_quantity,
-
               prev_order_qty: r.prev_order_qty,
-
               order_qty: r.order_qty,
             }));
 
+      // Merge by mor_inventory_id, preserving existing order and updating in place
       setSubmittedMaterials((prev) => {
-        const seen = new Set(prev.map((x) => `${x.id}`));
+        const addByMorInv = new Map(
+          rowsToAdd.map((r) => [String(r.mor_inventory_id), r])
+        );
 
-        const unique = rowsToAdd.filter((r) => !seen.has(`${r.id}`));
+        const updated = prev.map((existing) => {
+          const key = String(existing.mor_inventory_id);
+          if (addByMorInv.has(key)) {
+            const row = addByMorInv.get(key);
+            addByMorInv.delete(key);
+            return {
+              ...existing,
+              ...row,
+              id: row.id ?? existing.id,
+            };
+          }
+          return existing;
+        });
 
-        return [...prev, ...unique];
+        const appended = Array.from(addByMorInv.values());
+        return appended.length > 0 ? [...updated, ...appended] : updated;
       });
 
       alert(`Successfully added ${selectedRows.length} material(s)`);
@@ -5149,13 +5121,9 @@ const RopoImportAmmend = () => {
                     material.material_name ||
                     material.material?.material_name ||
                     "",
-
                   charge_name: getTaxNameById(tax.resource_id),
-
                   resource_id: tax.resource_id,
-
                   resource_type: tax.resource_type,
-
                   amount: tax.amount,
 
                   amount_inr: convertUsdToInr(tax.amount, conversionRate), // Convert USD to INR
@@ -5376,12 +5344,12 @@ const RopoImportAmmend = () => {
   const calculateSupplierAdvanceAmount = () => {
     const percentage = parseFloat(supplierAdvancePercentage) || 0;
 
-    // Base should be addition of all materials' material_cost (USD)
+    // Base should be addition of all materials' after_discount_value (USD)
 
     const baseUsd = submittedMaterials.reduce((sum, _mat, idx) => {
-      const materialCost = parseFloat(taxRateData[idx]?.materialCost) || 0;
+      const afterDiscountValue = parseFloat(taxRateData[idx]?.afterDiscountValue) || 0;
 
-      return sum + materialCost;
+      return sum + afterDiscountValue;
     }, 0);
 
     const amount = (baseUsd * percentage) / 100;
@@ -5992,7 +5960,7 @@ const RopoImportAmmend = () => {
       console.log("Creating purchase order with payload:", payload);
 
       const response = await axios.post(
-        `${baseURL}purchase_orders.json?token=${token}`,
+        `${baseURL}purchase_orders/${poId}.json?token=${token}&amend=true`,
 
         payload
       );
@@ -6026,11 +5994,8 @@ const RopoImportAmmend = () => {
   const convertInrToUsd = useCallback(
     (inrValue, customRate = null) => {
       if (!inrValue || isNaN(inrValue)) return "";
-
-      const rate = customRate || conversionRate || 82.5; // Use conversionRate instead of exchangeRate
-
-      // Proper formula: USD = INR / ExchangeRate
-
+      const rate = (customRate ?? conversionRate);
+      if (!rate || isNaN(rate) || rate <= 0) return "";
       return (parseFloat(inrValue) / rate).toFixed(2);
     },
 
@@ -6040,11 +6005,8 @@ const RopoImportAmmend = () => {
   const convertUsdToInr = useCallback(
     (usdValue, customRate = null) => {
       if (!usdValue || isNaN(usdValue)) return "";
-
-      const rate = customRate || conversionRate || 82.5; // Use conversionRate instead of exchangeRate
-
-      // Proper formula: INR = USD * ExchangeRate
-
+      const rate = (customRate ?? conversionRate);
+      if (!rate || isNaN(rate) || rate <= 0) return "";
       return (parseFloat(usdValue) * rate).toFixed(2);
     },
 
@@ -6055,17 +6017,15 @@ const RopoImportAmmend = () => {
 
   const safeConvertInrToUsd = (inrValue, customRate = null) => {
     if (!inrValue || isNaN(inrValue)) return "";
-
-    const rate = customRate || conversionRate || 82.5;
-
+    const rate = (customRate ?? conversionRate);
+    if (!rate || isNaN(rate) || rate <= 0) return "";
     return (parseFloat(inrValue) / rate).toFixed(2);
   };
 
   const safeConvertUsdToInr = (usdValue, customRate = null) => {
     if (!usdValue || isNaN(usdValue)) return "";
-
-    const rate = customRate || conversionRate || 82.5;
-
+    const rate = (customRate ?? conversionRate);
+    if (!rate || isNaN(rate) || rate <= 0) return "";
     return (parseFloat(usdValue) * rate).toFixed(2);
   };
 
@@ -6619,21 +6579,20 @@ const RopoImportAmmend = () => {
                                     <input
                                       className="form-control"
                                       type="number"
-                                      value={conversionRate}
+                                      value={conversionRate ?? ""}
                                       onChange={(e) => {
-                                        const value = parseFloat(
-                                          e.target.value
-                                        );
-
-                                        if (value <= 0) {
+                                        if (e.target.value === "") {
+                                          setConversionRate("");
+                                          return;
+                                        }
+                                        const value = parseFloat(e.target.value);
+                                        if (!Number.isFinite(value) || value <= 0) {
                                           alert(
                                             "Conversion rate must be greater than 0."
                                           );
-
                                           return;
                                         }
-
-                                        setConversionRate(value || 82.5);
+                                        setConversionRate(value);
                                       }}
                                       placeholder="Enter conversion rate"
                                       step="0.01"
@@ -7322,6 +7281,7 @@ const RopoImportAmmend = () => {
                                           </td>
                                           <td>
                                             <SingleSelector
+                                              isDisabled={isReadOnly}
                                               options={supplierOptions}
                                               value={
                                                 selectedServiceProviders[
@@ -7453,6 +7413,7 @@ const RopoImportAmmend = () => {
 
                                         <td>
                                           <SingleSelector
+                                            isDisabled={isReadOnly}
                                             options={supplierOptions}
                                             value={
                                               selectedServiceProviders[
@@ -7529,6 +7490,7 @@ const RopoImportAmmend = () => {
                                     type="button"
                                     className="btn purple-btn2"
                                     onClick={addCharge}
+                                    disabled={isReadOnly}
                                   >
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
@@ -7665,6 +7627,7 @@ const RopoImportAmmend = () => {
                                   type="button"
                                   className="btn purple-btn2"
                                   onClick={addCost}
+                                  disabled={isReadOnly}
                                 >
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -7864,6 +7827,8 @@ const RopoImportAmmend = () => {
                                         )
                                       }
                                       placeholder="Enter credit period"
+                                      disabled={isReadOnly}
+                                      readOnly={isReadOnly}
                                     />
                                   </div>
                                 </div>
@@ -7886,6 +7851,8 @@ const RopoImportAmmend = () => {
                                         )
                                       }
                                       placeholder="Enter validity period"
+                                      disabled={isReadOnly}
+                                      readOnly={isReadOnly}
                                     />
                                   </div>
                                 </div>
@@ -7910,6 +7877,8 @@ const RopoImportAmmend = () => {
                                         )
                                       }
                                       placeholder="Enter reminder duration"
+                                      disabled={isReadOnly}
+                                      readOnly={isReadOnly}
                                     />
                                   </div>
                                 </div>
@@ -7938,6 +7907,8 @@ const RopoImportAmmend = () => {
                                         e.target.value
                                       )
                                     }
+                                    disabled={isReadOnly}
+                                    readOnly={isReadOnly}
                                     placeholder="Enter payment terms"
                                   />
                                 </div>
@@ -7963,6 +7934,8 @@ const RopoImportAmmend = () => {
                                       )
                                     }
                                     placeholder="Enter payment remarks"
+                                    disabled={isReadOnly}
+                                    readOnly={isReadOnly}
                                   />
                                 </div>
                               </div>
@@ -8162,6 +8135,8 @@ const RopoImportAmmend = () => {
                                       min="0"
                                       max="100"
                                       step="0.01"
+                                      disabled={isReadOnly}
+                                      readOnly={isReadOnly}
                                     />
                                   </div>
                                 </div>
@@ -8231,6 +8206,8 @@ const RopoImportAmmend = () => {
                                       min="0"
                                       max="100"
                                       step="0.01"
+                                      disabled={isReadOnly}
+                                      readOnly={isReadOnly}
                                     />
                                   </div>
                                 </div>
@@ -8308,7 +8285,7 @@ const RopoImportAmmend = () => {
 
                              <div className="mt-3 d-flex justify-content-between align-items-center">
                             <h5 className=" mt-3">Delivery Schedule</h5>
-                            <button className="purple-btn2"> Add</button>
+                          
                           </div>
 
                           <div className="tbl-container me-2 mt-2">
@@ -8447,16 +8424,17 @@ const RopoImportAmmend = () => {
                                 onClick={() =>
                                   setGeneralTerms((prev) => [
                                     ...prev,
-
+                                    
                                     {
                                       id: Date.now(),
-
+                                      
                                       category: "",
-
+                                      
                                       condition: "",
                                     },
                                   ])
                                 }
+                                disabled={isReadOnly}
                               >
                                 <span className="material-symbols-outlined align-text-top me-2">
                                   add
@@ -8653,6 +8631,7 @@ const RopoImportAmmend = () => {
                                                   item
                                                 );
                                               }}
+                                              disabled={isReadOnly}
                                             >
                                               <span className="material-symbols-outlined">
                                                 cancel
@@ -9368,12 +9347,14 @@ const RopoImportAmmend = () => {
                   </label>
 
                   <MultiSelector
-                    options={projects} // filtered projects as {value,label}
+                    options={(selectedCompany?.value
+                      ? ((companies || []).find((c) => `${c.id}` === `${selectedCompany.value}`)?.projects || [])
+                          .map((p) => ({ value: p.id, label: p.name }))
+                      : (projects || []).map((p) => (p.value !== undefined ? p : { value: p?.id, label: p?.name }))
+                    ).filter((o) => o.value != null && o.label)}
                     value={selectedProject}
                     onChange={handleProjectChange}
                     placeholder="Select Project"
-
-                    // isDisabled={!selectedCompany}
                   />
                 </div>
               </div>
@@ -9383,7 +9364,24 @@ const RopoImportAmmend = () => {
                   <label>Sub-project</label>
 
                   <MultiSelector
-                    options={siteOptions}
+                    options={(selectedCompany?.value
+                      ? (() => {
+                          const company = (companies || []).find((c) => `${c.id}` === `${selectedCompany.value}`);
+                          const selectedProjectIds = Array.isArray(selectedProject)
+                            ? selectedProject.map((p) => p.value)
+                            : selectedProject?.value
+                            ? [selectedProject.value]
+                            : [];
+                          const unique = new Map();
+                          (company?.projects || [])
+                            .filter((p) => selectedProjectIds.length === 0 ? true : selectedProjectIds.includes(p.id))
+                            .forEach((p) => (p.pms_sites || []).forEach((s) => {
+                              if (!unique.has(s.id)) unique.set(s.id, { value: s.id, label: s.name });
+                            }));
+                          return Array.from(unique.values());
+                        })()
+                      : (siteOptions || []).map((s) => (s.value !== undefined ? s : { value: s?.id, label: s?.name }))
+                    ).filter((o) => o.value != null && o.label)}
                     value={selectedSite}
                     onChange={handleSiteChange}
                     placeholder="Select Sub-project"
@@ -9706,7 +9704,7 @@ const RopoImportAmmend = () => {
 
                           <td>{item.prev_order_qty || ""}</td>
 
-                          <td>{item.pending_quantity || ""}</td>
+                          <td>{item.pending_qty ?? item.pending_quantity ?? ""}</td>
 
                           <td>
                             <input
@@ -10034,6 +10032,8 @@ const RopoImportAmmend = () => {
                     className="form-control"
                     value={taxRateData[tableId]?.ratePerNos || ""}
                     onChange={(e) => handleRatePerNosChange(e.target.value)}
+                    disabled={isReadOnly}
+                    readOnly={isReadOnly}
                   />
                 </div>
               </div>
@@ -10086,6 +10086,8 @@ const RopoImportAmmend = () => {
                     onChange={(e) =>
                       handleDiscountPercentageChange(e.target.value)
                     }
+                    disabled={isReadOnly}
+                    readOnly={isReadOnly}
                   />
                 </div>
               </div>
