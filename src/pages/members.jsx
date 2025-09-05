@@ -127,6 +127,16 @@ function Members() {
                     Rate List
                   </Link>
                 </li>
+                                <li>
+                  <Link to="/labour-rate-create?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Rate create labour
+                  </Link>
+                </li>
+                  <li>
+                  <Link to="/labour-rate-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Rate labour list
+                  </Link>
+                </li>
               </ul>
               <h1>Gate Pass</h1>
               <ul>

@@ -143,6 +143,10 @@ import MaterialQCList from "./pages/material-qc-list";
 import MaterialQCCreate from "./pages/material-qc-create";
 import MaterialQCDetails from "./pages/material-qc-details";
 import EstimationComparisionList from "./pages/estimation-comparision-list";
+import CreateRateLabour from "./pages/labour-rate-create";
+import LabourRateList from "./pages/labour-rate-list";
+import LabourRateDetails from "./pages/labour-rate-details";
+import EditRateLabour from "./pages/labour-rate-edit";
 import RopoImportAmmend from "./pages/ropo-import-ammend";
 
 function App() {
@@ -635,6 +639,22 @@ function App() {
           <Route
             path="/labour-master-details/:id"
             element={<LabourMasterDetails />}
+          />
+          <Route
+            path="/labour-rate-create"
+            element={<CreateRateLabour />}
+          />
+          <Route
+            path="/labour-rate-list"
+            element={<LabourRateList />}
+          />
+           <Route
+            path="/labour-rate-details/:id"
+            element={<LabourRateDetails />}
+          />
+           <Route
+            path="/labour-rate-edit/:id"
+            element={<EditRateLabour />}
           />
         </Routes>
       </div>
