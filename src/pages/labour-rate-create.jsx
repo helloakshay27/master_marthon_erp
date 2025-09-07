@@ -239,30 +239,30 @@ const CreateRateLabour = () => {
         const errors = {};
 
         // Validate category and effective date
-        if (!selectedCategory) errors.category = "Main Category is required.";
+        // if (!selectedCategory) errors.category = "Main Category is required.";
         // if (!selectedSubCategory) errors.subCategory = "Sub-category Level 2 is required.";
         // if (!selectedSubCategoryLevel3) errors.subCategory3 = "Sub-category Level 3 is required.";
         // if (!selectedSubCategoryLevel4) errors.subCategory4 = "Sub-category Level 4 is required.";
-        if (!formData.effectiveDate) errors.effectiveDate = "Effective Date is required.";
-        if (!formData.uom) errors.uom = "UOM is required.";
+        // if (!formData.effectiveDate) errors.effectiveDate = "Effective Date is required.";
+        // if (!formData.uom) errors.uom = "UOM is required.";
 
         // Validate each labour row
-        const rowErrors = labourRows.map(row => {
-            const r = {};
-            if (!row.activity) r.activity = "Labour Activity is required.";
-            if (!row.rate || isNaN(parseFloat(row.rate))) r.rate = "Valid Rate is required.";
-            return r;
-        });
-        // If any row has errors, show error and return
-        if (rowErrors.some(r => Object.keys(r).length > 0)) {
-            toast.error("Please fill all Labour Activity and Rate fields correctly.");
-            setFieldErrors(errors);
-            return;
-        }
-        if (Object.keys(errors).length > 0) {
-            setFieldErrors(errors);
-            return;
-        }
+        // const rowErrors = labourRows.map(row => {
+        //     const r = {};
+        //     if (!row.activity) r.activity = "Labour Activity is required.";
+        //     if (!row.rate || isNaN(parseFloat(row.rate))) r.rate = "Valid Rate is required.";
+        //     return r;
+        // });
+        // // If any row has errors, show error and return
+        // if (rowErrors.some(r => Object.keys(r).length > 0)) {
+        //     toast.error("Please fill all Labour Activity and Rate fields correctly.");
+        //     setFieldErrors(errors);
+        //     return;
+        // }
+        // if (Object.keys(errors).length > 0) {
+        //     setFieldErrors(errors);
+        //     return;
+        // }
 
         // Duplicate check: prevent same activity in the same category/row
         const seen = new Set();
@@ -1203,7 +1203,7 @@ const CreateRateLabour = () => {
                                               
                                             </th>
                                            
-                                            <th className="text-start">Edit</th>
+                                            {/* <th className="text-start">Edit</th> */}
                                             <th className="text-start">Action</th>
                                         </tr>
                                     </thead>
@@ -1247,15 +1247,15 @@ const CreateRateLabour = () => {
                                                         </div>
                                                     </td>
                                                  
-                                                    <td className="text-start">
+                                                    {/* <td className="text-start">
                                                         <span
                                                             // className="btn btn-sm btn-primary me-2"
                                                             onClick={() => handleEditRow(index, row.material)}
                                                         >
                                                             {/* Edit */}
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"></path></svg>
+                                                            {/* <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"></path></svg>
                                                         </span>
-                                                    </td>
+                                                    </td> */} 
                                                     <td className="text-start">
                                                         <button
                                                             className="btn mt-0 pt-0"
