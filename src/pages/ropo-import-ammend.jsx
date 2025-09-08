@@ -3625,7 +3625,7 @@ const RopoImportAmmend = () => {
     const fetchTaxOptions = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}&entity_sub_type=import`
         );
 
         console.log("Tax options response:", response.data);
@@ -3689,7 +3689,7 @@ const RopoImportAmmend = () => {
     const fetchDeductionTaxOptions = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}&entity_sub_type=import`
         );
 
         if (response.data?.taxes) {
@@ -5959,7 +5959,7 @@ const RopoImportAmmend = () => {
 
       console.log("Creating purchase order with payload:", payload);
 
-      const response = await axios.post(
+      const response = await axios.put(
         `${baseURL}purchase_orders/${poId}.json?token=${token}&amend=true`,
 
         payload

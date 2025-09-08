@@ -2366,7 +2366,7 @@ const RopoImportCreate = () => {
     const fetchTaxOptions = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}&entity_sub_type=import`
         );
         console.log("Tax options response:", response.data);
 
@@ -2408,7 +2408,7 @@ const RopoImportCreate = () => {
     const fetchDeductionTaxOptions = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}&entity_sub_type=import`
         );
 
         if (response.data?.taxes) {
@@ -4108,7 +4108,7 @@ const RopoImportCreate = () => {
 
       console.log("Purchase order created successfully:", response.data);
       alert("Purchase order created successfully!");
-      // navigate(`/ropo-import-list?token=${token}`);
+      navigate(`/ropo-import-list?token=${token}`);
 
       // Optionally redirect or clear form
       // window.location.href = '/po-list'; // Redirect to PO list

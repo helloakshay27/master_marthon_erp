@@ -3754,7 +3754,7 @@ const RopoImportEdit = () => {
     const fetchTaxOptions = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}&entity_sub_type=import`
         );
 
         console.log("Tax options response:", response.data);
@@ -3818,7 +3818,7 @@ const RopoImportEdit = () => {
     const fetchDeductionTaxOptions = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}&entity_sub_type=import`
         );
 
         if (response.data?.taxes) {
