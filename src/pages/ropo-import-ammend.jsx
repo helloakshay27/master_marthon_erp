@@ -4251,7 +4251,7 @@ const RopoImportAmmend = () => {
     // Add addition taxes/charges
 
     additionTaxes.forEach((tax) => {
-      if (tax.amount) {
+      if (tax.amount && !tax.inclusive) {
         const amount = parseFloat(tax.amount) || 0;
 
         netCost += amount;
@@ -4261,7 +4261,7 @@ const RopoImportAmmend = () => {
     // Subtract deduction taxes/charges
 
     deductionTaxes.forEach((tax) => {
-      if (tax.amount) {
+      if (tax.amount && !tax.inclusive) {
         const amount = parseFloat(tax.amount) || 0;
 
         netCost -= amount;
@@ -4869,10 +4869,12 @@ const RopoImportAmmend = () => {
         // Calculate net cost
 
         const additionTotal = updatedAdditionTaxes.reduce((sum, tax) => {
+          if (tax.inclusive) return sum;
           return sum + (parseFloat(tax.amount) || 0);
         }, 0);
 
         const deductionTotal = prev.deductionTaxes.reduce((sum, tax) => {
+          if (tax.inclusive) return sum;
           return sum + (parseFloat(tax.amount) || 0);
         }, 0);
 
@@ -4926,10 +4928,12 @@ const RopoImportAmmend = () => {
         // Calculate net cost
 
         const additionTotal = prev.additionTaxes.reduce((sum, tax) => {
+          if (tax.inclusive) return sum;
           return sum + (parseFloat(tax.amount) || 0);
         }, 0);
 
         const deductionTotal = updatedDeductionTaxes.reduce((sum, tax) => {
+          if (tax.inclusive) return sum;
           return sum + (parseFloat(tax.amount) || 0);
         }, 0);
 
@@ -5925,17 +5929,23 @@ const RopoImportAmmend = () => {
             .filter((s) => {
               const qty = parseFloat(s.po_delivery_qty) || 0;
               const hasDate = Boolean(s.po_delivery_date);
-              return qty > 0 && hasDate && isScheduleRowVisible(s);
+              const dateObj = hasDate ? new Date(s.po_delivery_date) : null;
+              const isValidDate = dateObj ? !isNaN(dateObj.getTime()) : false;
+              return qty > 0 && isValidDate && isScheduleRowVisible(s);
             })
-            .map((s) => ({
-              po_delivery_date: new Date(s.po_delivery_date).toISOString().split('T')[0],
-              order_qty: parseFloat(s.po_delivery_qty) || 0,
-              mor_inventory_schedule_id: s.mor_inventory_schedule_id || s.id || null,
-              delivery_address: s.store_address || '',
-              store_name: s.store_name || '',
-              remarks: s.remarks || '',
-              _destroy: false,
-            })),
+            .map((s) => {
+              const dateObj = new Date(s.po_delivery_date);
+              const ymd = dateObj.toISOString().split('T')[0];
+              return {
+                po_delivery_date: ymd,
+                order_qty: parseFloat(s.po_delivery_qty) || 0,
+                mor_inventory_schedule_id: s.mor_inventory_schedule_id || s.id || null,
+                delivery_address: s.store_address || '',
+                store_name: s.store_name || '',
+                remarks: s.remarks || '',
+                _destroy: false,
+              };
+            }),
 
           // Attachments
 

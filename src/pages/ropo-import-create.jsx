@@ -2840,7 +2840,8 @@ const RopoImportCreate = () => {
 
     // Add addition taxes/charges
     additionTaxes.forEach((tax) => {
-      if (tax.amount) {
+      // Exclude inclusive taxes from net cost
+      if (tax.amount && !tax.inclusive) {
         const amount = parseFloat(tax.amount) || 0;
         netCost += amount;
       }
@@ -2848,7 +2849,8 @@ const RopoImportCreate = () => {
 
     // Subtract deduction taxes/charges
     deductionTaxes.forEach((tax) => {
-      if (tax.amount) {
+      // Exclude inclusive taxes from net cost
+      if (tax.amount && !tax.inclusive) {
         const amount = parseFloat(tax.amount) || 0;
         netCost -= amount;
       }
@@ -3312,10 +3314,12 @@ const RopoImportCreate = () => {
 
         // Calculate net cost
         const additionTotal = updatedAdditionTaxes.reduce((sum, tax) => {
+          if (tax.inclusive) return sum;
           return sum + (parseFloat(tax.amount) || 0);
         }, 0);
 
         const deductionTotal = prev.deductionTaxes.reduce((sum, tax) => {
+          if (tax.inclusive) return sum;
           return sum + (parseFloat(tax.amount) || 0);
         }, 0);
 
@@ -3361,10 +3365,12 @@ const RopoImportCreate = () => {
 
         // Calculate net cost
         const additionTotal = prev.additionTaxes.reduce((sum, tax) => {
+          if (tax.inclusive) return sum;
           return sum + (parseFloat(tax.amount) || 0);
         }, 0);
 
         const deductionTotal = updatedDeductionTaxes.reduce((sum, tax) => {
+          if (tax.inclusive) return sum;
           return sum + (parseFloat(tax.amount) || 0);
         }, 0);
 
@@ -4836,7 +4842,7 @@ const RopoImportCreate = () => {
                                             <td>{index + 1}</td>
                                             <td>{material.material_name || material.material}</td>
                                             <td>{material.uom_name}</td>
-                                            <td>{material.po_qty ?? ""}</td>
+                                            <td>{material.order_qty  ?? ""}</td>
                                             <td>{material.adjusted_qty ?? ""}</td>
                                             <td>{material.tolerance_qty ?? ""}</td>
                                             <td>
