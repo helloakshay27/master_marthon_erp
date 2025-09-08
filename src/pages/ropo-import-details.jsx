@@ -328,14 +328,14 @@ const RopoImportDetails = () => {
 
         // Fetch addition taxes
         const additionResponse = await axios.get(
-          `${baseURL}rfq/events/addition_taxes_dropdown?token=${token}`
+          `${baseURL}rfq/events/addition_taxes_dropdown?token=${token}&entity_sub_type=import`
         );
         console.log("Addition taxes response:", additionResponse.data);
         setChargesAdditionTaxOptions(additionResponse.data.taxes || []);
 
         // Fetch deduction taxes
         const deductionResponse = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}&entity_sub_type=import`
         );
         console.log("Deduction taxes response:", deductionResponse.data);
         setChargesDeductionTaxOptions(deductionResponse.data.taxes || []);
@@ -349,7 +349,7 @@ const RopoImportDetails = () => {
 
         // Fetch tax options for material taxes
         const taxResponse = await axios.get(
-          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}&entity_sub_type=import`
         );
         console.log("Tax options response:", taxResponse.data);
         const taxesData = taxResponse.data.taxes || taxResponse.data;
@@ -364,7 +364,7 @@ const RopoImportDetails = () => {
 
         // Fetch deduction tax options for material taxes
         const deductionTaxResponse = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}&entity_sub_type=import`
         );
         if (deductionTaxResponse.data?.taxes) {
           const formattedOptions = deductionTaxResponse.data.taxes.map(
@@ -1491,23 +1491,43 @@ const RopoImportDetails = () => {
 
                         <div className="tbl-container me-2 mt-3">
                           <table className="w-100">
-                            <thead>
-                              <tr>
-                                <th rowSpan={2}>Charges And Taxes</th>
-                                <th colSpan={2}>Amount</th>
-                                <th rowSpan={2}>Payable Currency</th>
-                                <th rowSpan={2}>Service Certificate</th>
-                                <th rowSpan={2}>Select Service Provider</th>
-                                <th rowSpan={2}>Remarks</th>
-                              </tr>
-                              <tr>
-                                <th>INR</th>
-                                <th>USD</th>
-                              </tr>
-                              <tr>
-                                <th colSpan={7}>Tax Addition(Exclusive)</th>
-                              </tr>
-                            </thead>
+                          <thead>
+                                  <tr>
+                                    <th style={{ width: "200px" }} rowSpan={2}>
+                                      Charges And Taxes
+                                    </th>
+                                    <th style={{ width: "180px" }} colSpan={2}>
+                                      Amount
+                                    </th>
+                                    {/* <th rowSpan={2}>Payable Currency</th> */}
+                                    <th style={{ width: "100px" }} rowSpan={2}>
+                                      Service Certificate
+                                    </th>
+                                    <th style={{ width: "180px" }} rowSpan={2}>
+                                      Select Service Provider
+                                    </th>
+                                    <th style={{ width: "120px" }} rowSpan={2}>
+                                      Remarks
+                                    </th>
+                                    <th style={{ width: "150px" }} rowSpan={2}>
+                                      Service Certificate Advance Allowed (%)
+                                    </th>
+                                    <th style={{ width: "150px" }} rowSpan={2}>
+                                      Service Certificate Advance Amount
+                                    </th>
+                                  </tr>
+
+                                  <tr>
+                                    <th style={{ width: "90px" }}>INR</th>
+                                    <th style={{ width: "90px" }}>
+                                      USD
+                                    </th>
+                                  </tr>
+
+                                  <tr>
+                                    <th colSpan={9}>Tax Addition(Exclusive)</th>
+                                  </tr>
+                                </thead>
                             <tbody>
                               <tr>
                                 <td colSpan={7}>No Records Found.</td>
@@ -1520,18 +1540,19 @@ const RopoImportDetails = () => {
                           <table className="w-100">
                             <thead>
                               <tr>
-                                <th colSpan={6}>Charges (Exclusive)</th>
+                                <th colSpan={8}>Charges (Exclusive)</th>
                               </tr>
 
                               <tr>
-                                <th>Charge Name</th>
+                                {/* <th>Charge Name</th>
                                 <th>Amount (INR)</th>
                                 <th>
                                   Amount ({ropoData?.po_currency || "USD"})
                                 </th>
                                 <th>Service Certificate</th>
                                 <th>Service Provider</th>
-                                <th>Remarks</th>
+                                <th>Remarks</th> */}
+                                
                               </tr>
                             </thead>
                             <tbody>
@@ -1539,28 +1560,28 @@ const RopoImportDetails = () => {
                               exclusiveCharges.length > 0 ? (
                                 exclusiveCharges.map((row) => (
                                   <tr key={row.id}>
-                                    <td>{row.resource_name || "-"}</td>
-                                    <td>
+                                    <td style={{ width: "200px" }}>{row.resource_name || "-"}</td>
+                                    <td style={{ width: "100px" }}>
                                       INR{" "}
                                       {parseFloat(
                                         row.amount_in_inr || 0
                                       ).toFixed(2)}
                                     </td>
-                                    <td>
+                                    <td style={{ width: "100px" }}>
                                       {(
                                         ropoData?.po_currency || "USD"
                                       ).toUpperCase()}{" "}
                                       {parseFloat(row.amount || 0).toFixed(2)}
                                     </td>
-                                    <td>
+                                    <td style={{ width: "100px" }}>
                                       <input
                                         type="checkbox"
                                         checked={Boolean(row.inclusive)}
                                         disabled
                                       />
                                     </td>
-                                    <td>{row.supplier_name || "-"}</td>
-                                    <td>
+                                    <td style={{ width: "200px" }}>{row.supplier_name || "-"}</td>
+                                    <td style={{ width: "120px" }}>
                                       <textarea
                                         className="form-control"
                                         rows={2}
@@ -1568,6 +1589,16 @@ const RopoImportDetails = () => {
                                         readOnly
                                         disabled
                                       />
+                                    </td>
+                                    <td style={{ width: "150px" }}>
+                                      {
+                                        row.service_certificate_advance_allowed
+                                      }
+                                    </td>
+                                    <td style={{ width: "150px" }}>
+                                      {
+                                        row.service_certificate_advance_amount
+                                      }
                                     </td>
                                   </tr>
                                 ))
@@ -3971,25 +4002,10 @@ const RopoImportDetails = () => {
                               <input
                                 type="text"
                                 className="form-control"
-                                value={
-                                  // For ALL addition taxes, show Total Base Cost + Tax Amount in INR
-                                  (() => {
-                                    const baseCostInr = safeConvertUsdToInr(
-                                      taxRateData[tableId]
-                                        ?.afterDiscountValue || 0,
-                                      ropoData?.conversion_rate
-                                    );
-                                    // Convert the stored USD amount back to INR for display
-                                    const taxAmountInr = safeConvertUsdToInr(
-                                      item.amount || 0,
-                                      ropoData?.conversion_rate
-                                    );
-                                    return (
-                                      parseFloat(baseCostInr) +
-                                      parseFloat(taxAmountInr)
-                                    ).toFixed(2);
-                                  })()
-                                }
+                                value={safeConvertUsdToInr(
+                                  item.amount || 0,
+                                  ropoData?.conversion_rate
+                                )}
                                 onChange={(e) =>
                                   handleTaxChargeChange(
                                     tableId,
@@ -4000,25 +4016,17 @@ const RopoImportDetails = () => {
                                   )
                                 }
                                 disabled={true}
-                                placeholder="Base Cost + Tax Amount"
+                                placeholder="Tax Amount (INR)"
                               />
                             </td>
                             <td>
                               <input
                                 type="text"
                                 className="form-control"
-                                value={
-                                  // For ALL addition taxes, show Total Base Cost + Tax Amount in USD
-                                  (
-                                    parseFloat(
-                                      taxRateData[tableId]
-                                        ?.afterDiscountValue || 0
-                                    ) + parseFloat(item.amount || 0)
-                                  ).toFixed(2)
-                                }
+                                value={parseFloat(item.amount || 0).toFixed(2)}
                                 readOnly
                                 disabled={true}
-                                placeholder="Auto calculated"
+                                placeholder="Tax Amount (USD)"
                               />
                             </td>
 
@@ -4086,26 +4094,10 @@ const RopoImportDetails = () => {
                               <input
                                 type="text"
                                 className="form-control"
-                                value={
-                                  // For deduction taxes, show Total Base Cost - Tax Amount in INR
-                                  (() => {
-                                    const baseCostInr = safeConvertUsdToInr(
-                                      taxRateData[tableId]
-                                        ?.afterDiscountValue || 0,
-                                      ropoData?.conversion_rate
-                                    );
-                                    // Convert the stored USD amount back to INR for display
-                                    const taxAmountInr = safeConvertUsdToInr(
-                                      item.amount || 0,
-                                      ropoData?.conversion_rate
-                                    );
-                                    return Math.max(
-                                      0,
-                                      parseFloat(baseCostInr) -
-                                        parseFloat(taxAmountInr)
-                                    ).toFixed(2);
-                                  })()
-                                }
+                                value={safeConvertUsdToInr(
+                                  item.amount || 0,
+                                  ropoData?.conversion_rate
+                                )}
                                 onChange={(e) =>
                                   handleTaxChargeChange(
                                     tableId,
@@ -4116,26 +4108,17 @@ const RopoImportDetails = () => {
                                   )
                                 }
                                 disabled={true}
-                                placeholder="Base Cost - Tax Amount"
+                                placeholder="Tax Amount (INR)"
                               />
                             </td>
                             <td>
                               <input
                                 type="text"
                                 className="form-control"
-                                value={
-                                  // For deduction taxes, show Total Base Cost - Tax Amount in USD
-                                  Math.max(
-                                    0,
-                                    parseFloat(
-                                      taxRateData[tableId]
-                                        ?.afterDiscountValue || 0
-                                    ) - parseFloat(item.amount || 0)
-                                  ).toFixed(2)
-                                }
+                                value={parseFloat(item.amount || 0).toFixed(2)}
                                 readOnly
                                 disabled={true}
-                                placeholder="Auto calculated"
+                                placeholder="Tax Amount (USD)"
                               />
                             </td>
                             <td className="text-center">

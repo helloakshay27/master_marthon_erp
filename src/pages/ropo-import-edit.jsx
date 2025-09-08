@@ -786,7 +786,6 @@ const RopoImportEdit = () => {
 
     setTaxRateData(populatedRateData);
   };
-
   // Populate tax details from mor_inventory_tax_details
 
   const populateTaxDetails = (taxDetails) => {
@@ -1030,10 +1029,12 @@ const RopoImportEdit = () => {
   const getConsolidatedCharges = useCallback(() => {
     if (!chargesFromApi || chargesFromApi.length === 0) return [];
     
-    // Filter only TaxCharge type charges
-
-    const taxCharges = chargesFromApi.filter(
-      (charge) => charge.resource_type === "TaxCharge"
+    // Filter only TaxCharge type charges and exclude inclusive=true
+    const taxCharges = (chargesFromApi || []).filter(
+      (charge) =>
+        charge &&
+        charge.resource_type === "TaxCharge" &&
+        Boolean(charge.inclusive) === false
     );
     
     // Group charges by resource_name (charge name)
@@ -1584,7 +1585,6 @@ const RopoImportEdit = () => {
 
     setFieldErrors({});
   };
-
   const handleEffectiveDateChange = (id, value) => {
     setTableData((prev) =>
       prev.map((row) => {
@@ -2331,7 +2331,6 @@ const RopoImportEdit = () => {
       alert("Error adding materials. Please try again.");
     }
   };
-
   // Tax modal functions
 
   const handleOpenTaxModal = async (rowIndex) => {
@@ -2711,25 +2710,29 @@ const RopoImportEdit = () => {
   };
 
   const removeTaxChargeItem = (rowIndex, id, type) => {
-    setTaxRateData((prev) => ({
-      ...prev,
-
-      [rowIndex]: {
-        ...prev[rowIndex],
-
-        [type === "addition"
-          ? "addition_bid_material_tax_details"
-          : "deduction_bid_material_tax_details"]: prev[rowIndex][
+    setTaxRateData((prev) => {
+      const updatedData = { ...prev };
+      const key =
           type === "addition"
             ? "addition_bid_material_tax_details"
-            : "deduction_bid_material_tax_details"
-        ].map((item) =>
-          item.id === id
-            ? { ...item, _destroy: true } // Mark for deletion
-            : item
+          : "deduction_bid_material_tax_details";
+
+      updatedData[rowIndex] = {
+        ...updatedData[rowIndex],
+        [key]: (updatedData[rowIndex][key] || []).map((item) =>
+          item.id === id ? { ...item, _destroy: true } : item
         ),
-      },
-    }));
+      };
+
+      const newNetCost = calculateNetCostWithTaxes(
+        updatedData[rowIndex]?.afterDiscountValue || 0,
+        updatedData[rowIndex]?.addition_bid_material_tax_details || [],
+        updatedData[rowIndex]?.deduction_bid_material_tax_details || []
+      );
+      updatedData[rowIndex].netCost = newNetCost.toString();
+
+      return updatedData;
+    });
   };
 
   // const handleTaxChargeChange = useCallback(
@@ -2925,15 +2928,10 @@ const RopoImportEdit = () => {
   //       return updatedData;
 
   //     });
-
   //   },
-
   //   [taxOptions]
-
   // );
-
   // In handleTaxChargeChange function, update the input validation logic
-
   const handleTaxChargeChange = useCallback(
     (rowIndex, id, field, value, type) => {
       setTaxRateData((prev) => {
@@ -3134,7 +3132,6 @@ const RopoImportEdit = () => {
 
     [taxOptions, deductionTaxOptions, materialTaxPercentages]
   );
-
   // Update the input field's disabled condition in the modal
 
   const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
@@ -3247,43 +3244,30 @@ const RopoImportEdit = () => {
                   ?.id || tax.resource_id;
             }
 
-            // Calculate the amount to send in USD
-
-            // For ALL addition taxes, send the Tax / Charges per UOM value converted to USD
-
+            // Calculate the amount to send in INR
+            // For ALL addition taxes, send the Tax / Charges per UOM value in INR
             let amountToSend = 0;
-
             if (tax.taxChargePerUom && tax.taxChargePerUom.includes("%")) {
-              // If it's a percentage, calculate the percentage amount in USD
-
+              // Percentage: base is in USD; convert to INR first, then apply percentage
               const percentage =
                 parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
-
-              const baseAmount = currentData.afterDiscountValue || 0;
-
-              amountToSend = (baseAmount * percentage) / 100;
+              const baseUsd = currentData.afterDiscountValue || 0;
+              const baseInr =
+                parseFloat(safeConvertUsdToInr(baseUsd, conversionRate)) || 0;
+              amountToSend = (baseInr * percentage) / 100;
             } else {
-              // If it's a fixed amount, convert the INR value to USD using conversion rate
-
+              // Fixed amount: already entered in INR
               const inrValue = parseFloat(tax.taxChargePerUom) || 0;
-
-              amountToSend =
-                parseFloat(safeConvertInrToUsd(inrValue, conversionRate)) || 0;
+              amountToSend = inrValue;
             }
 
             const payload = {
               resource_type: tax.taxType || "TaxCharge",
-
               resource_id: resolvedResourceId,
-
               amount: amountToSend,
-
               inclusive: tax.inclusive || false,
-
               addition: true,
-
-              remarks: `${tax.taxChargeType} - ${amountToSend} USD`,
-
+              remarks: `${tax.taxChargeType} - INR ${amountToSend}`,
               _destroy: tax._destroy, // Include destroy flag
             };
 
@@ -3341,28 +3325,21 @@ const RopoImportEdit = () => {
                 )?.id || tax.resource_id;
             }
 
-            // Calculate the amount to send in USD
-
-            // For deduction taxes, send the Tax / Charges per UOM value converted to USD
-
+            // Calculate the amount to send in INR
+            // For deduction taxes, send the Tax / Charges per UOM value in INR
             let amountToSend = 0;
-
             if (tax.taxChargePerUom && tax.taxChargePerUom.includes("%")) {
-              // If it's a percentage, calculate the percentage amount in USD
-
+              // Percentage: base is in USD; convert to INR first, then apply percentage
               const percentage =
                 parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
-
-              const baseAmount = currentData.afterDiscountValue || 0;
-
-              amountToSend = (baseAmount * percentage) / 100;
+              const baseUsd = currentData.afterDiscountValue || 0;
+              const baseInr =
+                parseFloat(safeConvertUsdToInr(baseUsd, conversionRate)) || 0;
+              amountToSend = (baseInr * percentage) / 100;
             } else {
-              // If it's a fixed amount, convert the INR value to USD using conversion rate
-
+              // Fixed amount: already entered in INR
               const inrValue = parseFloat(tax.taxChargePerUom) || 0;
-
-              amountToSend =
-                parseFloat(safeConvertInrToUsd(inrValue, conversionRate)) || 0;
+              amountToSend = inrValue;
             }
 
             const payload = {
@@ -3376,7 +3353,7 @@ const RopoImportEdit = () => {
 
               addition: false,
 
-              remarks: `${tax.taxChargeType} - ${amountToSend} USD`,
+              remarks: `${tax.taxChargeType} - INR ${amountToSend}`,
 
               _destroy: tax._destroy, // Include destroy flag
             };
@@ -3393,9 +3370,7 @@ const RopoImportEdit = () => {
           }),
         },
       };
-
       console.log("Saving tax changes with payload:", payload);
-
       console.log("Material ID:", material.id);
 
       try {
@@ -3747,7 +3722,6 @@ const RopoImportEdit = () => {
 
     handleCloseTaxModal();
   };
-
   // Fetch tax options on component mount
 
   useEffect(() => {
@@ -3952,7 +3926,6 @@ const RopoImportEdit = () => {
         console.error("Error fetching inventory types:", error);
       });
   }, []);
-
   // Fetch inventory sub-types when an inventory type is selected
 
   useEffect(() => {
@@ -4178,7 +4151,6 @@ const RopoImportEdit = () => {
   const handleRemove = (id) => {
     setAttachments((prev) => prev.filter((att) => att.id !== id));
   };
-
   const handleFileChange = (e, id) => {
     const file = e.target.files[0];
 
@@ -4370,29 +4342,23 @@ const RopoImportEdit = () => {
 
   const calculateNetCostWithTaxes = (
     baseAmount,
-
     additionTaxes,
-
     deductionTaxes
   ) => {
     let netCost = parseFloat(baseAmount) || 0;
 
-    // Add addition taxes/charges
-
-    additionTaxes.forEach((tax) => {
+    // Add addition taxes/charges (ignore _destroy and inclusive)
+    (additionTaxes || []).filter((t) => !t._destroy).forEach((tax) => {
       if (tax.amount && !tax.inclusive) {
         const amount = parseFloat(tax.amount) || 0;
-
         netCost += amount;
       }
     });
 
-    // Subtract deduction taxes/charges
-
-    deductionTaxes.forEach((tax) => {
+    // Subtract deduction taxes/charges (ignore _destroy and inclusive)
+    (deductionTaxes || []).filter((t) => !t._destroy).forEach((tax) => {
       if (tax.amount && !tax.inclusive) {
         const amount = parseFloat(tax.amount) || 0;
-
         netCost -= amount;
       }
     });
@@ -4551,7 +4517,6 @@ const RopoImportEdit = () => {
       }));
     }
   };
-
   // Recalculate all conversions when conversion rate changes
 
   useEffect(() => {
@@ -4747,7 +4712,6 @@ const RopoImportEdit = () => {
   const removeCost = (id) => {
     setOtherCosts((prev) => prev.filter((cost) => cost.id !== id));
   };
-
   const handleCostChange = (id, field, value) => {
     // Validation: Prevent negative values for amount fields
 
@@ -4768,7 +4732,7 @@ const RopoImportEdit = () => {
     );
   };
 
-  // ...existing code...
+  // ...rest of the code...
 
   // Handle taxes modal functions
 
@@ -4956,7 +4920,6 @@ const RopoImportEdit = () => {
       }));
     }
   };
-
   const handleTaxChange = (type, taxId, field, value) => {
     if (type === "addition") {
       setChargeTaxes((prev) => {
@@ -5208,9 +5171,7 @@ const RopoImportEdit = () => {
   };
 
   // Service providers will use the same data as suppliers
-
   // No need for separate fetchServiceProviders function
-
   // Fetch charges data from API for all submitted materials
 
   const fetchChargesData = async () => {
@@ -5476,6 +5437,15 @@ const RopoImportEdit = () => {
     }));
   };
 
+  // Per-row Service Certificate Advance percentage for Charges (Exclusive)
+  const [serviceCertAdvancePercentByRow, setServiceCertAdvancePercentByRow] = useState({});
+  const handleServiceCertAdvancePercentChange = (rowIndex, value) => {
+    const num = parseFloat(value);
+    if (value === "" || (!isNaN(num) && num >= 0 && num <= 100)) {
+      setServiceCertAdvancePercentByRow((prev) => ({ ...prev, [rowIndex]: value }));
+    }
+  };
+
   // Calculate supplier advance amount
 
   const calculateSupplierAdvanceAmount = () => {
@@ -5536,7 +5506,6 @@ const RopoImportEdit = () => {
       alert("Supplier advance percentage must be between 0 and 100.");
     }
   };
-
   // Handle service certificate advance percentage change
 
   const handleServiceCertificateAdvancePercentageChange = (value) => {
@@ -5570,7 +5539,6 @@ const RopoImportEdit = () => {
 
     return taxData ? taxData.percentage : [];
   };
-
   // Handle purchase order creation
 
   const handleCreatePurchaseOrder = async () => {
@@ -5755,9 +5723,9 @@ const RopoImportEdit = () => {
           payment_remarks: termsFormData.paymentRemarks || null,
 
           supplier_advance: parseFloat(calculateSupplierAdvanceAmount() || 0),
-          survice_certificate_advance: parseFloat(
-            calculateServiceCertificateAdvanceAmount() || 0
-          ),
+          // survice_certificate_advance: parseFloat(
+          //   calculateServiceCertificateAdvanceAmount() || 0
+          // ),
           total_discount: parseFloat(calculateTotalDiscountAmount() || 0),
           total_value: parseFloat(totalMaterialCost || 0),
           po_date: getLocalDateTime().split("T")[0], // Current date
@@ -5783,15 +5751,15 @@ const RopoImportEdit = () => {
             return sum + materialCost;
           }, 0),
 
-          payable_to_service_provider: chargesFromApi
+          // payable_to_service_provider: chargesFromApi
 
-            .filter(
-              (charge) =>
-                charge.resource_type === "TaxCharge" &&
-                Boolean(charge.inclusive)
-            )
+          //   .filter(
+          //     (charge) =>
+          //       charge.resource_type === "TaxCharge" &&
+          //       Boolean(charge.inclusive)
+          //   )
 
-            .reduce((sum, charge) => sum + (parseFloat(charge.amount) || 0), 0),
+          //   .reduce((sum, charge) => sum + (parseFloat(charge.amount) || 0), 0),
 
           remark: termsFormData.remark || "",
 
@@ -6126,7 +6094,7 @@ const RopoImportEdit = () => {
     }
   };
 
-  // ...existing code...
+  // ...rest of the code...
 
   // Currency helpers for modal
 
@@ -6191,7 +6159,6 @@ const RopoImportEdit = () => {
 
     return Math.max(0, base - tax);
   };
-
   return (
     <>
       {/* <main className="h-100 w-100"> */}
@@ -6870,7 +6837,7 @@ const RopoImportEdit = () => {
                                                 xmlns="http://www.w3.org/2000/svg"
                                               >
                                                 <path
-                                                  d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533ZM7.52531 16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
+                                                  d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533H7.52531V16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
                                                   fill="#B25657"
                                                 />
                                               </svg>
@@ -7354,25 +7321,28 @@ const RopoImportEdit = () => {
                               <table className="w-100">
                                 <thead>
                                   <tr>
-                                    <th rowSpan={2}>Charges And Taxes</th>
-                                    <th colSpan={2}>Amount</th>
-                                    <th rowSpan={2}>Payable Currency</th>
-                                    <th rowSpan={2}>Service Certificate</th>
-                                    <th rowSpan={2}>Select Service Provider</th>
-                                    <th rowSpan={2}>Remarks</th>
+                                    <th  style={{ width: '200px' }} rowSpan={2}>Charges And Taxes</th>
+                                    <th style={{ width: '180px' }}colSpan={2}>Amount</th>
+                                    {/* <th rowSpan={2}>Payable Currency</th> */}
+                                    <th  style={{ width: '100px' }}rowSpan={2}>Service Certificate</th>
+                                    <th   style={{ width: '180px' }}rowSpan={2}>Select Service Provider</th>
+                                    <th style={{ width: '120px' }} rowSpan={2}>Remarks</th>
+                                     <th style={{ width: '150px' }} rowSpan={2}>Service Certificate Advance Allowed (%)</th>
+                                    <th style={{ width: '150px' }} rowSpan={2}>Service Certificate Advance Amount</th>
+                                    
                                   </tr>
                                   <tr>
-                                    <th>INR</th>
-                                    <th>USD</th>
+                                    <th style={{ width: '90px' }}>INR</th>
+                                    <th style={{ width: '90px' }}>{poCurrencyCode}</th>
                                   </tr>
                                   <tr>
-                                    <th colSpan={7}>Tax Addition(Exclusive)</th>
+                                    <th colSpan={8}>Tax Addition(Exclusive)</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {loadingCharges ? (
                                     <tr>
-                                      <td colSpan={7} className="text-center">
+                                      <td colSpan={8} className="text-center">
                                         <div
                                           className="spinner-border spinner-border-sm me-2"
                                           role="status"
@@ -7462,7 +7432,7 @@ const RopoImportEdit = () => {
                                       ))
                                   ) : (
                                     <tr>
-                                      <td colSpan={7} className="text-center">
+                                      <td colSpan={8} className="text-center">
                                         No Records Found.
                                       </td>
                                     </tr>
@@ -7475,27 +7445,25 @@ const RopoImportEdit = () => {
                               <table className="w-100">
                                 <thead>
                                   <tr>
-                                    <th colSpan={6}>Charges (Exclusive)</th>
+                                    <th colSpan={8}>Charges (Exclusive)</th>
                                   </tr>
 
                                   <tr>
-                                    <th>Charge Name</th>
-
-                                    <th>Amount (INR)</th>
-
-                                    <th>Amount ({poCurrencyCode})</th>
-                                    <th>Service Certificate</th>
-
-                                    <th>Service Provider</th>
-
-                                    <th>Remarks</th>
+                                    <th style={{ width: '200px' }}>Charge Name</th>
+                                    <th style={{ width: '120px' }}>Amount (INR)</th>
+                                    <th style={{ width: '120px' }}>Amount ({poCurrencyCode})</th>
+                                    <th style={{ width: '100px' }}>Service Certificate</th>
+                                    <th style={{ width: '180px' }}>Service Provider</th>
+                                    <th style={{ width: '120px' }}>Remarks</th>
+                                    <th style={{ width: '150px' }}>Service Certificate Advance Allowed (%)</th>
+                                    <th style={{ width: '150px' }}>Service Certificate Advance Amount</th>
                                   </tr>
                                 </thead>
 
                                 <tbody>
                                   {loadingCharges ? (
                                     <tr>
-                                      <td colSpan={6} className="text-center">
+                                      <td colSpan={8} className="text-center">
                                         <div
                                           className="spinner-border spinner-border-sm me-2"
                                           role="status"
@@ -7603,12 +7571,41 @@ const RopoImportEdit = () => {
                                             }}
                                           />
                                         </td>
+                                        <td>
+                                          <input
+                                            type="number"
+                                            className="form-control"
+                                            value={serviceCertAdvancePercentByRow[index] || ""}
+                                            onChange={(e) => handleServiceCertAdvancePercentChange(index, e.target.value)}
+                                            placeholder="Enter %"
+                                            min="0"
+                                            max="100"
+                                            step="0.01"
+                                          />
+                                        </td>
+                                        <td>
+                                          {(() => {
+                                            const percent = parseFloat(serviceCertAdvancePercentByRow[index] || 0) || 0;
+                                            const usd = (parseFloat(consolidatedCharge.total_amount_usd) || 0) * percent / 100;
+                                            const inr = safeConvertUsdToInr(usd, conversionRate);
+                                            const inrNum = parseFloat(inr) || 0;
+                                            return (
+                                              <input
+                                                className="form-control"
+                                                type="text"
+                                                disabled
+                                                value={`${poCurrencyCode} ${usd.toFixed(2)} (INR ${inrNum.toFixed(2)})`}
+                                                placeholder={`${poCurrencyCode} 0.00 (INR 0.00)`}
+                                              />
+                                            );
+                                          })()}
+                                        </td>
                                       </tr>
                                       )
                                     )
                                   ) : (
                                     <tr>
-                                      <td colSpan={6} className="text-center">
+                                      <td colSpan={8} className="text-center">
                                         No Records Found.
                                       </td>
                                     </tr>
@@ -7616,10 +7613,8 @@ const RopoImportEdit = () => {
                                 </tbody>
                               </table>
                             </div>
-
                             {/* Summary Section
                             {/* Charges Section */}
-
                             <div className="mt-4">
                               <div className="d-flex justify-content-between align-items-center">
                                 <h5 className="mt-3">Charges</h5>
@@ -8286,11 +8281,10 @@ const RopoImportEdit = () => {
                                       )})`}
                                       disabled
                                     />
-                                  </div>
                                 </div>
                               </div>
 
-                              <div className="row">
+                              
                                 <div className="col-md-6 mt-2">
                                   <div className="form-group">
                                     <label className="po-fontBold">
@@ -8312,7 +8306,7 @@ const RopoImportEdit = () => {
                                   </div>
                                 </div>
 
-                                <div className="col-md-6 mt-2">
+                                {/* <div className="col-md-6 mt-2">
                                   <div className="form-group">
                                     <label className="po-fontBold">
                                       Service Certificate Advance Allowed (%)
@@ -8335,9 +8329,9 @@ const RopoImportEdit = () => {
                                       step="0.01"
                                     />
                                   </div>
-                                </div>
+                                </div> */}
 
-                                <div className="col-md-6 mt-2">
+                                {/* <div className="col-md-6 mt-2">
                                   <div className="form-group">
                                     <label className="po-fontBold">
                                       Service Certificate Advance Amount
@@ -8356,7 +8350,7 @@ const RopoImportEdit = () => {
                                       disabled
                                     />
                                   </div>
-                                </div>
+                                </div> */}
                               </div>
                             </div>
 
@@ -8410,9 +8404,7 @@ const RopoImportEdit = () => {
 
                              <div className="mt-3 d-flex justify-content-between align-items-center">
                             <h5 className=" mt-3">Delivery Schedule</h5>
-                            
                           </div>
-
                           <div className="tbl-container me-2 mt-2">
                             <table className="w-100">
                               <thead>
@@ -10261,9 +10253,7 @@ const RopoImportEdit = () => {
                 </div>
               </div>
             </div>
-
             {/* Tax Charges Table */}
-
             <div className="row mt-4">
               <div className="col-12">
                 <div className="table-responsive">
@@ -10573,29 +10563,11 @@ const RopoImportEdit = () => {
                                 type="text"
                                 className="form-control"
                                 value={
-                                  // For ALL addition taxes, show Total Base Cost + Tax Amount in INR
-
-                                  (() => {
-                                    const baseCostInr = safeConvertUsdToInr(
-                                      taxRateData[tableId]
-                                        ?.afterDiscountValue || 0,
-
-                                      conversionRate
-                                    );
-
-                                    // Convert the stored USD amount back to INR for display
-
-                                    const taxAmountInr = safeConvertUsdToInr(
+                                  // Show only the Tax / Charges Amount in INR
+                                  safeConvertUsdToInr(
                                       item.amount || 0,
-
                                       conversionRate
-                                    );
-
-                                    return (
-                                      parseFloat(baseCostInr) +
-                                      parseFloat(taxAmountInr)
-                                    ).toFixed(2);
-                                  })()
+                                  )
                                 }
                                 onChange={(e) =>
                                   handleTaxChargeChange(
@@ -10611,7 +10583,7 @@ const RopoImportEdit = () => {
                                   )
                                 }
                                 disabled={true}
-                                placeholder="Base Cost + Tax Amount"
+                                placeholder="Tax Amount"
                               />
                             </td>
 
@@ -10620,14 +10592,8 @@ const RopoImportEdit = () => {
                                 type="text"
                                 className="form-control"
                                 value={
-                                  // For ALL addition taxes, show Total Base Cost + Tax Amount in USD
-
-                                  (
-                                    parseFloat(
-                                      taxRateData[tableId]
-                                        ?.afterDiscountValue || 0
-                                    ) + parseFloat(item.amount || 0)
-                                  ).toFixed(2)
+                                  // Show only the Tax / Charges Amount in PO currency (USD)
+                                  parseFloat(item.amount || 0).toFixed(2)
                                 }
                                 readOnly
                                 disabled={true}
@@ -10798,30 +10764,11 @@ const RopoImportEdit = () => {
                                 type="text"
                                 className="form-control"
                                 value={
-                                  // For deduction taxes, show Total Base Cost - Tax Amount in INR
-
-                                  (() => {
-                                    const baseCostInr = safeConvertUsdToInr(
-                                      taxRateData[tableId]
-                                        ?.afterDiscountValue || 0,
-
-                                      conversionRate
-                                    );
-
-                                    // Convert the stored USD amount back to INR for display
-
-                                    const taxAmountInr = safeConvertUsdToInr(
+                                  // Show only the Tax / Charges Amount in INR (deduction)
+                                  safeConvertUsdToInr(
                                       item.amount || 0,
-
                                       conversionRate
-                                    );
-
-                                    return Math.max(
-                                      0,
-                                      parseFloat(baseCostInr) -
-                                        parseFloat(taxAmountInr)
-                                    ).toFixed(2);
-                                  })()
+                                  )
                                 }
                                 onChange={(e) =>
                                   handleTaxChargeChange(
@@ -10837,7 +10784,7 @@ const RopoImportEdit = () => {
                                   )
                                 }
                                 disabled={true}
-                                placeholder="Base Cost - Tax Amount"
+                                placeholder="Tax Amount"
                               />
                             </td>
 
@@ -10846,15 +10793,8 @@ const RopoImportEdit = () => {
                                 type="text"
                                 className="form-control"
                                 value={
-                                  // For deduction taxes, show Total Base Cost - Tax Amount in USD
-
-                                  Math.max(
-                                    0,
-                                    parseFloat(
-                                      taxRateData[tableId]
-                                        ?.afterDiscountValue || 0
-                                    ) - parseFloat(item.amount || 0)
-                                  ).toFixed(2)
+                                  // Show only the Tax / Charges Amount in PO currency (USD)
+                                  parseFloat(item.amount || 0).toFixed(2)
                                 }
                                 readOnly
                                 disabled={true}
