@@ -167,16 +167,17 @@ function App() {
           <Route path="/ropo-import-edit/:id" element={<RopoImportEdit />} />
           <Route path="/ropo-import-list" element={<RopoImportList />} />
           <Route path="/ropo-mapping-create" element={<RopoMappingCreate />} />
+           <Route
+            path="/ropo-import-ammend/:id"
+            element={<RopoImportAmmend />}
+          />
           <Route path="/ropo-mapping-list" element={<RopoMappingList />} />
           <Route
             path="/ropo-mapping-detail/:id"
             element={<RopoMappingDetail />}
           />
           <Route path="/ropo-mapping-edit/:id" element={<RopoMappingEdit />} />
-          <Route
-            path="/ropo-mapping-ammend/:id"
-            element={<RopoImportAmmend />}
-          />
+         
           <Route path="/add-mor" element={<AddMor />} />
           <Route path="/add-po" element={<AddPo />} />
           <Route path="/po-list" element={<PoList />} />

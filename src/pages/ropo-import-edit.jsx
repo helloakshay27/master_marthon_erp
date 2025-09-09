@@ -1,159 +1,140 @@
 import React, { useState, useEffect, useCallback } from "react";
-
 import { Modal, Button, Form } from "react-bootstrap";
-
 import axios from "axios";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import MultiSelector from "../components/base/Select/MultiSelector";
-
 import SelectBox from "../components/base/Select/SelectBox";
-
 import { baseURL } from "../confi/apiDomain";
-
 import { useNavigate } from "react-router-dom";
 
 const RopoImportEdit = () => {
   // State variables for the modal
 
   const [showModal, setShowModal] = useState(false);
-
   const [exchangeRate, setExchangeRate] = useState();
-
   const [addMORModal, setAddMORModal] = useState(false);
-
   const [editRowIndex, setEditRowIndex] = useState(null);
-
   const [fieldErrors, setFieldErrors] = useState({});
-
   const [apiMaterialInventoryIds, setApiMaterialInventoryIds] = useState();
-
   const navigate = useNavigate();
-
   const urlParams = new URLSearchParams(location.search);
-
   const token = urlParams.get("token");
-
   const poId = urlParams.get("id") || window.location.pathname.split("/").pop();
 
   // State for MOR modal dropdown options
 
   const [inventoryTypes2, setInventoryTypes2] = useState([]);
-
   const [selectedInventory2, setSelectedInventory2] = useState(null);
-
   const [inventorySubTypes2, setInventorySubTypes2] = useState([]);
-
   const [selectedSubType2, setSelectedSubType2] = useState(null);
-
   const [inventoryMaterialTypes2, setInventoryMaterialTypes2] = useState([]);
-
   const [selectedInventoryMaterialTypes2, setSelectedInventoryMaterialTypes2] =
     useState(null);
 
   // Tax modal state variables
-
   const [showTaxModal, setShowTaxModal] = useState(false);
-
   const [tableId, setTableId] = useState(null);
-
   const [taxRateData, setTaxRateData] = useState({});
-
   const [taxOptions, setTaxOptions] = useState([]);
-
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
-
   const [taxPercentageOptions, setTaxPercentageOptions] = useState([]);
-
   const [materialTaxPercentages, setMaterialTaxPercentages] = useState({});
 
   // Form data state
-
   const [formData, setFormData] = useState({
     materialType: "",
-
     materialSubType: "",
-
     material: "",
-
     genericSpecification: "",
-
     colour: "",
-
     brand: "",
-
     effectiveDate: "",
-
     rate: "",
-
     uom: "",
   });
 
   // States to store data company, project ,subproject ,wing
 
   const [companies, setCompanies] = useState([]);
-
   const [projects, setProjects] = useState([]);
-
   const [selectedCompany, setSelectedCompany] = useState(null);
-
   const [selectedProject, setSelectedProject] = useState(null);
-
   const [selectedSite, setSelectedSite] = useState(null);
-
   const [selectedWing, setSelectedWing] = useState(null);
-
   const [siteOptions, setSiteOptions] = useState([]);
+
   // Normalize options for MOR modal selectors in case API sets raw arrays
+
   const projectsOptions = React.useMemo(() => {
     // Prefer deriving projects from the selected company (without external API)
+
     if (selectedCompany?.value) {
       const company = (companies || []).find(
         (c) => `${c.id}` === `${selectedCompany.value}`
       );
+
       return (company?.projects || [])
+
         .map((p) => ({ value: p.id, label: p.name }))
+
         .filter((o) => o.value != null && o.label);
     }
+
     // Fallback to whatever is in projects state, normalizing
+
     return (projects || [])
+
       .map((p) =>
-        p && (p.value !== undefined && p.label !== undefined)
+        p && p.value !== undefined && p.label !== undefined
           ? p
           : { value: p?.id, label: p?.name }
       )
+
       .filter((o) => o.value != null && o.label);
   }, [selectedCompany, companies, projects]);
 
   const siteOptionsNorm = React.useMemo(() => {
     // Derive sites from selected projects in the selected company
+
     if (selectedCompany?.value) {
       const company = (companies || []).find(
         (c) => `${c.id}` === `${selectedCompany.value}`
       );
+
       const selectedProjectIds = Array.isArray(selectedProject)
         ? selectedProject.map((p) => p.value)
         : selectedProject?.value
         ? [selectedProject.value]
         : [];
+
       const unique = new Map();
       (company?.projects || [])
         .filter((p) =>
-          selectedProjectIds.length === 0 ? true : selectedProjectIds.includes(p.id)
+          selectedProjectIds.length === 0
+            ? true
+            : selectedProjectIds.includes(p.id)
         )
+
         .forEach((p) => {
           (p.pms_sites || []).forEach((s) => {
-            if (!unique.has(s.id)) unique.set(s.id, { value: s.id, label: s.name });
+            if (!unique.has(s.id))
+              unique.set(s.id, { value: s.id, label: s.name });
           });
         });
+
       return Array.from(unique.values());
     }
+
     // Fallback to existing siteOptions
+
     return (siteOptions || [])
+
       .map((s) =>
-        s && (s.value !== undefined && s.label !== undefined)
+        s && s.value !== undefined && s.label !== undefined
           ? s
           : { value: s?.id, label: s?.name }
       )
+
       .filter((o) => o.value != null && o.label);
   }, [companies, selectedCompany, selectedProject, siteOptions]);
 
@@ -292,12 +273,18 @@ const RopoImportEdit = () => {
   const [deliverySchedules, setDeliverySchedules] = useState([]);
 
   // Delivery Schedule helpers and validators
+
   const getOrderQtyForSchedule = (schedule) => {
     try {
-      const schedMorId = schedule?.mor_inventory_id || schedule?.po_mor_inventory_id || schedule?.material_id;
+      const schedMorId =
+        schedule?.mor_inventory_id ||
+        schedule?.po_mor_inventory_id ||
+        schedule?.material_id;
+
       const matched = (submittedMaterials || []).find(
         (m) => `${m.mor_inventory_id}` === `${schedMorId}`
       );
+
       return (
         parseFloat(matched?.order_qty) ||
         parseFloat(matched?.required_quantity) ||
@@ -311,47 +298,77 @@ const RopoImportEdit = () => {
   const handleScheduleDateChange = (rowIndex, value) => {
     setDeliverySchedules((prev) => {
       const list = [...prev];
+
       const row = { ...list[rowIndex] };
+
       const expected = row?.expected_date ? new Date(row.expected_date) : null;
+
       if (expected) {
         const minDate = new Date(expected);
+
         const maxDate = new Date(expected);
+
         maxDate.setFullYear(maxDate.getFullYear() + 1);
+
         const picked = new Date(value);
+
         minDate.setHours(0, 0, 0, 0);
+
         maxDate.setHours(23, 59, 59, 999);
+
         picked.setHours(12, 0, 0, 0);
+
         if (picked < minDate || picked > maxDate) {
           alert(
-            `PO Delivery Date must be between ${minDate
-              .toISOString()
-              .split('T')[0]} and ${maxDate.toISOString().split('T')[0]} (within 1 year of MOR Delivery Schedule).`
+            `PO Delivery Date must be between ${
+              minDate
+
+                .toISOString()
+
+                .split("T")[0]
+            } and ${
+              maxDate.toISOString().split("T")[0]
+            } (within 1 year of MOR Delivery Schedule).`
           );
+
           return prev;
         }
       }
+
       row.po_delivery_date = value;
+
       list[rowIndex] = row;
+
       return list;
     });
   };
 
   const handleSchedulePoQtyChange = (rowIndex, value) => {
-    const entered = value === '' ? '' : parseFloat(value);
-    if (entered !== '' && (isNaN(entered) || entered < 0)) {
-      alert('PO Delivery Qty must be a non-negative number.');
+    const entered = value === "" ? "" : parseFloat(value);
+
+    if (entered !== "" && (isNaN(entered) || entered < 0)) {
+      alert("PO Delivery Qty must be a non-negative number.");
+
       return;
     }
+
     setDeliverySchedules((prev) => {
       const list = [...prev];
+
       const row = { ...list[rowIndex] };
+
       const maxQty = getOrderQtyForSchedule(row);
-      if (entered !== '' && entered > maxQty) {
+
+      if (entered !== "" && entered > maxQty) {
         alert(`PO Delivery Qty cannot exceed current Order Qty (${maxQty}).`);
+
         return prev;
       }
+
       row.po_delivery_qty = value;
+
       list[rowIndex] = row;
+
       return list;
     });
   };
@@ -359,9 +376,13 @@ const RopoImportEdit = () => {
   const handleScheduleStoreNameChange = (rowIndex, value) => {
     setDeliverySchedules((prev) => {
       const list = [...prev];
+
       const row = { ...list[rowIndex] };
+
       row.store_name = value;
+
       list[rowIndex] = row;
+
       return list;
     });
   };
@@ -369,28 +390,46 @@ const RopoImportEdit = () => {
   const handleScheduleRemarksChange = (rowIndex, value) => {
     setDeliverySchedules((prev) => {
       const list = [...prev];
+
       const row = { ...list[rowIndex] };
+
       row.remarks = value;
+
       list[rowIndex] = row;
+
       return list;
     });
   };
 
   const getScheduleMaterialKey = (s) =>
-    `${s?.mor_inventory_id || s?.po_mor_inventory_id || s?.material_id || s?.material_formatted_name || ''}`;
+    `${
+      s?.mor_inventory_id ||
+      s?.po_mor_inventory_id ||
+      s?.material_id ||
+      s?.material_formatted_name ||
+      ""
+    }`;
 
   const isScheduleRowVisible = (s) => {
     try {
       const key = getScheduleMaterialKey(s);
+
       if (!key) return true;
+
       const orderQty = getOrderQtyForSchedule(s) || 0;
+
       const totalEntered = (deliverySchedules || [])
+
         .filter((x) => getScheduleMaterialKey(x) === key)
+
         .reduce((sum, x) => sum + (parseFloat(x.po_delivery_qty) || 0), 0);
+
       if (orderQty <= 0) return true;
+
       if (totalEntered >= orderQty) {
         return (parseFloat(s.po_delivery_qty) || 0) > 0;
       }
+
       return true;
     } catch (e) {
       return true;
@@ -516,23 +555,23 @@ const RopoImportEdit = () => {
       const data = response.data;
 
       console.log("Edit data response:", data);
-      
+
       // Populate form data
 
       populateFormData(data);
-      
+
       // Populate material details
 
       populateMaterialDetails(data.material_details || []);
-      
+
       // Populate rate and taxes
 
       populateRateAndTaxes(data.rate_and_taxes || []);
-      
+
       // Populate other sections
 
       populateOtherSections(data);
-      
+
       // Populate tax details
 
       if (data.mor_inventory_tax_details) {
@@ -576,6 +615,7 @@ const RopoImportEdit = () => {
       currency: data.po_currency
         ? {
             value: data.po_currency.toLowerCase(),
+
             label: data.po_currency.toUpperCase(),
           }
         : null,
@@ -607,6 +647,7 @@ const RopoImportEdit = () => {
     setSelectedSupplier(supplierOption);
 
     // Populate Delivery Schedules from API response
+
     if (data.delivery_schedules) {
       setDeliverySchedules(data.delivery_schedules);
     }
@@ -652,6 +693,7 @@ const RopoImportEdit = () => {
 
               project: {
                 value: selectedProject.id,
+
                 label: selectedProject.name,
               },
             }));
@@ -746,7 +788,6 @@ const RopoImportEdit = () => {
 
     setSubmittedMaterials(populatedMaterials);
   };
-
   // Populate rate and taxes
 
   const populateRateAndTaxes = (rateAndTaxes) => {
@@ -786,11 +827,12 @@ const RopoImportEdit = () => {
 
     setTaxRateData(populatedRateData);
   };
+
   // Populate tax details from mor_inventory_tax_details
 
   const populateTaxDetails = (taxDetails) => {
     const populatedTaxData = {};
-    
+
     // Group tax details by po_mor_inventory_id
 
     const groupedTaxes = taxDetails.reduce((acc, tax) => {
@@ -799,7 +841,7 @@ const RopoImportEdit = () => {
       if (!acc[key]) {
         acc[key] = { addition: [], deduction: [] };
       }
-      
+
       const taxItem = {
         id: tax.id,
 
@@ -819,16 +861,16 @@ const RopoImportEdit = () => {
 
         amount: tax.amount?.toString() || "0",
       };
-      
+
       if (tax.addition) {
         acc[key].addition.push(taxItem);
       } else {
         acc[key].deduction.push(taxItem);
       }
-      
+
       return acc;
     }, {});
-    
+
     // Update taxRateData with tax details
 
     setTaxRateData((prev) => {
@@ -861,10 +903,38 @@ const RopoImportEdit = () => {
       setTaxSummary(data.tax_summary);
     }
 
-    // Populate charges data from mor_inventory_tax_details
+    // Populate charges data from mor_inventory_tax_details (map to internal shape)
 
     if (data.mor_inventory_tax_details) {
-      setChargesFromApi(data.mor_inventory_tax_details);
+      const mappedCharges = (data.mor_inventory_tax_details || [])
+        // Consider only TaxCharge additions that are exclusive (inclusive=false)
+        .filter(
+          (item) =>
+            item &&
+            item.resource_type === "TaxCharge" &&
+            Boolean(item.inclusive) === false
+        )
+        .map((item) => ({
+          id: item.id,
+          material_id: item.po_mor_inventory_id,
+          charge_name: item.resource_name || "",
+          resource_id: item.resource_id,
+          resource_type: item.resource_type,
+          amount: parseFloat(item.amount || 0),
+          amount_inr: parseFloat(item.amount_in_inr || 0),
+          inclusive: Boolean(item.inclusive),
+          addition: Boolean(item.addition),
+          applicable_to_payable: Boolean(item.applicable_to_payable),
+          supplier_id: item.supplier_id ?? null,
+          supplier_name: item.supplier_name || "",
+          remarks: item.remarks || "",
+          service_certificate_advance_percentage:
+            item.service_certificate_advance_percentage ?? null,
+          service_certificate_advance_amount:
+            item.service_certificate_advance_amount ?? null,
+        }));
+
+      setChargesFromApi(mappedCharges);
     }
 
     // Populate charges data from charges_with_taxes
@@ -930,11 +1000,16 @@ const RopoImportEdit = () => {
       }));
 
       // Set advance percentage state variables
-      setSupplierAdvancePercentage(terms.supplier_advance?.toString() || "");
-      setServiceCertificateAdvancePercentage(terms.survice_certificate_advance?.toString() || "");
+
+      setSupplierAdvancePercentage(terms.supplier_advance_percentage?.toString() || "");
+
+      setServiceCertificateAdvancePercentage(
+        terms.survice_certificate_advance?.toString() || ""
+      );
     }
 
     // Set conversion rate from API response
+
     if (data.conversion_rate) {
       setConversionRate(data.conversion_rate.toString());
     }
@@ -944,27 +1019,27 @@ const RopoImportEdit = () => {
     if (data.resource_term_conditions) {
       const populatedTermConditions = data.resource_term_conditions.map(
         (term) => ({
-        id: term.id,
+          id: term.id,
 
-        termConditionId: term.term_condition_id,
+          termConditionId: term.term_condition_id,
 
-        conditionCategory: term.condition_category || "",
+          conditionCategory: term.condition_category || "",
 
-        condition: term.condition || "",
+          condition: term.condition || "",
         })
       );
 
       setTermsConditions(populatedTermConditions);
-      
+
       // Also populate general terms for the General Term & Conditions table
 
       const formattedGeneralTerms = data.resource_term_conditions.map(
         (term) => ({
-        id: term.id,
+          id: term.id,
 
-        category: term.condition_category || "",
+          category: term.condition_category || "",
 
-        condition: term.condition || "",
+          condition: term.condition || "",
         })
       );
 
@@ -977,29 +1052,43 @@ const RopoImportEdit = () => {
   const fetchDeliverySchedules = useCallback(() => {
     if (submittedMaterials && submittedMaterials.length > 0) {
       const morInventoryIds = submittedMaterials
+
         .map((material) => material.mor_inventory_id)
+
         .join(",");
 
       const apiUrl = `${baseURL}purchase_orders/material_delivery_schedules.json?token=${token}&mor_inventory_ids=${morInventoryIds}&type=import`;
-      
+
       console.log("Fetching delivery schedules from:", apiUrl);
-      
+
       axios
+
         .get(apiUrl)
+
         .then((response) => {
           console.log("Delivery schedules response:", response.data);
 
           // Only set delivery schedules if we don't already have them from main API response
+
           setDeliverySchedules((prev) => {
             // If we already have delivery schedules from main API response, don't override
+
             if (prev && prev.length > 0) {
-              console.log("Keeping existing delivery schedules from main API response");
+              console.log(
+                "Keeping existing delivery schedules from main API response"
+              );
+
               return prev;
             }
+
             return response.data.material_delivery_schedules || [];
           });
+
           // Populate Material Specific Term & Conditions from the same response
-          setMaterialTermConditions(response.data.material_term_conditions || []);
+
+          setMaterialTermConditions(
+            response.data.material_term_conditions || []
+          );
         })
 
         .catch((error) => {
@@ -1028,20 +1117,21 @@ const RopoImportEdit = () => {
 
   const getConsolidatedCharges = useCallback(() => {
     if (!chargesFromApi || chargesFromApi.length === 0) return [];
-    
+
     // Filter only TaxCharge type charges and exclude inclusive=true
+
     const taxCharges = (chargesFromApi || []).filter(
       (charge) =>
         charge &&
         charge.resource_type === "TaxCharge" &&
         Boolean(charge.inclusive) === false
     );
-    
-    // Group charges by resource_name (charge name)
+
+    // Group charges by charge_name
 
     const groupedCharges = taxCharges.reduce((acc, charge) => {
-      const chargeName = charge.resource_name || "Unknown";
-      
+      const chargeName = charge.charge_name || "Unknown";
+
       if (!acc[chargeName]) {
         acc[chargeName] = {
           charge_name: chargeName,
@@ -1055,26 +1145,95 @@ const RopoImportEdit = () => {
           charges: [],
         };
       }
-      
+
       // Add amounts
 
       acc[chargeName].total_amount_usd += parseFloat(charge.amount || 0);
 
-      acc[chargeName].total_amount_inr += parseFloat(charge.amount_in_inr || 0);
+      acc[chargeName].total_amount_inr += parseFloat(charge.amount_inr || 0);
 
       acc[chargeName].charge_ids.push(charge.id);
 
       acc[chargeName].charges.push(charge);
-      
+
       return acc;
     }, {});
-    
+
     // Convert to array and sort by charge name
 
     return Object.values(groupedCharges).sort((a, b) =>
       a.charge_name.localeCompare(b.charge_name)
     );
   }, [chargesFromApi]);
+
+  // Initialize preselected fields for Charges (Exclusive) from API data
+  useEffect(() => {
+    if (!Array.isArray(chargesFromApi) || chargesFromApi.length === 0) return;
+
+    // Initialize Service Provider, Remarks, and Service Certificate per charge id
+    setSelectedServiceProviders((prev) => {
+      const next = { ...prev };
+      chargesFromApi.forEach((c) => {
+        if (c && c.id) {
+          if (c.supplier_id && c.supplier_name) {
+            next[c.id] = { value: c.supplier_id, label: c.supplier_name };
+          }
+        }
+      });
+      return next;
+    });
+
+    setChargeRemarks((prev) => {
+      const next = { ...prev };
+      chargesFromApi.forEach((c) => {
+        if (c && c.id) {
+          if (typeof c.remarks === "string") next[c.id] = c.remarks;
+        }
+      });
+      return next;
+    });
+
+    setServiceCertificates((prev) => {
+      const next = { ...prev };
+      chargesFromApi.forEach((c) => {
+        if (c && c.id) {
+          // Map applicable_to_payable to the Service Certificate checkbox
+          if (typeof c.applicable_to_payable === "boolean") {
+            next[c.id] = c.applicable_to_payable;
+          }
+        }
+      });
+      return next;
+    });
+
+    // Initialize Service Certificate Advance % per consolidated row
+    // Derive percentage from total advance amount (INR) / total consolidated base (INR)
+    const consolidated = getConsolidatedCharges();
+    if (Array.isArray(consolidated) && consolidated.length > 0) {
+      setServiceCertAdvancePercentByRow((prev) => {
+        const next = { ...prev };
+        consolidated.forEach((row, idx) => {
+          const totalInr = parseFloat(row.total_amount_inr || 0) || 0;
+          if (totalInr <= 0) return;
+
+          // Sum INR advance amount across all charges in this consolidated row
+          const sumAdvanceInr = (row.charge_ids || []).reduce((sum, id) => {
+            const charge = (chargesFromApi || []).find((c) => c.id === id);
+            const advInr = parseFloat(
+              charge?.service_certificate_advance_amount || 0
+            );
+            return sum + (isNaN(advInr) ? 0 : advInr);
+          }, 0);
+
+          if (sumAdvanceInr > 0) {
+            const percent = (sumAdvanceInr / totalInr) * 100;
+            next[idx] = percent.toFixed(2);
+          }
+        });
+        return next;
+      });
+    }
+  }, [chargesFromApi, getConsolidatedCharges]);
 
   // Fetch inventory types for MOR modal
 
@@ -1270,7 +1429,6 @@ const RopoImportEdit = () => {
       );
     }
   };
-
   // Handle supplier selection
 
   const handleSupplierChange = (selectedOption) => {
@@ -1311,10 +1469,12 @@ const RopoImportEdit = () => {
 
   const [selectedCurrency, setSelectedCurrency] = useState({
     code: "USD",
+
     symbol: "$",
   });
 
   // Dynamic PO currency code for display (e.g., USD, CAD)
+
   const poCurrencyCode = selectedCurrency?.code || "USD";
 
   // State for conversion rate
@@ -1420,7 +1580,6 @@ const RopoImportEdit = () => {
       }));
     }
   };
-
   const handleCreate = (e) => {
     // Prevent form submission and page refresh
 
@@ -1585,6 +1744,7 @@ const RopoImportEdit = () => {
 
     setFieldErrors({});
   };
+
   const handleEffectiveDateChange = (id, value) => {
     setTableData((prev) =>
       prev.map((row) => {
@@ -1824,12 +1984,16 @@ const RopoImportEdit = () => {
       const params = new URLSearchParams();
 
       params.append("token", token);
+
       params.append("q[mor_type_eq]", "import");
+
       if (selectedCompany?.value) {
         params.append("q[company_id_eq]", selectedCompany.value);
       }
+
       if (poId) {
         params.append("po_id", poId);
+
         params.append("type", "edit");
       }
 
@@ -1941,33 +2105,43 @@ const RopoImportEdit = () => {
       });
 
       // Preselect already-added materials and carry over their order qty
+
       const existingByInventoryId = new Map(
-        (Array.isArray(submittedMaterials) ? submittedMaterials : []).map((m) => [
-          String(m.mor_inventory_id || m.inventory_id || m.id),
-          m,
-        ])
+        (Array.isArray(submittedMaterials) ? submittedMaterials : []).map(
+          (m) => [String(m.mor_inventory_id || m.inventory_id || m.id), m]
+        )
       );
 
       const preselectedIndices = [];
+
       const adjustedRows = rows.map((r, idx) => {
         const key = String(r.inventory_id);
+
         if (existingByInventoryId.has(key)) {
           preselectedIndices.push(idx);
+
           const existing = existingByInventoryId.get(key);
+
           const carriedOrderQty =
             existing.order_qty ?? existing.poOrderQty ?? existing.po_order_qty;
+
           return {
             ...r,
+
             order_qty:
-              carriedOrderQty !== undefined && carriedOrderQty !== null && carriedOrderQty !== ""
+              carriedOrderQty !== undefined &&
+              carriedOrderQty !== null &&
+              carriedOrderQty !== ""
                 ? carriedOrderQty
                 : r.order_qty,
           };
         }
+
         return r;
       });
 
       setMaterialDetailsData(adjustedRows);
+
       if (preselectedIndices.length > 0) {
         setSelectedMaterialItems(preselectedIndices);
       }
@@ -2035,31 +2209,44 @@ const RopoImportEdit = () => {
       );
     }
   };
-
   // Handle order quantity change
 
   const handleOrderQtyChange = (index, value) => {
     // Validation: Prevent negative values
+
     const numValue = parseFloat(value);
+
     if (value !== "" && (isNaN(numValue) || numValue < 0)) {
       alert(
         "Order quantity cannot be negative. Please enter a valid positive number."
       );
+
       return;
     }
 
     // Validation: Prevent entering order qty greater than (pending qty + prev order qty)
+
     const rowAtIndex = materialDetailsData[index];
-    const pendingQty = parseFloat(rowAtIndex?.pending_qty ?? rowAtIndex?.pending_quantity) || 0;
+
+    const pendingQty =
+      parseFloat(rowAtIndex?.pending_qty ?? rowAtIndex?.pending_quantity) || 0;
+
     const prevOrdered = parseFloat(rowAtIndex?.prev_order_qty) || 0;
+
     const maxAllowed = pendingQty + prevOrdered;
+
     if (value !== "" && Number.isFinite(numValue) && numValue > maxAllowed) {
-      alert(`Order quantity cannot exceed Pending Qty + Prev Order Qty (${maxAllowed}).`);
+      alert(
+        `Order quantity cannot exceed Pending Qty + Prev Order Qty (${maxAllowed}).`
+      );
+
       return;
     }
 
     setMaterialDetailsData((prev) =>
-      prev.map((item, idx) => (idx === index ? { ...item, order_qty: value } : item))
+      prev.map((item, idx) =>
+        idx === index ? { ...item, order_qty: value } : item
+      )
     );
   };
 
@@ -2084,7 +2271,6 @@ const RopoImportEdit = () => {
       }));
     }
   };
-
   const handleAcceptSelectedMaterials = async () => {
     if (!selectedCompany?.value) {
       alert("Please select a company first.");
@@ -2149,31 +2335,46 @@ const RopoImportEdit = () => {
 
       const normalizedFromSubmitted = previouslySubmitted.map((r) => ({
         mor_inventory_id: r.mor_inventory_id || r.inventory_id || r.id,
+
         po_mor_inventory_id: r.id, // ensure updates for existing
+
         order_qty: r.order_qty || r.required_quantity || 0,
+
         uom_id: r.uom_id || null,
+
         generic_info_id: r.generic_info_id || null,
+
         brand_id: r.brand_id || null,
+
         colour_id: r.colour_id || null,
       }));
 
       const existingByMorInv = new Map(
         previouslySubmitted.map((m) => [
           String(m.mor_inventory_id || m.inventory_id || m.id),
+
           m,
         ])
       );
 
       const normalizedFromSelected = selectedRows.map((r) => {
         const morInvId = r.mor_inventory_id || r.inventory_id;
+
         const existing = existingByMorInv.get(String(morInvId));
+
         return {
           mor_inventory_id: morInvId,
+
           po_mor_inventory_id: existing ? existing.id : undefined,
+
           order_qty: r.order_qty || r.required_quantity || 0,
+
           uom_id: r.uom_id || null,
+
           generic_info_id: r.generic_info_id || null,
+
           brand_id: r.brand_id || null,
+
           colour_id: r.colour_id || null,
         };
       });
@@ -2184,13 +2385,19 @@ const RopoImportEdit = () => {
         if (!m || m.mor_inventory_id == null) return;
 
         const key = String(m.mor_inventory_id);
+
         const prev = dedupMap.get(key);
+
         // Prefer selected row values (especially order_qty); keep po_mor_inventory_id when present
+
         if (prev) {
           dedupMap.set(key, {
             ...prev,
+
             ...m,
-            po_mor_inventory_id: prev.po_mor_inventory_id || m.po_mor_inventory_id,
+
+            po_mor_inventory_id:
+              prev.po_mor_inventory_id || m.po_mor_inventory_id,
           });
         } else {
           dedupMap.set(key, m);
@@ -2203,6 +2410,7 @@ const RopoImportEdit = () => {
 
       const payload = {
         // Ensure existing PO is referenced so API updates instead of creating
+
         po_id: purchaseOrderId || poId || null,
 
         company_id: selectedCompany?.value,
@@ -2275,20 +2483,32 @@ const RopoImportEdit = () => {
           ? mappedFromApi
           : selectedRows.map((r) => ({
               id: r.inventory_id,
+
               mor_inventory_id: r.inventory_id,
+
               mor_id: r.mor_id,
+
               mor_number: r.mor_number,
+
               mor_date: r.mor_date,
+
               project_name: r.project_name,
+
               sub_project_name: r.sub_project_name,
+
               material_name: r.material_name || r.material,
+
               uom_name: r.uom_name,
+
               required_quantity: r.required_quantity,
+
               prev_order_qty: r.prev_order_qty,
+
               order_qty: r.order_qty,
             }));
 
       // Merge by mor_inventory_id, preserving existing order and updating in place
+
       setSubmittedMaterials((prev) => {
         const addByMorInv = new Map(
           rowsToAdd.map((r) => [String(r.mor_inventory_id), r])
@@ -2296,21 +2516,30 @@ const RopoImportEdit = () => {
 
         const updated = prev.map((existing) => {
           const key = String(existing.mor_inventory_id);
+
           if (addByMorInv.has(key)) {
             const row = addByMorInv.get(key);
+
             // Update in place, keep existing id if server didn't return one
+
             addByMorInv.delete(key);
+
             return {
               ...existing,
+
               ...row,
+
               id: row.id ?? existing.id,
             };
           }
+
           return existing;
         });
 
         // Append only truly new materials (not previously present)
+
         const appended = Array.from(addByMorInv.values());
+
         return appended.length > 0 ? [...updated, ...appended] : updated;
       });
 
@@ -2319,7 +2548,7 @@ const RopoImportEdit = () => {
       setAddMORModal(false);
 
       setSelectedMaterialItems([]);
-      
+
       // Fetch delivery schedules after materials are added
 
       setTimeout(() => {
@@ -2331,6 +2560,7 @@ const RopoImportEdit = () => {
       alert("Error adding materials. Please try again.");
     }
   };
+
   // Tax modal functions
 
   const handleOpenTaxModal = async (rowIndex) => {
@@ -2380,6 +2610,7 @@ const RopoImportEdit = () => {
               submittedMaterials[rowIndex]?.material?.material_name ||
               submittedMaterials[rowIndex]?.material ||
               "",
+
             hsnCode: rateData.hsn_code,
 
             ratePerNos: rateData.rate_per_nos?.toString(),
@@ -2402,21 +2633,19 @@ const RopoImportEdit = () => {
 
             addition_bid_material_tax_details:
               rateData.addition_tax_details?.map((tax) => {
-                // Convert USD amount back to INR for the input field
+                // API provides fixed amounts in INR; show INR directly
 
                 let taxChargePerUom = "";
 
                 if (tax.percentage) {
-                  // If it's a percentage, keep it as percentage
-
                   taxChargePerUom = `${tax.percentage}%`;
                 } else {
-                  // If it's a fixed amount, convert USD to INR for display
+                  const inrAmount = parseFloat(tax.amount) || 0;
 
-                  const usdAmount = parseFloat(tax.amount) || 0;
-
-                  taxChargePerUom = convertUsdToInr(usdAmount);
+                  taxChargePerUom = inrAmount.toString();
                 }
+
+                const amountInr = parseFloat(tax.amount || 0) || 0;
 
                 return {
                   id: tax.id,
@@ -2438,27 +2667,31 @@ const RopoImportEdit = () => {
 
                   inclusive: tax.inclusive,
 
-                  amount: tax.amount?.toString() || "0",
+                  // Store INR and USD
+                  amount_inr: amountInr.toString(),
+
+                  amount: safeConvertInrToUsd(
+                    amountInr,
+                    conversionRate
+                  ).toString(),
                 };
               }) || [],
 
             deduction_bid_material_tax_details:
               rateData.deduction_tax_details?.map((tax) => {
-                // Convert USD amount back to INR for the input field
+                // API provides fixed amounts in INR; show INR directly
 
                 let taxChargePerUom = "";
 
                 if (tax.percentage) {
-                  // If it's a percentage, keep it as percentage
-
                   taxChargePerUom = `${tax.percentage}%`;
                 } else {
-                  // If it's a fixed amount, convert USD to INR for display
+                  const inrAmount = parseFloat(tax.amount) || 0;
 
-                  const usdAmount = parseFloat(tax.amount) || 0;
-
-                  taxChargePerUom = convertUsdToInr(usdAmount);
+                  taxChargePerUom = inrAmount.toString();
                 }
+
+                const amountInr = parseFloat(tax.amount || 0) || 0;
 
                 return {
                   id: tax.id,
@@ -2480,7 +2713,13 @@ const RopoImportEdit = () => {
 
                   inclusive: tax.inclusive,
 
-                  amount: tax.amount?.toString() || "0",
+                  // Store INR and USD
+                  amount_inr: amountInr.toString(),
+
+                  amount: safeConvertInrToUsd(
+                    amountInr,
+                    conversionRate
+                  ).toString(),
                 };
               }) || [],
           },
@@ -2712,13 +2951,15 @@ const RopoImportEdit = () => {
   const removeTaxChargeItem = (rowIndex, id, type) => {
     setTaxRateData((prev) => {
       const updatedData = { ...prev };
+
       const key =
-          type === "addition"
-            ? "addition_bid_material_tax_details"
+        type === "addition"
+          ? "addition_bid_material_tax_details"
           : "deduction_bid_material_tax_details";
 
       updatedData[rowIndex] = {
         ...updatedData[rowIndex],
+
         [key]: (updatedData[rowIndex][key] || []).map((item) =>
           item.id === id ? { ...item, _destroy: true } : item
         ),
@@ -2726,9 +2967,12 @@ const RopoImportEdit = () => {
 
       const newNetCost = calculateNetCostWithTaxes(
         updatedData[rowIndex]?.afterDiscountValue || 0,
+
         updatedData[rowIndex]?.addition_bid_material_tax_details || [],
+
         updatedData[rowIndex]?.deduction_bid_material_tax_details || []
       );
+
       updatedData[rowIndex].netCost = newNetCost.toString();
 
       return updatedData;
@@ -2770,7 +3014,6 @@ const RopoImportEdit = () => {
   //               ? taxOptions.find((option) => option.value === value)
 
   //               : deductionTaxOptions.find((option) => option.value === value);
-
   //           // Set the tax type for later reference
 
   //           currentTax.taxType = selectedTaxOption?.type || "TaxCharge";
@@ -2826,7 +3069,6 @@ const RopoImportEdit = () => {
   //           if (currentTax.taxChargeType) {
 
   //             const baseAmount =
-
   //               parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
 
   //             let calculatedAmount = 0;
@@ -2928,10 +3170,15 @@ const RopoImportEdit = () => {
   //       return updatedData;
 
   //     });
+
   //   },
+
   //   [taxOptions]
+
   // );
+
   // In handleTaxChargeChange function, update the input validation logic
+
   const handleTaxChargeChange = useCallback(
     (rowIndex, id, field, value, type) => {
       setTaxRateData((prev) => {
@@ -3001,6 +3248,12 @@ const RopoImportEdit = () => {
 
                   currentTax.amount = calculatedAmount.toString();
 
+                  currentTax.amount_inr = (
+                    parseFloat(
+                      safeConvertUsdToInr(calculatedAmount, conversionRate)
+                    ) || 0
+                  ).toString();
+
                   // Find the percentage ID from materialTaxPercentages
 
                   const percentages =
@@ -3021,6 +3274,8 @@ const RopoImportEdit = () => {
                   const usdValue =
                     parseFloat(safeConvertInrToUsd(inrValue, conversionRate)) ||
                     0;
+
+                  currentTax.amount_inr = inrValue.toString();
 
                   currentTax.amount = usdValue.toString();
                 }
@@ -3044,6 +3299,12 @@ const RopoImportEdit = () => {
 
                   currentTax.amount = calculatedAmount.toString();
 
+                  currentTax.amount_inr = (
+                    parseFloat(
+                      safeConvertUsdToInr(calculatedAmount, conversionRate)
+                    ) || 0
+                  ).toString();
+
                   // Find the percentage ID from materialTaxPercentages
 
                   const percentages =
@@ -3065,6 +3326,8 @@ const RopoImportEdit = () => {
                     parseFloat(safeConvertInrToUsd(inrValue, conversionRate)) ||
                     0;
 
+                  currentTax.amount_inr = inrValue.toString();
+
                   currentTax.amount = usdValue.toString();
                 }
               } else {
@@ -3076,6 +3339,12 @@ const RopoImportEdit = () => {
 
             if (currentTax.taxType === "TaxCharge") {
               currentTax.amount = value;
+
+              const usdVal = parseFloat(value) || 0;
+
+              currentTax.amount_inr = (
+                parseFloat(safeConvertUsdToInr(usdVal, conversionRate)) || 0
+              ).toString();
             }
           } else if (field === "inclusive") {
             // Toggle inclusive and recalculate when percentage-based
@@ -3085,17 +3354,28 @@ const RopoImportEdit = () => {
             const inputValue = currentTax.taxChargePerUom || "";
 
             if (inputValue && inputValue.includes("%")) {
-              const percentage = parseFloat(inputValue.replace("%", "")) || 0;
+              // For deduction taxes (e.g., TDS), do NOT change amount on toggle
+              if (type === "deduction") {
+                // keep amounts unchanged
+              } else {
+                const percentage = parseFloat(inputValue.replace("%", "")) || 0;
 
-              const recalculated = calculateTaxAmount(
-                percentage,
+                const recalculated = calculateTaxAmount(
+                  percentage,
 
-                baseAmount,
+                  baseAmount,
 
-                Boolean(value)
-              );
+                  Boolean(value)
+                );
 
-              currentTax.amount = recalculated.toString();
+                currentTax.amount = recalculated.toString();
+
+                currentTax.amount_inr = (
+                  parseFloat(
+                    safeConvertUsdToInr(recalculated, conversionRate)
+                  ) || 0
+                ).toString();
+              }
             }
           } else {
             // Generic setter for any other simple fields
@@ -3132,6 +3412,7 @@ const RopoImportEdit = () => {
 
     [taxOptions, deductionTaxOptions, materialTaxPercentages]
   );
+
   // Update the input field's disabled condition in the modal
 
   const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
@@ -3167,7 +3448,6 @@ const RopoImportEdit = () => {
 
     return baseAmount + additionAmount - deductionAmount;
   };
-
   const handleSaveTaxChanges = async () => {
     if (tableId !== null) {
       const currentData = taxRateData[tableId];
@@ -3245,29 +3525,44 @@ const RopoImportEdit = () => {
             }
 
             // Calculate the amount to send in INR
+
             // For ALL addition taxes, send the Tax / Charges per UOM value in INR
+
             let amountToSend = 0;
+
             if (tax.taxChargePerUom && tax.taxChargePerUom.includes("%")) {
               // Percentage: base is in USD; convert to INR first, then apply percentage
+
               const percentage =
                 parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
+
               const baseUsd = currentData.afterDiscountValue || 0;
+
               const baseInr =
                 parseFloat(safeConvertUsdToInr(baseUsd, conversionRate)) || 0;
+
               amountToSend = (baseInr * percentage) / 100;
             } else {
               // Fixed amount: already entered in INR
+
               const inrValue = parseFloat(tax.taxChargePerUom) || 0;
+
               amountToSend = inrValue;
             }
 
             const payload = {
               resource_type: tax.taxType || "TaxCharge",
+
               resource_id: resolvedResourceId,
+
               amount: amountToSend,
+
               inclusive: tax.inclusive || false,
+
               addition: true,
+
               remarks: `${tax.taxChargeType} - INR ${amountToSend}`,
+
               _destroy: tax._destroy, // Include destroy flag
             };
 
@@ -3326,19 +3621,28 @@ const RopoImportEdit = () => {
             }
 
             // Calculate the amount to send in INR
+
             // For deduction taxes, send the Tax / Charges per UOM value in INR
+
             let amountToSend = 0;
+
             if (tax.taxChargePerUom && tax.taxChargePerUom.includes("%")) {
               // Percentage: base is in USD; convert to INR first, then apply percentage
+
               const percentage =
                 parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
+
               const baseUsd = currentData.afterDiscountValue || 0;
+
               const baseInr =
                 parseFloat(safeConvertUsdToInr(baseUsd, conversionRate)) || 0;
+
               amountToSend = (baseInr * percentage) / 100;
             } else {
               // Fixed amount: already entered in INR
+
               const inrValue = parseFloat(tax.taxChargePerUom) || 0;
+
               amountToSend = inrValue;
             }
 
@@ -3370,7 +3674,9 @@ const RopoImportEdit = () => {
           }),
         },
       };
+
       console.log("Saving tax changes with payload:", payload);
+
       console.log("Material ID:", material.id);
 
       try {
@@ -3512,19 +3818,20 @@ const RopoImportEdit = () => {
               const ropoResponse = await axios.get(
                 `${baseURL}po_mor_inventories/${material.id}/ropo_rate_details.json?token=${token}`
               );
-              
+
               console.log(
                 "ROPO Rate Details API Response after save:",
+
                 ropoResponse.data
               );
-              
+
               // Update the charges data with the new information from the API
 
               if (ropoResponse.data) {
                 const rateData = ropoResponse.data;
 
                 const updatedChargesData = [];
-                
+
                 // Process addition tax details
 
                 if (
@@ -3548,9 +3855,12 @@ const RopoImportEdit = () => {
 
                       resource_type: tax.resource_type,
 
-                      amount: tax.amount,
+                      amount: safeConvertInrToUsd(
+                        parseFloat(tax.amount || 0) || 0,
+                        conversionRate
+                      ),
 
-                      amount_inr: convertUsdToInr(tax.amount, conversionRate),
+                      amount_inr: parseFloat(tax.amount || 0) || 0,
 
                       inclusive: tax.inclusive,
 
@@ -3584,9 +3894,12 @@ const RopoImportEdit = () => {
 
                       resource_type: tax.resource_type,
 
-                      amount: tax.amount,
+                      amount: safeConvertInrToUsd(
+                        parseFloat(tax.amount || 0) || 0,
+                        conversionRate
+                      ),
 
-                      amount_inr: convertUsdToInr(tax.amount, conversionRate),
+                      amount_inr: parseFloat(tax.amount || 0) || 0,
 
                       inclusive: tax.inclusive,
 
@@ -3643,8 +3956,8 @@ const RopoImportEdit = () => {
                 ) {
                   calculatedValues.taxAddition =
                     rateData.addition_tax_details.reduce((sum, tax) => {
-                    return sum + (parseFloat(tax.amount) || 0);
-                  }, 0);
+                      return sum + (parseFloat(tax.amount) || 0);
+                    }, 0);
                 }
 
                 // Calculate Tax Deductions (sum of deduction tax details)
@@ -3655,8 +3968,8 @@ const RopoImportEdit = () => {
                 ) {
                   calculatedValues.taxDeductions =
                     rateData.deduction_tax_details.reduce((sum, tax) => {
-                    return sum + (parseFloat(tax.amount) || 0);
-                  }, 0);
+                      return sum + (parseFloat(tax.amount) || 0);
+                    }, 0);
                 }
 
                 // Calculate Other Addition (TaxCharge type additions)
@@ -3685,9 +3998,9 @@ const RopoImportEdit = () => {
 
                       .filter((tax) => tax.resource_type === "TaxCharge")
 
-                    .reduce((sum, tax) => {
-                      return sum + (parseFloat(tax.amount) || 0);
-                    }, 0);
+                      .reduce((sum, tax) => {
+                        return sum + (parseFloat(tax.amount) || 0);
+                      }, 0);
                 }
 
                 // Calculate Total Changes (Tax Addition - Tax Deductions)
@@ -3706,6 +4019,7 @@ const RopoImportEdit = () => {
             } catch (error) {
               console.error(
                 "Error fetching ROPO rate details after save:",
+
                 error
               );
             }
@@ -3722,6 +4036,7 @@ const RopoImportEdit = () => {
 
     handleCloseTaxModal();
   };
+
   // Fetch tax options on component mount
 
   useEffect(() => {
@@ -3881,6 +4196,7 @@ const RopoImportEdit = () => {
   }, []);
 
   // Fetch material term conditions when submitted materials change -> handled by fetchDeliverySchedules
+
   useEffect(() => {
     fetchDeliverySchedules();
   }, [submittedMaterials, fetchDeliverySchedules]);
@@ -4151,6 +4467,7 @@ const RopoImportEdit = () => {
   const handleRemove = (id) => {
     setAttachments((prev) => prev.filter((att) => att.id !== id));
   };
+
   const handleFileChange = (e, id) => {
     const file = e.target.files[0];
 
@@ -4342,26 +4659,36 @@ const RopoImportEdit = () => {
 
   const calculateNetCostWithTaxes = (
     baseAmount,
+
     additionTaxes,
+
     deductionTaxes
   ) => {
     let netCost = parseFloat(baseAmount) || 0;
 
     // Add addition taxes/charges (ignore _destroy and inclusive)
-    (additionTaxes || []).filter((t) => !t._destroy).forEach((tax) => {
-      if (tax.amount && !tax.inclusive) {
-        const amount = parseFloat(tax.amount) || 0;
-        netCost += amount;
-      }
-    });
+
+    (additionTaxes || [])
+      .filter((t) => !t._destroy)
+      .forEach((tax) => {
+        if (tax.amount && !tax.inclusive) {
+          const amount = parseFloat(tax.amount) || 0;
+
+          netCost += amount;
+        }
+      });
 
     // Subtract deduction taxes/charges (ignore _destroy and inclusive)
-    (deductionTaxes || []).filter((t) => !t._destroy).forEach((tax) => {
-      if (tax.amount && !tax.inclusive) {
-        const amount = parseFloat(tax.amount) || 0;
-        netCost -= amount;
-      }
-    });
+
+    (deductionTaxes || [])
+      .filter((t) => !t._destroy)
+      .forEach((tax) => {
+        if (tax.amount && !tax.inclusive) {
+          const amount = parseFloat(tax.amount) || 0;
+
+          netCost -= amount;
+        }
+      });
 
     return Math.max(0, netCost);
   };
@@ -4517,6 +4844,7 @@ const RopoImportEdit = () => {
       }));
     }
   };
+
   // Recalculate all conversions when conversion rate changes
 
   useEffect(() => {
@@ -4779,7 +5107,7 @@ const RopoImportEdit = () => {
 
           resource_type: tax.resource_type,
         }));
-      
+
       const deductionTaxes = item.taxes_and_charges
 
         .filter((tax) => !tax.addition)
@@ -4809,24 +5137,26 @@ const RopoImportEdit = () => {
           baseCost +
           additionTaxes.reduce(
             (sum, tax) => sum + parseFloat(tax.amount || 0),
+
             0
           ) -
           deductionTaxes.reduce(
             (sum, tax) => sum + parseFloat(tax.amount || 0),
+
             0
           )
         ).toFixed(2),
       };
     } else {
-    // Load previously saved tax data if it exists
+      // Load previously saved tax data if it exists
 
       savedTaxes = item?.taxes || {
-      additionTaxes: [],
+        additionTaxes: [],
 
-      deductionTaxes: [],
+        deductionTaxes: [],
 
-      netCost: baseCost.toFixed(2),
-    };
+        netCost: baseCost.toFixed(2),
+      };
     }
 
     setChargeTaxes({
@@ -4920,6 +5250,7 @@ const RopoImportEdit = () => {
       }));
     }
   };
+
   const handleTaxChange = (type, taxId, field, value) => {
     if (type === "addition") {
       setChargeTaxes((prev) => {
@@ -4962,11 +5293,13 @@ const RopoImportEdit = () => {
 
         const additionTotal = updatedAdditionTaxes.reduce((sum, tax) => {
           if (tax.inclusive) return sum;
+
           return sum + (parseFloat(tax.amount) || 0);
         }, 0);
 
         const deductionTotal = prev.deductionTaxes.reduce((sum, tax) => {
           if (tax.inclusive) return sum;
+
           return sum + (parseFloat(tax.amount) || 0);
         }, 0);
 
@@ -5021,11 +5354,13 @@ const RopoImportEdit = () => {
 
         const additionTotal = prev.additionTaxes.reduce((sum, tax) => {
           if (tax.inclusive) return sum;
+
           return sum + (parseFloat(tax.amount) || 0);
         }, 0);
 
         const deductionTotal = updatedDeductionTaxes.reduce((sum, tax) => {
           if (tax.inclusive) return sum;
+
           return sum + (parseFloat(tax.amount) || 0);
         }, 0);
 
@@ -5171,7 +5506,9 @@ const RopoImportEdit = () => {
   };
 
   // Service providers will use the same data as suppliers
+
   // No need for separate fetchServiceProviders function
+
   // Fetch charges data from API for all submitted materials
 
   const fetchChargesData = async () => {
@@ -5222,9 +5559,12 @@ const RopoImportEdit = () => {
 
                   resource_type: tax.resource_type,
 
-                  amount: tax.amount,
+                  amount: safeConvertInrToUsd(
+                    parseFloat(tax.amount || 0) || 0,
+                    conversionRate
+                  ),
 
-                  amount_inr: convertUsdToInr(tax.amount, conversionRate), // Convert USD to INR
+                  amount_inr: parseFloat(tax.amount || 0) || 0,
 
                   inclusive: tax.inclusive,
 
@@ -5258,9 +5598,12 @@ const RopoImportEdit = () => {
 
                   resource_type: tax.resource_type,
 
-                  amount: tax.amount,
+                  amount: safeConvertInrToUsd(
+                    parseFloat(tax.amount || 0) || 0,
+                    conversionRate
+                  ),
 
-                  amount_inr: convertUsdToInr(tax.amount, conversionRate), // Convert USD to INR
+                  amount_inr: parseFloat(tax.amount || 0) || 0,
 
                   inclusive: tax.inclusive,
 
@@ -5285,13 +5628,13 @@ const RopoImportEdit = () => {
       // Calculate and store values for Rate & Taxes table for each material
 
       const calculatedValuesMap = {};
-      
+
       for (const material of submittedMaterials) {
         if (material.id) {
           const materialCharges = chargesData.filter(
             (charge) => charge.material_id === material.id
           );
-          
+
           const calculatedValues = {
             taxAddition: 0,
 
@@ -5325,6 +5668,7 @@ const RopoImportEdit = () => {
 
             .reduce(
               (sum, charge) => sum + Math.abs(parseFloat(charge.amount) || 0),
+
               0
             );
 
@@ -5350,6 +5694,7 @@ const RopoImportEdit = () => {
 
             .reduce(
               (sum, charge) => sum + Math.abs(parseFloat(charge.amount) || 0),
+
               0
             );
 
@@ -5362,6 +5707,7 @@ const RopoImportEdit = () => {
 
           calculatedValues.allInclCost = materialCharges.reduce(
             (sum, charge) => sum + Math.max(0, parseFloat(charge.amount) || 0),
+
             0
           );
 
@@ -5438,11 +5784,18 @@ const RopoImportEdit = () => {
   };
 
   // Per-row Service Certificate Advance percentage for Charges (Exclusive)
-  const [serviceCertAdvancePercentByRow, setServiceCertAdvancePercentByRow] = useState({});
+
+  const [serviceCertAdvancePercentByRow, setServiceCertAdvancePercentByRow] =
+    useState({});
+
   const handleServiceCertAdvancePercentChange = (rowIndex, value) => {
     const num = parseFloat(value);
+
     if (value === "" || (!isNaN(num) && num >= 0 && num <= 100)) {
-      setServiceCertAdvancePercentByRow((prev) => ({ ...prev, [rowIndex]: value }));
+      setServiceCertAdvancePercentByRow((prev) => ({
+        ...prev,
+        [rowIndex]: value,
+      }));
     }
   };
 
@@ -5454,7 +5807,8 @@ const RopoImportEdit = () => {
     // Base should be addition of all materials' after_discount_value (USD)
 
     const baseUsd = submittedMaterials.reduce((sum, _mat, idx) => {
-      const afterDiscountValue = parseFloat(taxRateData[idx]?.afterDiscountValue) || 0;
+      const afterDiscountValue =
+        parseFloat(taxRateData[idx]?.afterDiscountValue) || 0;
 
       return sum + afterDiscountValue;
     }, 0);
@@ -5470,19 +5824,22 @@ const RopoImportEdit = () => {
     const percentage = parseFloat(serviceCertificateAdvancePercentage) || 0;
 
     // Base should be sum of TaxCharge additions (handling/freight/other additions) in USD across materials
+
     const baseUsd = (chargesFromApi || [])
+
       .filter(
         (c) =>
           c &&
           c.resource_type === "TaxCharge" &&
           (parseFloat(c.amount) || 0) > 0
       )
+
       .reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
+
     const amount = (baseUsd * percentage) / 100;
 
     return amount;
   };
-
   // Calculate total discount as sum of discount_rate for all materials (USD)
 
   const calculateTotalDiscountAmount = () => {
@@ -5506,6 +5863,7 @@ const RopoImportEdit = () => {
       alert("Supplier advance percentage must be between 0 and 100.");
     }
   };
+
   // Handle service certificate advance percentage change
 
   const handleServiceCertificateAdvancePercentageChange = (value) => {
@@ -5539,6 +5897,7 @@ const RopoImportEdit = () => {
 
     return taxData ? taxData.percentage : [];
   };
+
   // Handle purchase order creation
 
   const handleCreatePurchaseOrder = async () => {
@@ -5574,19 +5933,28 @@ const RopoImportEdit = () => {
       }
 
       // Validate Delivery Schedules: if present, each visible row must have both PO Delivery Date and a positive PO Delivery Qty
-      const hasSchedules = Array.isArray(deliverySchedules) && deliverySchedules.length > 0;
+
+      const hasSchedules =
+        Array.isArray(deliverySchedules) && deliverySchedules.length > 0;
+
       if (hasSchedules) {
         const anyInvalid = deliverySchedules.some((s, idx) => {
           if (!isScheduleRowVisible(s)) return false;
+
           const hasDate = Boolean(s.po_delivery_date);
+
           const qty = parseFloat(s.po_delivery_qty);
+
           return !(hasDate && Number.isFinite(qty) && qty > 0);
         });
+
         if (anyInvalid) {
           alert(
             "Please enter both PO Delivery Date and a positive PO Delivery Qty for all Delivery Schedule rows."
           );
+
           setIsCreatingOrder(false);
+
           return;
         }
       }
@@ -5624,33 +5992,7 @@ const RopoImportEdit = () => {
 
       console.log("Submitted materials:", submittedMaterials);
 
-      // Extract material inventory IDs - check if pms_inventory_id is available
-
-      // const materialInventoryIds = submittedMaterials.map((material) => {
-
-      //   // Try to get pms_inventory_id first, fallback to id
-
-      //   const inventoryId =
-
-      //     material.pms_inventory_id || material.inventory_id || material.id;
-
-      //   console.log(
-
-      //     `Material ${
-
-      //       material.material_name || material.material || material.id
-
-      //     }: inventory_id = ${inventoryId}`
-
-      //   );
-
-      //   return inventoryId;
-
-      // });
-
-      // console.log("Material inventory IDs:", materialInventoryIds);
-
-      // console.log("Purchase Order ID (if available):", purchaseOrderId);
+     
 
       console.log("apiMaterialInventoryIds", apiMaterialInventoryIds);
 
@@ -5678,34 +6020,23 @@ const RopoImportEdit = () => {
         Array.isArray(materialTermConditions)
       );
 
-      // Prepare the payload based on the structure you provided
+      const consolidatedCharges = getConsolidatedCharges();
+           const chargeIdToServiceCertPct = {};
+      try {
+        (consolidatedCharges || []).forEach((row, rowIndex) => {
+          const pct =
+            parseFloat(serviceCertAdvancePercentByRow[rowIndex] || 0) || 0;
+          (row.charge_ids || []).forEach((cid) => {
+            chargeIdToServiceCertPct[cid] = pct;
+          });
+        });
+      } catch (e) {}
 
       const payload = {
         purchase_order: {
           status: "draft",
 
-          // credit_period: parseInt(termsFormData.creditPeriod) || 0,
-
-          // po_validity_period: parseInt(termsFormData.poValidityPeriod) || 0,
-
-          // advance_reminder_duration:
-
-          //   parseInt(termsFormData.advanceReminderDuration) || 0,
-
-          // payment_terms: termsFormData.paymentTerms || "",
-
-          // payment_remarks: termsFormData.paymentRemarks || "",
-
-          // supplier_advance: 0,
-
-          // survice_certificate_advance: 0,
-
-          // total_value: 0,
-
-          // total_discount: 0,
-
-          // po_date: getLocalDateTime().split("T")[0], // Current date
-
+          
           credit_period: termsFormData.creditPeriod
             ? parseInt(termsFormData.creditPeriod)
             : null,
@@ -5723,11 +6054,15 @@ const RopoImportEdit = () => {
           payment_remarks: termsFormData.paymentRemarks || null,
 
           supplier_advance: parseFloat(calculateSupplierAdvanceAmount() || 0),
-          // survice_certificate_advance: parseFloat(
-          //   calculateServiceCertificateAdvanceAmount() || 0
-          // ),
+
+         supplier_advance_percentage: parseFloat(supplierAdvancePercentage || 0),
+
+          
+
           total_discount: parseFloat(calculateTotalDiscountAmount() || 0),
+
           total_value: parseFloat(totalMaterialCost || 0),
+
           po_date: getLocalDateTime().split("T")[0], // Current date
 
           company_id: selectedCompany?.value,
@@ -5751,15 +6086,7 @@ const RopoImportEdit = () => {
             return sum + materialCost;
           }, 0),
 
-          // payable_to_service_provider: chargesFromApi
-
-          //   .filter(
-          //     (charge) =>
-          //       charge.resource_type === "TaxCharge" &&
-          //       Boolean(charge.inclusive)
-          //   )
-
-          //   .reduce((sum, charge) => sum + (parseFloat(charge.amount) || 0), 0),
+         
 
           remark: termsFormData.remark || "",
 
@@ -5769,34 +6096,7 @@ const RopoImportEdit = () => {
 
           // Extract unique MOR IDs from submitted materials
 
-          mor_ids: [
-            ...new Set(
-              submittedMaterials
-
-                .map((material) => material.mor_inventory_id)
-
-                .filter(Boolean)
-            ),
-          ],
-
-          // Extract MOR inventory tax details from charges data
-
-          mor_inventory_tax_details: chargesFromApi
-
-            .filter(
-              (charge) =>
-                charge.resource_type === "TaxCategory" ||
-                charge.resource_type === "TaxCharge"
-            )
-
-            .map((charge) => ({
-              id: charge.id,
-
-              remarks: charge.charge_name || "",
-
-              supplier_id: selectedSupplier?.value || null,
-            })),
-
+         
           // Include purchase order ID if available (for updates)
 
           ...(purchaseOrderId && { po_id: purchaseOrderId }),
@@ -5843,143 +6143,49 @@ const RopoImportEdit = () => {
             ],
           })),
 
-          // Format charges with taxes from API
-
-          // charges_with_taxes_attributes: [
-
-          //   // Include charges from API (chargesFromApi)
-
-          //   ...chargesFromApi.map((charge) => ({
-
-          //     id: charge.id,
-
-          //     material_id: charge.material_id,
-
-          //     charge_name: charge.charge_name,
-
-          //     resource_id: charge.resource_id,
-
-          //     resource_type: charge.resource_type,
-
-          //     amount: parseFloat(charge.amount) || 0,
-
-          //     amount_inr: parseFloat(charge.amount_inr) || 0,
-
-          //     service_certificate: serviceCertificates[charge.id] || false,
-
-          //     service_provider_id: selectedServiceProviders[charge.id]?.value || null,
-
-          //     service_provider_name: selectedServiceProviders[charge.id]?.label || null,
-
-          //     remarks: chargeRemarks[charge.id] || "",
-
-          //     inclusive: charge.inclusive || false,
-
-          //     tax_category_id: charge.tax_category_id,
-
-          //     percentage: charge.percentage,
-
-          //   })),
-
-          //   // Include manually added charges
-
-          //   ...charges.map((charge) => {
-
-          //     return {
-
-          //       charge_id: charge.charge_id || 0,
-
-          //       amount: parseFloat(charge.amount) || 0,
-
-          //       realised_amount: parseFloat(charge.realised_amount) || 0,
-
-          //       taxes_and_charges_attributes: [
-
-          //         ...(charge.taxes?.additionTaxes || []).map((tax) => ({
-
-          //           resource_id: parseInt(tax.taxType) || 0,
-
-          //           resource_type: "TaxCategory",
-
-          //           percentage:
-
-          //             parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
-
-          //           inclusive: tax.inclusive || false,
-
-          //           amount: parseFloat(tax.amount) || 0,
-
-          //           addition: true,
-
-          //         })),
-
-          //         ...(charge.taxes?.deductionTaxes || []).map((tax) => ({
-
-          //           resource_id: parseInt(tax.taxType) || 0,
-
-          //           resource_type: "TaxCategory",
-
-          //           percentage:
-
-          //             parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
-
-          //           inclusive: tax.inclusive || false,
-
-          //           amount: parseFloat(tax.amount) || 0,
-
-          //           addition: false,
-
-          //         })),
-
-          //       ],
-
-          //     };
-
-          //   }),
-
-          // ],
+          
 
           charges_with_taxes_attributes: charges.map((charge) => {
-              return {
-                charge_id: charge.charge_id || 0,
+            return {
+              charge_id: charge.charge_id || 0,
 
-                amount: parseFloat(charge.amount) || 0,
+              amount: parseFloat(charge.amount) || 0,
 
-                realised_amount: parseFloat(charge.realised_amount) || 0,
+              realised_amount: parseFloat(charge.realised_amount) || 0,
 
-                taxes_and_charges_attributes: [
-                  ...(charge.taxes?.additionTaxes || []).map((tax) => ({
-                    resource_id: parseInt(tax.taxType) || 0,
+              taxes_and_charges_attributes: [
+                ...(charge.taxes?.additionTaxes || []).map((tax) => ({
+                  resource_id: parseInt(tax.taxType) || 0,
 
-                    resource_type: "TaxCategory",
+                  resource_type: "TaxCategory",
 
-                    percentage:
-                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+                  percentage:
+                    parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
 
-                    inclusive: tax.inclusive || false,
+                  inclusive: tax.inclusive || false,
 
-                    amount: parseFloat(tax.amount) || 0,
+                  amount: parseFloat(tax.amount) || 0,
 
-                    addition: true,
-                  })),
+                  addition: true,
+                })),
 
-                  ...(charge.taxes?.deductionTaxes || []).map((tax) => ({
-                    resource_id: parseInt(tax.taxType) || 0,
+                ...(charge.taxes?.deductionTaxes || []).map((tax) => ({
+                  resource_id: parseInt(tax.taxType) || 0,
 
-                    resource_type: "TaxCategory",
+                  resource_type: "TaxCategory",
 
-                    percentage:
-                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+                  percentage:
+                    parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
 
-                    inclusive: tax.inclusive || false,
+                  inclusive: tax.inclusive || false,
 
-                    amount: parseFloat(tax.amount) || 0,
+                  amount: parseFloat(tax.amount) || 0,
 
-                    addition: false,
-                  })),
-                ],
-              };
-            }),
+                  addition: false,
+                })),
+              ],
+            };
+          }),
 
           // Resource term conditions
 
@@ -6026,46 +6232,80 @@ const RopoImportEdit = () => {
           attachments: attachmentsPayload || [],
 
           // Delivery Schedules payload
+
           delivery_schedules_attributes: (deliverySchedules || [])
+
             .filter((s) => {
               const qty = parseFloat(s.po_delivery_qty) || 0;
+
               const hasDate = Boolean(s.po_delivery_date);
+
               const dateObj = hasDate ? new Date(s.po_delivery_date) : null;
+
               const isValidDate = dateObj ? !isNaN(dateObj.getTime()) : false;
+
               return qty > 0 && isValidDate && isScheduleRowVisible(s);
             })
+
             .map((s) => {
               const dateObj = new Date(s.po_delivery_date);
-              const ymd = dateObj.toISOString().split('T')[0];
+
+              const ymd = dateObj.toISOString().split("T")[0];
+
               return {
                 po_delivery_date: ymd,
+
                 order_qty: parseFloat(s.po_delivery_qty) || 0,
-                mor_inventory_schedule_id: s.mor_inventory_schedule_id || s.id || null,
-                delivery_address: s.store_address || '',
-                store_name: s.store_name || '',
-                remarks: s.remarks || '',
+
+                mor_inventory_schedule_id:
+                  s.mor_inventory_schedule_id || s.id || null,
+
+                delivery_address: s.store_address || "",
+
+                store_name: s.store_name || "",
+
+                remarks: s.remarks || "",
+
                 _destroy: false,
               };
             }),
 
-          // Attachments
-
-          // attachments: Array.isArray(attachments)
-
-          //   ? attachments.map((attachment) => ({
-
-          //       filename: attachment.filename,
-
-          //       document_name: attachment.document_name,
-
-          //       content: attachment.content,
-
-          //       content_type: attachment.content_type,
-
-          //     }))
-
-          //   : [],
+         
         },
+         mor_ids: [
+            ...new Set(
+              submittedMaterials
+
+                .map((material) => material.mor_inventory_id)
+
+                .filter(Boolean)
+            ),
+          ],
+
+          // Extract MOR inventory tax details from charges data
+
+          mor_inventory_tax_details: chargesFromApi
+
+            .filter(
+              (charge) =>
+                charge.resource_type === "TaxCategory" ||
+                charge.resource_type === "TaxCharge"
+            )
+
+            .map((charge) => ({
+              id: charge.id,
+
+              remarks: chargeRemarks[charge.id] || "",
+              supplier_id:
+                (selectedServiceProviders[charge.id]?.value ?? null) !== null
+                  ? selectedServiceProviders[charge.id]?.value
+                  : selectedSupplier?.value || null,
+              applicable_to_payable: true,
+              service_certificate_advance_percentage: (() => {
+                const pct = chargeIdToServiceCertPct[charge.id];
+                return pct === 0 || pct ? pct : 0;
+              })(),
+            })),
       };
 
       console.log("Creating purchase order with payload:", payload);
@@ -6080,7 +6320,7 @@ const RopoImportEdit = () => {
 
       alert("Purchase order created successfully!");
 
-      navigate(`/ropo-import-list?token=${token}`);
+      // navigate(`/ropo-import-list?token=${token}`);
 
       // Optionally redirect or clear form
 
@@ -6105,8 +6345,11 @@ const RopoImportEdit = () => {
   const convertInrToUsd = useCallback(
     (inrValue, customRate = null) => {
       if (!inrValue || isNaN(inrValue)) return "";
-      const rate = (customRate ?? conversionRate);
+
+      const rate = customRate ?? conversionRate;
+
       if (!rate || isNaN(rate) || rate <= 0) return "";
+
       return (parseFloat(inrValue) / rate).toFixed(2);
     },
 
@@ -6116,8 +6359,11 @@ const RopoImportEdit = () => {
   const convertUsdToInr = useCallback(
     (usdValue, customRate = null) => {
       if (!usdValue || isNaN(usdValue)) return "";
-      const rate = (customRate ?? conversionRate);
+
+      const rate = customRate ?? conversionRate;
+
       if (!rate || isNaN(rate) || rate <= 0) return "";
+
       return (parseFloat(usdValue) * rate).toFixed(2);
     },
 
@@ -6128,15 +6374,21 @@ const RopoImportEdit = () => {
 
   const safeConvertInrToUsd = (inrValue, customRate = null) => {
     if (!inrValue || isNaN(inrValue)) return "";
-    const rate = (customRate ?? conversionRate);
+
+    const rate = customRate ?? conversionRate;
+
     if (!rate || isNaN(rate) || rate <= 0) return "";
+
     return (parseFloat(inrValue) / rate).toFixed(2);
   };
 
   const safeConvertUsdToInr = (usdValue, customRate = null) => {
     if (!usdValue || isNaN(usdValue)) return "";
-    const rate = (customRate ?? conversionRate);
+
+    const rate = customRate ?? conversionRate;
+
     if (!rate || isNaN(rate) || rate <= 0) return "";
+
     return (parseFloat(usdValue) * rate).toFixed(2);
   };
 
@@ -6285,51 +6537,91 @@ const RopoImportEdit = () => {
                     <div className="row">
                       {/* <div className="col-md-2">
 
+
+
                       <div className="form-group"> */}
 
                       {/* <div className="form-check">
 
+
+
                           <input
+
+
 
                             className="form-check-input"
 
+
+
                             type="radio"
+
+
 
                             name="contentSelector"
 
+
+
                             defaultValue="content1"
+
+
 
                             defaultChecked=""
 
+
+
                           />
 
+
+
                           <label className="form-check-label">Domestic</label>
+
+
 
                         </div> */}
 
                       {/* </div>
 
+
+
                     </div> */}
 
                       {/* <div className="col-md-2">
+
+
 
                       <div className="form-group"> */}
 
                       {/* <div className="form-check">
 
+
+
                           <input
+
+
 
                             className="form-check-input"
 
+
+
                             type="radio"
+
+
 
                             name="contentSelector"
 
+
+
                             defaultValue="content2"
+
+
 
                           />
 
+
+
                           <label className="form-check-label">Import</label>
+
+
 
                         </div> */}
 
@@ -6422,7 +6714,6 @@ const RopoImportEdit = () => {
                             </button>
                           </div>
                         </nav>
-
                         <div className="tab-content" id="nav-tabContent">
                           <div
                             className={`tab-pane fade ${
@@ -6523,69 +6814,135 @@ const RopoImportEdit = () => {
 
                                 {/* <div className="col-md-4 mt-2">
 
+
+
                                   <div className="form-group">
+
+
 
                                     <label className="po-fontBold">PO No</label>
 
+
+
                                     <input
+
+
 
                                       className="form-control"
 
+
+
                                       type="text"
+
+
 
                                       placeholder="PO 056"
 
+
+
                                     />
+
+
 
                                   </div>
 
+
+
                                 </div>
+
+
 
                                 <div className="col-md-4 mt-2">
 
+
+
                                   <div className="form-group">
 
+
+
                                     <label className="po-fontBold">
+
+
 
                                       Total PO Value
 
+
+
                                     </label>
+
+
 
                                     <input
 
+
+
                                       className="form-control"
 
+
+
                                       type="text"
+
+
 
                                       placeholder={1}
 
+
+
                                     />
 
+
+
                                   </div>
+
+
 
                                 </div>
 
+
+
                                 <div className="col-md-4 mt-2">
+
+
 
                                   <div className="form-group">
 
+
+
                                     <label className="po-fontBold">
+
+
 
                                       Total Discount
 
+
+
                                     </label>
+
+
 
                                     <input
 
+
+
                                       className="form-control"
+
+
 
                                       type="text"
 
+
+
                                       placeholder="INR 600.00"
+
+
 
                                     />
 
+
+
                                   </div>
+
+
 
                                 </div> */}
 
@@ -6606,25 +6963,47 @@ const RopoImportEdit = () => {
 
                                 {/* <div className="col-md-4 mt-2">
 
+
+
                                   <div className="form-group">
+
+
 
                                     <label className="po-fontBold">
 
+
+
                                       Branch
+
+
 
                                     </label>
 
+
+
                                     <input
+
+
 
                                       className="form-control"
 
+
+
                                       type="text"
+
+
 
                                       placeholder="82.77 INR"
 
+
+
                                     />
 
+
+
                                   </div>
+
+
 
                                 </div> */}
 
@@ -6693,15 +7072,25 @@ const RopoImportEdit = () => {
                                       onChange={(e) => {
                                         if (e.target.value === "") {
                                           setConversionRate("");
+
                                           return;
                                         }
-                                        const value = parseFloat(e.target.value);
-                                        if (!Number.isFinite(value) || value <= 0) {
+
+                                        const value = parseFloat(
+                                          e.target.value
+                                        );
+
+                                        if (
+                                          !Number.isFinite(value) ||
+                                          value <= 0
+                                        ) {
                                           alert(
                                             "Conversion rate must be greater than 0."
                                           );
+
                                           return;
                                         }
+
                                         setConversionRate(value);
                                       }}
                                       placeholder="Enter conversion rate"
@@ -6812,36 +7201,36 @@ const RopoImportEdit = () => {
 
                                           <td className="text-start">
                                             {row.material?.isedit === true && (
-                                            <button
-                                              className="btn mt-0 pt-0"
-                                              onClick={() => {
+                                              <button
+                                                className="btn mt-0 pt-0"
+                                                onClick={() => {
                                                   setSubmittedMaterials(
                                                     (prev) =>
-                                                  prev.filter(
-                                                    (_, i) => i !== index
-                                                  )
-                                                );
+                                                      prev.filter(
+                                                        (_, i) => i !== index
+                                                      )
+                                                  );
 
-                                                // Refresh delivery schedules after removing material
+                                                  // Refresh delivery schedules after removing material
 
-                                                setTimeout(() => {
-                                                  fetchDeliverySchedules();
-                                                }, 100);
-                                              }}
-                                            >
-                                              <svg
-                                                width="16"
-                                                height="20"
-                                                viewBox="0 0 16 20"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
+                                                  setTimeout(() => {
+                                                    fetchDeliverySchedules();
+                                                  }, 100);
+                                                }}
                                               >
-                                                <path
-                                                  d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533H7.52531V16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
-                                                  fill="#B25657"
-                                                />
-                                              </svg>
-                                            </button>
+                                                <svg
+                                                  width="16"
+                                                  height="20"
+                                                  viewBox="0 0 16 20"
+                                                  fill="none"
+                                                  xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                  <path
+                                                    d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533H7.52531V16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
+                                                    fill="#B25657"
+                                                  />
+                                                </svg>
+                                              </button>
                                             )}
                                           </td>
                                         </tr>
@@ -6901,59 +7290,115 @@ const RopoImportEdit = () => {
                           >
                             {/* <div className=" mt-3">
 
+
+
                               <h5 className=" ">Quotation Details</h5>
+
+
 
                             </div>
 
+
+
                             <div className="tbl-container me-2 mt-3">
+
+
 
                               <table className="w-100">
 
+
+
                                 <thead>
 
+
+
                                   <tr>
+
+
 
                                     <th>Quotation No.</th>
 
+
+
                                     <th>Supplier Ref. No</th>
+
+
 
                                     <th>Material</th>
 
+
+
                                     <th>Brand</th>
+
+
 
                                     <th>UOM</th>
 
+
+
                                     <th>All Incl. Rate</th>
 
+
+
                                   </tr>
+
+
 
                                 </thead>
 
+
+
                                 <tbody>
+
+
 
                                   <tr>
 
+
+
                                     <td className="text-decoration-underline">
+
+
 
                                       Quotation 9655295
 
+
+
                                     </td>
+
+
 
                                     <td>65985</td>
 
+
+
                                     <td>Plain White Sperenza Tiles</td>
+
+
 
                                     <td>Sperenza</td>
 
+
+
                                     <td>Nos</td>
+
+
 
                                     <td>600</td>
 
+
+
                                   </tr>
+
+
 
                                 </tbody>
 
+
+
                               </table>
+
+
 
                             </div> */}
 
@@ -6965,23 +7410,61 @@ const RopoImportEdit = () => {
                               <table className="w-100">
                                 <thead>
                                   <tr>
-                                  <th>Sr. No</th>
-                                    <th style={{ minWidth: "220px" }}>Material</th>
+                                    <th>Sr. No</th>
+
+                                    <th style={{ minWidth: "220px" }}>
+                                      Material
+                                    </th>
+
                                     <th>UOM</th>
+
                                     <th>PO Qty</th>
+
                                     <th>Adjusted Qty</th>
+
                                     <th>Tolerance Qty</th>
-                                    <th style={{ minWidth: "160px" }}>Material Rate</th>
-                                    <th style={{ minWidth: "160px" }}>Material Cost</th>
+
+                                    <th style={{ minWidth: "160px" }}>
+                                      Material Rate
+                                    </th>
+
+                                    <th style={{ minWidth: "160px" }}>
+                                      Material Cost
+                                    </th>
+
                                     <th>Discount(%)</th>
-                                    <th style={{ minWidth: "160px" }}>Discount Rate</th>
-                                    <th style={{ minWidth: "180px" }}>After Discount Value</th>
-                                    <th style={{ minWidth: "160px" }}>Tax Addition</th>
-                                    <th style={{ minWidth: "160px" }}>Tax Deduction</th>
-                                    <th style={{ minWidth: "160px" }}>Total Charges</th>
-                                    <th style={{ minWidth: "160px" }}>Total Base Cost</th>
-                                    <th style={{ minWidth: "160px" }}>All Incl. Cost</th>
-                                    <th style={{ minWidth: "120px" }}>Select Tax</th>
+
+                                    <th style={{ minWidth: "160px" }}>
+                                      Discount Rate
+                                    </th>
+
+                                    <th style={{ minWidth: "180px" }}>
+                                      After Discount Value
+                                    </th>
+
+                                    <th style={{ minWidth: "160px" }}>
+                                      Tax Addition
+                                    </th>
+
+                                    <th style={{ minWidth: "160px" }}>
+                                      Tax Deduction
+                                    </th>
+
+                                    <th style={{ minWidth: "160px" }}>
+                                      Total Charges
+                                    </th>
+
+                                    <th style={{ minWidth: "160px" }}>
+                                      Total Base Cost
+                                    </th>
+
+                                    <th style={{ minWidth: "160px" }}>
+                                      All Incl. Cost
+                                    </th>
+
+                                    <th style={{ minWidth: "120px" }}>
+                                      Select Tax
+                                    </th>
                                   </tr>
                                 </thead>
 
@@ -6996,6 +7479,7 @@ const RopoImportEdit = () => {
 
                                         const rateRow =
                                           taxRateData[index] || {};
+
                                         const totalCharges = (
                                           (parseFloat(
                                             calculatedValues.otherAddition
@@ -7004,6 +7488,7 @@ const RopoImportEdit = () => {
                                             calculatedValues.otherDeductions
                                           ) || 0)
                                         ).toFixed(2);
+
                                         return (
                                           <tr key={material.id}>
                                             <td>{index + 1}</td>
@@ -7022,9 +7507,11 @@ const RopoImportEdit = () => {
                                             <td>
                                               {material.adjusted_qty ?? ""}
                                             </td>
+
                                             <td>
                                               {material.tolerance_qty ?? ""}
                                             </td>
+
                                             <td>
                                               {poCurrencyCode}{" "}
                                               {parseFloat(
@@ -7035,15 +7522,18 @@ const RopoImportEdit = () => {
                                                 const inr = parseFloat(
                                                   convertUsdToInr(
                                                     rateRow.ratePerNos || 0,
+
                                                     conversionRate
                                                   )
                                                 );
+
                                                 return isNaN(inr)
                                                   ? "0.00"
                                                   : inr.toFixed(2);
                                               })()}
                                               )
                                             </td>
+
                                             <td>
                                               {poCurrencyCode}{" "}
                                               {parseFloat(
@@ -7054,20 +7544,24 @@ const RopoImportEdit = () => {
                                                 const inr = parseFloat(
                                                   convertUsdToInr(
                                                     rateRow.materialCost || 0,
+
                                                     conversionRate
                                                   )
                                                 );
+
                                                 return isNaN(inr)
                                                   ? "0.00"
                                                   : inr.toFixed(2);
                                               })()}
                                               )
                                             </td>
+
                                             <td>
                                               {parseFloat(
                                                 rateRow.discount || 0
                                               ).toFixed(2)}
                                             </td>
+
                                             <td>
                                               {poCurrencyCode}{" "}
                                               {parseFloat(
@@ -7078,15 +7572,18 @@ const RopoImportEdit = () => {
                                                 const inr = parseFloat(
                                                   convertUsdToInr(
                                                     rateRow.discountRate || 0,
+
                                                     conversionRate
                                                   )
                                                 );
+
                                                 return isNaN(inr)
                                                   ? "0.00"
                                                   : inr.toFixed(2);
                                               })()}
                                               )
                                             </td>
+
                                             <td>
                                               {poCurrencyCode}{" "}
                                               {parseFloat(
@@ -7098,15 +7595,18 @@ const RopoImportEdit = () => {
                                                   convertUsdToInr(
                                                     rateRow.afterDiscountValue ||
                                                       0,
+
                                                     conversionRate
                                                   )
                                                 );
+
                                                 return isNaN(inr)
                                                   ? "0.00"
                                                   : inr.toFixed(2);
                                               })()}
                                               )
                                             </td>
+
                                             <td>
                                               {poCurrencyCode}{" "}
                                               {calculatedValues.taxAddition?.toFixed(
@@ -7118,18 +7618,22 @@ const RopoImportEdit = () => {
                                                   calculatedValues.taxAddition ||
                                                     0
                                                 );
+
                                                 const inr = parseFloat(
                                                   convertUsdToInr(
                                                     usd,
+
                                                     conversionRate
                                                   )
                                                 );
+
                                                 return isNaN(inr)
                                                   ? "0.00"
                                                   : inr.toFixed(2);
                                               })()}
                                               )
                                             </td>
+
                                             <td>
                                               {poCurrencyCode}{" "}
                                               {calculatedValues.taxDeductions?.toFixed(
@@ -7141,36 +7645,44 @@ const RopoImportEdit = () => {
                                                   calculatedValues.taxDeductions ||
                                                     0
                                                 );
+
                                                 const inr = parseFloat(
                                                   convertUsdToInr(
                                                     usd,
+
                                                     conversionRate
                                                   )
                                                 );
+
                                                 return isNaN(inr)
                                                   ? "0.00"
                                                   : inr.toFixed(2);
                                               })()}
                                               )
                                             </td>
+
                                             <td>
                                               {poCurrencyCode} {totalCharges}{" "}
                                               (INR{" "}
                                               {(() => {
                                                 const usd =
                                                   parseFloat(totalCharges) || 0;
+
                                                 const inr = parseFloat(
                                                   convertUsdToInr(
                                                     usd,
+
                                                     conversionRate
                                                   )
                                                 );
+
                                                 return isNaN(inr)
                                                   ? "0.00"
                                                   : inr.toFixed(2);
                                               })()}
                                               )
                                             </td>
+
                                             <td>
                                               {poCurrencyCode}{" "}
                                               {parseFloat(
@@ -7182,15 +7694,18 @@ const RopoImportEdit = () => {
                                                   convertUsdToInr(
                                                     rateRow.afterDiscountValue ||
                                                       0,
+
                                                     conversionRate
                                                   )
                                                 );
+
                                                 return isNaN(inr)
                                                   ? "0.00"
                                                   : inr.toFixed(2);
                                               })()}
                                               )
                                             </td>
+
                                             <td>
                                               {poCurrencyCode}{" "}
                                               {parseFloat(
@@ -7206,18 +7721,22 @@ const RopoImportEdit = () => {
                                                       rateRow.total_material_cost ||
                                                       0
                                                   ) || 0;
+
                                                 const inr = parseFloat(
                                                   convertUsdToInr(
                                                     usd,
+
                                                     conversionRate
                                                   )
                                                 );
+
                                                 return isNaN(inr)
                                                   ? "0.00"
                                                   : inr.toFixed(2);
                                               })()}
                                               )
                                             </td>
+
                                             <td
                                               className="text-decoration-underline"
                                               style={{ cursor: "pointer" }}
@@ -7315,30 +7834,57 @@ const RopoImportEdit = () => {
                                 </tbody>
                               </table>
                             </div>
+
                             {/* Tax Addition and Charges Tables */}
 
                             <div className="tbl-container me-2 mt-3">
                               <table className="w-100">
                                 <thead>
                                   <tr>
-                                    <th  style={{ width: '200px' }} rowSpan={2}>Charges And Taxes</th>
-                                    <th style={{ width: '180px' }}colSpan={2}>Amount</th>
+                                    <th style={{ width: "200px" }} rowSpan={2}>
+                                      Charges And Taxes
+                                    </th>
+
+                                    <th style={{ width: "200px" }} colSpan={2}>
+                                      Amount
+                                    </th>
+
                                     {/* <th rowSpan={2}>Payable Currency</th> */}
-                                    <th  style={{ width: '100px' }}rowSpan={2}>Service Certificate</th>
-                                    <th   style={{ width: '180px' }}rowSpan={2}>Select Service Provider</th>
-                                    <th style={{ width: '120px' }} rowSpan={2}>Remarks</th>
-                                     <th style={{ width: '150px' }} rowSpan={2}>Service Certificate Advance Allowed (%)</th>
-                                    <th style={{ width: '150px' }} rowSpan={2}>Service Certificate Advance Amount</th>
-                                    
+
+                                    <th style={{ width: "100px" }} rowSpan={2}>
+                                      Service Certificate
+                                    </th>
+
+                                    <th style={{ width: "180px" }} rowSpan={2}>
+                                      Select Service Provider
+                                    </th>
+
+                                    <th style={{ width: "120px" }} rowSpan={2}>
+                                      Remarks
+                                    </th>
+
+                                    <th style={{ width: "150px" }} rowSpan={2}>
+                                      Service Certificate Advance Allowed (%)
+                                    </th>
+
+                                    <th style={{ width: "150px" }} rowSpan={2}>
+                                      Service Certificate Advance Amount
+                                    </th>
                                   </tr>
+
                                   <tr>
-                                    <th style={{ width: '90px' }}>INR</th>
-                                    <th style={{ width: '90px' }}>{poCurrencyCode}</th>
+                                    <th style={{ width: "100px" }}>INR</th>
+
+                                    <th style={{ width: "100px" }}>
+                                      {poCurrencyCode}
+                                    </th>
                                   </tr>
+
                                   <tr>
                                     <th colSpan={8}>Tax Addition(Exclusive)</th>
                                   </tr>
                                 </thead>
+
                                 <tbody>
                                   {loadingCharges ? (
                                     <tr>
@@ -7364,17 +7910,22 @@ const RopoImportEdit = () => {
                                         (charge) =>
                                           charge.resource_type === "TaxCategory"
                                       )
+
                                       .map((charge, index) => (
                                         <tr key={`tax-${charge.id}-${index}`}>
                                           <td>{charge.charge_name}</td>
+
                                           <td>
                                             INR {charge.amount_inr || "0.00"}
                                           </td>
+
                                           <td>
                                             {poCurrencyCode}{" "}
                                             {charge.amount || "0.00"}
                                           </td>
+
                                           <td>{poCurrencyCode}</td>
+
                                           <td>
                                             <input
                                               type="checkbox"
@@ -7392,6 +7943,7 @@ const RopoImportEdit = () => {
                                               }
                                             />
                                           </td>
+
                                           <td>
                                             <SingleSelector
                                               options={supplierOptions}
@@ -7440,23 +7992,43 @@ const RopoImportEdit = () => {
                                 </tbody>
                               </table>
                             </div>
-
                             <div className="tbl-container me-2 mt-3">
                               <table className="w-100">
                                 <thead>
                                   <tr>
-                                    <th colSpan={8}>Charges (Exclusive)</th>
+                                    <th className="text-center" colSpan={8}>Charges (Exclusive)</th>
                                   </tr>
 
                                   <tr>
-                                    <th style={{ width: '200px' }}>Charge Name</th>
-                                    <th style={{ width: '120px' }}>Amount (INR)</th>
-                                    <th style={{ width: '120px' }}>Amount ({poCurrencyCode})</th>
-                                    <th style={{ width: '100px' }}>Service Certificate</th>
-                                    <th style={{ width: '180px' }}>Service Provider</th>
-                                    <th style={{ width: '120px' }}>Remarks</th>
-                                    <th style={{ width: '150px' }}>Service Certificate Advance Allowed (%)</th>
-                                    <th style={{ width: '150px' }}>Service Certificate Advance Amount</th>
+                                    {/* <th style={{ width: "200px" }}>
+                                      Charge Name
+                                    </th>
+
+                                    <th style={{ width: "120px" }}>
+                                      Amount (INR)
+                                    </th>
+
+                                    <th style={{ width: "120px" }}>
+                                      Amount ({poCurrencyCode})
+                                    </th>
+
+                                    <th style={{ width: "100px" }}>
+                                      Service Certificate
+                                    </th>
+
+                                    <th style={{ width: "180px" }}>
+                                      Service Provider
+                                    </th>
+
+                                    <th style={{ width: "120px" }}>Remarks</th>
+
+                                    <th style={{ width: "150px" }}>
+                                      Service Certificate Advance Allowed (%)
+                                    </th>
+
+                                    <th style={{ width: "150px" }}>
+                                      Service Certificate Advance Amount
+                                    </th> */}
                                   </tr>
                                 </thead>
 
@@ -7478,129 +8050,165 @@ const RopoImportEdit = () => {
                                   ) : getConsolidatedCharges().length > 0 ? (
                                     getConsolidatedCharges().map(
                                       (consolidatedCharge, index) => (
-                                      <tr key={`consolidated-${index}`}>
-                                        <td>
+                                        <tr key={`consolidated-${index}`}>
+                                          <td style={{ width: "200px" }}>
                                             {consolidatedCharge.charge_name}
-                                        </td>
+                                          </td>
 
-                                        <td>
+                                          <td style={{ width: "100px" }}>
                                             INR{" "}
                                             {consolidatedCharge.total_amount_inr.toFixed(
                                               2
                                             )}
-                                        </td>
+                                          </td>
 
-                                          <td>
+                                          <td style={{ width: "100px" }}>
                                             {poCurrencyCode}{" "}
                                             {consolidatedCharge.total_amount_usd.toFixed(
                                               2
                                             )}
                                           </td>
 
-                                        <td>
-                                          <input
-                                            type="checkbox"
-                                            checked={
+                                          <td style={{ width: "100px" }}>
+                                            <input
+                                              type="checkbox"
+                                              checked={
                                                 consolidatedCharge.charge_ids.every(
                                                   (id) =>
-                                                serviceCertificates[id]
-                                              ) || false
-                                            }
-                                            onChange={(e) => {
-                                              // Update all related charges
+                                                    serviceCertificates[id]
+                                                ) || false
+                                              }
+                                              onChange={(e) => {
+                                                // Update all related charges
 
                                                 consolidatedCharge.charge_ids.forEach(
                                                   (id) => {
                                                     handleServiceCertificateChange(
                                                       id,
+
                                                       e.target.checked
                                                     );
                                                   }
                                                 );
-                                            }}
-                                          />
-                                        </td>
+                                              }}
+                                            />
+                                          </td>
 
-                                        <td>
-                                          <SingleSelector
-                                            options={supplierOptions}
-                                            value={
-                                              selectedServiceProviders[
+                                          <td style={{ width: "180px" }}>
+                                            <SingleSelector
+                                              options={supplierOptions}
+                                              value={
+                                                selectedServiceProviders[
                                                   consolidatedCharge
                                                     .charge_ids[0]
-                                              ] || null
-                                            }
-                                            onChange={(selectedOption) => {
-                                              // Update all related charges with same service provider
+                                                ] || null
+                                              }
+                                              onChange={(selectedOption) => {
+                                                // Update all related charges with same service provider
 
                                                 consolidatedCharge.charge_ids.forEach(
                                                   (id) => {
                                                     handleServiceProviderChange(
                                                       id,
+
                                                       selectedOption
                                                     );
                                                   }
                                                 );
-                                            }}
-                                            placeholder="Select Service Provider"
-                                          />
-                                        </td>
+                                              }}
+                                              placeholder="Select Service Provider"
+                                            />
+                                          </td>
 
-                                        <td>
-                                          <textarea
-                                            className="form-control"
-                                            rows={2}
-                                            placeholder="Enter remarks"
-                                            value={
+                                          <td style={{ width: "120px" }}>
+                                            <textarea
+                                              className="form-control"
+                                              rows={2}
+                                              placeholder="Enter remarks"
+                                              value={
                                                 chargeRemarks[
                                                   consolidatedCharge
                                                     .charge_ids[0]
                                                 ] || ""
-                                            }
-                                            onChange={(e) => {
-                                              // Update all related charges with same remarks
+                                              }
+                                              onChange={(e) => {
+                                                // Update all related charges with same remarks
 
                                                 consolidatedCharge.charge_ids.forEach(
                                                   (id) => {
                                                     handleChargeRemarksChange(
                                                       id,
+
                                                       e.target.value
                                                     );
                                                   }
                                                 );
-                                            }}
-                                          />
-                                        </td>
-                                        <td>
-                                          <input
-                                            type="number"
-                                            className="form-control"
-                                            value={serviceCertAdvancePercentByRow[index] || ""}
-                                            onChange={(e) => handleServiceCertAdvancePercentChange(index, e.target.value)}
-                                            placeholder="Enter %"
-                                            min="0"
-                                            max="100"
-                                            step="0.01"
-                                          />
-                                        </td>
-                                        <td>
-                                          {(() => {
-                                            const percent = parseFloat(serviceCertAdvancePercentByRow[index] || 0) || 0;
-                                            const usd = (parseFloat(consolidatedCharge.total_amount_usd) || 0) * percent / 100;
-                                            const inr = safeConvertUsdToInr(usd, conversionRate);
-                                            const inrNum = parseFloat(inr) || 0;
-                                            return (
-                                              <input
-                                                className="form-control"
-                                                type="text"
-                                                disabled
-                                                value={`${poCurrencyCode} ${usd.toFixed(2)} (INR ${inrNum.toFixed(2)})`}
-                                                placeholder={`${poCurrencyCode} 0.00 (INR 0.00)`}
-                                              />
-                                            );
-                                          })()}
-                                        </td>
-                                      </tr>
+                                              }}
+                                            />
+                                          </td>
+
+                                          <td style={{ width: "150px" }}>
+                                            <input
+                                              type="number"
+                                              className="form-control"
+                                              value={
+                                                serviceCertAdvancePercentByRow[
+                                                  index
+                                                ] || ""
+                                              }
+                                              onChange={(e) =>
+                                                handleServiceCertAdvancePercentChange(
+                                                  index,
+                                                  e.target.value
+                                                )
+                                              }
+                                              placeholder="Enter %"
+                                              min="0"
+                                              max="100"
+                                              step="0.01"
+                                            />
+                                          </td>
+
+                                          <td style={{ width: "150px" }}>
+                                            {(() => {
+                                              const percent =
+                                                parseFloat(
+                                                  serviceCertAdvancePercentByRow[
+                                                    index
+                                                  ] || 0
+                                                ) || 0;
+
+                                              const usd =
+                                                ((parseFloat(
+                                                  consolidatedCharge.total_amount_usd
+                                                ) || 0) *
+                                                  percent) /
+                                                100;
+
+                                              const inr = safeConvertUsdToInr(
+                                                usd,
+                                                conversionRate
+                                              );
+
+                                              const inrNum =
+                                                parseFloat(inr) || 0;
+
+                                              return (
+                                                <input
+                                                  className="form-control"
+                                                  type="text"
+                                                  disabled
+                                                  value={`${poCurrencyCode} ${usd.toFixed(
+                                                    2
+                                                  )} (INR ${inrNum.toFixed(
+                                                    2
+                                                  )})`}
+                                                  placeholder={`${poCurrencyCode} 0.00 (INR 0.00)`}
+                                                />
+                                              );
+                                            })()}
+                                          </td>
+                                        </tr>
                                       )
                                     )
                                   ) : (
@@ -7613,15 +8221,16 @@ const RopoImportEdit = () => {
                                 </tbody>
                               </table>
                             </div>
+
                             {/* Summary Section
+
                             {/* Charges Section */}
+
                             <div className="mt-4">
                               <div className="d-flex justify-content-between align-items-center">
                                 <h5 className="mt-3">Charges</h5>
 
                                 <div className="d-flex gap-2">
-                                
-
                                   <button
                                     type="button"
                                     className="btn purple-btn2"
@@ -7754,6 +8363,7 @@ const RopoImportEdit = () => {
                                 </table>
                               </div>
                             </div>
+
                             <div className="mt-4">
                               <div className="d-flex justify-content-between align-items-center">
                                 <h5 className="mt-3">Other Cost</h5>
@@ -7930,6 +8540,7 @@ const RopoImportEdit = () => {
                               </div>
                             </div>
                           </div>
+
                           <div
                             className={`tab-pane fade ${
                               activeTab === "terms-conditions"
@@ -8067,153 +8678,301 @@ const RopoImportEdit = () => {
 
                             {/* <div className="tbl-container me-2 mt-3">
 
+
+
                               <table className="w-100">
+
+
 
                                 <thead>
 
+
+
                                   <tr>
+
+
 
                                     <th>Charges And Taxes</th>
 
+
+
                                     <th>Amount</th>
+
+
 
                                     <th>Payable Currency</th>
 
+
+
                                     <th>Service Certificate</th>
+
+
 
                                     <th>Select Service Provider</th>
 
+
+
                                     <th>Remarks</th>
+
+
 
                                   </tr>
 
+
+
                                   <tr>
+
+
 
                                     <th colSpan={6}>Tax Addition(Exclusive)</th>
 
+
+
                                   </tr>
+
+
 
                                 </thead>
 
+
+
                                 <tbody>
+
+
 
                                   <tr>
 
+
+
                                   
+
                                   
+
                                     <td>CGST</td>
+
+
 
                                     <td colSpan={2}>INR 0.00</td>
 
+
+
                                     <td>
+
+
 
                                       <input type="checkbox" />
 
+
+
                                     </td>
+
+
 
                                     <td colSpan={2}>
 
+
+
                                       <textarea
+
+
 
                                         className="form-control"
 
+
+
                                         id="exampleFormControlTextarea1"
+
+
 
                                         rows={2}
 
+
+
                                         defaultValue={""}
+
+
 
                                       />
 
+
+
                                     </td>
+
+
 
                                   </tr>
 
+
+
                                   <tr>
+
+
 
                                     <td>SGST</td>
 
+
+
                                     <td colSpan={2}>INR 0.00</td>
+
+
 
                                     <td>
 
+
+
                                       <input type="checkbox" />
 
+
+
                                     </td>
+
+
 
                                     <td colSpan={2}>
 
+
+
                                       <textarea
+
+
 
                                         className="form-control"
 
+
+
                                         id="exampleFormControlTextarea1"
+
+
 
                                         rows={2}
 
+
+
                                         defaultValue={""}
+
+
 
                                       />
 
+
+
                                     </td>
+
+
 
                                   </tr>
 
+
+
                                 </tbody>
 
+
+
                               </table>
+
+
 
                             </div> */}
 
                             {/* <div className="tbl-container me-2 mt-3">
 
+
+
                               <table className="w-100">
+
+
 
                                 <thead>
 
+
+
                                   <tr>
+
+
 
                                     <th colSpan={6}>Charges (Exclusive)</th>
 
+
+
                                   </tr>
+
+
 
                                 </thead>
 
+
+
                                 <tbody>
+
+
 
                                   <tr>
 
+
+
                                     <td>OTHER CHARGES </td>
+
+
 
                                     <td colSpan={2}>INR 0.00</td>
 
+
+
                                     <td>
+
+
 
                                       <input type="checkbox" />
 
+
+
                                     </td>
+
+
 
                                     <td colSpan={2}>
 
+
+
                                       <textarea
+
+
 
                                         className="form-control"
 
+
+
                                         id="exampleFormControlTextarea1"
+
+
 
                                         rows={2}
 
+
+
                                         defaultValue={""}
+
+
 
                                       />
 
+
+
                                     </td>
+
+
 
                                   </tr>
 
+
+
                                 </tbody>
 
+
+
                               </table>
+
+
 
                             </div> */}
 
@@ -8281,10 +9040,9 @@ const RopoImportEdit = () => {
                                       )})`}
                                       disabled
                                     />
+                                  </div>
                                 </div>
-                              </div>
 
-                              
                                 <div className="col-md-6 mt-2">
                                   <div className="form-group">
                                     <label className="po-fontBold">
@@ -8307,224 +9065,417 @@ const RopoImportEdit = () => {
                                 </div>
 
                                 {/* <div className="col-md-6 mt-2">
+
                                   <div className="form-group">
+
                                     <label className="po-fontBold">
+
                                       Service Certificate Advance Allowed (%)
+
                                     </label>
 
+
+
                                     <input
+
                                       className="form-control"
+
                                       type="number"
+
                                       value={
+
                                         serviceCertificateAdvancePercentage
+
                                       }
+
                                       onChange={(e) =>
+
                                         handleServiceCertificateAdvancePercentageChange(
+
                                           e.target.value
+
                                         )
+
                                       }
+
                                       placeholder="0"
+
                                       min="0"
+
                                       max="100"
+
                                       step="0.01"
+
                                     />
+
                                   </div>
+
                                 </div> */}
 
                                 {/* <div className="col-md-6 mt-2">
+
                                   <div className="form-group">
+
                                     <label className="po-fontBold">
+
                                       Service Certificate Advance Amount
+
                                     </label>
 
+
+
                                     <input
+
                                       className="form-control"
+
                                       type="text"
+
                                       value={`${poCurrencyCode} ${calculateServiceCertificateAdvanceAmount().toFixed(
+
                                         2
+
                                       )} (INR ${convertUsdToInr(
+
                                         calculateServiceCertificateAdvanceAmount(),
 
+
+
                                         conversionRate
+
                                       )})`}
+
                                       disabled
+
                                     />
+
                                   </div>
+
                                 </div> */}
                               </div>
                             </div>
 
                             {/* <div className="mt-3 d-flex justify-content-between align-items-center">
 
+
+
                             <h5 className=" mt-3">Advance Payment Schedule</h5>
+
+
 
                             <button className="purple-btn2"> Add</button>
 
+
+
                           </div>
+
+
 
                           <div className="tbl-container me-2 mt-2">
 
+
+
                             <table className="w-100">
+
+
 
                               <thead>
 
+
+
                                 <tr>
+
+
 
                                   <th>Payment Date</th>
 
+
+
                                   <th>Payment %age</th>
+
+
 
                                   <th>Payment Amount</th>
 
+
+
                                   <th>Remark</th>
+
+
 
                                 </tr>
 
+
+
                               </thead>
+
+
 
                               <tbody>
 
+
+
                                 <tr>
+
+
 
                                   <td>05-03-2024</td>
 
+
+
                                   <td>40</td>
 
-                                  <td />
+
 
                                   <td />
+
+
+
+                                  <td />
+
+
 
                                 </tr>
 
+
+
                               </tbody>
 
-                            </table>
 
+
+                            </table>
                           </div> */}
 
-                             <div className="mt-3 d-flex justify-content-between align-items-center">
-                            <h5 className=" mt-3">Delivery Schedule</h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-2">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>MOR No.</th>
+                            <div className="mt-3 d-flex justify-content-between align-items-center">
+                              <h5 className=" mt-3">Delivery Schedule</h5>
+                            </div>
 
-                                  <th>Material</th>
+                            <div className="tbl-container me-2 mt-2">
+                              <table className="w-100">
+                                <thead>
+                                  <tr>
+                                    <th>MOR No.</th>
 
-                                  <th>MOR Delivery Schedule</th>
+                                    <th>Material</th>
 
-                                  <th>PO Delivery Date</th>
+                                    <th>MOR Delivery Schedule</th>
 
-                                  <th>Sch. Delivery Qty</th>
-                                  <th>PO Delivery Qty</th>
+                                    <th>PO Delivery Date</th>
 
-                                  <th>Delivery Address</th>
+                                    <th>Sch. Delivery Qty</th>
 
-                                  <th>Store Name</th>
+                                    <th>PO Delivery Qty</th>
 
-                                  <th>Remarks</th>
-                                </tr>
-                              </thead>
+                                    <th>Delivery Address</th>
 
-                              <tbody>
+                                    <th>Store Name</th>
+
+                                    <th>Remarks</th>
+                                  </tr>
+                                </thead>
+
+                                <tbody>
                                   {deliverySchedules &&
                                   deliverySchedules.length > 0 ? (
-                                  deliverySchedules.map((schedule, index) => (
-                                    <tr key={schedule.id || index}>
-                                      <td>{schedule.mor_number || "-"}</td>
-                                      <td>{schedule.material || schedule.material_formatted_name || "-"}</td>
-                                      <td>{schedule.mor_delivery_schedule || (schedule.expected_date ? new Date(schedule.expected_date).toLocaleDateString() : "-")}</td>
-                                      <td>
-                                        {(() => {
-                                          const expectedStr = schedule.expected_date || schedule.mor_delivery_schedule
-                                            ? (() => {
-                                                const dateStr = schedule.expected_date || schedule.mor_delivery_schedule;
-                                                if (dateStr.includes('/')) {
-                                                  const [day, month, year] = dateStr.split('/');
-                                                  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                                    deliverySchedules.map((schedule, index) => (
+                                      <tr key={schedule.id || index}>
+                                        <td>{schedule.mor_number || "-"}</td>
+
+                                        <td>
+                                          {schedule.material ||
+                                            schedule.material_formatted_name ||
+                                            "-"}
+                                        </td>
+
+                                        <td>
+                                          {schedule.mor_delivery_schedule ||
+                                            (schedule.expected_date
+                                              ? new Date(
+                                                  schedule.expected_date
+                                                ).toLocaleDateString()
+                                              : "-")}
+                                        </td>
+
+                                        <td>
+                                          {(() => {
+                                            const expectedStr =
+                                              schedule.expected_date ||
+                                              schedule.mor_delivery_schedule
+                                                ? (() => {
+                                                    const dateStr =
+                                                      schedule.expected_date ||
+                                                      schedule.mor_delivery_schedule;
+
+                                                    if (dateStr.includes("/")) {
+                                                      const [day, month, year] =
+                                                        dateStr.split("/");
+
+                                                      return `${year}-${month.padStart(
+                                                        2,
+                                                        "0"
+                                                      )}-${day.padStart(
+                                                        2,
+                                                        "0"
+                                                      )}`;
+                                                    }
+
+                                                    return new Date(dateStr)
+                                                      .toISOString()
+                                                      .split("T")[0];
+                                                  })()
+                                                : "";
+
+                                            const maxStr = (() => {
+                                              const dateStr =
+                                                schedule.expected_date ||
+                                                schedule.mor_delivery_schedule;
+
+                                              if (!dateStr) return "";
+
+                                              let d;
+
+                                              if (dateStr.includes("/")) {
+                                                const [day, month, year] =
+                                                  dateStr.split("/");
+
+                                                d = new Date(
+                                                  year,
+                                                  month - 1,
+                                                  day
+                                                );
+                                              } else {
+                                                d = new Date(dateStr);
+                                              }
+
+                                              d.setFullYear(
+                                                d.getFullYear() + 1
+                                              );
+
+                                              return d
+                                                .toISOString()
+                                                .split("T")[0];
+                                            })();
+
+                                            const valueStr =
+                                              schedule.po_delivery_date
+                                                ? (() => {
+                                                    // Handle both "06/09/2025" and "2025-09-06" formats
+
+                                                    if (
+                                                      schedule.po_delivery_date.includes(
+                                                        "/"
+                                                      )
+                                                    ) {
+                                                      const [day, month, year] =
+                                                        schedule.po_delivery_date.split(
+                                                          "/"
+                                                        );
+
+                                                      return `${year}-${month.padStart(
+                                                        2,
+                                                        "0"
+                                                      )}-${day.padStart(
+                                                        2,
+                                                        "0"
+                                                      )}`;
+                                                    }
+
+                                                    return new Date(
+                                                      schedule.po_delivery_date
+                                                    )
+                                                      .toISOString()
+                                                      .split("T")[0];
+                                                  })()
+                                                : "";
+
+                                            return (
+                                              <input
+                                                type="date"
+                                                className="form-control"
+                                                value={valueStr}
+                                                min={expectedStr || undefined}
+                                                max={maxStr || undefined}
+                                                onChange={(e) =>
+                                                  handleScheduleDateChange(
+                                                    index,
+                                                    e.target.value
+                                                  )
                                                 }
-                                                return new Date(dateStr).toISOString().split('T')[0];
-                                              })()
-                                            : '';
-                                          const maxStr = (() => {
-                                            const dateStr = schedule.expected_date || schedule.mor_delivery_schedule;
-                                            if (!dateStr) return '';
-                                            let d;
-                                            if (dateStr.includes('/')) {
-                                              const [day, month, year] = dateStr.split('/');
-                                              d = new Date(year, month - 1, day);
-                                            } else {
-                                              d = new Date(dateStr);
+                                              />
+                                            );
+                                          })()}
+                                        </td>
+
+                                        <td>
+                                          {schedule.sch_delivery_qty ||
+                                            schedule.expected_quantity ||
+                                            "-"}
+                                        </td>
+
+                                        <td>
+                                          <input
+                                            type="number"
+                                            className="form-control"
+                                            value={
+                                              schedule.po_delivery_qty ?? ""
                                             }
-                                            d.setFullYear(d.getFullYear() + 1);
-                                            return d.toISOString().split('T')[0];
-                                          })();
-                                          const valueStr = schedule.po_delivery_date
-                                            ? (() => {
-                                                // Handle both "06/09/2025" and "2025-09-06" formats
-                                                if (schedule.po_delivery_date.includes('/')) {
-                                                  const [day, month, year] = schedule.po_delivery_date.split('/');
-                                                  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-                                                }
-                                                return new Date(schedule.po_delivery_date).toISOString().split('T')[0];
-                                              })()
-                                            : '';
-                                          return (
-                                            <input
-                                              type="date"
-                                              className="form-control"
-                                              value={valueStr}
-                                              min={expectedStr || undefined}
-                                              max={maxStr || undefined}
-                                              onChange={(e) => handleScheduleDateChange(index, e.target.value)}
-                                            />
-                                          );
-                                        })()}
-                                      </td>
-                                      <td>{schedule.sch_delivery_qty || schedule.expected_quantity || "-"}</td>
-                                      <td>
-                                        <input
-                                          type="number"
-                                          className="form-control"
-                                          value={schedule.po_delivery_qty ?? ''}
-                                          onChange={(e) => handleSchedulePoQtyChange(index, e.target.value)}
-                                          min="0"
-                                          step="0.01"
-                                        />
-                                      </td>
-                                      <td>{schedule.delivery_address || schedule.store_address || "-"}</td>
-                                      <td>
-                                        <input
-                                          type="text"
-                                          className="form-control"
-                                          value={schedule.store_name || ''}
-                                          onChange={(e) => handleScheduleStoreNameChange(index, e.target.value)}
-                                          placeholder="Enter store name"
-                                        />
-                                      </td>
-                                      <td>
-                                        <input
-                                          type="text"
-                                          className="form-control"
-                                          placeholder="Add remarks"
-                                          value={schedule.remarks || ''}
-                                          onChange={(e) => handleScheduleRemarksChange(index, e.target.value)}
-                                        />
+                                            onChange={(e) =>
+                                              handleSchedulePoQtyChange(
+                                                index,
+                                                e.target.value
+                                              )
+                                            }
+                                            min="0"
+                                            step="0.01"
+                                          />
+                                        </td>
+
+                                        <td>
+                                          {schedule.delivery_address ||
+                                            schedule.store_address ||
+                                            "-"}
+                                        </td>
+
+                                        <td>
+                                          <input
+                                            type="text"
+                                            className="form-control"
+                                            value={schedule.store_name || ""}
+                                            onChange={(e) =>
+                                              handleScheduleStoreNameChange(
+                                                index,
+                                                e.target.value
+                                              )
+                                            }
+                                            placeholder="Enter store name"
+                                          />
+                                        </td>
+
+                                        <td>
+                                          <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Add remarks"
+                                            value={schedule.remarks || ""}
+                                            onChange={(e) =>
+                                              handleScheduleRemarksChange(
+                                                index,
+                                                e.target.value
+                                              )
+                                            }
+                                          />
+                                        </td>
+                                      </tr>
+                                    ))
+                                  ) : (
+                                    <tr>
+                                      <td colSpan="9" className="text-center">
+                                        No delivery schedules available.
                                       </td>
                                     </tr>
-                                  ))
-                                ) : (
-                                  <tr>
-                                    <td colSpan="9" className="text-center">
-                                      No delivery schedules available.
-                                    </td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
-                          </div> 
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
 
                             {/* General Term & Conditions Section */}
 
@@ -8532,8 +9483,6 @@ const RopoImportEdit = () => {
                               <h5 className="">
                                 General Term &amp; Conditions
                               </h5>
-
-                    
 
                               <button
                                 className="purple-btn2"
@@ -9092,9 +10041,7 @@ const RopoImportEdit = () => {
       {/* file_attchement add modal */}
 
       {/* file_attchement add modal end */}
-
       {/* document_attchment schedule modal */}
-
       {/* document_attchment schedule modal end */}
 
       {/* Add Material Modal */}
@@ -9798,7 +10745,9 @@ const RopoImportEdit = () => {
 
                           <td>{item.prev_order_qty || ""}</td>
 
-                          <td>{item.pending_qty ?? item.pending_quantity ?? ""}</td>
+                          <td>
+                            {item.pending_qty ?? item.pending_quantity ?? ""}
+                          </td>
 
                           <td>
                             <input
@@ -10186,7 +11135,9 @@ const RopoImportEdit = () => {
             <div className="row mb-3">
               <div className="col-md-6">
                 <div className="mb-3">
-                  <label className="form-label fw-bold">Material Cost ({poCurrencyCode})</label>
+                  <label className="form-label fw-bold">
+                    Material Cost ({poCurrencyCode})
+                  </label>
 
                   <input
                     type="text"
@@ -10200,7 +11151,9 @@ const RopoImportEdit = () => {
 
               <div className="col-md-6">
                 <div className="mb-3">
-                  <label className="form-label fw-bold">Discount Rate ({poCurrencyCode})</label>
+                  <label className="form-label fw-bold">
+                    Discount Rate ({poCurrencyCode})
+                  </label>
 
                   <input
                     type="text"
@@ -10277,11 +11230,13 @@ const RopoImportEdit = () => {
                         <th>INR</th>
 
                         <th>{poCurrencyCode}</th>
+
                         <th></th>
 
                         <th>INR</th>
 
                         <th>{poCurrencyCode}</th>
+
                         <th></th>
                       </tr>
                     </thead>
@@ -10562,13 +11517,9 @@ const RopoImportEdit = () => {
                               <input
                                 type="text"
                                 className="form-control"
-                                value={
-                                  // Show only the Tax / Charges Amount in INR
-                                  safeConvertUsdToInr(
-                                      item.amount || 0,
-                                      conversionRate
-                                  )
-                                }
+                                value={parseFloat(item.amount_inr || 0).toFixed(
+                                  2
+                                )}
                                 onChange={(e) =>
                                   handleTaxChargeChange(
                                     tableId,
@@ -10591,10 +11542,14 @@ const RopoImportEdit = () => {
                               <input
                                 type="text"
                                 className="form-control"
-                                value={
-                                  // Show only the Tax / Charges Amount in PO currency (USD)
-                                  parseFloat(item.amount || 0).toFixed(2)
-                                }
+                                value={(() => {
+                                  const usd = safeConvertInrToUsd(
+                                    parseFloat(item.amount_inr || 0) || 0,
+                                    conversionRate
+                                  );
+                                  const num = parseFloat(usd);
+                                  return isNaN(num) ? "0.00" : num.toFixed(2);
+                                })()}
                                 readOnly
                                 disabled={true}
                                 placeholder="Auto calculated"
@@ -10763,13 +11718,9 @@ const RopoImportEdit = () => {
                               <input
                                 type="text"
                                 className="form-control"
-                                value={
-                                  // Show only the Tax / Charges Amount in INR (deduction)
-                                  safeConvertUsdToInr(
-                                      item.amount || 0,
-                                      conversionRate
-                                  )
-                                }
+                                value={parseFloat(item.amount_inr || 0).toFixed(
+                                  2
+                                )}
                                 onChange={(e) =>
                                   handleTaxChargeChange(
                                     tableId,
@@ -10792,10 +11743,14 @@ const RopoImportEdit = () => {
                               <input
                                 type="text"
                                 className="form-control"
-                                value={
-                                  // Show only the Tax / Charges Amount in PO currency (USD)
-                                  parseFloat(item.amount || 0).toFixed(2)
-                                }
+                                value={(() => {
+                                  const usd = safeConvertInrToUsd(
+                                    parseFloat(item.amount_inr || 0) || 0,
+                                    conversionRate
+                                  );
+                                  const num = parseFloat(usd);
+                                  return isNaN(num) ? "0.00" : num.toFixed(2);
+                                })()}
                                 readOnly
                                 disabled={true}
                                 placeholder="Auto calculated"
@@ -10872,20 +11827,6 @@ const RopoImportEdit = () => {
           >
             Close
           </button>
-
-          {/* <button
-
-            variant="primary"
-
-            onClick={handleSaveTaxChanges}
-
-            className="purple-btn2"
-
-          >
-
-            Save Changes
-
-          </button> */}
 
           <button
             variant="primary"

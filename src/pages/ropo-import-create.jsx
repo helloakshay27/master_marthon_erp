@@ -1978,21 +1978,19 @@ const RopoImportCreate = () => {
 
             addition_bid_material_tax_details:
               rateData.addition_tax_details?.map((tax) => {
-                // Convert USD amount back to INR for the input field
+                // API provides fixed amounts in INR; show INR directly
 
                 let taxChargePerUom = "";
 
                 if (tax.percentage) {
-                  // If it's a percentage, keep it as percentage
-
                   taxChargePerUom = `${tax.percentage}%`;
                 } else {
-                  // If it's a fixed amount, convert USD to INR for display
+                  const inrAmount = parseFloat(tax.amount) || 0;
 
-                  const usdAmount = parseFloat(tax.amount) || 0;
-
-                  taxChargePerUom = convertUsdToInr(usdAmount);
+                  taxChargePerUom = inrAmount.toString();
                 }
+
+                const amountInr = parseFloat(tax.amount || 0) || 0;
 
                 return {
                   id: tax.id,
@@ -2014,27 +2012,28 @@ const RopoImportCreate = () => {
 
                   inclusive: tax.inclusive,
 
-                  amount: tax.amount?.toString() || "0",
+                  // Store INR and USD
+                  amount_inr: amountInr.toString(),
+
+                  amount: safeConvertInrToUsd(amountInr, conversionRate).toString(),
                 };
               }) || [],
 
             deduction_bid_material_tax_details:
               rateData.deduction_tax_details?.map((tax) => {
-                // Convert USD amount back to INR for the input field
+                // API provides fixed amounts in INR; show INR directly
 
                 let taxChargePerUom = "";
 
                 if (tax.percentage) {
-                  // If it's a percentage, keep it as percentage
-
                   taxChargePerUom = `${tax.percentage}%`;
                 } else {
-                  // If it's a fixed amount, convert USD to INR for display
+                  const inrAmount = parseFloat(tax.amount) || 0;
 
-                  const usdAmount = parseFloat(tax.amount) || 0;
-
-                  taxChargePerUom = convertUsdToInr(usdAmount);
+                  taxChargePerUom = inrAmount.toString();
                 }
+
+                const amountInr = parseFloat(tax.amount || 0) || 0;
 
                 return {
                   id: tax.id,
@@ -2056,7 +2055,10 @@ const RopoImportCreate = () => {
 
                   inclusive: tax.inclusive,
 
-                  amount: tax.amount?.toString() || "0",
+                  // Store INR and USD
+                  amount_inr: amountInr.toString(),
+
+                  amount: safeConvertInrToUsd(amountInr, conversionRate).toString(),
                 };
               }) || [],
           },
@@ -2581,7 +2583,14 @@ const RopoImportCreate = () => {
                     Boolean(currentTax.inclusive)
                   );
 
+                  // Store USD and INR
                   currentTax.amount = calculatedAmount.toString();
+
+                  currentTax.amount_inr = (
+                    parseFloat(
+                      safeConvertUsdToInr(calculatedAmount, conversionRate)
+                    ) || 0
+                  ).toString();
 
                   // Find the percentage ID from materialTaxPercentages
 
@@ -2603,6 +2612,9 @@ const RopoImportCreate = () => {
                   const usdValue =
                     parseFloat(safeConvertInrToUsd(inrValue, conversionRate)) ||
                     0;
+
+                  // Store both INR and USD
+                  currentTax.amount_inr = inrValue.toString();
 
                   currentTax.amount = usdValue.toString();
                 }
@@ -2624,7 +2636,14 @@ const RopoImportCreate = () => {
                     Boolean(currentTax.inclusive)
                   );
 
+                  // Store USD and INR
                   currentTax.amount = calculatedAmount.toString();
+
+                  currentTax.amount_inr = (
+                    parseFloat(
+                      safeConvertUsdToInr(calculatedAmount, conversionRate)
+                    ) || 0
+                  ).toString();
 
                   // Find the percentage ID from materialTaxPercentages
 
@@ -2647,6 +2666,8 @@ const RopoImportCreate = () => {
                     parseFloat(safeConvertInrToUsd(inrValue, conversionRate)) ||
                     0;
 
+                  currentTax.amount_inr = inrValue.toString();
+
                   currentTax.amount = usdValue.toString();
                 }
               } else {
@@ -2658,6 +2679,13 @@ const RopoImportCreate = () => {
 
             if (currentTax.taxType === "TaxCharge") {
               currentTax.amount = value;
+
+              // Keep INR in sync
+              const usdVal = parseFloat(value) || 0;
+
+              currentTax.amount_inr = (
+                parseFloat(safeConvertUsdToInr(usdVal, conversionRate)) || 0
+              ).toString();
             }
           } else if (field === "inclusive") {
             // Toggle inclusive and recalculate when percentage-based
@@ -2667,17 +2695,28 @@ const RopoImportCreate = () => {
             const inputValue = currentTax.taxChargePerUom || "";
 
             if (inputValue && inputValue.includes("%")) {
-              const percentage = parseFloat(inputValue.replace("%", "")) || 0;
+              // For deduction taxes (e.g., TDS), do NOT change the calculated amount on toggle
+              if (type === "deduction") {
+                // keep amounts unchanged
+              } else {
+                const percentage = parseFloat(inputValue.replace("%", "")) || 0;
 
-              const recalculated = calculateTaxAmount(
-                percentage,
+                const recalculated = calculateTaxAmount(
+                  percentage,
 
-                baseAmount,
+                  baseAmount,
 
-                Boolean(value)
-              );
+                  Boolean(value)
+                );
 
-              currentTax.amount = recalculated.toString();
+                currentTax.amount = recalculated.toString();
+
+                currentTax.amount_inr = (
+                  parseFloat(
+                    safeConvertUsdToInr(recalculated, conversionRate)
+                  ) || 0
+                ).toString();
+              }
             }
           } else {
             // Generic setter for any other simple fields
@@ -3163,9 +3202,12 @@ const RopoImportCreate = () => {
 
                       resource_type: tax.resource_type,
 
-                      amount: tax.amount,
+                      amount_inr: parseFloat(tax.amount || 0) || 0,
 
-                      amount_inr: convertUsdToInr(tax.amount, conversionRate),
+                      amount: safeConvertInrToUsd(
+                        parseFloat(tax.amount || 0) || 0,
+                        conversionRate
+                      ),
 
                       inclusive: tax.inclusive,
 
@@ -3197,9 +3239,12 @@ const RopoImportCreate = () => {
 
                       resource_type: tax.resource_type,
 
-                      amount: tax.amount,
+                      amount_inr: parseFloat(tax.amount || 0) || 0,
 
-                      amount_inr: convertUsdToInr(tax.amount, conversionRate),
+                      amount: safeConvertInrToUsd(
+                        parseFloat(tax.amount || 0) || 0,
+                        conversionRate
+                      ),
 
                       inclusive: tax.inclusive,
 
@@ -4885,9 +4930,12 @@ const RopoImportCreate = () => {
 
                   resource_type: tax.resource_type,
 
-                  amount: tax.amount,
+                  amount: safeConvertInrToUsd(
+                    parseFloat(tax.amount || 0) || 0,
+                    conversionRate
+                  ),
 
-                  amount_inr: convertUsdToInr(tax.amount, conversionRate), // Convert USD to INR
+                  amount_inr: parseFloat(tax.amount || 0) || 0,
 
                   inclusive: tax.inclusive,
 
@@ -4918,9 +4966,12 @@ const RopoImportCreate = () => {
 
                   resource_type: tax.resource_type,
 
-                  amount: tax.amount,
+                  amount: safeConvertInrToUsd(
+                    parseFloat(tax.amount || 0) || 0,
+                    conversionRate
+                  ),
 
-                  amount_inr: convertUsdToInr(tax.amount, conversionRate), // Convert USD to INR
+                  amount_inr: parseFloat(tax.amount || 0) || 0,
 
                   inclusive: tax.inclusive,
 
@@ -5404,7 +5455,9 @@ const RopoImportCreate = () => {
 
           payment_remarks: termsFormData.paymentRemarks || null,
 
-          supplier_advance: parseFloat(supplierAdvancePercentage || 0),
+          supplier_advance: parseFloat(calculateSupplierAdvanceAmount() || 0),
+
+          supplier_advance_percentage: parseFloat(supplierAdvancePercentage || 0),
 
           // survice_certificate_advance: parseFloat(serviceCertificateAdvancePercentage || 0),
           total_discount: parseFloat(calculateTotalDiscountAmount() || 0),
@@ -5456,41 +5509,7 @@ const RopoImportCreate = () => {
 
           // Extract unique MOR IDs from submitted materials
 
-          mor_ids: [
-            ...new Set(
-              submittedMaterials
-
-                .map((material) => material.mor_inventory_id)
-
-                .filter(Boolean)
-            ),
-          ],
-
-          // Extract MOR inventory tax details from charges data
-
-          mor_inventory_tax_details: chargesFromApi
-
-            .filter(
-              (charge) =>
-                charge.resource_type === "TaxCategory" ||
-                charge.resource_type === "TaxCharge"
-            )
-
-            .map((charge) => ({
-              id: charge.id,
-
-              remarks: chargeRemarks[charge.id] || charge.charge_name || "",
-              supplier_id:
-                (selectedServiceProviders[charge.id]?.value ?? null) !== null
-                  ? selectedServiceProviders[charge.id]?.value
-                  : selectedSupplier?.value || null,
-              applicable_to_payable: true,
-              service_certificate_advance_percentage: (() => {
-                const pct = chargeIdToServiceCertPct[charge.id];
-                return pct === 0 || pct ? pct : 0;
-              })(),
-            })),
-
+         
           // Include purchase order ID if available (for updates)
 
           ...(purchaseOrderId && { po_id: purchaseOrderId }),
@@ -5770,6 +5789,41 @@ const RopoImportCreate = () => {
 
           //   : [],
         },
+         mor_ids: [
+            ...new Set(
+              submittedMaterials
+
+                .map((material) => material.mor_inventory_id)
+
+                .filter(Boolean)
+            ),
+          ],
+
+          // Extract MOR inventory tax details from charges data
+
+          mor_inventory_tax_details: chargesFromApi
+
+            .filter(
+              (charge) =>
+                charge.resource_type === "TaxCategory" ||
+                charge.resource_type === "TaxCharge"
+            )
+
+            .map((charge) => ({
+              id: charge.id,
+
+              remarks: chargeRemarks[charge.id] || charge.charge_name || "",
+              supplier_id:
+                (selectedServiceProviders[charge.id]?.value ?? null) !== null
+                  ? selectedServiceProviders[charge.id]?.value
+                  : selectedSupplier?.value || null,
+              applicable_to_payable: true,
+              service_certificate_advance_percentage: (() => {
+                const pct = chargeIdToServiceCertPct[charge.id];
+                return pct === 0 || pct ? pct : 0;
+              })(),
+            })),
+
       };
 
       console.log("Creating purchase order with payload:", payload);
@@ -10616,12 +10670,7 @@ const RopoImportCreate = () => {
                                 type="text"
                                 className="form-control"
                                 value={
-                                  // Show only the Tax / Charges Amount in INR
-                                  safeConvertUsdToInr(
-                                    item.amount || 0,
-
-                                    conversionRate
-                                  )
+                                  parseFloat(item.amount_inr || 0).toFixed(2)
                                 }
                                 onChange={(e) =>
                                   handleTaxChargeChange(
@@ -10818,12 +10867,7 @@ const RopoImportCreate = () => {
                                 type="text"
                                 className="form-control"
                                 value={
-                                  // Show only the Tax / Charges Amount in INR (deduction)
-                                  safeConvertUsdToInr(
-                                    item.amount || 0,
-
-                                    conversionRate
-                                  )
+                                  parseFloat(item.amount_inr || 0).toFixed(2)
                                 }
                                 onChange={(e) =>
                                   handleTaxChargeChange(
