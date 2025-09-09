@@ -1361,7 +1361,52 @@ const RopoImportCreate = () => {
         });
       });
 
-      setMaterialDetailsData(rows);
+      // Preselect previously added materials and prepopulate order qty
+      try {
+        const previouslySubmitted = Array.isArray(submittedMaterials)
+          ? submittedMaterials
+          : [];
+
+        // Build fast lookup by id and by material name as fallback
+        const byId = new Map(
+          previouslySubmitted.map((m) => [
+            String(
+              m.mor_inventory_id || m.inventory_id || m.id || m.material_id || ""
+            ),
+            m,
+          ])
+        );
+
+        const byName = new Map(
+          previouslySubmitted
+            .map((m) => [m.material_name || m.material, m])
+            .filter(([k]) => k)
+        );
+
+        const selectedIdx = [];
+
+        rows.forEach((row, idx) => {
+          const keyId = String(row.inventory_id || row.mor_inventory_id || "");
+          const matchById = keyId ? byId.get(keyId) : undefined;
+          const materialKey = row.material_name || row.material;
+          const match = matchById || (materialKey ? byName.get(materialKey) : undefined);
+
+          if (match) {
+            // Prepopulate order qty from previously submitted
+            const prevQty =
+              match.order_qty ?? match.required_quantity ?? row.order_qty ?? "";
+            row.order_qty = prevQty;
+            // Mark as selected in the modal
+            selectedIdx.push(idx);
+          }
+        });
+
+        setMaterialDetailsData(rows);
+        setSelectedMaterialItems(selectedIdx);
+      } catch (e) {
+        // Fallback to original behavior if anything goes wrong
+        setMaterialDetailsData(rows);
+      }
     } catch (e) {
       console.error("Failed to fetch MOR material details", e);
 
@@ -1679,26 +1724,8 @@ const RopoImportCreate = () => {
         (idx) => materialDetailsData[idx]
       );
 
-      // Validation: Check for duplicate materials
-
-      const duplicateCheck = selectedRows.some((selectedRow) => {
-        return submittedMaterials.some((existingMaterial) => {
-          // Check if material with same mor_inventory_id already exists
-
-          return (
-            existingMaterial.mor_inventory_id === selectedRow.inventory_id ||
-            existingMaterial.id === selectedRow.inventory_id
-          );
-        });
-      });
-
-      if (duplicateCheck) {
-        alert(
-          "Cannot add duplicate materials. Some selected materials are already added."
-        );
-
-        return;
-      }
+      // Do not block on duplicates: existing selections may be edited and re-submitted.
+      // We'll merge selected rows with previously submitted materials below.
 
       // Validation: Check for negative or zero order quantities
 
@@ -1882,11 +1909,13 @@ const RopoImportCreate = () => {
             }));
 
       setSubmittedMaterials((prev) => {
-        const seen = new Set(prev.map((x) => `${x.id}`));
-
-        const unique = rowsToAdd.filter((r) => !seen.has(`${r.id}`));
-
-        return [...prev, ...unique];
+        // Merge by id so existing materials get updated (e.g., order_qty changes)
+        const byId = new Map(prev.map((x) => [String(x.id), x]));
+        rowsToAdd.forEach((row) => {
+          if (!row || row.id == null) return;
+          byId.set(String(row.id), row);
+        });
+        return Array.from(byId.values());
       });
 
       alert(`Successfully added ${selectedRows.length} material(s)`);
