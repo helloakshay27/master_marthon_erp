@@ -126,7 +126,7 @@ const MaterialQCCreate = () => {
         }
     }, [selectedCompany]);
 
-    
+
 
     const statusOptions = [
         {
@@ -267,6 +267,112 @@ const MaterialQCCreate = () => {
         .flatMap((att) => att.attachments || []);
 
     console.log("attachments:", attachmentsPayload)
+    // -----------------------
+    const [materials, setMaterials] = useState([]); // Each material: { id, details, attachments: [] }
+
+    // Example API response mapping
+    // Dummy data for materials (no attachments)
+    // setMaterials([
+    //     {
+    //         id: 1,
+    //         details: {
+    //             morNo: 'MOR001', code: 'Code001', qcRequired: 'Yes', type: 'Type1', subType: 'Sub-Type1', brand: 'Brand1', mtcReceived: 'No', uom: 'UOM1',
+    //         },
+    //         attachments: [],
+    //     },
+    //     {
+    //         id: 2,
+    //         details: {
+    //             morNo: 'MOR002', code: 'Code002', qcRequired: 'No', type: 'Type2', subType: 'Sub-Type2', brand: 'Brand2', mtcReceived: 'Yes', uom: 'UOM2',
+    //         },
+    //         attachments: [],
+    //     },
+    //     {
+    //         id: 3,
+    //         details: {
+    //             morNo: 'MOR003', code: 'Code003', qcRequired: 'Yes', type: 'Type3', subType: 'Sub-Type3', brand: 'Brand3', mtcReceived: 'No', uom: 'UOM3',
+    //         },
+    //         attachments: [],
+    //     },
+    // ]);
+
+
+    useEffect(() => {
+        setMaterials([
+            {
+                id: 1,
+                details: {
+                    morNo: 'MOR001', code: 'Code001', qcRequired: 'Yes', type: 'Type1', subType: 'Sub-Type1', brand: 'Brand1', mtcReceived: 'No', uom: 'UOM1',
+                },
+                attachments: [],
+            },
+            {
+                id: 2,
+                details: {
+                    morNo: 'MOR002', code: 'Code002', qcRequired: 'No', type: 'Type2', subType: 'Sub-Type2', brand: 'Brand2', mtcReceived: 'Yes', uom: 'UOM2',
+                },
+                attachments: [],
+            },
+            {
+                id: 3,
+                details: {
+                    morNo: 'MOR003', code: 'Code003', qcRequired: 'Yes', type: 'Type3', subType: 'Sub-Type3', brand: 'Brand3', mtcReceived: 'No', uom: 'UOM3',
+                },
+                attachments: [],
+            },
+        ]);
+    }, []);
+
+    const handleAddAttachment = (matIdx) => {
+        setMaterials(prev =>
+            prev.map((mat, idx) =>
+                idx === matIdx
+                    ? {
+                        ...mat,
+                        attachments: [
+                            ...mat.attachments,
+                            {
+                                id: Date.now(),
+                                fileType: "",
+                                fileName: "",
+                                uploadDate: getLocalDateTime(),
+                                fileUrl: "",
+                                file: null,
+                                isExisting: false,
+                                status: "",
+                            },
+                        ],
+                    }
+                    : mat
+            )
+        );
+    };
+
+    const handleRemoveAttachment = (matIdx, attId) => {
+        setMaterials(prev =>
+            prev.map((mat, idx) =>
+                idx === matIdx
+                    ? { ...mat, attachments: mat.attachments.filter(att => att.id !== attId) }
+                    : mat
+            )
+        );
+    };
+
+    const handleAttachmentStatusChange = (matIdx, attId, newStatus) => {
+        setMaterials(prev =>
+            prev.map((mat, idx) =>
+                idx === matIdx
+                    ? {
+                        ...mat,
+                        attachments: mat.attachments.map(att =>
+                            att.id === attId ? { ...att, status: newStatus } : att
+                        ),
+                    }
+                    : mat
+            )
+        );
+    };
+    // ---------------------
 
     return (
         <>
@@ -312,17 +418,79 @@ const MaterialQCCreate = () => {
                                                         <div className="col-md-4 ">
                                                             <div className="form-group">
                                                                 <label>
-                                                                    Company
+                                                                    Gate Entry No.
                                                                 </label>
                                                                 <SingleSelector
                                                                     options={companies}
                                                                     value={selectedCompany}
                                                                     onChange={handleCompanyChange}
-                                                                    placeholder="Select Company"
+                                                                    placeholder="Select Gate Entry No."
                                                                 />
                                                             </div>
                                                         </div>
-                                                        <div className="col-md-4  ">
+                                                        <div className="col-md-4 ">
+                                                            <div className="form-group">
+                                                                <label> Company</label>
+                                                                <input
+                                                                    className="form-control"
+                                                                    type="text"
+                                                                    value={""}
+                                                                    placeholder=""
+                                                                    fdprocessedid="qv9ju9"
+
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-md-4 mt-2">
+                                                            <div className="form-group">
+                                                                <label>Project</label>
+                                                                <input
+                                                                    className="form-control"
+                                                                    type="text"
+                                                                    value={""}
+                                                                    placeholder=""
+                                                                    fdprocessedid="qv9ju9"
+
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-md-4 mt-2">
+                                                            <div className="form-group">
+                                                                <label>Sub-Project</label>
+                                                                <input
+                                                                    className="form-control"
+                                                                    type="text"
+                                                                    value={""}
+                                                                    placeholder=""
+                                                                    fdprocessedid="qv9ju9"
+
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-md-4 mt-2">
+                                                            <div className="form-group">
+                                                                <label>Store</label>
+                                                                <input
+                                                                    className="form-control"
+                                                                    type="text"
+                                                                    value={""}
+
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-md-4  mt-2">
+                                                            <div className="form-group">
+                                                                <label>Gate No.</label>
+
+                                                                <input
+                                                                    className="form-control"
+                                                                    type="text"
+                                                                    value={""}
+
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        {/* <div className="col-md-4 mt-2 ">
                                                             <div className="form-group">
                                                                 <label>
                                                                     Project
@@ -335,8 +503,8 @@ const MaterialQCCreate = () => {
                                                                 // isDisabled={!selectedCompany}
                                                                 />
                                                             </div>
-                                                        </div>
-                                                        <div className="col-md-4  mt-2">
+                                                        </div> */}
+                                                        {/* <div className="col-md-4  mt-2">
                                                             <div className="form-group">
                                                                 <label>
                                                                     Sub-Project
@@ -350,7 +518,7 @@ const MaterialQCCreate = () => {
                                                                 // isDisabled={!selectedCompany}
                                                                 />
                                                             </div>
-                                                        </div>
+                                                        </div> */}
 
 
 
@@ -399,30 +567,9 @@ const MaterialQCCreate = () => {
 
 
 
-                                                        <div className="col-md-4  mt-2">
-                                                            <div className="form-group">
-                                                                <label>Gate No.</label>
 
-                                                                <input
-                                                                    className="form-control"
-                                                                    type="text"
-                                                                    value={""}
 
-                                                                />
-                                                            </div>
-                                                        </div>
 
-                                                        <div className="col-md-4 mt-2">
-                                                            <div className="form-group">
-                                                                <label>Store</label>
-                                                                <input
-                                                                    className="form-control"
-                                                                    type="text"
-                                                                    value={""}
-
-                                                                />
-                                                            </div>
-                                                        </div>
 
                                                         <div className="col-md-4 mt-2">
                                                             <div className="form-group">
@@ -448,20 +595,7 @@ const MaterialQCCreate = () => {
                                                             </div>
 
                                                         </div>
-                                                        <div className="col-md-4 mt-2">
-                                                            <div className="form-group">
-                                                                <label>Gate Entry No.</label>
-                                                                <input
-                                                                    className="form-control"
-                                                                    type="text"
-                                                                    placeholder=""
-                                                                    fdprocessedid="qv9ju9"
-                                                                    value={""}
 
-                                                                />
-                                                            </div>
-
-                                                        </div>
                                                         <div className="col-md-4 mt-2">
                                                             <div className="form-group">
                                                                 <label>Delivery Chalan No.</label>
@@ -494,7 +628,7 @@ const MaterialQCCreate = () => {
                                                             </div>
                                                         </div>
 
-                                                        <div className="col-md-4 mt-2">
+                                                        {/* <div className="col-md-4 mt-2">
                                                             <div className="form-group">
                                                                 <label>Remark</label>
                                                                 <textarea
@@ -506,8 +640,8 @@ const MaterialQCCreate = () => {
                                                                     onChange={handleRemarkChange2}
                                                                 />
                                                             </div>
-                                                        </div>
-                                                        <div className="col-md-4 mt-2">
+                                                        </div> */}
+                                                        {/* <div className="col-md-4 mt-2">
                                                             <div className="form-group">
                                                                 <label>Description</label>
                                                                 <textarea
@@ -518,92 +652,257 @@ const MaterialQCCreate = () => {
 
                                                                 />
                                                             </div>
-                                                        </div>
+                                                        </div> */}
 
 
                                                     </div>
 
 
-                                                    <div className="d-flex justify-content-between mt-5 me-2">
-                                                        <h5 className=" ">Material Details</h5>
-                                                    </div>
-
-                                                    {/* New Material QC Table */}
-                                                    <div className="tbl-container mt-3 mb-5" style={{ maxHeight: "500px" }}>
-                                                        <table className="w-100">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th className="text-start">Sr. No</th>
-                                                                    <th className="text-start">MOR No.</th>
-                                                                    <th className="text-start">Code</th>
-                                                                    <th className="text-start">Is QC Required</th>
-                                                                    <th className="text-start">Type</th>
-                                                                    <th className="text-start">Sub-Type</th>
-                                                                    <th className="text-start">Brand Name</th>
-                                                                    <th className="text-start">Is MTC Received</th>
-                                                                    <th className="text-start">UOM</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {/* Add your table rows here */}
-                                                                <tr>
-                                                                    <td>1</td>
-                                                                    <td>MOR001</td>
-                                                                    <td>Code001</td>
-                                                                    <td>Yes</td>
-                                                                    <td>Type1</td>
-                                                                    <td>Sub-Type1</td>
-                                                                    <td>Brand1</td>
-                                                                    <td>No</td>
-                                                                    <td>UOM1</td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-
-
-                                                    <CollapsibleCard title="QC Checklist:">
-                                                        <CollapsibleCard title="1. Checklist Title">
-
-                                                            {/* Results Table */}
+                                                    {materials.map((mat, matIdx) => (
+                                                        <React.Fragment key={mat.id}>
+                                                            <div className="d-flex justify-content-between mt-5 me-2">
+                                                                <h5 className=" ">Material Details {matIdx + 1} </h5>
+                                                            </div>
                                                             <div className="tbl-container mt-3 mb-5" style={{ maxHeight: "500px" }}>
                                                                 <table className="w-100">
                                                                     <thead>
                                                                         <tr>
-                                                                            <th className="text-start">Sr. No.</th>
-                                                                            <th className="text-start">Description</th>
-                                                                            <th className="text-start">Results</th>
-                                                                            <th className="text-start">Units</th>
+                                                                            <th className="text-start">Sr. No</th>
+                                                                            <th className="text-start">Material Description</th>
+                                                                            <th className="text-start">MOR No.</th>
+                                                                            <th className="text-start">Code</th>
+                                                                            <th className="text-start">Material Type</th>
+                                                                            <th className="text-start"> Material Sub-Type</th>
+                                                                            <th className="text-start">Brand</th>
+                                                                            <th className="text-start">UOM</th>
+                                                                            <th className="text-start">Is QC Required</th>
+
+                                                                            <th className="text-start">Is MTC Received</th>
+
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                        {/* Add your table rows here */}
                                                                         <tr>
-                                                                            <td>1</td>
-                                                                            <td>Sample Description</td>
-                                                                            <td>Pass</td>
-                                                                            <td>kg</td>
+                                                                            <td className="text-start">{matIdx + 1}</td>
+                                                                            <td className="text-start">{mat.details.description}</td>
+                                                                            <td className="text-start">{mat.details.morNo}</td>
+                                                                            
+                                                                            <td className="text-start">{mat.details.code}</td>
+                                                                            <td className="text-start">{mat.details.type}</td>
+                                                                            <td className="text-start">{mat.details.subType}</td>
+                                                                            <td className="text-start">{mat.details.brand}</td>
+                                                                            <td className="text-start">{mat.details.uom}</td>
+                                                                            <td className="text-start">{mat.details.qcRequired}</td>
+
+                                                                            <td className="text-start">{mat.details.mtcReceived}</td>
+
                                                                         </tr>
                                                                     </tbody>
                                                                 </table>
                                                             </div>
-
-                                                            <div className="row w-100">
-                                                                <div className="col-md-12">
-                                                                    <div className="form-group">
-                                                                        <label>Note</label>
-                                                                        <textarea
-                                                                            className="form-control"
-                                                                            rows={3}
-                                                                            placeholder="Enter ..."
-                                                                            defaultValue={""}
-
-                                                                        />
+                                                            <CollapsibleCard title="Document Attachment:">
+                                                                <div className="d-flex justify-content-between mt-3 ">
+                                                                    <h5 className=" "></h5>
+                                                                    <div
+                                                                        className="card-tools d-flex"
+                                                                        data-bs-toggle="modal"
+                                                                        data-bs-target="#attachModal"
+                                                                        onClick={() => handleAddAttachment(matIdx)}
+                                                                    >
+                                                                        <button
+                                                                            className="purple-btn2 mb-2 "
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#attachModal"
+                                                                        >
+                                                                            <svg
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                width={20}
+                                                                                height={20}
+                                                                                fill="currentColor"
+                                                                                className="bi bi-plus"
+                                                                                viewBox="0 0 16 16"
+                                                                            >
+                                                                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                                                            </svg>
+                                                                            <span>Add Attachments</span>
+                                                                        </button>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        </CollapsibleCard>
-                                                    </CollapsibleCard>
+                                                                <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
+                                                                    <table className="w-100">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th className="main2-th">File Type</th>
+                                                                                <th className="main2-th">File Name </th>
+                                                                                <th className="main2-th">Upload At</th>
+                                                                                <th className="main2-th">Upload File</th>
+                                                                                <th className="main2-th">Status</th>
+                                                                                <th className="main2-th" style={{ width: 100 }}>
+                                                                                    Action
+                                                                                </th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {mat.attachments.map((att, index) => (
+                                                                                <tr key={att.id}>
+                                                                                    <td>
+                                                                                        <input
+                                                                                            className="form-control document_content_type"
+                                                                                            readOnly
+                                                                                            disabled
+                                                                                            value={att.fileType}
+                                                                                            placeholder="File Type"
+                                                                                        />
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <input
+                                                                                            className="form-control file_name"
+                                                                                            required
+                                                                                            value={att.fileName}
+                                                                                            onChange={e => {
+                                                                                                const newFileName = e.target.value;
+                                                                                                setMaterials(prev => prev.map((m, idx) =>
+                                                                                                    idx === matIdx
+                                                                                                        ? {
+                                                                                                            ...m,
+                                                                                                            attachments: m.attachments.map(a =>
+                                                                                                                a.id === att.id ? { ...a, fileName: newFileName } : a
+                                                                                                            ),
+                                                                                                        }
+                                                                                                        : m
+                                                                                                ));
+                                                                                            }}
+                                                                                        />
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <input
+                                                                                            className="form-control created_at"
+                                                                                            readOnly
+                                                                                            disabled
+                                                                                            type="datetime-local"
+                                                                                            step="1"
+                                                                                            value={att.uploadDate || ""}
+                                                                                        />
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        {!att.isExisting && (
+                                                                                            <input
+                                                                                                type="file"
+                                                                                                className="form-control"
+                                                                                                required
+                                                                                                onChange={e => {
+                                                                                                    const file = e.target.files[0];
+                                                                                                    if (!file) return;
+                                                                                                    const contentType = file.type;
+                                                                                                    const reader = new FileReader();
+                                                                                                    reader.onloadend = () => {
+                                                                                                        const base64Content = reader.result.split(",")[1];
+                                                                                                        setMaterials(prev => prev.map((m, idx) =>
+                                                                                                            idx === matIdx
+                                                                                                                ? {
+                                                                                                                    ...m,
+                                                                                                                    attachments: m.attachments.map(a =>
+                                                                                                                        a.id === att.id
+                                                                                                                            ? {
+                                                                                                                                ...a,
+                                                                                                                                file,
+                                                                                                                                fileType: contentType,
+                                                                                                                                fileName: file.name,
+                                                                                                                                isExisting: false,
+                                                                                                                                document_file_name: a.document_file_name || file.name,
+                                                                                                                                uploadDate: getLocalDateTime(),
+                                                                                                                                attachments: [
+                                                                                                                                    {
+                                                                                                                                        filename: file.name,
+                                                                                                                                        content: base64Content,
+                                                                                                                                        content_type: contentType,
+                                                                                                                                        document_file_name: a.document_file_name || file.name,
+                                                                                                                                    },
+                                                                                                                                ],
+                                                                                                                            }
+                                                                                                                            : a
+                                                                                                                    ),
+                                                                                                                }
+                                                                                                                : m
+                                                                                                        ));
+                                                                                                    };
+                                                                                                    reader.readAsDataURL(file);
+                                                                                                }}
+                                                                                            />
+                                                                                        )}
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <SingleSelector
+                                                                                            options={[
+                                                                                                { label: 'Pass', value: 'Pass' },
+                                                                                                { label: 'Fail', value: 'Fail' },
+                                                                                                { label: 'External Checking', value: 'External Checking' },
+                                                                                            ]}
+                                                                                            value={{ label: att.status || 'Select Status', value: att.status || '' }}
+                                                                                            onChange={option => {
+                                                                                                const newStatus = option ? option.value : '';
+                                                                                                setMaterials(prev => prev.map((m, idx) =>
+                                                                                                    idx === matIdx
+                                                                                                        ? {
+                                                                                                            ...m,
+                                                                                                            attachments: m.attachments.map(a =>
+                                                                                                                a.id === att.id ? { ...a, status: newStatus } : a
+                                                                                                            ),
+                                                                                                        }
+                                                                                                        : m
+                                                                                                ));
+                                                                                            }}
+                                                                                            placeholder="Select Status"
+                                                                                            classNamePrefix="react-select"
+                                                                                            isClearable={false}
+                                                                                        />
+                                                                                    </td>
+                                                                                    <td className="document">
+                                                                                        <div style={{ display: "flex", alignItems: "center" }}>
+                                                                                            <button
+                                                                                                type="button"
+                                                                                                className="btn btn-sm btn-link text-danger"
+                                                                                                onClick={() => {
+                                                                                                    setMaterials(prev => prev.map((m, idx) =>
+                                                                                                        idx === matIdx
+                                                                                                            ? {
+                                                                                                                ...m,
+                                                                                                                attachments: m.attachments.filter(a => a.id !== att.id),
+                                                                                                            }
+                                                                                                            : m
+                                                                                                    ));
+                                                                                                }}
+                                                                                            >
+                                                                                                <span className="material-symbols-outlined">cancel</span>
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            ))}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                                <div className="row w-100">
+                                                                    <div className="col-md-12">
+                                                                        <div className="form-group">
+                                                                            <label>Remark</label>
+                                                                            <textarea
+                                                                                className="form-control"
+                                                                                rows={3}
+                                                                                placeholder="Enter ..."
+                                                                                defaultValue={""}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </CollapsibleCard>
+                                                        </React.Fragment>
+                                                    ))}
+
+
+
+
+
 
                                                 </div>
                                             </div>
@@ -734,7 +1033,7 @@ const MaterialQCCreate = () => {
 
 
                                 </div>
-                                <div className="row w-100">
+                                <div className="row w-100 mt-3">
                                     <div className="col-md-12">
                                         <div className="form-group">
                                             <label>Remark</label>
@@ -749,8 +1048,8 @@ const MaterialQCCreate = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="row w-100">
-                                    <div className="col-md-12">
+                                <div className="row w-100 mt-3">
+                                    <div className="col-md-12 mt-2">
                                         <div className="form-group">
                                             <label>Comments</label>
                                             <textarea

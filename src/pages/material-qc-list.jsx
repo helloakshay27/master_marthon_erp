@@ -43,6 +43,7 @@ const MaterialQCList = () => {
     const [filterProjectId, setFilterProjectId] = useState("");
     const [filterSiteId, setFilterSiteId] = useState("");
 
+
     // Handle value change in SingleSelector
     const handleChange = (value) => {
         setSelectedValue(value);
@@ -61,6 +62,7 @@ const MaterialQCList = () => {
     const bulkActionDropdown = () => {
         setbulkActionDetails(!bulkActionDetails);
     };
+
 
     //list api
     const [billEntries, setBillEntries] = useState([]);
@@ -662,8 +664,8 @@ const MaterialQCList = () => {
 
     const allColumns = [
         { field: "srNo", headerName: "Sr. No.", width: 100 },
-        { field: "Gate_Pass_No", headerName: "Gate Pass No.", width: 150 },
-        { field: "PO_TO_CO_No", headerName: "PO/TO/CO No.", width: 200 },
+        { field: "Gate_Pass_No", headerName: "Gate Entry No.", width: 150 },
+        { field: "PO_TO_CO_No", headerName: "PO/WO No.", width: 200 },
         { field: "Supplier_Vendor", headerName: "Supplier/Vendor", width: 200 },
         { field: "To_Store", headerName: "To Store", width: 150 },
         { field: "Material_Asset_Type", headerName: "Material/Asset Type", width: 200 },
@@ -763,7 +765,7 @@ display:none !important;
                                         }} // Fetch all data (no status filter)
                                     >
                                         <h4 className="content-box-title fw-semibold">QC List</h4>
-                                        <p className="content-box-sub">{ "0"}</p>
+                                        <p className="content-box-sub">{"0"}</p>
                                     </div>
                                 </div>
                                 <div className="col-md-2 text-center">
@@ -780,7 +782,7 @@ display:none !important;
                                         <h4 className="content-box-title fw-semibold">
                                             Pending
                                         </h4>
-                                        <p className="content-box-sub">{meta?.Pending|| "0"}</p>
+                                        <p className="content-box-sub">{meta?.Pending || "0"}</p>
                                     </div>
                                 </div>
                                 <div className="col-md-2 text-center">
@@ -798,7 +800,7 @@ display:none !important;
                                             Done
                                         </h4>
                                         <p className="content-box-sub">
-                                            { "0"}
+                                            {"0"}
                                         </p>
                                     </div>
                                 </div>
@@ -814,7 +816,7 @@ display:none !important;
                                         }}
                                     >
                                         <h4 className="content-box-title fw-semibold">Rejected</h4>
-                                        <p className="content-box-sub">{ "0"}</p>
+                                        <p className="content-box-sub">{"0"}</p>
                                     </div>
                                 </div>
                                 <div className="col-md-2 text-center">
@@ -829,7 +831,7 @@ display:none !important;
                                         }}
                                     >
                                         <h4 className="content-box-title fw-semibold">Accepted</h4>
-                                        <p className="content-box-sub">{ "0"}</p>
+                                        <p className="content-box-sub">{"0"}</p>
                                     </div>
                                 </div>
                             </div>
@@ -1000,22 +1002,22 @@ display:none !important;
                                 <div className="col-md-6">
                                     <div className="d-flex justify-content-end align-items-center gap-3">
                                         {/* Filter Icon */}
-                                        {/* <button className="btn btn-md btn-default">
-                      <svg
-                        width={28}
-                        height={28}
-                        viewBox="0 0 32 32"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M6.66604 5.64722C6.39997 5.64722 6.15555 5.7938 6.03024 6.02851C5.90494 6.26322 5.91914 6.54788 6.06718 6.76895L13.7378 18.2238V29.0346C13.7378 29.2945 13.8778 29.5343 14.1041 29.6622C14.3305 29.79 14.6081 29.786 14.8307 29.6518L17.9136 27.7927C18.13 27.6622 18.2622 27.4281 18.2622 27.1755V18.225L25.9316 6.76888C26.0796 6.5478 26.0938 6.26316 25.9685 6.02847C25.8432 5.79378 25.5987 5.64722 25.3327 5.64722H6.66604ZM15.0574 17.6037L8.01605 7.08866H23.9829L16.9426 17.6051C16.8631 17.7237 16.8207 17.8633 16.8207 18.006V26.7685L15.1792 27.7584V18.0048C15.1792 17.862 15.1368 17.7224 15.0574 17.6037Z"
-                          fill="#8B0203"
-                        />
-                      </svg>
-                    </button> */}
+                                        <button className="btn btn-md btn-default" onClick={handleModalShow}>
+                                            <svg
+                                                width={28}
+                                                height={28}
+                                                viewBox="0 0 32 32"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    clipRule="evenodd"
+                                                    d="M6.66604 5.64722C6.39997 5.64722 6.15555 5.7938 6.03024 6.02851C5.90494 6.26322 5.91914 6.54788 6.06718 6.76895L13.7378 18.2238V29.0346C13.7378 29.2945 13.8778 29.5343 14.1041 29.6622C14.3305 29.79 14.6081 29.786 14.8307 29.6518L17.9136 27.7927C18.13 27.6622 18.2622 27.4281 18.2622 27.1755V18.225L25.9316 6.76888C26.0796 6.5478 26.0938 6.26316 25.9685 6.02847C25.8432 5.79378 25.5987 5.64722 25.3327 5.64722H6.66604ZM15.0574 17.6037L8.01605 7.08866H23.9829L16.9426 17.6051C16.8631 17.7237 16.8207 17.8633 16.8207 18.006V26.7685L15.1792 27.7584V18.0048C15.1792 17.862 15.1368 17.7224 15.0574 17.6037Z"
+                                                    fill="#8B0203"
+                                                />
+                                            </svg>
+                                        </button>
 
                                         {/* Create BOQ Button */}
                                         <button
@@ -1026,7 +1028,7 @@ display:none !important;
                                             <SettingIcon />
                                         </button>
                                         <button className="purple-btn2 me-2"
-                                        //   onClick={() => navigate("/bill-verification-create")}
+                                          onClick={() => navigate("/material-qc-create")}
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1270,7 +1272,7 @@ display:none !important;
                             >
                                 <div className="col-md-6">
                                     <button type="submit" className="btn btn-md">
-                                      
+
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             width={22}
@@ -1313,7 +1315,192 @@ display:none !important;
                     </button>
                 </Modal.Footer>
             </Modal>
-          
+
+
+
+            <Modal
+                show={show}
+                onHide={handleClose}
+                dialogClassName="modal-right"
+                className="setting-modal mb-5"
+                backdrop={true}
+            >
+                <Modal.Header>
+                    <div className="container-fluid p-0">
+                        <div className="border-0 d-flex justify-content-between align-items-center">
+                            <div className="d-flex align-items-center">
+                                <button
+                                    type="button"
+                                    className="btn"
+                                    aria-label="Close"
+                                    onClick={handleClose}
+                                >
+                                    <svg
+                                        width="10"
+                                        height="16"
+                                        viewBox="0 0 10 18"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M9 1L1 9L9 17"
+                                            stroke="#8B0203"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                    </svg>
+                                </button>
+                                <h3 className="modal-title m-0" style={{ fontWeight: 500 }}>
+                                    Filter
+                                </h3>
+                            </div>
+                            <span
+                                className="resetCSS"
+                                style={{ fontSize: "14px", textDecoration: "underline" }}
+                                to="#"
+                            // onClick={handleFilterReset}
+                            >
+                                Reset
+                            </span>
+                        </div>
+                    </div>
+                </Modal.Header>
+                <div className="modal-body" style={{ overflowY: scroll }}>
+                    <div className="row justify-content-between align-items-center mt-2">
+                        <div className="col-6 mt-2">
+                            <label className="block text-sm font-medium">Material Type</label>
+
+                            <SingleSelector
+                                options={[]} // Provide the fetched options to the select component
+
+                            />
+                        </div>
+
+                        <div className="col-6 mt-2">
+                            <label className="block text-sm font-medium">
+                                Gate Entry No.
+                            </label>
+                            <SingleSelector
+                                options={[]}
+
+                            />
+                        </div>
+
+                        <div className="col-md-6 mt-2">
+                            <div className="form-group">
+                                <label className="po-fontBold">PO/WO No.</label>
+                                <SingleSelector
+                                    options={[]}
+
+                                />
+                            </div>
+                        </div>
+
+                        <div className="col-6 mt-2">
+                            <label className="block text-sm font-medium">Supplier/Vendor</label>
+                            <SingleSelector
+                                options={
+                                    []
+                                }
+
+                            />
+                        </div>
+
+                        <div className="col-md-6 mt-2">
+                            <div className="form-group">
+                                <label className="po-fontBold">To Store</label>
+                                <SingleSelector
+                                    options={[]}
+
+                                />
+                            </div>
+                        </div>
+                        <div className="col-md-6 mt-2">
+                            <div className="form-group">
+                                <label className="po-fontBold">MaterialType</label>
+                                <SingleSelector
+                                    options={[]}
+
+                                />
+                            </div>
+                        </div>
+
+                        <div className="col-6 mt-2 ">
+                            <label className="block text-sm font-medium">
+                                Delivery Challan
+                            </label>
+                            <SingleSelector
+                                options={[]}
+
+                            />
+                        </div>
+                        <div className="col-6 mt-2">
+                            <label className="block text-sm font-medium">
+                                Date
+                            </label>
+                            <input
+                                type="date"
+                                className="form-control"
+                                name="delivery_challan_date"
+                            />
+                        </div>
+                        <div className="col-6 mt-2 ">
+                            <label className="block text-sm font-medium">
+                                Approved Date
+                            </label>
+                            <input
+                                type="date"
+                                className="form-control"
+                                name="approved_date"
+                            />
+                        </div>
+                        <div className="col-6 mt-2">
+                            <label className="block text-sm font-medium">
+                                Status
+                            </label>
+                            <SingleSelector
+                                options={[]}
+
+                            />
+                        </div>
+
+
+                        {/* <div className="col-6 mt-2">
+                          <label className="block text-sm font-medium">MOR Numbers</label>
+                          <MultiSelector
+                            options={morOptions}
+                            isMulti
+                            value={getSelectedOptions("morNumbers", morOptions)}
+                            onChange={(selected) => handleChange("morNumbers", selected)}
+                            placeholder="Select MOR Numbers"
+                          />
+                        </div> */}
+
+                        {/* <div className="col-6 mt-2">
+                          <label className="block text-sm font-medium">GRN Numbers</label>
+                          <MultiSelector
+                            options={grnOptions}
+                            isMulti
+                            value={getSelectedOptions("grnNumbers", grnOptions)}
+                            onChange={(selected) => handleChange("grnNumbers", selected)}
+                            placeholder="Select GRN Numbers"
+                          />
+                        </div> */}
+                    </div>
+                </div>
+
+                <div className="modal-footer justify-content-center">
+                    <button
+                        className="btn"
+                        style={{ backgroundColor: "#8b0203", color: "#fff" }}
+                    // onClick={handleFilterGo}
+                    >
+                        Go
+                    </button>
+                </div>
+            </Modal>
+
         </>
     );
 };
