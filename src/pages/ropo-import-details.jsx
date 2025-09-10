@@ -1229,13 +1229,13 @@ const RopoImportDetails = () => {
 
       {/* webpage conteaint start */}
 
-      <div className="website-content overflow-auto">
-        <div className="module-data-section container-fluid">
+      <div className="website-content container-fluid">
+        <div className="module-data-section ">
           <a href="">Home &gt; Purchase &gt; MTO &gt; MTO Pending Approval</a>
 
           <h5 className="mt-3">Create Purchase Order</h5>
 
-          <div className="row my-4 align-items-center">
+          <div className="row my-4  container-fluid align-items-center ">
             <div className="col-md-12 ">
               <div className="mor-tabs mt-4">
                 <ul
@@ -1479,7 +1479,7 @@ const RopoImportDetails = () => {
                                     >
                                       <button
                                         type="button"
-                                        className="purple-btn2 mb-3"
+                                        className="purple-btn2 mb-2"
                                       >
                                         <span>Amend</span>
                                       </button>
@@ -1490,7 +1490,7 @@ const RopoImportDetails = () => {
                                   ropoData.approval_logs.length > 0 && (
                                     <button
                                       type="button"
-                                      className="purple-btn2 mb-3"
+                                      className="purple-btn2  mt-2"
                                       onClick={openApprovalModal}
                                       style={{
                                         backgroundColor:
@@ -1500,6 +1500,9 @@ const RopoImportDetails = () => {
                                             : "",
 
                                         border: "none",
+                                         minWidth: "120px", // Match width with Amend button
+        height: "38px", // Match height with Amend button
+        padding: "8px 16px", // Match padding
                                       }}
                                     >
                                       <span>Approval Logs</span>
@@ -1734,6 +1737,7 @@ const RopoImportDetails = () => {
                                 <thead>
                                   <tr>
                                     <th>Sr. No</th>
+                                    <th>Project</th>
 
                                     <th>Sub-Project</th>
 
@@ -1753,7 +1757,7 @@ const RopoImportDetails = () => {
 
                                     <th>PO Balance Qty</th>
 
-                                    <th>Action</th>
+                                  
                                   </tr>
                                 </thead>
 
@@ -1769,11 +1773,12 @@ const RopoImportDetails = () => {
                                             {mat.project || "-"}
                                           </td>
 
+
                                           <td>{mat.sub_project || "-"}</td>
 
-                                          <td>{mat.material || "-"}</td>
+                                          <td>{mat.mor_number || "-"}</td>
 
-                                          <td>{mat.uom || "-"}</td>
+                                          <td>{mat.material || "-"}</td>
 
                                           <td>{mat.mor_qty || "-"}</td>
 
@@ -1783,23 +1788,13 @@ const RopoImportDetails = () => {
 
                                           <td>{mat.po_balance_qty || "-"}</td>
 
-                                          {/* <td>
-
-                                        <i
-
-                                          className="fa-solid fa-xmark"
-
-                                          style={{ fontSize: 18 }}
-
-                                        />
-
-                                      </td> */}
+                                       
                                         </tr>
                                       )
                                     )
                                   ) : (
                                     <tr>
-                                      <td colSpan={9} className="text-center">
+                                      <td colSpan={8} className="text-center">
                                         No material details available
                                       </td>
                                     </tr>
@@ -2473,11 +2468,6 @@ const RopoImportDetails = () => {
                                 </label>
                               </div>
                             </div>
-                          </div>
-                        </div>
-
-                        <div className="card-body">
-                          <div className="row">
                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                               <div className="col-6 ">
                                 <label>Total PO Value </label>
@@ -2502,7 +2492,7 @@ const RopoImportDetails = () => {
                                   <span className="me-3">:-</span>
 
                                   {ropoData?.terms_and_conditions
-                                    ?.supplier_advance || "-"}
+                                    ?.supplier_advance_percentage || "-"}
                                 </label>
                               </div>
                             </div>
@@ -2531,29 +2521,35 @@ const RopoImportDetails = () => {
                                   <span className="me-3">:-</span>
 
                                   {ropoData?.terms_and_conditions
-                                    ?.supplier_advance_amount || "-"}
+                                    ?.supplier_advance || "-"}
                                 </label>
                               </div>
                             </div>
+                          </div>
+                        </div>
 
-                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                        {/* <div className="card-body">
+                          <div className="row"> */}
+                            
+
+                            {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                               <div className="col-6 ">
                                 <label>
                                   Service Certificate Advance Allowed (%){" "}
                                 </label>
-                              </div>
+                              </div> */}
 
-                              <div className="col-6">
+                              {/* <div className="col-6">
                                 <label className="text">
                                   <span className="me-3">:-</span>
 
                                   {ropoData?.terms_and_conditions
                                     ?.survice_certificate_advance || "-"}
                                 </label>
-                              </div>
-                            </div>
+                              </div> */}
+                            {/* </div> */}
 
-                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                            {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                               <div className="col-6 ">
                                 <label>
                                   Service Certificate Advance Amount{" "}
@@ -2568,9 +2564,9 @@ const RopoImportDetails = () => {
                                     ?.service_certificate_advance_amount || "-"}
                                 </label>
                               </div>
-                            </div>
-                          </div>
-                        </div>
+                            </div> */}
+                          {/* </div>
+                        </div> */}
 
                         {/* <div className="mt-3 d-flex justify-content-between align-items-center">
 

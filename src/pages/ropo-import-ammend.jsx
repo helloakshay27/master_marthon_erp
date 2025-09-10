@@ -6151,47 +6151,47 @@ const RopoImportAmmend = () => {
             ],
           })),
 
-          charges_with_taxes_attributes: charges.map((charge) => {
-            return {
-              charge_id: charge.charge_id || 0,
+          // charges_with_taxes_attributes: charges.map((charge) => {
+          //   return {
+          //     charge_id: charge.charge_id || 0,
 
-              amount: parseFloat(charge.amount) || 0,
+          //     amount: parseFloat(charge.amount) || 0,
 
-              realised_amount: parseFloat(charge.realised_amount) || 0,
+          //     realised_amount: parseFloat(charge.realised_amount) || 0,
 
-              taxes_and_charges_attributes: [
-                ...(charge.taxes?.additionTaxes || []).map((tax) => ({
-                  resource_id: parseInt(tax.taxType) || 0,
+          //     taxes_and_charges_attributes: [
+          //       ...(charge.taxes?.additionTaxes || []).map((tax) => ({
+          //         resource_id: parseInt(tax.taxType) || 0,
 
-                  resource_type: "TaxCategory",
+          //         resource_type: "TaxCategory",
 
-                  percentage:
-                    parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+          //         percentage:
+          //           parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
 
-                  inclusive: tax.inclusive || false,
+          //         inclusive: tax.inclusive || false,
 
-                  amount: parseFloat(tax.amount) || 0,
+          //         amount: parseFloat(tax.amount) || 0,
 
-                  addition: true,
-                })),
+          //         addition: true,
+          //       })),
 
-                ...(charge.taxes?.deductionTaxes || []).map((tax) => ({
-                  resource_id: parseInt(tax.taxType) || 0,
+          //       ...(charge.taxes?.deductionTaxes || []).map((tax) => ({
+          //         resource_id: parseInt(tax.taxType) || 0,
 
-                  resource_type: "TaxCategory",
+          //         resource_type: "TaxCategory",
 
-                  percentage:
-                    parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+          //         percentage:
+          //           parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
 
-                  inclusive: tax.inclusive || false,
+          //         inclusive: tax.inclusive || false,
 
-                  amount: parseFloat(tax.amount) || 0,
+          //         amount: parseFloat(tax.amount) || 0,
 
-                  addition: false,
-                })),
-              ],
-            };
-          }),
+          //         addition: false,
+          //       })),
+          //     ],
+          //   };
+          // }),
 
           // Resource term conditions
 
@@ -6324,7 +6324,7 @@ const RopoImportAmmend = () => {
 
       alert("Purchase order created successfully!");
 
-      // navigate(`/ropo-import-list?token=${token}`);
+      navigate(`/ropo-import-list?token=${token}`);
 
       // Optionally redirect or clear form
 
@@ -6641,9 +6641,14 @@ const RopoImportAmmend = () => {
                               type="radio"
                               name="contentSelector"
                               defaultValue="content3"
+                              checked
                             />
 
-                            <label className="form-check-label">IMPORT</label>
+                            <label className="form-check-label"
+                            >IMPORT
+
+                            </label>
+
                           </div>
                         </div>
                       </div>
@@ -6761,6 +6766,7 @@ const RopoImportAmmend = () => {
 
                                         cursor: "not-allowed",
                                       }}
+
                                     />
                                   </div>
                                 </div>
@@ -8237,7 +8243,7 @@ const RopoImportAmmend = () => {
 
                             {/* Charges Section */}
 
-                            <div className="mt-4">
+                            {/* <div className="mt-4">
                               <div className="d-flex justify-content-between align-items-center">
                                 <h5 className="mt-3">Charges</h5>
 
@@ -8375,7 +8381,7 @@ const RopoImportAmmend = () => {
                                   </tbody>
                                 </table>
                               </div>
-                            </div>
+                            </div> */}
 
                             <div className="mt-4">
                               <div className="d-flex justify-content-between align-items-center">

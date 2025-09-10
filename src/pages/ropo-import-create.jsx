@@ -5681,47 +5681,47 @@ const RopoImportCreate = () => {
 
           // ],
 
-          charges_with_taxes_attributes: charges.map((charge) => {
-            return {
-              charge_id: charge.charge_id || 0,
+          // charges_with_taxes_attributes: charges.map((charge) => {
+          //   return {
+          //     charge_id: charge.charge_id || 0,
 
-              amount: parseFloat(charge.amount) || 0,
+          //     amount: parseFloat(charge.amount) || 0,
 
-              realised_amount: parseFloat(charge.realised_amount) || 0,
+          //     realised_amount: parseFloat(charge.realised_amount) || 0,
 
-              taxes_and_charges_attributes: [
-                ...(charge.taxes?.additionTaxes || []).map((tax) => ({
-                  resource_id: parseInt(tax.taxType) || 0,
+          //     taxes_and_charges_attributes: [
+          //       ...(charge.taxes?.additionTaxes || []).map((tax) => ({
+          //         resource_id: parseInt(tax.taxType) || 0,
 
-                  resource_type: "TaxCategory",
+          //         resource_type: "TaxCategory",
 
-                  percentage:
-                    parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+          //         percentage:
+          //           parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
 
-                  inclusive: tax.inclusive || false,
+          //         inclusive: tax.inclusive || false,
 
-                  amount: parseFloat(tax.amount) || 0,
+          //         amount: parseFloat(tax.amount) || 0,
 
-                  addition: true,
-                })),
+          //         addition: true,
+          //       })),
 
-                ...(charge.taxes?.deductionTaxes || []).map((tax) => ({
-                  resource_id: parseInt(tax.taxType) || 0,
+          //       ...(charge.taxes?.deductionTaxes || []).map((tax) => ({
+          //         resource_id: parseInt(tax.taxType) || 0,
 
-                  resource_type: "TaxCategory",
+          //         resource_type: "TaxCategory",
 
-                  percentage:
-                    parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+          //         percentage:
+          //           parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
 
-                  inclusive: tax.inclusive || false,
+          //         inclusive: tax.inclusive || false,
 
-                  amount: parseFloat(tax.amount) || 0,
+          //         amount: parseFloat(tax.amount) || 0,
 
-                  addition: false,
-                })),
-              ],
-            };
-          }),
+          //         addition: false,
+          //       })),
+          //     ],
+          //   };
+          // }),
 
           // Resource term conditions
 
@@ -5800,23 +5800,7 @@ const RopoImportCreate = () => {
               _destroy: false,
             })),
 
-          // Attachments
-
-          // attachments: Array.isArray(attachments)
-
-          //   ? attachments.map((attachment) => ({
-
-          //       filename: attachment.filename,
-
-          //       document_name: attachment.document_name,
-
-          //       content: attachment.content,
-
-          //       content_type: attachment.content_type,
-
-          //     }))
-
-          //   : [],
+         
         },
          mor_ids: [
             ...new Set(
@@ -5867,7 +5851,7 @@ const RopoImportCreate = () => {
 
       alert("Purchase order created successfully!");
 
-      // navigate(`/ropo-import-list?token=${token}`);
+      navigate(`/ropo-import-list?token=${token}`);
 
       // Optionally redirect or clear form
 
@@ -7594,54 +7578,12 @@ const RopoImportCreate = () => {
 
                             {/* Charges Section */}
 
-                            <div className="mt-4">
+                            {/* <div className="mt-4">
                               <div className="d-flex justify-content-between align-items-center">
                                 <h5 className="mt-3">Charges</h5>
 
                                 <div className="d-flex gap-2">
-                                  {/* <button
-
-                                    type="button"
-
-                                    className="btn purple-btn2"
-
-                                    onClick={refreshChargesData}
-
-                                    title="Refresh charges data from API"
-
-                                  >
-
-                                    <svg
-
-                                      xmlns="http://www.w3.org/2000/svg"
-
-                                      width={16}
-
-                                      height={16}
-
-                                      fill="currentColor"
-
-                                      className="bi bi-arrow-clockwise"
-
-                                      viewBox="0 0 16 16"
-
-                                    >
-
-                                      <path
-
-                                        fillRule="evenodd"
-
-                                        d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"
-
-                                      />
-
-                                      <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
-
-                                    </svg>
-
-                                    Refresh
-
-                                  </button> */}
+                                
 
                                   <button
                                     type="button"
@@ -7774,7 +7716,7 @@ const RopoImportCreate = () => {
                                   </tbody>
                                 </table>
                               </div>
-                            </div>
+                            </div> */}
 
                             <div className="mt-4">
                               <div className="d-flex justify-content-between align-items-center">
