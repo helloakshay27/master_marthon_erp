@@ -151,6 +151,9 @@ const RopoImportEdit = () => {
   // Material data from API response
 
   const [submittedMaterials, setSubmittedMaterials] = useState([]);
+  
+  // Store original material details from API for validation
+  const [originalMaterialDetails, setOriginalMaterialDetails] = useState([]);
 
   const [purchaseOrderId, setPurchaseOrderId] = useState(null);
 
@@ -276,21 +279,91 @@ const RopoImportEdit = () => {
 
   const getOrderQtyForSchedule = (schedule) => {
     try {
+      // First, try to get po_order_qty from original material details (most reliable)
       const schedMorId =
         schedule?.mor_inventory_id ||
         schedule?.po_mor_inventory_id ||
-        schedule?.material_id;
+        schedule?.material_id ||
+        schedule?.pms_inventory_id;
 
+      console.log("getOrderQtyForSchedule - schedule:", schedule);
+      console.log("getOrderQtyForSchedule - schedMorId:", schedMorId);
+      console.log("getOrderQtyForSchedule - originalMaterialDetails:", originalMaterialDetails);
+
+      // Debug: Check what IDs are available in original material details
+      if (originalMaterialDetails && originalMaterialDetails.length > 0) {
+        console.log("Available IDs in originalMaterialDetails:");
+        originalMaterialDetails.forEach((m, index) => {
+          console.log(`Material ${index}:`, {
+            mor_inventory_id: m.mor_inventory_id,
+            pms_inventory_id: m.pms_inventory_id,
+            material_inventory_id: m.material_inventory_id,
+            po_order_qty: m.po_order_qty
+          });
+        });
+      }
+
+      // Check in original material details from API response
+      const matchedOriginal = (originalMaterialDetails || []).find(
+        (m) => 
+          `${m.mor_inventory_id}` === `${schedMorId}` ||
+          `${m.pms_inventory_id}` === `${schedMorId}` ||
+          `${m.material_inventory_id}` === `${schedMorId}`
+      );
+
+      console.log("getOrderQtyForSchedule - matched original material:", matchedOriginal);
+
+      // Use po_order_qty from original material details (this is the correct validation value)
+      if (matchedOriginal && matchedOriginal.po_order_qty) {
+        const poOrderQty = parseFloat(matchedOriginal.po_order_qty);
+        console.log("getOrderQtyForSchedule - using po_order_qty from original:", poOrderQty);
+        return poOrderQty;
+      }
+
+      // Fallback to submittedMaterials if original not found
       const matched = (submittedMaterials || []).find(
-        (m) => `${m.mor_inventory_id}` === `${schedMorId}`
+        (m) => 
+          `${m.mor_inventory_id}` === `${schedMorId}` ||
+          `${m.pms_inventory_id}` === `${schedMorId}` ||
+          `${m.material_inventory_id}` === `${schedMorId}`
       );
 
-      return (
-        parseFloat(matched?.order_qty) ||
-        parseFloat(matched?.required_quantity) ||
-        0
-      );
+      console.log("getOrderQtyForSchedule - matched submitted material:", matched);
+
+      if (matched) {
+        const materialOrderQty = 
+          parseFloat(matched?.poOrderQty) ||
+          parseFloat(matched?.po_order_qty) ||
+          parseFloat(matched?.order_qty) ||
+          parseFloat(matched?.required_quantity);
+        
+        console.log("getOrderQtyForSchedule - materialOrderQty from submitted:", materialOrderQty);
+        
+        if (materialOrderQty > 0) {
+          return materialOrderQty;
+        }
+      }
+
+      // Final fallback to schedule data
+      const scheduleOrderQty = 
+        parseFloat(schedule?.order_qty) ||
+        parseFloat(schedule?.po_order_qty) ||
+        parseFloat(schedule?.required_quantity) ||
+        parseFloat(schedule?.sch_delivery_qty) ||
+        parseFloat(schedule?.expected_quantity);
+
+      console.log("getOrderQtyForSchedule - scheduleOrderQty (final fallback):", scheduleOrderQty);
+      console.log("getOrderQtyForSchedule - schedule fields:", {
+        order_qty: schedule?.order_qty,
+        po_order_qty: schedule?.po_order_qty,
+        required_quantity: schedule?.required_quantity,
+        sch_delivery_qty: schedule?.sch_delivery_qty,
+        expected_quantity: schedule?.expected_quantity
+      });
+
+      return scheduleOrderQty > 0 ? scheduleOrderQty : 0;
     } catch (e) {
+      console.error("getOrderQtyForSchedule error:", e);
       return 0;
     }
   };
@@ -414,7 +487,10 @@ const RopoImportEdit = () => {
     try {
       const key = getScheduleMaterialKey(s);
 
-      if (!key) return true;
+      if (!key) {
+        console.log("isScheduleRowVisible: No key, returning true");
+        return true;
+      }
 
       const orderQty = getOrderQtyForSchedule(s) || 0;
 
@@ -424,14 +500,29 @@ const RopoImportEdit = () => {
 
         .reduce((sum, x) => sum + (parseFloat(x.po_delivery_qty) || 0), 0);
 
-      if (orderQty <= 0) return true;
+      console.log("isScheduleRowVisible:", {
+        schedule: s,
+        key,
+        orderQty,
+        totalEntered,
+        currentQty: parseFloat(s.po_delivery_qty) || 0
+      });
 
-      if (totalEntered >= orderQty) {
-        return (parseFloat(s.po_delivery_qty) || 0) > 0;
+      if (orderQty <= 0) {
+        console.log("isScheduleRowVisible: orderQty <= 0, returning true");
+        return true;
       }
 
+      if (totalEntered >= orderQty) {
+        const hasQty = (parseFloat(s.po_delivery_qty) || 0) > 0;
+        console.log("isScheduleRowVisible: totalEntered >= orderQty, returning:", hasQty);
+        return hasQty;
+      }
+
+      console.log("isScheduleRowVisible: returning true");
       return true;
     } catch (e) {
+      console.error("isScheduleRowVisible error:", e);
       return true;
     }
   };
@@ -646,10 +737,34 @@ const RopoImportEdit = () => {
 
     setSelectedSupplier(supplierOption);
 
+    // Set the selected currency from API data
+
+    if (data.po_currency) {
+      setSelectedCurrency({
+        code: data.po_currency.toUpperCase(),
+        symbol: getCurrencySymbol(data.po_currency.toUpperCase()),
+      });
+    }
+
     // Populate Delivery Schedules from API response
 
     if (data.delivery_schedules) {
-      setDeliverySchedules(data.delivery_schedules);
+      // Add mor_inventory_id to delivery schedules by matching with material details
+      const enhancedDeliverySchedules = data.delivery_schedules.map(schedule => {
+        // Find matching material by mor_number and material name
+        const matchingMaterial = data.material_details?.find(material => 
+          material.mor_number === schedule.mor_number && 
+          material.material === schedule.material
+        );
+        
+        return {
+          ...schedule,
+          mor_inventory_id: matchingMaterial?.mor_inventory_id || schedule.mor_inventory_id
+        };
+      });
+      
+      console.log("Enhanced delivery schedules with mor_inventory_id:", enhancedDeliverySchedules);
+      setDeliverySchedules(enhancedDeliverySchedules);
     }
 
     // Fetch and populate projects and sites
@@ -722,6 +837,9 @@ const RopoImportEdit = () => {
   // Populate material details
 
   const populateMaterialDetails = (materialDetails) => {
+    // Store original material details for validation
+    setOriginalMaterialDetails(materialDetails);
+    
     const populatedMaterials = materialDetails.map((material) => ({
       id: material.id,
 
@@ -1472,6 +1590,21 @@ const RopoImportEdit = () => {
 
     symbol: "$",
   });
+
+  // Helper function to get currency symbol
+  const getCurrencySymbol = (currencyCode) => {
+    const symbols = {
+      USD: "$",
+      EUR: "€",
+      GBP: "£",
+      CAD: "C$",
+      AUD: "A$",
+      JPY: "¥",
+      INR: "₹",
+      CNY: "¥",
+    };
+    return symbols[currencyCode] || "$";
+  };
 
   // Dynamic PO currency code for display (e.g., USD, CAD)
 
@@ -6284,26 +6417,68 @@ const RopoImportEdit = () => {
 
           // Delivery Schedules payload
 
-          delivery_schedules_attributes: (deliverySchedules || [])
+          delivery_schedules_attributes: (() => {
+            console.log("All delivery schedules:", deliverySchedules);
+            
+            const schedules = (deliverySchedules || [])
 
-            .filter((s) => {
+            .filter((s, index) => {
               const qty = parseFloat(s.po_delivery_qty) || 0;
-
               const hasDate = Boolean(s.po_delivery_date);
-
-              const dateObj = hasDate ? new Date(s.po_delivery_date) : null;
-
-              const isValidDate = dateObj ? !isNaN(dateObj.getTime()) : false;
-
-              return qty > 0 && isValidDate && isScheduleRowVisible(s);
+              
+              // Try to parse date with different formats
+              let dateObj = null;
+              let isValidDate = false;
+              
+              if (hasDate) {
+                // Try direct parsing first
+                dateObj = new Date(s.po_delivery_date);
+                isValidDate = !isNaN(dateObj.getTime());
+                
+                // If that fails, try parsing DD/MM/YYYY format
+                if (!isValidDate && s.po_delivery_date.includes('/')) {
+                  const parts = s.po_delivery_date.split('/');
+                  if (parts.length === 3) {
+                    // Convert DD/MM/YYYY to MM/DD/YYYY for JavaScript Date
+                    const reformattedDate = `${parts[1]}/${parts[0]}/${parts[2]}`;
+                    dateObj = new Date(reformattedDate);
+                    isValidDate = !isNaN(dateObj.getTime());
+                  }
+                }
+              }
+              
+              const isVisible = isScheduleRowVisible(s);
+              
+              console.log(`Schedule ${index}:`, {
+                schedule: s,
+                qty,
+                hasDate,
+                po_delivery_date: s.po_delivery_date,
+                dateObj,
+                isValidDate,
+                isVisible,
+                willInclude: qty > 0 && isValidDate && isVisible
+              });
+              
+              return qty > 0 && isValidDate && isVisible;
             })
 
             .map((s) => {
-              const dateObj = new Date(s.po_delivery_date);
+              // Use the same date parsing logic as in the filter
+              let dateObj = new Date(s.po_delivery_date);
+              if (isNaN(dateObj.getTime()) && s.po_delivery_date.includes('/')) {
+                const parts = s.po_delivery_date.split('/');
+                if (parts.length === 3) {
+                  const reformattedDate = `${parts[1]}/${parts[0]}/${parts[2]}`;
+                  dateObj = new Date(reformattedDate);
+                }
+              }
 
               const ymd = dateObj.toISOString().split("T")[0];
 
               return {
+                id: s.id || null, // Include existing ID to preserve the delivery schedule
+
                 po_delivery_date: ymd,
 
                 order_qty: parseFloat(s.po_delivery_qty) || 0,
@@ -6319,7 +6494,11 @@ const RopoImportEdit = () => {
 
                 _destroy: false,
               };
-            }),
+            });
+            
+            console.log("Delivery schedules payload:", schedules);
+            return schedules;
+          })(),
 
          
         },
@@ -6864,139 +7043,7 @@ const RopoImportEdit = () => {
                                   </div>
                                 </div>
 
-                                {/* <div className="col-md-4 mt-2">
-
-
-
-                                  <div className="form-group">
-
-
-
-                                    <label className="po-fontBold">PO No</label>
-
-
-
-                                    <input
-
-
-
-                                      className="form-control"
-
-
-
-                                      type="text"
-
-
-
-                                      placeholder="PO 056"
-
-
-
-                                    />
-
-
-
-                                  </div>
-
-
-
-                                </div>
-
-
-
-                                <div className="col-md-4 mt-2">
-
-
-
-                                  <div className="form-group">
-
-
-
-                                    <label className="po-fontBold">
-
-
-
-                                      Total PO Value
-
-
-
-                                    </label>
-
-
-
-                                    <input
-
-
-
-                                      className="form-control"
-
-
-
-                                      type="text"
-
-
-
-                                      placeholder={1}
-
-
-
-                                    />
-
-
-
-                                  </div>
-
-
-
-                                </div>
-
-
-
-                                <div className="col-md-4 mt-2">
-
-
-
-                                  <div className="form-group">
-
-
-
-                                    <label className="po-fontBold">
-
-
-
-                                      Total Discount
-
-
-
-                                    </label>
-
-
-
-                                    <input
-
-
-
-                                      className="form-control"
-
-
-
-                                      type="text"
-
-
-
-                                      placeholder="INR 600.00"
-
-
-
-                                    />
-
-
-
-                                  </div>
-
-
-
-                                </div> */}
+                        
 
                                 <div className="col-md-4 mt-2">
                                   <div className="form-group">
@@ -7013,51 +7060,7 @@ const RopoImportEdit = () => {
                                   </div>
                                 </div>
 
-                                {/* <div className="col-md-4 mt-2">
-
-
-
-                                  <div className="form-group">
-
-
-
-                                    <label className="po-fontBold">
-
-
-
-                                      Branch
-
-
-
-                                    </label>
-
-
-
-                                    <input
-
-
-
-                                      className="form-control"
-
-
-
-                                      type="text"
-
-
-
-                                      placeholder="82.77 INR"
-
-
-
-                                    />
-
-
-
-                                  </div>
-
-
-
-                                </div> */}
+                              
 
                                 <div className="col-md-4 mt-2">
                                   <div className="form-group">

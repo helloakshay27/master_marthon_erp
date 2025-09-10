@@ -177,46 +177,46 @@ const RopoImportDetails = () => {
 
   const navigate = useNavigate();
 
-  // Helper to display USD with INR in parentheses
+  // Helper to display PO currency with INR in parentheses
 
-  const formatUsdInInr = useCallback((usd, inr) => {
-    const hasUsd = usd !== undefined && usd !== null && usd !== "";
+  const formatCurrencyInInr = useCallback((currencyAmount, inr, currency = "USD") => {
+    const hasCurrency = currencyAmount !== undefined && currencyAmount !== null && currencyAmount !== "";
 
     const hasInr = inr !== undefined && inr !== null && inr !== "";
 
-    if (!hasUsd && !hasInr) return "-";
+    if (!hasCurrency && !hasInr) return "-";
 
-    const usdVal = hasUsd ? `USD ${usd}` : "-";
+    const currencyVal = hasCurrency ? `${currency.toUpperCase()} ${currencyAmount}` : "-";
 
     const inrVal = hasInr ? `INR ${inr}` : "-";
 
-    return `${usdVal} (${inrVal})`;
+    return `${currencyVal} (${inrVal})`;
   }, []);
 
-  // Safe USD → INR converter for display in the modal
+  // Safe PO currency → INR converter for display in the modal
 
-  const safeConvertUsdToInr = useCallback((usdValue, conversionRate) => {
-    const usd = parseFloat(usdValue);
+  const safeConvertCurrencyToInr = useCallback((currencyValue, conversionRate) => {
+    const currency = parseFloat(currencyValue);
 
     const rate = parseFloat(conversionRate);
 
-    if (!isFinite(usd) || !isFinite(rate)) return 0;
+    if (!isFinite(currency) || !isFinite(rate)) return 0;
 
-    return parseFloat((usd * rate).toFixed(2));
+    return parseFloat((currency * rate).toFixed(2));
   }, []);
 
-  // Safe INR → USD converter for display in the modal
+  // Safe INR → PO currency converter for display in the modal
 
-  const safeConvertInrToUsd = useCallback((inrValue, conversionRate) => {
+  const safeConvertInrToCurrency = useCallback((inrValue, conversionRate) => {
     const inr = parseFloat(inrValue);
     const rate = parseFloat(conversionRate);
     if (!isFinite(inr) || !isFinite(rate) || rate === 0) return 0;
     return parseFloat((inr / rate).toFixed(2));
   }, []);
 
-  // Convert INR → USD using current PO conversion rate
+  // Convert INR → PO currency using current PO conversion rate
 
-  const convertInrToUsd = useCallback(
+  const convertInrToCurrency = useCallback(
     (inrValue) => {
       const inr = parseFloat(inrValue);
 
@@ -874,7 +874,7 @@ const RopoImportDetails = () => {
                   amount_inr: (parseFloat(tax.amount || 0) || 0).toString(),
 
                   amount: (
-                    safeConvertInrToUsd(
+                    safeConvertInrToCurrency(
                       parseFloat(tax.amount || 0) || 0,
                       ropoData?.conversion_rate
                     ) || 0
@@ -914,7 +914,7 @@ const RopoImportDetails = () => {
                   amount_inr: (parseFloat(tax.amount || 0) || 0).toString(),
 
                   amount: (
-                    safeConvertInrToUsd(
+                    safeConvertInrToCurrency(
                       parseFloat(tax.amount || 0) || 0,
                       ropoData?.conversion_rate
                     ) || 0
@@ -1940,76 +1940,76 @@ const RopoImportDetails = () => {
                                     <td>{item.tolerance_qty || "-"}</td>
 
                                     <td>
-                                      {formatUsdInInr(
+                                      {formatCurrencyInInr(
                                         item.material_rate,
-
-                                        item.material_rate_in_inr
+                                        item.material_rate_in_inr,
+                                        ropoData?.po_currency || "USD"
                                       )}
                                     </td>
 
                                     <td>
-                                      {formatUsdInInr(
+                                      {formatCurrencyInInr(
                                         item.material_cost,
-
-                                        item.material_cost_in_inr
+                                        item.material_cost_in_inr,
+                                        ropoData?.po_currency || "USD"
                                       )}
                                     </td>
 
                                     <td>{item.discount_percentage || "-"}</td>
 
                                     <td>
-                                      {formatUsdInInr(
+                                      {formatCurrencyInInr(
                                         item.discount_rate,
-
-                                        item.discount_rate_in_inr
+                                        item.discount_rate_in_inr,
+                                        ropoData?.po_currency || "USD"
                                       )}
                                     </td>
 
                                     <td>
-                                      {formatUsdInInr(
+                                      {formatCurrencyInInr(
                                         item.after_discount_value,
-
-                                        item.after_discount_value_in_inr
+                                        item.after_discount_value_in_inr,
+                                        ropoData?.po_currency || "USD"
                                       )}
                                     </td>
 
                                     <td>
-                                      {formatUsdInInr(
+                                      {formatCurrencyInInr(
                                         item.tax_addition,
-
-                                        item.tax_addition_in_inr
+                                        item.tax_addition_in_inr,
+                                        ropoData?.po_currency || "USD"
                                       )}
                                     </td>
 
                                     <td>
-                                      {formatUsdInInr(
+                                      {formatCurrencyInInr(
                                         item.tax_deduction,
-
-                                        item.tax_deduction_in_inr
+                                        item.tax_deduction_in_inr,
+                                        ropoData?.po_currency || "USD"
                                       )}
                                     </td>
 
                                     <td>
-                                      {formatUsdInInr(
+                                      {formatCurrencyInInr(
                                         item.total_charges,
-
-                                        item.total_charges_in_inr
+                                        item.total_charges_in_inr,
+                                        ropoData?.po_currency || "USD"
                                       )}
                                     </td>
 
                                     <td>
-                                      {formatUsdInInr(
+                                      {formatCurrencyInInr(
                                         item.total_base_cost,
-
-                                        item.total_base_cost_in_inr
+                                        item.total_base_cost_in_inr,
+                                        ropoData?.po_currency || "USD"
                                       )}
                                     </td>
 
                                     <td>
-                                      {formatUsdInInr(
+                                      {formatCurrencyInInr(
                                         item.all_inclusive_cost,
-
-                                        item.all_inclusive_cost_in_inr
+                                        item.all_inclusive_cost_in_inr,
+                                        ropoData?.po_currency || "USD"
                                       )}
                                     </td>
 
@@ -2049,7 +2049,7 @@ const RopoImportDetails = () => {
                               <tr>
                                 <th>INR</th>
 
-                                <th>USD</th>
+                                <th>{ropoData?.po_currency || "USD"}</th>
                               </tr>
                             </thead>
 
@@ -2180,67 +2180,68 @@ const RopoImportDetails = () => {
                               groupedExclusiveCharges.length > 0 ? (
                                 groupedExclusiveCharges.map((row, idx) => (
                                   <tr key={idx}>
-                                     <td style={{ width: "200px" }}>
-                                       {row.resource_name || "-"}
-                                     </td>
- 
-                                     <td style={{ width: "100px" }}>
-                                       INR{" "}
+                                    <td style={{ width: "200px" }}>
+                                      {row.resource_name || "-"}
+                                    </td>
+
+                                    <td style={{ width: "100px" }}>
+                                      INR{" "}
                                        {parseFloat(row.amount_in_inr ?? 0).toFixed(2)}
-                                     </td>
- 
-                                     <td style={{ width: "100px" }}>
-                                       {( 
-                                         ropoData?.po_currency || "USD"
+                                    </td>
+
+                                    <td style={{ width: "100px" }}>
+                                      {(
+                                        ropoData?.po_currency || "USD"
                                        ).toUpperCase()} {" "}
                                        {parseFloat(row.amount ?? 0).toFixed(2)}
-                                     </td>
- 
-                                     <td style={{ width: "100px" }}>
-                                       <input
-                                         type="checkbox"
-                                         checked={Boolean(row.addition)}
-                                         disabled
-                                       />
-                                     </td>
- 
-                                     <td style={{ width: "200px" }}>
-                                       {row.supplier_name || "-"}
-                                     </td>
- 
-                                     <td style={{ width: "120px" }}>
-                                       <textarea
-                                         className="form-control"
-                                         rows={2}
-                                         value={row.remarks || ""}
-                                         readOnly
-                                         disabled
-                                       />
-                                     </td>
- 
-                                     <td style={{ width: "150px" }}>
+                                    </td>
+
+                                    <td style={{ width: "100px" }}>
+                                      <input
+                                        type="checkbox"
+                                        checked={Boolean(row.addition)}
+                                        disabled
+                                      />
+                                    </td>
+
+                                    <td style={{ width: "200px" }}>
+                                      {row.supplier_name || "-"}
+                                    </td>
+
+                                    <td style={{ width: "120px" }}>
+                                      <textarea
+                                        className="form-control"
+                                        rows={2}
+                                        value={row.remarks || ""}
+                                        readOnly
+                                        disabled
+                                      />
+                                    </td>
+
+                                    <td style={{ width: "150px" }}>
                                        {row.service_certificate_advance_percentage}
-                                     </td>
- 
-                                     {/* <td style={{ width: "150px" }}>
-                                       {row.service_certificate_advance_amount}
-                                     </td> */}
-                                     <td style={{ width: "150px" }}>
-   {(() => {
-     const usdAmount = parseFloat(row.service_certificate_advance_amount) || 0;
-     const inrAmount = safeConvertUsdToInr(usdAmount, ropoData?.conversion_rate) || 0;
-     return `USD ${usdAmount.toFixed(2)} (INR ${inrAmount.toFixed(2)})`;
-   })()}
-                                     </td>
-                                   </tr>
-                                 ))
-                               ) : (
-                                 <tr>
-                                   <td colSpan={6} className="text-center">
-                                     No exclusive charges available
-                                   </td>
-                                 </tr>
-                               )}
+                                    </td>
+
+                                    {/* <td style={{ width: "150px" }}>
+                                      {row.service_certificate_advance_amount}
+                                    </td> */}
+                                    <td style={{ width: "150px" }}>
+  {(() => {
+     const poCurrency = ropoData?.po_currency || "USD";
+     const poAmount = parseFloat(row.service_certificate_advance_amount) || 0;
+     const inrAmount = safeConvertCurrencyToInr(poAmount, ropoData?.conversion_rate) || 0;
+     return `${poCurrency.toUpperCase()} ${poAmount.toFixed(2)} (INR ${inrAmount.toFixed(2)})`;
+  })()}
+                                    </td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan={6} className="text-center">
+                                    No exclusive charges available
+                                  </td>
+                                </tr>
+                              )}
                             </tbody>
                           </table>
                         </div>
@@ -3749,11 +3750,11 @@ const RopoImportDetails = () => {
                     <tr>
                       <th className="modal-th">INR</th>
 
-                      <th className="modal-th">USD</th>
+                      <th className="modal-th">{ropoData?.po_currency || "USD"}</th>
 
                       <th className="modal-th">INR</th>
 
-                      <th className="modal-th">USD</th>
+                      <th className="modal-th">{ropoData?.po_currency || "USD"}</th>
                     </tr>
                   </thead>
 
@@ -4990,7 +4991,7 @@ const RopoImportDetails = () => {
                    <div className="col-md-6">
                      <div className="mb-3">
                        <label className="form-label fw-bold">
-                         Conversion Rate (USD to INR)
+                         Conversion Rate ({ropoData?.po_currency || "USD"} to INR)
                        </label>
      
                        <input
@@ -5101,12 +5102,12 @@ const RopoImportDetails = () => {
      
                              <th>INR</th>
      
-                        <th>USD</th>
+                        <th>{ropoData?.po_currency || "USD"}</th>
                              <th></th>
      
                              <th>INR</th>
      
-                        <th>USD</th>
+                        <th>{ropoData?.po_currency || "USD"}</th>
                              <th></th>
                            </tr>
                          </thead>
@@ -5127,7 +5128,7 @@ const RopoImportDetails = () => {
                                <input
                                  type="number"
                                  className="form-control "
-                                 value={safeConvertUsdToInr(
+                                 value={safeConvertCurrencyToInr(
                                    taxRateData[tableId]?.afterDiscountValue,
      
                               ropoData?.conversion_rate
@@ -5141,9 +5142,9 @@ const RopoImportDetails = () => {
                                <input
                             type="text"
                                  className="form-control "
-                            // value={formatUsdInInr(
+                            // value={formatCurrencyInInr(
                             //   taxRateData[tableId]?.afterDiscountValue,
-                            //   safeConvertUsdToInr(
+                            //   safeConvertCurrencyToInr(
                             //     taxRateData[tableId]?.afterDiscountValue,
                             //     ropoData?.conversion_rate
                             //   )
@@ -5236,7 +5237,7 @@ const RopoImportDetails = () => {
                                           parseFloat(
                                             item.taxChargePerUom || 0
                                           ) || 0;
-                                        const usd = safeConvertInrToUsd(
+                                        const usd = safeConvertInrToCurrency(
                                           inr,
                                           ropoData?.conversion_rate
                                         );
@@ -5291,7 +5292,7 @@ const RopoImportDetails = () => {
                                      })()}
                                      readOnly
                                      disabled={true}
-                                placeholder="Tax Amount (USD)"
+                                placeholder={`Tax Amount (${ropoData?.po_currency || "USD"})`}
                                    />
                                  </td>
                                  <td className="text-center">
@@ -5328,7 +5329,13 @@ const RopoImportDetails = () => {
                               <input
                                 type="text"
                                 className="form-control"
-                                     value={item.taxChargeType || ""}
+                                     value={
+                                       item.taxChargeType ||
+                                       deductionTaxOptions.find(
+                                         (option) => option.id === item.tax_category_id
+                                       )?.value ||
+                                       ""
+                                     }
                                 readOnly
                                 disabled={true}
                               />
@@ -5367,7 +5374,7 @@ const RopoImportDetails = () => {
                                           parseFloat(
                                             item.taxChargePerUom || 0
                                           ) || 0;
-                                        const usd = safeConvertInrToUsd(
+                                        const usd = safeConvertInrToCurrency(
                                           inr,
                                           ropoData?.conversion_rate
                                         );
@@ -5422,7 +5429,7 @@ const RopoImportDetails = () => {
                                      })()}
                                      readOnly
                                      disabled={true}
-                                placeholder="Tax Amount (USD)"
+                                placeholder={`Tax Amount (${ropoData?.po_currency || "USD"})`}
                                    />
                                  </td>
                                  <td className="text-center">
@@ -5444,7 +5451,7 @@ const RopoImportDetails = () => {
                                <input
                                  type="text"
                                  className="form-control"
-                                 value={safeConvertUsdToInr(
+                                 value={safeConvertCurrencyToInr(
                                    taxRateData[tableId]?.netCost,
      
                               ropoData?.conversion_rate
@@ -5458,9 +5465,9 @@ const RopoImportDetails = () => {
                                <input
                                  type="text"
                                  className="form-control"
-                            // value={formatUsdInInr(
+                            // value={formatCurrencyInInr(
                             //   taxRateData[tableId]?.netCost,
-                            //   safeConvertUsdToInr(
+                            //   safeConvertCurrencyToInr(
                             //     taxRateData[tableId]?.netCost,
                             //     ropoData?.conversion_rate
                             //   )
