@@ -269,6 +269,15 @@ const PoList = () => {
           }
         }
 
+        // Append any advanced filter params (q[...]) captured in currentFilters
+        Object.entries(currentFilters || {}).forEach(([key, value]) => {
+          if (key.startsWith("q[")) {
+            if (value !== undefined && value !== null && value !== "") {
+              url += `&${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+            }
+          }
+        });
+
         const response = await axios.get(url);
 
         // Debug: Log the response structure
@@ -344,247 +353,185 @@ const PoList = () => {
   useEffect(() => {
     if (!token) return;
 
-    // Fetch PO Numbers
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const poNumbers = [
-          ...new Set(
-            (response.data.purchase_orders || []).map((item) => item.po_number)
-          ),
+    const loadFilterOptions = async () => {
+      try {
+        // Single call for all PO-derived options
+        const poResp = await axios.get(
+          `${baseURL}purchase_orders.json?token=${token}`
+        );
+
+        const raw = poResp?.data;
+        const purchaseOrders = Array.isArray(raw?.purchase_orders)
+          ? raw.purchase_orders
+          : [];
+
+        // Helper to dedupe non-empty values
+        const unique = (arr) => [
+          ...new Set((arr || []).filter((x) => x !== undefined && x !== null)),
         ];
-        const options = poNumbers.map((poNumber) => ({
-          value: poNumber,
-          label: poNumber,
-        }));
-        setPoNumberOptions(options);
-      })
-      .catch(() => setPoNumberOptions([]));
 
-    // Fetch PO Types
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const poTypes = [
-          ...new Set(
-            (response.data.purchase_orders || []).map((item) => item.po_type)
-          ),
-        ];
-        const options = poTypes.map((poType) => ({
-          value: poType,
-          label: poType,
-        }));
-        setPoTypeOptions(options);
-      })
-      .catch(() => setPoTypeOptions([]));
+        // PO Number: handle both array-of-strings API and standard list
+        const poNumbers = Array.isArray(raw) && raw.every((v) => typeof v === "string")
+          ? unique(raw)
+          : unique(purchaseOrders.map((item) => item.po_number));
+        setPoNumberOptions(poNumbers.map((v) => ({ value: v, label: v })));
 
-    // Fetch Material Types
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const materialTypes = [
-          ...new Set(
-            (response.data.purchase_orders || []).flatMap(
-              (item) => item.material_types || []
-            )
-          ),
-        ];
-        const options = materialTypes.map((materialType) => ({
-          value: materialType,
-          label: materialType,
-        }));
-        setMaterialTypeOptions(options);
-      })
-      .catch(() => setMaterialTypeOptions([]));
+        // Other options from purchaseOrders list
+        const poTypes = unique(purchaseOrders.map((item) => item.po_type));
+        setPoTypeOptions(poTypes.map((v) => ({ value: v, label: v })));
 
-    // Fetch Status Options
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const statuses = [
-          ...new Set(
-            (response.data.purchase_orders || []).map((item) => item.status)
-          ),
-        ];
-        const options = statuses.map((status) => ({
-          value: status,
-          label: status,
-        }));
-        setStatusOptions(options);
-      })
-      .catch(() => setStatusOptions([]));
+        const materialTypes = unique(
+          purchaseOrders.flatMap((item) => item.material_types || [])
+        );
+        setMaterialTypeOptions(
+          materialTypes.map((v) => ({ value: v, label: v }))
+        );
 
-    // Fetch Advance Applicable Options
-    setAdvanceApplicableOptions([
-      { value: true, label: "Yes" },
-      { value: false, label: "No" },
-    ]);
+        // Status options loaded from unique statuses endpoint below
 
-    // Fetch Suppliers
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const suppliers = [
-          ...new Set(
-            (response.data.purchase_orders || []).map(
-              (item) => item.supplier_name
-            )
-          ),
-        ];
-        const options = suppliers.map((supplier) => ({
-          value: supplier,
-          label: supplier,
-        }));
-        setSupplierOptions(options);
-      })
-      .catch(() => setSupplierOptions([]));
+        setAdvanceApplicableOptions([
+          { value: true, label: "Yes" },
+          { value: false, label: "No" },
+        ]);
 
-    // Fetch Consumption Categories
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const categories = [
-          ...new Set(
-            (response.data.purchase_orders || []).flatMap(
-              (item) => item.consumption_category || []
-            )
-          ),
-        ];
-        const options = categories.map((category) => ({
-          value: category,
-          label: category,
-        }));
-        setConsumptionCategoryOptions(options);
-      })
-      .catch(() => setConsumptionCategoryOptions([]));
+        const baseValues = unique(
+          purchaseOrders.map((item) => item.po_base_value)
+        );
+        setPoBaseValueOptions(
+          baseValues.map((v) => ({ value: v, label: `₹${v}` }))
+        );
 
-    // Fetch Requisition Departments
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const departments = [
-          ...new Set(
-            (response.data.purchase_orders || []).flatMap(
-              (item) => item.department_names || []
-            )
-          ),
-        ];
-        const options = departments.map((department) => ({
-          value: department,
-          label: department,
-        }));
-        setRequisitionDepartmentOptions(options);
-      })
-      .catch(() => setRequisitionDepartmentOptions([]));
+        const grossValues = unique(
+          purchaseOrders.map((item) => item.po_gross_value)
+        );
+        setPoGrossValueOptions(
+          grossValues.map((v) => ({ value: v, label: `₹${v}` }))
+        );
 
-    // Fetch Created By Users
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const users = [
-          ...new Set(
-            (response.data.purchase_orders || [])
-              .map((item) => item.created_by)
-              .filter(Boolean)
-          ),
-        ];
-        const options = users.map((user) => ({
-          value: user,
-          label: user,
-        }));
-        setCreatedByOptions(options);
-      })
-      .catch(() => setCreatedByOptions([]));
+        const eventNos = unique(
+          purchaseOrders.flatMap((item) => item.event_nos || [])
+        );
+        setEventNoOptions(eventNos.map((v) => ({ value: v, label: v })));
 
-    // Fetch PO Base Value Options
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const baseValues = [
-          ...new Set(
-            (response.data.purchase_orders || []).map(
-              (item) => item.po_base_value
-            )
-          ),
-        ];
-        const options = baseValues.map((value) => ({
-          value: value,
-          label: `₹${value}`,
-        }));
-        setPoBaseValueOptions(options);
-      })
-      .catch(() => setPoBaseValueOptions([]));
+        // Load Status options from unique statuses endpoint
+        try {
+          const statusResp = await axios.get(
+            `${baseURL}unique_statuses?model=PurchaseOrder&token=${token}`
+          );
+          const statusList = Array.isArray(statusResp?.data)
+            ? statusResp.data
+            : [];
+          setStatusOptions(
+            statusList
+              .filter((v) => typeof v === "string" && v.trim().length > 0)
+              .map((v) => ({ value: v, label: v }))
+          );
+        } catch {
+          setStatusOptions([]);
+        }
 
-    // Fetch PO Gross Value Options
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const grossValues = [
-          ...new Set(
-            (response.data.purchase_orders || []).map(
-              (item) => item.po_gross_value
-            )
-          ),
-        ];
-        const options = grossValues.map((value) => ({
-          value: value,
-          label: `₹${value}`,
-        }));
-        setPoGrossValueOptions(options);
-      })
-      .catch(() => setPoGrossValueOptions([]));
+        // Load Requisition Department options
+        try {
+          const deptResp = await axios.get(
+            `${baseURL}pms/departments.json?model=PurchaseOrder&token=${token}`
+          );
+          const deptList = Array.isArray(deptResp?.data) ? deptResp.data : [];
+          setRequisitionDepartmentOptions(
+            deptList
+              .filter((d) => d && (d.name || d.label) && (d.id !== undefined))
+              .map((d) => ({ value: d.id, label: d.name || d.label }))
+          );
+        } catch {
+          setRequisitionDepartmentOptions([]);
+        }
 
-    // Fetch Event Numbers
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const eventNos = [
-          ...new Set(
-            (response.data.purchase_orders || []).flatMap(
-              (item) => item.event_nos || []
-            )
-          ),
-        ];
-        const options = eventNos.map((eventNo) => ({
-          value: eventNo,
-          label: eventNo,
-        }));
-        setEventNoOptions(options);
-      })
-      .catch(() => setEventNoOptions([]));
+        // Load Consumption Category options
+        try {
+          const consResp = await axios.get(
+            `${baseURL}pms/consumption_categories.json?model=PurchaseOrder&token=${token}`
+          );
+          const consList = Array.isArray(consResp?.data) ? consResp.data : [];
+          setConsumptionCategoryOptions(
+            consList
+              .filter((c) => c && (c.name || c.label) && (c.id !== undefined))
+              .map((c) => ({ value: c.id, label: c.name || c.label }))
+          );
+        } catch {
+          setConsumptionCategoryOptions([]);
+        }
 
-    // Fetch MOR Numbers
-    axios
-      .get(
-        `${baseURL}material_order_requests/filter_mor_numbers.json?token=${token}`
-      )
-      .then((response) => {
-        const options = (response.data || []).map((morNo) => ({
-          value: morNo,
-          label: morNo,
-        }));
-        setMorNoOptions(options);
-      })
-      .catch(() => setMorNoOptions([]));
+        // Load Created By options
+        try {
+          const createdByResp = await axios.get(
+            `${baseURL}created_and_approved_users?model=PurchaseOrder&created_by=true&token=${token}`
+          );
+          const userList = Array.isArray(createdByResp?.data)
+            ? createdByResp.data
+            : [];
+          setCreatedByOptions(
+            userList
+              .filter((u) => u && (u.name || u.label) && (u.id !== undefined))
+              .map((u) => ({ value: u.id, label: u.name || u.label }))
+          );
+        } catch {
+          setCreatedByOptions([]);
+        }
 
-    // Fetch Advance Amounts
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const advanceAmounts = [
-          ...new Set(
-            (response.data.purchase_orders || []).map(
-              (item) => item.advance_amount
-            )
-          ),
-        ];
-        const options = advanceAmounts.map((amount) => ({
-          value: amount,
-          label: `₹${amount}`,
-        }));
-        setAdvanceAmountOptions(options);
-      })
-      .catch(() => setAdvanceAmountOptions([]));
+        // Load MOR numbers
+        try {
+          const morResp = await axios.get(
+            `${baseURL}material_order_requests/filter_mor_numbers.json?token=${token}`
+          );
+          const morList = Array.isArray(morResp?.data?.mor_numbers)
+            ? morResp.data.mor_numbers
+            : Array.isArray(morResp?.data)
+            ? morResp.data
+            : [];
+          setMorNoOptions(
+            morList.map((morNo) => ({ value: morNo, label: morNo }))
+          );
+        } catch {
+          setMorNoOptions([]);
+        }
+
+        // Load Suppliers (ids + names)
+        try {
+          const supResp = await axios.get(
+            `${baseURL}pms/suppliers.json?token=${token}`
+          );
+          const list = Array.isArray(supResp?.data) ? supResp.data : [];
+          const supplierOpts = list
+            .map((s) => ({
+              value: s.id,
+              label: s.organization_name || s.full_name || `Supplier #${s.id}`,
+            }))
+            .filter((opt) => opt.label);
+          setSupplierOptions(supplierOpts);
+        } catch {
+          setSupplierOptions([]);
+        }
+      } catch (error) {
+        console.error("Error fetching filter options:", error);
+        setPoNumberOptions([]);
+        setPoTypeOptions([]);
+        setMaterialTypeOptions([]);
+        setStatusOptions([]);
+        setSupplierOptions([]);
+        setConsumptionCategoryOptions([]);
+        setRequisitionDepartmentOptions([]);
+        setCreatedByOptions([]);
+        setPoBaseValueOptions([]);
+        setPoGrossValueOptions([]);
+        setEventNoOptions([]);
+        setAdvanceApplicableOptions([
+          { value: true, label: "Yes" },
+          { value: false, label: "No" },
+        ]);
+        setMorNoOptions([]);
+      }
+    };
+
+    loadFilterOptions();
   }, [token]);
 
   // Handle company selection
@@ -888,6 +835,14 @@ const PoList = () => {
     setSelectedMorNo(null);
     setSelectedAdvanceAmount(null);
     setCurrentPage(1);
+    // Clear any advanced q[...] params from currentFilters while preserving quick filters
+    setCurrentFilters((prev) => {
+      return {
+        companyId: prev.companyId || "",
+        projectId: prev.projectId || "",
+        siteId: prev.siteId || "",
+      };
+    });
   };
 
   // Date formatting function
@@ -932,6 +887,11 @@ display:none !important;
   text-overflow: ellipsis !important;
   max-width: 100% !important;
   display: block !important;
+}
+/* Widen Advanced Filter modal dialog */
+.modal-dialog.modal-right {
+  max-width: 40vw !important;
+  width: 40vw !important;
 }
         `}
       </style>
@@ -1968,7 +1928,7 @@ display:none !important;
                 placeholder="Select PO Number"
               />
             </div>
-            <div className="col-md-6 mt-2">
+            {/* <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">PO Type</label>
               <SingleSelector
                 options={poTypeOptions}
@@ -1976,8 +1936,8 @@ display:none !important;
                 onChange={handlePoTypeChange}
                 placeholder="Select PO Type"
               />
-            </div>
-            <div className="col-md-6 mt-2">
+            </div> */}
+            {/* <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">Event No.</label>
               <SingleSelector
                 options={eventNoOptions}
@@ -1985,7 +1945,7 @@ display:none !important;
                 onChange={handleEventNoChange}
                 placeholder="Select Event No."
               />
-            </div>
+            </div> */}
             <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">MOR No.</label>
               <SingleSelector
@@ -2070,7 +2030,7 @@ display:none !important;
                 placeholder="Select Advance Applicable"
               />
             </div>
-            <div className="col-md-6 mt-2">
+            {/* <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">
                 Advance Amount
               </label>
@@ -2080,7 +2040,7 @@ display:none !important;
                 onChange={handleAdvanceAmountChange}
                 placeholder="Select Advance Amount"
               />
-            </div>
+            </div> */}
             <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">
                 Supplier/Vendor
@@ -2123,7 +2083,7 @@ display:none !important;
                 placeholder="Select Created By"
               />
             </div>
-            <div className="col-md-6 mt-2">
+            {/* <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">PO Base Value</label>
               <SingleSelector
                 options={poBaseValueOptions}
@@ -2131,8 +2091,8 @@ display:none !important;
                 onChange={handlePoBaseValueChange}
                 placeholder="Select PO Base Value"
               />
-            </div>
-            <div className="col-md-6 mt-2">
+            </div> */}
+            {/* <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">
                 PO Gross Value
               </label>
@@ -2142,7 +2102,7 @@ display:none !important;
                 onChange={handlePoGrossValueChange}
                 placeholder="Select PO Gross Value"
               />
-            </div>
+            </div> */}
           </div>
         </div>
 

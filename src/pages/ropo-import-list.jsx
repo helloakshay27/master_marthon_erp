@@ -269,6 +269,15 @@ const RopoMappingList = () => {
           }
         }
 
+        // Append any advanced filter params (q[...]) captured in currentFilters
+        Object.entries(currentFilters || {}).forEach(([key, value]) => {
+          if (key.startsWith("q[")) {
+            if (value !== undefined && value !== null && value !== "") {
+              url += `&${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+            }
+          }
+        });
+
         const response = await axios.get(url);
 
         // Debug: Log the response structure
@@ -344,247 +353,193 @@ const RopoMappingList = () => {
   useEffect(() => {
     if (!token) return;
 
-    // Fetch PO Numbers
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const poNumbers = [
-          ...new Set(
-            (response.data.purchase_orders || []).map((item) => item.po_number)
-          ),
+    const loadFilterOptions = async () => {
+      try {
+        // Single call for all PO-derived options
+        const poResp = await axios.get(
+          `${baseURL}purchase_orders.json?token=${token}`
+        );
+
+        const raw = poResp?.data;
+        const purchaseOrders = Array.isArray(raw?.purchase_orders)
+          ? raw.purchase_orders
+          : [];
+
+        // Helper to dedupe non-empty values
+        const unique = (arr) => [
+          ...new Set((arr || []).filter((x) => x !== undefined && x !== null)),
         ];
-        const options = poNumbers.map((poNumber) => ({
-          value: poNumber,
-          label: poNumber,
-        }));
-        setPoNumberOptions(options);
-      })
-      .catch(() => setPoNumberOptions([]));
 
-    // Fetch PO Types
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const poTypes = [
-          ...new Set(
-            (response.data.purchase_orders || []).map((item) => item.po_type)
-          ),
-        ];
-        const options = poTypes.map((poType) => ({
-          value: poType,
-          label: poType,
-        }));
-        setPoTypeOptions(options);
-      })
-      .catch(() => setPoTypeOptions([]));
+        // PO Number: handle both array-of-strings API and standard list
+        const poNumbers = Array.isArray(raw) && raw.every((v) => typeof v === "string")
+          ? unique(raw)
+          : unique(purchaseOrders.map((item) => item.po_number));
+        setPoNumberOptions(poNumbers.map((v) => ({ value: v, label: v })));
 
-    // Fetch Material Types
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const materialTypes = [
-          ...new Set(
-            (response.data.purchase_orders || []).flatMap(
-              (item) => item.material_types || []
-            )
-          ),
-        ];
-        const options = materialTypes.map((materialType) => ({
-          value: materialType,
-          label: materialType,
-        }));
-        setMaterialTypeOptions(options);
-      })
-      .catch(() => setMaterialTypeOptions([]));
+        // Other options from purchaseOrders list
+        const poTypes = unique(purchaseOrders.map((item) => item.po_type));
+        setPoTypeOptions(poTypes.map((v) => ({ value: v, label: v })));
 
-    // Fetch Status Options
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const statuses = [
-          ...new Set(
-            (response.data.purchase_orders || []).map((item) => item.status)
-          ),
-        ];
-        const options = statuses.map((status) => ({
-          value: status,
-          label: status,
-        }));
-        setStatusOptions(options);
-      })
-      .catch(() => setStatusOptions([]));
+        const materialTypes = unique(
+          purchaseOrders.flatMap((item) => item.material_types || [])
+        );
+        setMaterialTypeOptions(
+          materialTypes.map((v) => ({ value: v, label: v }))
+        );
 
-    // Fetch Advance Applicable Options
-    setAdvanceApplicableOptions([
-      { value: true, label: "Yes" },
-      { value: false, label: "No" },
-    ]);
+        // Status options will be overridden by unique statuses endpoint below
 
-    // Fetch Suppliers
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const suppliers = [
-          ...new Set(
-            (response.data.purchase_orders || []).map(
-              (item) => item.supplier_name
-            )
-          ),
-        ];
-        const options = suppliers.map((supplier) => ({
-          value: supplier,
-          label: supplier,
-        }));
-        setSupplierOptions(options);
-      })
-      .catch(() => setSupplierOptions([]));
+        setAdvanceApplicableOptions([
+          { value: true, label: "Yes" },
+          { value: false, label: "No" },
+        ]);
 
-    // Fetch Consumption Categories
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const categories = [
-          ...new Set(
-            (response.data.purchase_orders || []).flatMap(
-              (item) => item.consumption_category || []
-            )
-          ),
-        ];
-        const options = categories.map((category) => ({
-          value: category,
-          label: category,
-        }));
-        setConsumptionCategoryOptions(options);
-      })
-      .catch(() => setConsumptionCategoryOptions([]));
+        // Suppliers now loaded from suppliers API below (ids + names)
 
-    // Fetch Requisition Departments
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const departments = [
-          ...new Set(
-            (response.data.purchase_orders || []).flatMap(
-              (item) => item.department_names || []
-            )
-          ),
-        ];
-        const options = departments.map((department) => ({
-          value: department,
-          label: department,
-        }));
-        setRequisitionDepartmentOptions(options);
-      })
-      .catch(() => setRequisitionDepartmentOptions([]));
+        // Consumption categories will be loaded from categories endpoint below
 
-    // Fetch Created By Users
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const users = [
-          ...new Set(
-            (response.data.purchase_orders || [])
-              .map((item) => item.created_by)
-              .filter(Boolean)
-          ),
-        ];
-        const options = users.map((user) => ({
-          value: user,
-          label: user,
-        }));
-        setCreatedByOptions(options);
-      })
-      .catch(() => setCreatedByOptions([]));
+        // Requisition departments will be loaded from departments endpoint below
 
-    // Fetch PO Base Value Options
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const baseValues = [
-          ...new Set(
-            (response.data.purchase_orders || []).map(
-              (item) => item.po_base_value
-            )
-          ),
-        ];
-        const options = baseValues.map((value) => ({
-          value: value,
-          label: `₹${value}`,
-        }));
-        setPoBaseValueOptions(options);
-      })
-      .catch(() => setPoBaseValueOptions([]));
+        // Created By users will be loaded from created_and_approved_users endpoint below
 
-    // Fetch PO Gross Value Options
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const grossValues = [
-          ...new Set(
-            (response.data.purchase_orders || []).map(
-              (item) => item.po_gross_value
-            )
-          ),
-        ];
-        const options = grossValues.map((value) => ({
-          value: value,
-          label: `₹${value}`,
-        }));
-        setPoGrossValueOptions(options);
-      })
-      .catch(() => setPoGrossValueOptions([]));
+        const baseValues = unique(
+          purchaseOrders.map((item) => item.po_base_value)
+        );
+        setPoBaseValueOptions(
+          baseValues.map((v) => ({ value: v, label: `₹${v}` }))
+        );
 
-    // Fetch Event Numbers
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const eventNos = [
-          ...new Set(
-            (response.data.purchase_orders || []).flatMap(
-              (item) => item.event_nos || []
-            )
-          ),
-        ];
-        const options = eventNos.map((eventNo) => ({
-          value: eventNo,
-          label: eventNo,
-        }));
-        setEventNoOptions(options);
-      })
-      .catch(() => setEventNoOptions([]));
+        const grossValues = unique(
+          purchaseOrders.map((item) => item.po_gross_value)
+        );
+        setPoGrossValueOptions(
+          grossValues.map((v) => ({ value: v, label: `₹${v}` }))
+        );
 
-    // Fetch MOR Numbers
-    axios
-      .get(
-        `${baseURL}material_order_requests/filter_mor_numbers.json?token=${token}`
-      )
-      .then((response) => {
-        const options = (response.data || []).map((morNo) => ({
-          value: morNo,
-          label: morNo,
-        }));
-        setMorNoOptions(options);
-      })
-      .catch(() => setMorNoOptions([]));
+        const eventNos = unique(
+          purchaseOrders.flatMap((item) => item.event_nos || [])
+        );
+        setEventNoOptions(eventNos.map((v) => ({ value: v, label: v })));
 
-    // Fetch Advance Amounts
-    axios
-      .get(`${baseURL}purchase_orders.json?token=${token}`)
-      .then((response) => {
-        const advanceAmounts = [
-          ...new Set(
-            (response.data.purchase_orders || []).map(
-              (item) => item.advance_amount
-            )
-          ),
-        ];
-        const options = advanceAmounts.map((amount) => ({
-          value: amount,
-          label: `₹${amount}`,
-        }));
-        setAdvanceAmountOptions(options);
-      })
-      .catch(() => setAdvanceAmountOptions([]));
+        // Load Status options from unique statuses endpoint
+        try {
+          const statusResp = await axios.get(
+            `${baseURL}unique_statuses?model=PurchaseOrder&token=${token}`
+          );
+          const statusList = Array.isArray(statusResp?.data)
+            ? statusResp.data
+            : [];
+          setStatusOptions(
+            statusList
+              .filter((v) => typeof v === "string" && v.trim().length > 0)
+              .map((v) => ({ value: v, label: v }))
+          );
+        } catch {
+          setStatusOptions([]);
+        }
+
+        // Load Requisition Department options from departments endpoint
+        try {
+          const deptResp = await axios.get(
+            `${baseURL}pms/departments.json?model=PurchaseOrder&token=${token}`
+          );
+          const deptList = Array.isArray(deptResp?.data) ? deptResp.data : [];
+          setRequisitionDepartmentOptions(
+            deptList
+              .filter((d) => d && (d.name || d.label) && (d.id !== undefined))
+              .map((d) => ({ value: d.id, label: d.name || d.label }))
+          );
+        } catch {
+          setRequisitionDepartmentOptions([]);
+        }
+
+        // Load Consumption Category options from categories endpoint
+        try {
+          const consResp = await axios.get(
+            `${baseURL}pms/consumption_categories.json?model=PurchaseOrder&token=${token}`
+          );
+          const consList = Array.isArray(consResp?.data) ? consResp.data : [];
+          setConsumptionCategoryOptions(
+            consList
+              .filter((c) => c && (c.name || c.label) && (c.id !== undefined))
+              .map((c) => ({ value: c.id, label: c.name || c.label }))
+          );
+        } catch {
+          setConsumptionCategoryOptions([]);
+        }
+
+        // Load Created By options from created_and_approved_users endpoint
+        try {
+          const createdByResp = await axios.get(
+            `${baseURL}created_and_approved_users?model=PurchaseOrder&created_by=true&token=${token}`
+          );
+          const userList = Array.isArray(createdByResp?.data)
+            ? createdByResp.data
+            : [];
+          setCreatedByOptions(
+            userList
+              .filter((u) => u && (u.name || u.label) && (u.id !== undefined))
+              .map((u) => ({ value: u.id, label: u.name || u.label }))
+          );
+        } catch {
+          setCreatedByOptions([]);
+        }
+
+        // Separate call for MOR numbers; handle { mor_numbers: [] } shape
+        try {
+          const morResp = await axios.get(
+            `${baseURL}material_order_requests/filter_mor_numbers.json?token=${token}`
+          );
+          const morList = Array.isArray(morResp?.data?.mor_numbers)
+            ? morResp.data.mor_numbers
+            : Array.isArray(morResp?.data)
+            ? morResp.data
+            : [];
+          setMorNoOptions(
+            morList.map((morNo) => ({ value: morNo, label: morNo }))
+          );
+        } catch {
+          setMorNoOptions([]);
+        }
+
+        // Separate call for Suppliers (ids and names)
+        try {
+          const supResp = await axios.get(
+            `${baseURL}pms/suppliers.json?token=${token}`
+          );
+          const list = Array.isArray(supResp?.data) ? supResp.data : [];
+          const supplierOptions = list
+            .map((s) => ({
+              value: s.id,
+              label: s.organization_name || s.full_name || `Supplier #${s.id}`,
+            }))
+            .filter((opt) => opt.label);
+          setSupplierOptions(supplierOptions);
+        } catch {
+          setSupplierOptions([]);
+        }
+      } catch (error) {
+        console.error("Error fetching filter options:", error);
+        setPoNumberOptions([]);
+        setPoTypeOptions([]);
+        setMaterialTypeOptions([]);
+        setStatusOptions([]);
+        setSupplierOptions([]);
+        setConsumptionCategoryOptions([]);
+        setRequisitionDepartmentOptions([]);
+        setCreatedByOptions([]);
+        setPoBaseValueOptions([]);
+        setPoGrossValueOptions([]);
+        setEventNoOptions([]);
+        setAdvanceApplicableOptions([
+          { value: true, label: "Yes" },
+          { value: false, label: "No" },
+        ]);
+        setMorNoOptions([]);
+      }
+    };
+
+    loadFilterOptions();
   }, [token]);
 
   // Handle company selection
@@ -774,9 +729,9 @@ const RopoMappingList = () => {
     }
 
     // Event No. filter
-    if (selectedEventNo) {
-      filterParams["q[event_nos][]"] = selectedEventNo.value;
-    }
+    // if (selectedEventNo) {
+    //   filterParams["q[event_nos][]"] = selectedEventNo.value;
+    // }
 
     // MOR No. filter
     if (selectedMorNo) {
@@ -786,10 +741,10 @@ const RopoMappingList = () => {
     }
 
     // Advance Amount filter
-    if (selectedAdvanceAmount) {
-      filterParams["q[supplier_advance_amount_in][]"] =
-        selectedAdvanceAmount.value;
-    }
+    // if (selectedAdvanceAmount) {
+    //   filterParams["q[supplier_advance_amount_in][]"] =
+    //     selectedAdvanceAmount.value;
+    // }
 
     // Company filter
     if (selectedCompany) {
@@ -846,14 +801,14 @@ const RopoMappingList = () => {
     }
 
     // PO Base Value filter
-    if (selectedPoBaseValue) {
-      filterParams["q[po_base_value_in][]"] = selectedPoBaseValue.value;
-    }
+    // if (selectedPoBaseValue) {
+    //   filterParams["q[po_base_value_in][]"] = selectedPoBaseValue.value;
+    // }
 
-    // PO Gross Value filter
-    if (selectedPoGrossValue) {
-      filterParams["q[total_value_in][]"] = selectedPoGrossValue.value;
-    }
+    // // PO Gross Value filter
+    // if (selectedPoGrossValue) {
+    //   filterParams["q[total_value_in][]"] = selectedPoGrossValue.value;
+    // }
 
     // Created By filter
     if (selectedCreatedBy) {
@@ -888,6 +843,15 @@ const RopoMappingList = () => {
     setSelectedMorNo(null);
     setSelectedAdvanceAmount(null);
     setCurrentPage(1);
+
+    // Clear any advanced q[...] params from currentFilters while preserving quick filters
+    setCurrentFilters((prev) => {
+      return {
+        companyId: prev.companyId || "",
+        projectId: prev.projectId || "",
+        siteId: prev.siteId || "",
+      };
+    });
   };
 
   // Date formatting function
@@ -932,6 +896,11 @@ display:none !important;
   text-overflow: ellipsis !important;
   max-width: 100% !important;
   display: block !important;
+}
+/* Widen Advanced Filter modal dialog */
+.modal-dialog.modal-right {
+  max-width: 40vw !important;
+  width: 40vw !important;
 }
         `}
       </style>
@@ -1581,310 +1550,7 @@ display:none !important;
       </div>
 
       {/* filter modal */}
-      <div
-        className="modal fade right"
-        id="sidebarModal"
-        tabIndex={-1}
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
-      >
-        <div className="modal-dialog modal-lg" style={{ width: 500 }}>
-          <div className="modal-content h-100" style={{ borderRadius: 0 }}>
-            <div className="modal-header border-0">
-              <div className="d-flex align-items-center gap-2">
-                <button
-                  type="button "
-                  className="btn"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                >
-                  <svg
-                    width={10}
-                    height={16}
-                    viewBox="0 0 10 18"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M9 1L1 9L9 17"
-                      stroke="#8B0203"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-                <h3 className="modal-title m-0" style={{ fontWeight: 500 }}>
-                  Filter
-                </h3>
-              </div>
-              <a
-                className="resetCSS"
-                style={{ fontSize: 14, textDecoration: "underline !important" }}
-                href="#"
-              >
-                Reset
-              </a>
-            </div>
-            <div className="modal-body" style={{ overflowY: "scroll" }}>
-              <div className="row">
-                <div className="row mt-2 px-2"></div>
-                <div className="col-md-12">
-                  <div className="form-group">
-                    <label style={{ fontSize: 16, fontWeight: 600 }}>
-                      MOR Date
-                    </label>
-                    <div className="row">
-                      <div className="col-md-6">
-                        <div className="form-group">
-                          <label>From</label>
-                          <input
-                            className="form-control"
-                            type="date"
-                            placeholder="Default input"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-6">
-                        <div className="form-group">
-                          <label>To</label>
-                          <input
-                            className="form-control"
-                            type="date"
-                            placeholder="Default input"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-12 mt-4">
-                  <div className="form-group">
-                    <label style={{ fontSize: 16, fontWeight: 600 }}>
-                      Approval Date
-                    </label>
-                    <div className="row">
-                      <div className="col-md-6">
-                        <div className="form-group">
-                          <label>From</label>
-                          <input
-                            className="form-control"
-                            type="date"
-                            placeholder="Default input"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-6">
-                        <div className="form-group">
-                          <label>To</label>
-                          <input
-                            className="form-control"
-                            type="date"
-                            placeholder="Default input"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="row mt-4 align-items-end">
-                <div className="col-md-12">
-                  <div className="form-group">
-                    <label style={{ fontSize: 16, fontWeight: 600 }}>
-                      Due Date
-                    </label>
-                    <div className="row">
-                      <div className="col-md-6">
-                        <div className="form-group">
-                          <label>From</label>
-                          <input
-                            className="form-control"
-                            type="date"
-                            placeholder="Default input"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-6">
-                        <div className="form-group">
-                          <label>To</label>
-                          <input
-                            className="form-control"
-                            type="date"
-                            placeholder="Default input"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-12 mt-4">
-                  <div className="form-group">
-                    <label style={{ fontSize: 16, fontWeight: 600 }}>
-                      Created On
-                    </label>
-                    <input
-                      className="form-control"
-                      type="date"
-                      placeholder="Default input"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="row mt-3 align-items-end">
-                <div className="col-md-4">
-                  <div className="form-group">
-                    <label>Material Type </label>
-                    <select
-                      className="form-control form-select"
-                      style={{ width: "100%" }}
-                    >
-                      <option selected="selected">Alabama</option>
-                      <option>Alaska</option>
-                      <option>California</option>
-                      <option>Delaware</option>
-                      <option>Tennessee</option>
-                      <option>Texas</option>
-                      <option>Washington</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="form-group">
-                    <label>Material Sub Tupe </label>
-                    <select
-                      className="form-control form-select"
-                      style={{ width: "100%" }}
-                    >
-                      <option selected="selected">Alabama</option>
-                      <option>Alaska</option>
-                      <option>California</option>
-                      <option>Delaware</option>
-                      <option>Tennessee</option>
-                      <option>Texas</option>
-                      <option>Washington</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="form-group">
-                    <label>Material </label>
-                    <select
-                      className="form-control form-select"
-                      style={{ width: "100%" }}
-                    >
-                      <option selected="selected">Alabama</option>
-                      <option>Alaska</option>
-                      <option>California</option>
-                      <option>Delaware</option>
-                      <option>Tennessee</option>
-                      <option>Texas</option>
-                      <option>Washington</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div className="row mt-3 align-items-end">
-                <div className="col-md-4">
-                  <div className="form-group">
-                    <label>Activity </label>
-                    <select
-                      className="form-control form-select"
-                      style={{ width: "100%" }}
-                    >
-                      <option selected="selected">Alabama</option>
-                      <option>Alaska</option>
-                      <option>California</option>
-                      <option>Delaware</option>
-                      <option>Tennessee</option>
-                      <option>Texas</option>
-                      <option>Washington</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="form-group">
-                    <label>Status </label>
-                    <select
-                      className="form-control form-select"
-                      style={{ width: "100%" }}
-                    >
-                      <option selected="selected">Alabama</option>
-                      <option>Alaska</option>
-                      <option>California</option>
-                      <option>Delaware</option>
-                      <option>Tennessee</option>
-                      <option>Texas</option>
-                      <option>Washington</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="form-group">
-                    <label>MOR No. </label>
-                    <select
-                      className="form-control form-select"
-                      style={{ width: "100%" }}
-                    >
-                      <option selected="selected">Alabama</option>
-                      <option>Alaska</option>
-                      <option>California</option>
-                      <option>Delaware</option>
-                      <option>Tennessee</option>
-                      <option>Texas</option>
-                      <option>Washington</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div className="row mt-3 align-items-end">
-                <div className="col-md-4">
-                  <div className="form-group">
-                    <label>Overdue </label>
-                    <select
-                      className="form-control form-select"
-                      style={{ width: "100%" }}
-                    >
-                      <option selected="selected">Alabama</option>
-                      <option>Alaska</option>
-                      <option>California</option>
-                      <option>Delaware</option>
-                      <option>Tennessee</option>
-                      <option>Texas</option>
-                      <option>Washington</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="form-group">
-                    <label>Requisition Department </label>
-                    <select
-                      className="form-control form-select"
-                      style={{ width: "100%" }}
-                    >
-                      <option selected="selected">Alabama</option>
-                      <option>Alaska</option>
-                      <option>California</option>
-                      <option>Delaware</option>
-                      <option>Tennessee</option>
-                      <option>Texas</option>
-                      <option>Washington</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer modal-footer-k justify-content-center">
-              <a
-                className="purple-btn2"
-                href="/pms/admin/task_managements/kanban_list?type="
-              >
-                Go
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
+     
       {/* filter modal end */}
 
       {/* Advanced Filter Modal */}
@@ -1968,7 +1634,7 @@ display:none !important;
                 placeholder="Select PO Number"
               />
             </div>
-            <div className="col-md-6 mt-2">
+            {/* <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">PO Type</label>
               <SingleSelector
                 options={poTypeOptions}
@@ -1976,16 +1642,8 @@ display:none !important;
                 onChange={handlePoTypeChange}
                 placeholder="Select PO Type"
               />
-            </div>
-            <div className="col-md-6 mt-2">
-              <label className="block text-sm font-medium">Event No.</label>
-              <SingleSelector
-                options={eventNoOptions}
-                value={selectedEventNo}
-                onChange={handleEventNoChange}
-                placeholder="Select Event No."
-              />
-            </div>
+            </div> */}
+           
             <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">MOR No.</label>
               <SingleSelector
@@ -2041,7 +1699,7 @@ display:none !important;
                 isDisabled={!selectedProject}
               />
             </div>
-            <div className="col-md-6 mt-2">
+            {/* <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">Material Type</label>
               <SingleSelector
                 options={materialTypeOptions}
@@ -2049,7 +1707,7 @@ display:none !important;
                 onChange={handleMaterialTypeChange}
                 placeholder="Select Material Type"
               />
-            </div>
+            </div> */}
             <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">Status</label>
               <SingleSelector
@@ -2070,7 +1728,7 @@ display:none !important;
                 placeholder="Select Advance Applicable"
               />
             </div>
-            <div className="col-md-6 mt-2">
+            {/* <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">
                 Advance Amount
               </label>
@@ -2080,7 +1738,7 @@ display:none !important;
                 onChange={handleAdvanceAmountChange}
                 placeholder="Select Advance Amount"
               />
-            </div>
+            </div> */}
             <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">
                 Supplier/Vendor
@@ -2123,7 +1781,7 @@ display:none !important;
                 placeholder="Select Created By"
               />
             </div>
-            <div className="col-md-6 mt-2">
+            {/* <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">PO Base Value</label>
               <SingleSelector
                 options={poBaseValueOptions}
@@ -2131,8 +1789,8 @@ display:none !important;
                 onChange={handlePoBaseValueChange}
                 placeholder="Select PO Base Value"
               />
-            </div>
-            <div className="col-md-6 mt-2">
+            </div> */}
+            {/* <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">
                 PO Gross Value
               </label>
@@ -2142,7 +1800,7 @@ display:none !important;
                 onChange={handlePoGrossValueChange}
                 placeholder="Select PO Gross Value"
               />
-            </div>
+            </div> */}
           </div>
         </div>
 
