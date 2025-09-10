@@ -2000,7 +2000,9 @@ const EstimationCreationTest = () => {
                 console.log('Missing item_details for item:', item);
             } else {
                 item.item_details.forEach(detail => {
-                    if (!detail.type || !detail.unit_of_measure_id || detail.material_type_id === null) {
+                    if (!detail.type || !detail.unit_of_measure_id 
+                        // || detail.material_type_id === null
+                    ) {
                         missingItemDetailsFields = true;
                         console.log('Missing required fields in item detail:', detail, 'of item:', item);
                     }
