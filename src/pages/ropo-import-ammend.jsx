@@ -2078,6 +2078,7 @@ const RopoImportAmmend = () => {
             status: mor.status,
 
             inventory_id: inv.id,
+            material_inventory_id: inv.inventory_id,
 
             material_name: inv.material_name || inv.material,
 
@@ -2274,6 +2275,55 @@ const RopoImportAmmend = () => {
         material: "",
       }));
     }
+  };
+
+  // Per-row options cache for MOR modal (by inventory_id)
+  const [morOptionsByInventoryId, setMorOptionsByInventoryId] = useState({});
+
+  const loadMorRowOptionsIfNeeded = async (inventoryId) => {
+    if (!inventoryId) return;
+    setMorOptionsByInventoryId((prev) => prev[inventoryId] ? prev : { ...prev, [inventoryId]: { loading: true } });
+    try {
+      const [genResp, colorResp, brandResp, uomResp] = await Promise.all([
+        axios.get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${inventoryId}&token=${token}`),
+        axios.get(`${baseURL}pms/colours.json?q[material_id_eq]=${inventoryId}&token=${token}`),
+        axios.get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${inventoryId}&token=${token}`),
+        axios.get(`${baseURL}unit_of_measures.json?q[material_id_eq]=${inventoryId}&token=${token}`),
+      ]);
+
+      const genericOptions = Array.isArray(genResp?.data)
+        ? genResp.data.map((spec) => ({ value: spec.id, label: spec.generic_info }))
+        : [];
+      const colourOptions = Array.isArray(colorResp?.data)
+        ? colorResp.data.map((c) => ({ value: c.id, label: c.colour }))
+        : [];
+      const brandOptions = Array.isArray(brandResp?.data)
+        ? brandResp.data.map((b) => ({ value: b.id, label: b.brand_name }))
+        : [];
+      const uomOptions = Array.isArray(uomResp?.data)
+        ? uomResp.data.map((u) => ({ value: u.id, label: u.unit_name || u.name || u.uom }))
+        : [];
+
+      setMorOptionsByInventoryId((prev) => ({
+        ...prev,
+        [inventoryId]: { genericOptions, colourOptions, brandOptions, uomOptions, loading: false },
+      }));
+    } catch (e) {
+      setMorOptionsByInventoryId((prev) => ({
+        ...prev,
+        [inventoryId]: { genericOptions: [], colourOptions: [], brandOptions: [], uomOptions: [], loading: false },
+      }));
+    }
+  };
+
+  const handleMorRowGenericChange = (rowIndex, selectedOption) => {
+    setMaterialDetailsData((prev) => prev.map((r, idx) => idx === rowIndex ? { ...r, generic_info_id: selectedOption ? selectedOption.value : null } : r));
+  };
+  const handleMorRowBrandChange = (rowIndex, selectedOption) => {
+    setMaterialDetailsData((prev) => prev.map((r, idx) => idx === rowIndex ? { ...r, brand_id: selectedOption ? selectedOption.value : null } : r));
+  };
+  const handleMorRowColourChange = (rowIndex, selectedOption) => {
+    setMaterialDetailsData((prev) => prev.map((r, idx) => idx === rowIndex ? { ...r, colour_id: selectedOption ? selectedOption.value : null } : r));
   };
   const handleAcceptSelectedMaterials = async () => {
     if (!selectedCompany?.value) {
@@ -10183,7 +10233,7 @@ const RopoImportAmmend = () => {
               </button>
             </div>
 
-            <div className="tbl-container me-2 mt-3">
+            <div className="tbl-container me-2 mt-3" style={{ maxHeight: "70vh", overflowY: "auto" }}>
               {loadingMaterialDetails ? (
                 <div className="text-center p-4">
                   <div className="spinner-border" role="status">
@@ -10191,7 +10241,20 @@ const RopoImportAmmend = () => {
                   </div>
                 </div>
               ) : (
-                <table className="w-100">
+                <>
+                <style type="text/css">{`
+                  .select-mor-table thead th {
+                    padding: 6px 8px !important;
+                    height: 28px !important;
+                    line-height: 1.1 !important;
+                    vertical-align: middle !important;
+                  }
+                  .select-mor-table tbody td {
+                    padding: 6px 8px !important;
+                    vertical-align: middle !important;
+                  }
+                `}</style>
+                <table className="w-100 select-mor-table">
                   <thead>
                     <tr>
                       <th rowSpan="2">
@@ -10212,7 +10275,7 @@ const RopoImportAmmend = () => {
 
                       <th rowSpan="2">MOR Date</th>
 
-                      <th colSpan="8">Material Details</th>
+                      <th colSpan="11">Material Details</th>
                     </tr>
 
                     <tr>
@@ -10223,6 +10286,9 @@ const RopoImportAmmend = () => {
                       <th>Material</th>
 
                       <th>UOM</th>
+                      <th>Generic Specification</th>
+                      <th>Brand</th>
+                      <th>Color</th>
 
                       <th>Required Qty</th>
 
@@ -10304,13 +10370,92 @@ const RopoImportAmmend = () => {
                             />
                           </td>
 
-                          <td>
+                          <td style={{ minWidth: 180 }}>
                             {item.material_name ||
                               item.material?.material_name ||
                               ""}
                           </td>
 
-                          <td>{item.uom_name || ""}</td>
+                          <td style={{ minWidth: 140 }}>
+                            {(() => {
+                              const invId = item.material_inventory_id;
+                              if (!morOptionsByInventoryId[invId]) {
+                                loadMorRowOptionsIfNeeded(invId);
+                              }
+                              const opts = morOptionsByInventoryId[invId] || {};
+                              const options = opts.uomOptions || [];
+                              const value = options.find((o) => o.value === item.uom_id) || null;
+                              return (
+                                <SingleSelector
+                                  options={options}
+                                  value={value}
+                                  onChange={(sel) => {
+                                    const selected = sel ? sel.value : null;
+                                    const label = sel ? sel.label : "";
+                                    setMaterialDetailsData((prev) => prev.map((r, idx) => idx === index ? { ...r, uom_id: selected, uom_name: label } : r));
+                                  }}
+                                  placeholder="Select UOM"
+                                />
+                              );
+                            })()}
+                          </td>
+                          <td style={{ minWidth: 180 }}>
+                            {(() => {
+                              const invId = item.material_inventory_id;
+                              if (!morOptionsByInventoryId[invId]) {
+                                loadMorRowOptionsIfNeeded(invId);
+                              }
+                              const opts = morOptionsByInventoryId[invId] || {};
+                              const options = opts.genericOptions || [];
+                              const value = options.find((o) => o.value === item.generic_info_id) || null;
+                              return (
+                                <SingleSelector
+                                  options={options}
+                                  value={value}
+                                  onChange={(sel) => handleMorRowGenericChange(index, sel)}
+                                  placeholder="Select Specification"
+                                />
+                              );
+                            })()}
+                          </td>
+                          <td style={{ minWidth: 180 }}>
+                            {(() => {
+                              const invId = item.material_inventory_id;
+                              if (!morOptionsByInventoryId[invId]) {
+                                loadMorRowOptionsIfNeeded(invId);
+                              }
+                              const opts = morOptionsByInventoryId[invId] || {};
+                              const options = opts.brandOptions || [];
+                              const value = options.find((o) => o.value === item.brand_id) || null;
+                              return (
+                                <SingleSelector
+                                  options={options}
+                                  value={value}
+                                  onChange={(sel) => handleMorRowBrandChange(index, sel)}
+                                  placeholder="Select Brand"
+                                />
+                              );
+                            })()}
+                          </td>
+                          <td style={{ minWidth: 180 }}>
+                            {(() => {
+                              const invId = item.material_inventory_id;
+                              if (!morOptionsByInventoryId[invId]) {
+                                loadMorRowOptionsIfNeeded(invId);
+                              }
+                              const opts = morOptionsByInventoryId[invId] || {};
+                              const options = opts.colourOptions || [];
+                              const value = options.find((o) => o.value === item.colour_id) || null;
+                              return (
+                                <SingleSelector
+                                  options={options}
+                                  value={value}
+                                  onChange={(sel) => handleMorRowColourChange(index, sel)}
+                                  placeholder="Select Color"
+                                />
+                              );
+                            })()}
+                          </td>
 
                           <td>{item.required_quantity || ""}</td>
 
@@ -10345,6 +10490,7 @@ const RopoImportAmmend = () => {
                     )}
                   </tbody>
                 </table>
+                </>
               )}
             </div>
           </div>

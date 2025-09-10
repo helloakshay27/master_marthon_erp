@@ -389,10 +389,10 @@ const PoList = () => {
 
         // Status options loaded from unique statuses endpoint below
 
-        setAdvanceApplicableOptions([
-          { value: true, label: "Yes" },
-          { value: false, label: "No" },
-        ]);
+    setAdvanceApplicableOptions([
+      { value: true, label: "Yes" },
+      { value: false, label: "No" },
+    ]);
 
         const baseValues = unique(
           purchaseOrders.map((item) => item.po_base_value)
@@ -480,7 +480,7 @@ const PoList = () => {
         // Load MOR numbers
         try {
           const morResp = await axios.get(
-            `${baseURL}material_order_requests/filter_mor_numbers.json?token=${token}`
+        `${baseURL}material_order_requests/filter_mor_numbers.json?token=${token}`
           );
           const morList = Array.isArray(morResp?.data?.mor_numbers)
             ? morResp.data.mor_numbers

@@ -125,6 +125,52 @@ const RopoImportDetails = () => {
 
   const [materialTaxPercentages, setMaterialTaxPercentages] = useState({});
 
+  // Group duplicate exclusive charges by charge name and sum their amounts
+  const groupedExclusiveCharges = React.useMemo(() => {
+    if (!Array.isArray(exclusiveCharges) || exclusiveCharges.length === 0) {
+      return [];
+    }
+
+    const nameToGroup = new Map();
+
+    for (const row of exclusiveCharges) {
+      const nameRaw = row?.resource_name || "";
+      const key = nameRaw.trim().toLowerCase();
+      const prev = nameToGroup.get(key);
+
+      const amountInInr = parseFloat(row?.amount_in_inr || 0) || 0;
+      const amountUsd = parseFloat(row?.amount || 0) || 0;
+
+      if (!prev) {
+        nameToGroup.set(key, {
+          // preserve original display name casing from first occurrence
+          resource_name: nameRaw,
+          amount_in_inr: amountInInr,
+          amount: amountUsd,
+          // preserve representative fields from first occurrence
+          addition: Boolean(row?.addition),
+          supplier_name: row?.supplier_name || "-",
+          remarks: row?.remarks || "",
+          service_certificate_advance_percentage:
+            row?.service_certificate_advance_percentage,
+          service_certificate_advance_amount:
+            row?.service_certificate_advance_amount,
+        });
+      } else {
+        prev.amount_in_inr += amountInInr;
+        prev.amount += amountUsd;
+        // if different suppliers are present, mark as Multiple
+        if (prev.supplier_name && row?.supplier_name && prev.supplier_name !== row.supplier_name) {
+          prev.supplier_name = "Multiple";
+        }
+        // bubble up addition flag if any true
+        prev.addition = prev.addition || Boolean(row?.addition);
+      }
+    }
+
+    return Array.from(nameToGroup.values());
+  }, [exclusiveCharges]);
+
   // State for approval modal
 
   const [showApprovalModal, setShowApprovalModal] = useState(false);
@@ -2130,166 +2176,76 @@ const RopoImportDetails = () => {
                             </thead>
 
                             <tbody>
-                              {exclusiveCharges &&
-                              exclusiveCharges.length > 0 ? (
-                                exclusiveCharges.map((row) => (
-                                  <tr key={row.id}>
-                                    <td style={{ width: "200px" }}>
-                                      {row.resource_name || "-"}
-                                    </td>
-
-                                    <td style={{ width: "100px" }}>
-                                      INR{" "}
-                                      {parseFloat(
-                                        row.amount_in_inr || 0
-                                      ).toFixed(2)}
-                                    </td>
-
-                                    <td style={{ width: "100px" }}>
-                                      {(
-                                        ropoData?.po_currency || "USD"
-                                      ).toUpperCase()}{" "}
-                                      {parseFloat(row.amount || 0).toFixed(2)}
-                                    </td>
-
-                                    <td style={{ width: "100px" }}>
-                                      <input
-                                        type="checkbox"
-                                        checked={Boolean(row.addition)}
-                                        disabled
-                                      />
-                                    </td>
-
-                                    <td style={{ width: "200px" }}>
-                                      {row.supplier_name || "-"}
-                                    </td>
-
-                                    <td style={{ width: "120px" }}>
-                                      <textarea
-                                        className="form-control"
-                                        rows={2}
-                                        value={row.remarks || ""}
-                                        readOnly
-                                        disabled
-                                      />
-                                    </td>
-
-                                    <td style={{ width: "150px" }}>
-                                      {
-                                        row.service_certificate_advance_percentage
-                                      }
-                                    </td>
-
-                                    {/* <td style={{ width: "150px" }}>
-                                      {row.service_certificate_advance_amount}
-                                    </td> */}
-                                    <td style={{ width: "150px" }}>
-  {(() => {
-    const usdAmount = parseFloat(row.service_certificate_advance_amount) || 0;
-    const inrAmount = safeConvertUsdToInr(usdAmount, ropoData?.conversion_rate) || 0;
-    return `USD ${usdAmount.toFixed(2)} (INR ${inrAmount.toFixed(2)})`;
-  })()}
-                                    </td>
-                                  </tr>
-                                ))
-                              ) : (
-                                <tr>
-                                  <td colSpan={6} className="text-center">
-                                    No exclusive charges available
-                                  </td>
-                                </tr>
-                              )}
+                              {groupedExclusiveCharges &&
+                              groupedExclusiveCharges.length > 0 ? (
+                                groupedExclusiveCharges.map((row, idx) => (
+                                  <tr key={idx}>
+                                     <td style={{ width: "200px" }}>
+                                       {row.resource_name || "-"}
+                                     </td>
+ 
+                                     <td style={{ width: "100px" }}>
+                                       INR{" "}
+                                       {parseFloat(row.amount_in_inr ?? 0).toFixed(2)}
+                                     </td>
+ 
+                                     <td style={{ width: "100px" }}>
+                                       {( 
+                                         ropoData?.po_currency || "USD"
+                                       ).toUpperCase()} {" "}
+                                       {parseFloat(row.amount ?? 0).toFixed(2)}
+                                     </td>
+ 
+                                     <td style={{ width: "100px" }}>
+                                       <input
+                                         type="checkbox"
+                                         checked={Boolean(row.addition)}
+                                         disabled
+                                       />
+                                     </td>
+ 
+                                     <td style={{ width: "200px" }}>
+                                       {row.supplier_name || "-"}
+                                     </td>
+ 
+                                     <td style={{ width: "120px" }}>
+                                       <textarea
+                                         className="form-control"
+                                         rows={2}
+                                         value={row.remarks || ""}
+                                         readOnly
+                                         disabled
+                                       />
+                                     </td>
+ 
+                                     <td style={{ width: "150px" }}>
+                                       {row.service_certificate_advance_percentage}
+                                     </td>
+ 
+                                     {/* <td style={{ width: "150px" }}>
+                                       {row.service_certificate_advance_amount}
+                                     </td> */}
+                                     <td style={{ width: "150px" }}>
+   {(() => {
+     const usdAmount = parseFloat(row.service_certificate_advance_amount) || 0;
+     const inrAmount = safeConvertUsdToInr(usdAmount, ropoData?.conversion_rate) || 0;
+     return `USD ${usdAmount.toFixed(2)} (INR ${inrAmount.toFixed(2)})`;
+   })()}
+                                     </td>
+                                   </tr>
+                                 ))
+                               ) : (
+                                 <tr>
+                                   <td colSpan={6} className="text-center">
+                                     No exclusive charges available
+                                   </td>
+                                 </tr>
+                               )}
                             </tbody>
                           </table>
                         </div>
 
-                        <div className="mt-4">
-                          <div className="d-flex justify-content-between align-items-center">
-                            <h5 className="mt-3">Charges</h5>
-                          </div>
-
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Charge Name</th>
-
-                                  <th>Amount</th>
-
-                                  <th>Realised Amount</th>
-
-                                  <th>Taxes</th>
-                                </tr>
-                              </thead>
-
-                              <tbody>
-                                {charges.length > 0 ? (
-                                  charges.map((charge) => (
-                                    <tr key={charge.id}>
-                                      <td>
-                                        <input
-                                          type="text"
-                                          className="form-control"
-                                          value={
-                                            chargeNames.find(
-                                              (cn) => cn.id === charge.charge_id
-                                            )?.name ||
-                                            charge.charge_name ||
-                                            ""
-                                          }
-                                          disabled={true}
-                                          readOnly
-                                        />
-                                      </td>
-
-                                      <td>
-                                        <input
-                                          type="number"
-                                          className="form-control forname-control decimal-input"
-                                          value={charge.amount}
-                                          disabled
-                                          placeholder="Enter amount"
-                                        />
-                                      </td>
-
-                                      <td>
-                                        <input
-                                          type="number"
-                                          className="form-control forname-control decimal-input"
-                                          value={charge.realised_amount}
-                                          disabled
-                                          placeholder="Auto-calculated"
-                                        />
-                                      </td>
-
-                                      <td>
-                                        <button
-                                          type="button"
-                                          className="btn btn-info chargeButton"
-                                          onClick={() =>
-                                            handleOpenTaxesModal(
-                                              charge.id,
-
-                                              "charge"
-                                            )
-                                          }
-                                        >
-                                          Taxes
-                                        </button>
-                                      </td>
-                                    </tr>
-                                  ))
-                                ) : (
-                                  <tr>
-                                    <td colSpan={4} className="text-center">
-                                      No charges available
-                                    </td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
+                      
 
                         <div className="mt-4">
                           <div className="d-flex justify-content-between align-items-center">
