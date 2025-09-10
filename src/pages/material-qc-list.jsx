@@ -660,6 +660,7 @@ const MaterialQCList = () => {
         Date: true,
         Approved_Date: true,
         status: true,
+        created_by:true,
     });
 
     const allColumns = [
@@ -670,9 +671,11 @@ const MaterialQCList = () => {
         { field: "To_Store", headerName: "To Store", width: 150 },
         { field: "Material_Asset_Type", headerName: "Material/Asset Type", width: 200 },
         { field: "Delivery_Challan", headerName: "Delivery Challan", width: 150 },
-        { field: "Date", headerName: "Date", width: 120 },
+        { field: "created_by", headerName: "Created By", width: 150 },
+        { field: "Date", headerName: "Created On", width: 120 },
         { field: "Approved_Date", headerName: "Approved Date", width: 120 },
         { field: "status", headerName: "Status", width: 120 },
+        
     ];
 
 
@@ -1267,12 +1270,11 @@ display:none !important;
                         )
                         .map((column) => (
                             <div
-                                className="row justify-content-between align-items-center mt-2"
+                                className="d-flex flex-row flex-wrap justify-content-between align-items-center mt-2 gap-2"
                                 key={column.field}
                             >
-                                <div className="col-md-6">
+                                <div className="d-flex align-items-center gap-2" style={{ minWidth: 0, flex: 1 }}>
                                     <button type="submit" className="btn btn-md">
-
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             width={22}
@@ -1288,9 +1290,9 @@ display:none !important;
                                             />
                                         </svg>
                                     </button>
-                                    <label>{column.headerName}</label>
+                                    <label className="flex-grow-1 text-truncate" style={{ minWidth: 0 }}>{column.headerName}</label>
                                 </div>
-                                <div className="col-md-4">
+                                <div className="d-flex align-items-center justify-content-end" style={{ minWidth: 60 }}>
                                     <div className="form-check form-switch mt-1">
                                         <input
                                             className="form-check-input"
@@ -1307,12 +1309,12 @@ display:none !important;
                 </Modal.Body>
 
                 <Modal.Footer>
-                    <button className="purple-btn2" onClick={handleShowAll}>
+                    {/* <button className="purple-btn2" onClick={handleShowAll}>
                         Show All
                     </button>
                     <button className="purple-btn1" onClick={handleHideAll}>
                         Hide All
-                    </button>
+                    </button> */}
                 </Modal.Footer>
             </Modal>
 
@@ -1437,7 +1439,7 @@ display:none !important;
                         </div>
                         <div className="col-6 mt-2">
                             <label className="block text-sm font-medium">
-                                Date
+                                Created On
                             </label>
                             <input
                                 type="date"
@@ -1464,6 +1466,16 @@ display:none !important;
 
                             />
                         </div>
+                         <div className="col-6 mt-2">
+                            <label className="block text-sm font-medium">
+                                Created By
+                            </label>
+                            <SingleSelector
+                                options={[]}
+
+                            />
+                        </div>
+
 
 
                         {/* <div className="col-6 mt-2">

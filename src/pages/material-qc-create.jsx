@@ -406,7 +406,7 @@ const MaterialQCCreate = () => {
                                                     <div className="row">
                                                         <div className="col-md-4">
                                                             <label htmlFor="event-no-select">
-                                                                PO No.
+                                                                PO No.<span>*</span>
                                                             </label>
                                                             <div className="form-group">
                                                                 <SingleSelector
@@ -418,7 +418,7 @@ const MaterialQCCreate = () => {
                                                         <div className="col-md-4 ">
                                                             <div className="form-group">
                                                                 <label>
-                                                                    Gate Entry No.
+                                                                    Gate Entry No.<span>*</span>
                                                                 </label>
                                                                 <SingleSelector
                                                                     options={companies}
@@ -673,7 +673,7 @@ const MaterialQCCreate = () => {
                                                                             <th className="text-start">Code</th>
                                                                             <th className="text-start">Material Type</th>
                                                                             <th className="text-start"> Material Sub-Type</th>
-                                                                            <th className="text-start">Brand</th>
+                                                                            {/* <th className="text-start">Brand</th> */}
                                                                             <th className="text-start">UOM</th>
                                                                             <th className="text-start">Is QC Required</th>
 
@@ -690,7 +690,7 @@ const MaterialQCCreate = () => {
                                                                             <td className="text-start">{mat.details.code}</td>
                                                                             <td className="text-start">{mat.details.type}</td>
                                                                             <td className="text-start">{mat.details.subType}</td>
-                                                                            <td className="text-start">{mat.details.brand}</td>
+                                                                            {/* <td className="text-start">{mat.details.brand}</td> */}
                                                                             <td className="text-start">{mat.details.uom}</td>
                                                                             <td className="text-start">{mat.details.qcRequired}</td>
 

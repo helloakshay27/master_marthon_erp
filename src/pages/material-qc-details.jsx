@@ -535,7 +535,7 @@ const MaterialQCDetails = () => {
                                                                                                                                 <th className="text-start">Code</th>
                                                                                                                                 <th className="text-start">Material Type</th>
                                                                                                                                 <th className="text-start"> Material Sub-Type</th>
-                                                                                                                                <th className="text-start">Brand</th>
+                                                                                                                                {/* <th className="text-start">Brand</th> */}
                                                                                                                                 <th className="text-start">UOM</th>
                                                                                                                                 <th className="text-start">Is QC Required</th>
                                                     
@@ -552,7 +552,7 @@ const MaterialQCDetails = () => {
                                                                                                                                 <td className="text-start">{mat.details.code}</td>
                                                                                                                                 <td className="text-start">{mat.details.type}</td>
                                                                                                                                 <td className="text-start">{mat.details.subType}</td>
-                                                                                                                                <td className="text-start">{mat.details.brand}</td>
+                                                                                                                                {/* <td className="text-start">{mat.details.brand}</td> */}
                                                                                                                                 <td className="text-start">{mat.details.uom}</td>
                                                                                                                                 <td className="text-start">{mat.details.qcRequired}</td>
                                                     
