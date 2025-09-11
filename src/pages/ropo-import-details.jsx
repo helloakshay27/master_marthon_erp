@@ -7,6 +7,8 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 import { baseURL } from "../confi/apiDomain";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import DownloadIcon from "../components/common/Icon/DownloadIcon";
 
@@ -1221,15 +1223,14 @@ const RopoImportDetails = () => {
 
       console.log("Status update successful:", response.data);
 
-      alert("Status updated successfully!");
-
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      toast.success("Status updated successfully!", {
+        autoClose: 1500,
+        onClose: () => window.location.reload(),
+      });
     } catch (error) {
       console.error("Error updating status:", error);
 
-      alert("Error updating status. Please try again.");
+      toast.error("Error updating status. Please try again.");
     }
   };
 
@@ -1267,6 +1268,7 @@ const RopoImportDetails = () => {
 
   return (
     <>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover />
       {/* top navigation above */}
 
       {/* <div className="main-content"> */}

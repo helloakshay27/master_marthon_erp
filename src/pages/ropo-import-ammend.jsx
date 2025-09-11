@@ -4,6 +4,8 @@ import axios from "axios";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import MultiSelector from "../components/base/Select/MultiSelector";
 import SelectBox from "../components/base/Select/SelectBox";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { baseURL } from "../confi/apiDomain";
 import { useNavigate } from "react-router-dom";
 
@@ -325,7 +327,7 @@ const RopoImportAmmend = () => {
         picked.setHours(12, 0, 0, 0);
 
         if (picked < minDate || picked > maxDate) {
-          alert(
+          toast.error(
             `PO Delivery Date must be between ${
               minDate
 
@@ -353,7 +355,7 @@ const RopoImportAmmend = () => {
     const entered = value === "" ? "" : parseFloat(value);
 
     if (entered !== "" && (isNaN(entered) || entered < 0)) {
-      alert("PO Delivery Qty must be a non-negative number.");
+      toast.error("PO Delivery Qty must be a non-negative number.");
 
       return;
     }
@@ -366,7 +368,7 @@ const RopoImportAmmend = () => {
       const maxQty = getOrderQtyForSchedule(row);
 
       if (entered !== "" && entered > maxQty) {
-        alert(`PO Delivery Qty cannot exceed current Order Qty (${maxQty}).`);
+        toast.error(`PO Delivery Qty cannot exceed current Order Qty (${maxQty}).`);
 
         return prev;
       }
@@ -1682,7 +1684,7 @@ const RopoImportAmmend = () => {
         // genericSpecification: duplicateMsg,
       }));
 
-      alert(duplicateMsg);
+      toast.error(duplicateMsg);
 
       return;
     }
@@ -1837,7 +1839,7 @@ const RopoImportAmmend = () => {
     if (!selectedCompany) {
       console.log("No company selected");
 
-      alert("Please select a company.");
+      toast.error("Please select a company.");
 
       return;
     }
@@ -1849,7 +1851,7 @@ const RopoImportAmmend = () => {
     if (activeRows.length === 0) {
       console.log("No materials in table");
 
-      alert("Please add at least one material before updating.");
+      toast.error("Please add at least one material before updating.");
 
       return;
     }
@@ -1866,7 +1868,7 @@ const RopoImportAmmend = () => {
 
     // if (hasDuplicate) {
 
-    //   alert(
+    //   toast.error(
 
     //     "Duplicate materials are not allowed. Please ensure each material is unique."
 
@@ -1885,7 +1887,7 @@ const RopoImportAmmend = () => {
     if (missingMaterial) {
       console.log("Some rows missing material");
 
-      alert("Please select a material for all rows before updating.");
+      toast.error("Please select a material for all rows before updating.");
 
       return;
     }
@@ -1968,7 +1970,7 @@ const RopoImportAmmend = () => {
           );
         }
 
-        alert("Materials updated successfully!");
+        toast.success("Materials updated successfully!");
 
         // Change tab to Rate & Taxes
 
@@ -1985,7 +1987,7 @@ const RopoImportAmmend = () => {
     } catch (error) {
       console.error("Error submitting materials:", error);
 
-      alert("Error submitting materials. Please try again.");
+      toast.error("Error submitting materials. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -2248,7 +2250,7 @@ const RopoImportAmmend = () => {
     const numValue = parseFloat(value);
 
     if (value !== "" && (isNaN(numValue) || numValue < 0)) {
-      alert(
+      toast.error(
         "Order quantity cannot be negative. Please enter a valid positive number."
       );
 
@@ -2267,7 +2269,7 @@ const RopoImportAmmend = () => {
     const maxAllowed = pendingQty + prevOrdered;
 
     if (value !== "" && Number.isFinite(numValue) && numValue > maxAllowed) {
-      alert(
+      toast.error(
         `Order quantity cannot exceed Pending Qty + Prev Order Qty (${maxAllowed}).`
       );
 
@@ -2352,13 +2354,13 @@ const RopoImportAmmend = () => {
   };
   const handleAcceptSelectedMaterials = async () => {
     if (!selectedCompany?.value) {
-      alert("Please select a company first.");
+      toast.error("Please select a company first.");
 
       return;
     }
 
     if (selectedMaterialItems.length === 0) {
-      alert("Please select at least one material");
+      toast.error("Please select at least one material");
 
       return;
     }
@@ -2378,8 +2380,8 @@ const RopoImportAmmend = () => {
         return orderQty <= 0;
       });
 
-      if (invalidQuantities) {
-        alert("Order quantity must be greater than 0 for all materials.");
+        if (invalidQuantities) {
+        toast.error("Order quantity must be greater than 0 for all materials.");
 
         return;
       }
@@ -2395,7 +2397,7 @@ const RopoImportAmmend = () => {
       });
 
       if (missingFields) {
-        alert(
+        toast.error(
           "Please ensure all materials have material name, UOM, and order quantity filled."
         );
 
@@ -2622,7 +2624,7 @@ const RopoImportAmmend = () => {
         return appended.length > 0 ? [...updated, ...appended] : updated;
       });
 
-      alert(`Successfully added ${selectedRows.length} material(s)`);
+      toast.success(`Successfully added ${selectedRows.length} material(s)`);
 
       setAddMORModal(false);
 
@@ -2636,7 +2638,7 @@ const RopoImportAmmend = () => {
     } catch (error) {
       console.error("Error adding materials:", error);
 
-      alert("Error adding materials. Please try again.");
+      toast.error("Error adding materials. Please try again.");
     }
   };
 
@@ -2650,7 +2652,7 @@ const RopoImportAmmend = () => {
     // Validate conversion rate is set
 
     if (!conversionRate || conversionRate <= 0) {
-      alert(
+      toast.error(
         `Please set the Conversion Rate (${poCurrencyCode} to INR) in the PO Details tab before opening tax modal.`
       );
 
@@ -4105,12 +4107,12 @@ const RopoImportAmmend = () => {
             }
           }
 
-          alert("Tax changes saved successfully!");
+          toast.success("Tax changes saved successfully!");
         }
       } catch (error) {
         console.error("Error saving tax changes:", error);
 
-        alert("Error saving tax changes. Please try again.");
+        toast.error("Error saving tax changes. Please try again.");
       }
     }
 
@@ -4786,7 +4788,7 @@ const RopoImportAmmend = () => {
       const numValue = parseFloat(value);
 
       if (value !== "" && (isNaN(numValue) || numValue < 0)) {
-        alert(
+        toast.error(
           "Rate per Nos cannot be negative. Please enter a valid positive number."
         );
 
@@ -4844,7 +4846,7 @@ const RopoImportAmmend = () => {
       const numValue = parseFloat(value);
 
       if (value !== "" && (isNaN(numValue) || numValue < 0 || numValue > 100)) {
-        alert(
+        toast.error(
           "Discount percentage must be between 0 and 100. Please enter a valid percentage."
         );
 
@@ -5022,7 +5024,7 @@ const RopoImportAmmend = () => {
       const numValue = parseFloat(value);
 
       if (value !== "" && (isNaN(numValue) || numValue < 0)) {
-        alert(
+        toast.error(
           `${field
 
             .replace(/([A-Z])/g, " $1")
@@ -5073,7 +5075,7 @@ const RopoImportAmmend = () => {
       const numValue = parseFloat(value);
 
       if (value !== "" && (isNaN(numValue) || numValue < 0)) {
-        alert(
+        toast.error(
           "Amount cannot be negative. Please enter a valid positive number."
         );
 
@@ -6489,6 +6491,7 @@ const RopoImportAmmend = () => {
   };
   return (
     <>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover />
       {/* <main className="h-100 w-100"> */}
 
       {/* top navigation above */}

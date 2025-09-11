@@ -1,34 +1,23 @@
 import React, { useState, useEffect, useCallback } from "react";
-
 import { Modal, Button, Form } from "react-bootstrap";
-
 import axios from "axios";
-
 import SingleSelector from "../components/base/Select/SingleSelector";
-
-import MultiSelector from "../components/base/Select/MultiSelector";
-
+import MultiSelector from "../components/base/Select/MultiSelector"
 import SelectBox from "../components/base/Select/SelectBox";
-
 import { baseURL } from "../confi/apiDomain";
-
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const RopoImportCreate = () => {
   // State variables for the modal
 
   const [showModal, setShowModal] = useState(false);
-
   const [exchangeRate, setExchangeRate] = useState();
-
   const [addMORModal, setAddMORModal] = useState(false);
-
   const [editRowIndex, setEditRowIndex] = useState(null);
-
   const [fieldErrors, setFieldErrors] = useState({});
-
   const [apiMaterialInventoryIds, setApiMaterialInventoryIds] = useState();
-
   const navigate = useNavigate();
 
   const urlParams = new URLSearchParams(location.search);
@@ -65,6 +54,23 @@ const RopoImportCreate = () => {
   const [taxPercentageOptions, setTaxPercentageOptions] = useState([]);
 
   const [materialTaxPercentages, setMaterialTaxPercentages] = useState({});
+
+  // Route any existing alert() calls in this module to toast notifications
+  useEffect(() => {
+    const originalAlert = window.alert;
+    window.alert = (message) => {
+      try {
+        const text = typeof message === "string" ? message : String(message);
+        toast.error(text);
+      } catch (e) {
+        // Fallback to original alert if toast fails for any reason
+        originalAlert(message);
+      }
+    };
+    return () => {
+      window.alert = originalAlert;
+    };
+  }, []);
 
   // Form data state
 
@@ -1229,7 +1235,7 @@ const RopoImportCreate = () => {
           );
         }
 
-        alert("Materials updated successfully!");
+        toast.success("Materials updated successfully!");
 
         // Change tab to Rate & Taxes
 
@@ -2000,7 +2006,7 @@ const RopoImportCreate = () => {
         return Array.from(byId.values());
       });
 
-      alert(`Successfully added ${selectedRows.length} material(s)`);
+      toast.success(`Successfully added ${selectedRows.length} material(s)`);
 
       setAddMORModal(false);
 
@@ -3479,7 +3485,7 @@ const RopoImportCreate = () => {
             }
           }
 
-          alert("Tax changes saved successfully!");
+          toast.success("Tax changes saved successfully!");
         }
       } catch (error) {
         console.error("Error saving tax changes:", error);
@@ -5926,9 +5932,10 @@ const RopoImportCreate = () => {
 
       console.log("Purchase order created successfully:", response.data);
 
-      alert("Purchase order created successfully!");
-
-      navigate(`/ropo-import-list?token=${token}`);
+      toast.success("Purchase order created successfully!", {
+        onClose: () => navigate(`/ropo-import-list?token=${token}`),
+        autoClose: 1000,
+      });
 
       // Optionally redirect or clear form
 
@@ -5936,7 +5943,7 @@ const RopoImportCreate = () => {
     } catch (error) {
       console.error("Error creating purchase order:", error);
 
-      alert("Error creating purchase order. Please try again.");
+      toast.error("Error creating purchase order. Please try again.");
     } finally {
       setIsCreatingOrder(false);
     }
@@ -6034,6 +6041,7 @@ const RopoImportCreate = () => {
   };
   return (
     <>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover />
       {/* <main className="h-100 w-100"> */}
 
       {/* top navigation above */}
