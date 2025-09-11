@@ -1435,29 +1435,7 @@ const RopoImportDetails = () => {
                           Term &amp; Conditions
                         </button>
 
-                        {/* <button
-
-                            className="nav-link"
-
-                            id="nav-contact-tab"
-
-                            data-bs-toggle="tab"
-
-                            data-bs-target="#Import4"
-
-                            type="button"
-
-                            role="tab"
-
-                            aria-controls="nav-contact"
-
-                            aria-selected="false"
-
-                          >
-
-                            Amendment
-
-                          </button> */}
+                       
                       </div>
                     </nav>
 
