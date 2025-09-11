@@ -199,6 +199,10 @@ const RopoImportAmmend = () => {
 
   const [selectedSupplier, setSelectedSupplier] = useState(null);
 
+  // Service Provider state (separate from suppliers)
+
+  const [serviceProviders, setServiceProviders] = useState([]);
+
   const [vendorGstin, setVendorGstin] = useState("");
 
   // Loading state
@@ -501,7 +505,7 @@ const RopoImportAmmend = () => {
   useEffect(() => {
     axios
 
-      .get(`${baseURL}pms/suppliers.json?token=${token}`)
+      .get(`${baseURL}pms/suppliers.json?token=${token}&q[vendor_type_supplier_type_eq]=Importer Vendor`)
 
       .then((response) => {
         setSuppliers(response.data);
@@ -509,6 +513,22 @@ const RopoImportAmmend = () => {
 
       .catch((error) => {
         console.error("Error fetching suppliers data:", error);
+      });
+  }, []);
+
+  // Fetch service providers data on component mount (exclude Importer Vendor)
+
+  useEffect(() => {
+    axios
+
+      .get(`${baseURL}pms/suppliers.json?token=${token}&q[vendor_type_supplier_type_not_eq]=Importer Vendor`)
+
+      .then((response) => {
+        setServiceProviders(response.data);
+      })
+
+      .catch((error) => {
+        console.error("Error fetching service providers data:", error);
       });
   }, []);
 
@@ -720,7 +740,6 @@ const RopoImportAmmend = () => {
       console.error("Error fetching projects and sites:", error);
     }
   };
-
   // Populate material details
 
   const populateMaterialDetails = (materialDetails) => {
@@ -1501,6 +1520,13 @@ const RopoImportAmmend = () => {
     label: supplier.organization_name || supplier.full_name,
   }));
 
+  // Map service providers to options for the dropdown
+
+  const serviceProviderOptions = serviceProviders.map((sp) => ({
+    value: sp.id,
+
+    label: sp.organization_name || sp.full_name,
+  }));
   // Map currencies to options for the dropdown
 
   const currencyOptions = currencies.map((currency) => ({
@@ -2276,7 +2302,6 @@ const RopoImportAmmend = () => {
       }));
     }
   };
-
   // Per-row options cache for MOR modal (by inventory_id)
   const [morOptionsByInventoryId, setMorOptionsByInventoryId] = useState({});
 
@@ -3075,7 +3100,6 @@ const RopoImportAmmend = () => {
   //           currentTax.taxType = selectedTaxOption?.type || "TaxCharge";
 
   //           currentTax[field] = value;
-
   //           // Clear amount when tax type changes
 
   //           currentTax.amount = "0";
@@ -5098,7 +5122,6 @@ const RopoImportAmmend = () => {
 
     setOtherCosts((prev) => [...prev, newCost]);
   };
-
   const removeCost = (id) => {
     setOtherCosts((prev) => prev.filter((cost) => cost.id !== id));
   };
@@ -5881,7 +5904,6 @@ const RopoImportAmmend = () => {
 
     return amount;
   };
-
   // Calculate service certificate advance amount
 
   const calculateServiceCertificateAdvanceAmount = () => {
@@ -8006,7 +8028,7 @@ const RopoImportAmmend = () => {
 
                                           <td>
                                             <SingleSelector
-                                              options={supplierOptions}
+                                              options={serviceProviderOptions}
                                               value={
                                                 selectedServiceProviders[
                                                   charge.id
@@ -8158,7 +8180,7 @@ const RopoImportAmmend = () => {
 
                                           <td style={{ width: "180px" }}>
                                             <SingleSelector
-                                              options={supplierOptions}
+                                              options={serviceProviderOptions}
                                               value={
                                                 selectedServiceProviders[
                                                   consolidatedCharge
@@ -9322,7 +9344,6 @@ const RopoImportAmmend = () => {
                             </div>
 
                             {/* Document Attachment Section - Only visible on Terms & Conditions tab */}
-
                             {activeTab === "terms-conditions" && (
                               <>
                                 <div className="d-flex justify-content-between mt-5 ">
@@ -11508,7 +11529,6 @@ const RopoImportAmmend = () => {
                             </td>
                           </tr>
                         ))}
-
                       <tr>
                         <td>Net Cost</td>
 

@@ -20,6 +20,8 @@ const RopoImportEdit = () => {
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
   const poId = urlParams.get("id") || window.location.pathname.split("/").pop();
+  
+  const [serviceProviders, setServiceProviders] = useState([]);
 
   // State for MOR modal dropdown options
 
@@ -590,7 +592,7 @@ const RopoImportEdit = () => {
   useEffect(() => {
     axios
 
-      .get(`${baseURL}pms/suppliers.json?token=${token}`)
+      .get(`${baseURL}pms/suppliers.json?token=${token}&q[vendor_type_supplier_type_eq]=Importer Vendor`)
 
       .then((response) => {
         setSuppliers(response.data);
@@ -601,6 +603,22 @@ const RopoImportEdit = () => {
       });
   }, []);
 
+
+
+
+  useEffect(() => {
+    axios
+
+      .get(`${baseURL}pms/suppliers.json?token=${token}&q[vendor_type_supplier_type_not_eq]=Importer Vendor`)
+
+      .then((response) => {
+        setServiceProviders(response.data);
+      })
+
+      .catch((error) => {
+        console.error("Error fetching service providers data:", error);
+      });
+  }, []);
   // Fetch currencies data on component mount
 
   useEffect(() => {
@@ -627,7 +645,14 @@ const RopoImportEdit = () => {
       });
   }, []);
 
-  // Fetch edit data when component mounts and poId is available
+  // Fe
+  // 
+  const serviceProviderOptions = serviceProviders.map((sp) => ({
+    value: sp.id,
+
+    label: sp.organization_name || sp.full_name,
+  }));
+  // tch edit data when component mounts and poId is available
 
   useEffect(() => {
     if (poId && token && companies.length > 0 && suppliers.length > 0) {
@@ -8151,7 +8176,8 @@ const RopoImportEdit = () => {
 
                                           <td style={{ width: "180px" }}>
                                             <SingleSelector
-                                              options={supplierOptions}
+                                              // options={supplierOptions}
+                                              options={serviceProviderOptions}
                                               value={
                                                 selectedServiceProviders[
                                                   consolidatedCharge

@@ -163,6 +163,10 @@ const RopoImportCreate = () => {
 
   const [selectedSupplier, setSelectedSupplier] = useState(null);
 
+  // Service Provider state (separate from suppliers)
+
+  const [serviceProviders, setServiceProviders] = useState([]);
+
   const [vendorGstin, setVendorGstin] = useState("");
 
   // Loading state
@@ -297,7 +301,7 @@ const RopoImportCreate = () => {
   useEffect(() => {
     axios
 
-      .get(`${baseURL}pms/suppliers.json?token=${token}`)
+      .get(`${baseURL}pms/suppliers.json?token=${token}&q[vendor_type_supplier_type_eq]=Importer Vendor`)
 
       .then((response) => {
         setSuppliers(response.data);
@@ -305,6 +309,22 @@ const RopoImportCreate = () => {
 
       .catch((error) => {
         console.error("Error fetching suppliers data:", error);
+      });
+  }, []);
+
+  // Fetch service providers data on component mount (exclude Importer Vendor)
+
+  useEffect(() => {
+    axios
+
+      .get(`${baseURL}pms/suppliers.json?token=${token}&q[vendor_type_supplier_type_not_eq]=Importer Vendor`)
+
+      .then((response) => {
+        setServiceProviders(response.data);
+      })
+
+      .catch((error) => {
+        console.error("Error fetching service providers data:", error);
       });
   }, []);
 
@@ -755,6 +775,13 @@ const RopoImportCreate = () => {
     label: supplier.organization_name || supplier.full_name,
   }));
 
+  // Map service providers to options for the dropdown
+
+  const serviceProviderOptions = serviceProviders.map((sp) => ({
+    value: sp.id,
+
+    label: sp.organization_name || sp.full_name,
+  }));
   // Map currencies to options for the dropdown
 
   const currencyOptions = currencies.map((currency) => ({
@@ -1540,7 +1567,6 @@ const RopoImportCreate = () => {
       return 0;
     }
   };
-
   const handleScheduleDateChange = (rowIndex, value) => {
     setDeliverySchedules((prev) => {
       const list = [...prev];
@@ -2327,7 +2353,6 @@ const RopoImportCreate = () => {
       return updatedData;
     });
   };
-
   const addDeductionTaxCharge = (rowIndex) => {
     const newTaxCharge = {
       id: Date.now(),
@@ -2874,7 +2899,6 @@ const RopoImportCreate = () => {
 
     return baseAmount + additionAmount - deductionAmount;
   };
-
   const handleSaveTaxChanges = async () => {
     if (tableId !== null) {
       const currentData = taxRateData[tableId];
@@ -3653,7 +3677,6 @@ const RopoImportCreate = () => {
 
     fetchChargesTaxPercentages();
   }, []);
-
   // Fetching inventory types data from API on component mount
 
   useEffect(() => {
@@ -4450,7 +4473,6 @@ const RopoImportCreate = () => {
       return [];
     }
   };
-
   // Handle terms form input changes
 
   const handleTermsFormChange = (field, value) => {
@@ -5235,7 +5257,6 @@ const RopoImportCreate = () => {
       [chargeId]: remarks,
     }));
   };
-
   // Calculate supplier advance amount
 
   const calculateSupplierAdvanceAmount = () => {
@@ -6011,7 +6032,6 @@ const RopoImportCreate = () => {
       }));
     }
   };
-
   return (
     <>
       {/* <main className="h-100 w-100"> */}
@@ -7387,7 +7407,7 @@ const RopoImportCreate = () => {
 
                                           <td>
                                             <SingleSelector
-                                              options={supplierOptions}
+                                              options={serviceProviderOptions}
                                               value={
                                                 selectedServiceProviders[
                                                   charge.id
@@ -7433,7 +7453,6 @@ const RopoImportCreate = () => {
                                 </tbody>
                               </table>
                             </div>
-
                             <div className="tbl-container me-2 mt-3">
                               <table className="w-100">
                                 <thead>
@@ -7521,7 +7540,7 @@ const RopoImportCreate = () => {
 
                                           <td style={{ width: "200px" }}>
                                             <SingleSelector
-                                              options={supplierOptions}
+                                              options={serviceProviderOptions}
                                               value={
                                                 selectedServiceProviders[
                                                   consolidatedCharge
@@ -8454,7 +8473,6 @@ const RopoImportCreate = () => {
                               </tbody>
 
                             </table>
-
                           </div> */}
 
                             <div className="mt-3 d-flex justify-content-between align-items-center">
