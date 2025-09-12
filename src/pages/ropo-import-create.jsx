@@ -152,6 +152,28 @@ const RopoImportCreate = () => {
     material: "",
   });
 
+  // MOR list options for Add MOR modal
+  const [morOptions, setMorOptions] = useState([]);
+
+  useEffect(() => {
+    const fetchMorNumbers = async () => {
+      try {
+        const resp = await axios.get(
+          `${baseURL}pms/company_setups/get_mors.json?token=${token}&q[mor_type_eq]=import`
+        );
+        const options = (resp.data?.material_order_requests || []).map((mor) => ({
+          value: mor.id,
+          label: mor.mor_number,
+        }));
+        setMorOptions(options);
+      } catch (err) {
+        console.error("Error fetching MOR numbers:", err);
+        setMorOptions([]);
+      }
+    };
+    if (token) fetchMorNumbers();
+  }, [token]);
+
   // Terms and conditions state
 
   const [termsConditions, setTermsConditions] = useState([]);
@@ -9641,18 +9663,16 @@ const RopoImportCreate = () => {
               <div className="col-md-4 mt-0">
                 <div className="form-group">
                   <label>MOR No.</label>
-
-                  <input
-                    className="form-control"
-                    value={morFormData.morNumber}
-                    onChange={(e) =>
-                      setMorFormData((p) => ({
-                        ...p,
-
-                        morNumber: e.target.value,
+                  <SingleSelector
+                    options={morOptions}
+                    value={morOptions.find((opt) => opt.value === morFormData.morNumber) || null}
+                    placeholder="Select MOR No."
+                    onChange={(selectedOption) =>
+                      setMorFormData((prev) => ({
+                        ...prev,
+                        morNumber: selectedOption?.value || "",
                       }))
                     }
-                    placeholder="Enter MOR No"
                   />
                 </div>
               </div>

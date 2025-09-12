@@ -187,6 +187,28 @@ const RopoImportEdit = () => {
     material: "",
   });
 
+  // MOR list options for Add MOR modal (import type)
+  const [morOptions, setMorOptions] = useState([]);
+
+  useEffect(() => {
+    const fetchMorNumbers = async () => {
+      try {
+        const resp = await axios.get(
+          `${baseURL}pms/company_setups/get_mors.json?token=${token}&q[mor_type_eq]=import`
+        );
+        const options = (resp.data?.material_order_requests || []).map((mor) => ({
+          value: mor.id,
+          label: mor.mor_number,
+        }));
+        setMorOptions(options);
+      } catch (err) {
+        console.error("Error fetching MOR numbers:", err);
+        setMorOptions([]);
+      }
+    };
+    if (token) fetchMorNumbers();
+  }, [token]);
+
   // Terms and conditions state
 
   const [termsConditions, setTermsConditions] = useState([]);
@@ -699,7 +721,6 @@ const RopoImportEdit = () => {
       console.error("Error fetching edit data:", error);
     }
   };
-
   // Populate form data from API response
 
   const populateFormData = (data) => {
@@ -1467,7 +1488,6 @@ const RopoImportEdit = () => {
         });
     }
   }, [selectedInventory2, morFormData.materialType]);
-
   // Fetch inventory materials when material type changes
 
   useEffect(() => {
@@ -2136,7 +2156,6 @@ const RopoImportEdit = () => {
       setSelectedMaterialItems([]);
     }
   };
-
   const fetchMaterialDetails = async () => {
     setLoadingMaterialDetails(true);
 
@@ -2771,7 +2790,6 @@ const RopoImportEdit = () => {
       toast.error("Error adding materials. Please try again.");
     }
   };
-
   // Tax modal functions
 
   const handleOpenTaxModal = async (rowIndex) => {
@@ -3389,7 +3407,6 @@ const RopoImportEdit = () => {
   // );
 
   // In handleTaxChargeChange function, update the input validation logic
-
   const handleTaxChargeChange = useCallback(
     (rowIndex, id, field, value, type) => {
       setTaxRateData((prev) => {
@@ -3887,7 +3904,6 @@ const RopoImportEdit = () => {
       };
 
       console.log("Saving tax changes with payload:", payload);
-
       console.log("Material ID:", material.id);
 
       try {
@@ -4678,7 +4694,6 @@ const RopoImportEdit = () => {
   const handleRemove = (id) => {
     setAttachments((prev) => prev.filter((att) => att.id !== id));
   };
-
   const handleFileChange = (e, id) => {
     const file = e.target.files[0];
 
@@ -5461,7 +5476,6 @@ const RopoImportEdit = () => {
       }));
     }
   };
-
   const handleTaxChange = (type, taxId, field, value) => {
     if (type === "addition") {
       setChargeTaxes((prev) => {
@@ -6108,7 +6122,6 @@ const RopoImportEdit = () => {
 
     return taxData ? taxData.percentage : [];
   };
-
   // Handle purchase order creation
 
   const handleCreatePurchaseOrder = async () => {
@@ -10124,7 +10137,6 @@ const RopoImportEdit = () => {
       {/* Comments  modal start end */}
 
       {/* file_attchement add modal */}
-
       {/* file_attchement add modal end */}
       {/* document_attchment schedule modal */}
       {/* document_attchment schedule modal end */}
@@ -10521,17 +10533,18 @@ const RopoImportEdit = () => {
                 <div className="form-group">
                   <label>MOR No.</label>
 
-                  <input
-                    className="form-control"
-                    value={morFormData.morNumber}
-                    onChange={(e) =>
-                      setMorFormData((p) => ({
-                        ...p,
-
-                        morNumber: e.target.value,
+                  <SingleSelector
+                    options={morOptions}
+                    value={
+                      morOptions.find((opt) => opt.value === morFormData.morNumber) || null
+                    }
+                    placeholder="Select MOR No."
+                    onChange={(selectedOption) =>
+                      setMorFormData((prev) => ({
+                        ...prev,
+                        morNumber: selectedOption?.value || "",
                       }))
                     }
-                    placeholder="Enter MOR No"
                   />
                 </div>
               </div>
