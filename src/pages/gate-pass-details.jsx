@@ -81,7 +81,32 @@ const GatePassDetails = () => {
       }, 2000);
     } catch (error) {
       console.error("Error updating status:", error);
-      toast.error("Error updating status. Please try again.");
+      const getApiErrorMessage = (err) => {
+        const status = err?.response?.status;
+        const data = err?.response?.data;
+        if (typeof data === "string" && data.trim()) return data;
+        if (data?.message) return data.message;
+        if (Array.isArray(data?.errors) && data.errors.length > 0) {
+          return data.errors.join(", ");
+        }
+        if (data?.errors && typeof data.errors === "object") {
+          try {
+            const combined = Object.values(data.errors)
+              .flat()
+              .filter(Boolean)
+              .join(", ");
+            if (combined) return combined;
+          } catch (_) {}
+        }
+        if (data && typeof data === "object") {
+          try {
+            const str = JSON.stringify(data);
+            if (str && str.length <= 500) return str;
+          } catch (_) {}
+        }
+        return status ? `Request failed with status ${status}` : (err?.message || "Error updating status. Please try again.");
+      };
+      toast.error(getApiErrorMessage(error));
     }
   };
 

@@ -29,7 +29,7 @@ const handleStatusChange = (option) => {
       .then((res) => {
         setPurchaseOrderData(res.data);
          // Set initial status from API response
-       const options = res.data.status_list?.map((s) => ({
+      const options = res.data.status_list?.map((s) => ({
         label: s,
         value: s,
       })) || [];
@@ -53,6 +53,38 @@ const handleStatusChange = (option) => {
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const year = d.getFullYear();
     return `${day}-${month}-${year}`;
+  };
+
+  // Helper to extract detailed API error messages for toasts
+  const getApiErrorMessage = (error) => {
+    const status = error?.response?.status;
+    const data = error?.response?.data;
+
+    if (typeof data === "string" && data.trim()) return data;
+    if (data?.message) return data.message;
+
+    if (Array.isArray(data?.errors) && data.errors.length > 0) {
+      return data.errors.join(", ");
+    }
+
+    if (data?.errors && typeof data.errors === "object") {
+      try {
+        const combined = Object.values(data.errors)
+          .flat()
+          .filter(Boolean)
+          .join(", ");
+        if (combined) return combined;
+      } catch (_) {}
+    }
+
+    if (data && typeof data === "object") {
+      try {
+        const str = JSON.stringify(data);
+        if (str && str.length <= 500) return str;
+      } catch (_) {}
+    }
+
+    return status ? `Request failed with status ${status}` : (error?.message || "Failed to update status");
   };
 
 
@@ -93,11 +125,7 @@ const handleStatusUpdate = async () => {
 
   } catch (error) {
     console.error('Error updating status:', error);
-    toast.error(
-      error.response?.data?.message || 
-      error.message || 
-      'Failed to update status'
-    );
+    toast.error(getApiErrorMessage(error));
   } finally {
     setIsSubmitting(false);
   }

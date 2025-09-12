@@ -29,6 +29,38 @@ const RopoImportDetails = () => {
 
   const [error, setError] = useState(null);
 
+  // Helper to extract detailed API error messages for toasts
+  const getApiErrorMessage = (error) => {
+    const status = error?.response?.status;
+    const data = error?.response?.data;
+
+    if (typeof data === "string" && data.trim()) return data;
+    if (data?.message) return data.message;
+
+    if (Array.isArray(data?.errors) && data.errors.length > 0) {
+      return data.errors.join(", ");
+    }
+
+    if (data?.errors && typeof data.errors === "object") {
+      try {
+        const combined = Object.values(data.errors)
+          .flat()
+          .filter(Boolean)
+          .join(", ");
+        if (combined) return combined;
+      } catch (_) {}
+    }
+
+    if (data && typeof data === "object") {
+      try {
+        const str = JSON.stringify(data);
+        if (str && str.length <= 500) return str;
+      } catch (_) {}
+    }
+
+    return status ? `Request failed with status ${status}` : (error?.message || "Error updating status. Please try again.");
+  };
+
   // Get URL parameters
 
   const { id } = useParams();
@@ -1230,7 +1262,7 @@ const RopoImportDetails = () => {
     } catch (error) {
       console.error("Error updating status:", error);
 
-      toast.error("Error updating status. Please try again.");
+      toast.error(getApiErrorMessage(error));
     }
   };
 
@@ -1268,7 +1300,7 @@ const RopoImportDetails = () => {
 
   return (
     <>
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover />
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover containerStyle={{ zIndex: 20000 }} />
       {/* top navigation above */}
 
       {/* <div className="main-content"> */}
