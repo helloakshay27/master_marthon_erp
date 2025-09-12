@@ -8,6 +8,8 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import { Link } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import MultiSelector from "../components/base/Select/MultiSelector";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const RopoMappingCreate = () => {
   const [companyOptions, setCompanyOptions] = useState([]);
@@ -39,52 +41,9 @@ const RopoMappingCreate = () => {
     setAddMORModal(false);
   };
 
-  // const handleAddPOClick = async () => {
-  //   if (selectedMORs.length === 0 && selectedMaterials.length === 0) {
-  //     alert("Please select at least one MOR or material before adding PO");
-  //     return;
-  //   }
-
-  //   let allMaterialIds = [];
-
-  //   selectedMORs.forEach((morId) => {
-  //     const mor = morData.find((m) => m.mor_id === morId);
-  //     if (mor) {
-  //       const materialIds = mor.mor_inventories.map((inv) => inv.id);
-  //       allMaterialIds = [...allMaterialIds, ...materialIds];
-  //     }
-  //   });
-
-  //   allMaterialIds = [...allMaterialIds, ...selectedMaterials];
-  //   allMaterialIds = [...new Set(allMaterialIds)];
-
-  //   try {
-  //     const response = await axios.post(
-  //       `https://marathon.lockated.com/purchase_orders/ropo_material_matches.json?token=${token}`,
-  //       {
-  //         mor_inventory_ids: allMaterialIds,
-  //         exclude_material_inventory_ids: [],
-  //       },
-  //       { headers: { "Content-Type": "application/json" } }
-  //     );
-
-  //     // Open PO modal with response
-  //     setPoModalApiData(
-  //       Array.isArray(response.data)
-  //         ? response.data
-  //         : response.data?.matches || []
-  //     );
-  //     setPoSelectedRowKeys([]);
-  //     setAddPOModal(true);
-  //   } catch (error) {
-  //     console.error(error);
-  //     alert("Error occurred while processing the request.");
-  //   }
-  // };
-
   const handleAddPOClick = async () => {
   if (selectedMORs.length === 0 && selectedMaterials.length === 0) {
-    alert("Please select at least one MOR or material before adding PO");
+    toast.error("Please select at least one MOR or material before adding PO");
     return;
   }
 
@@ -125,7 +84,7 @@ const RopoMappingCreate = () => {
     setAddPOModal(true);
   } catch (error) {
     console.error(error);
-    alert("Error occurred while processing the request.");
+    toast.error("Error occurred while processing the request.");
   }
 };
 
@@ -530,30 +489,6 @@ const RopoMappingCreate = () => {
     }
   };
 
-  // const handleMorSelectProject = (e, morId) => {
-  //   const isChecked = e.target.checked;
-  //   const indicesForThisMor = materialDetailsData
-  //     .map((item, idx) => (item.mor_id === morId ? idx : null))
-  //     .filter((idx) => idx !== null);
-
-  //   if (isChecked) {
-  //     // Add all materials for this MOR if not already selected
-  //     const newSelected = [...selectedMaterialItems];
-  //     indicesForThisMor.forEach((idx) => {
-  //       if (!newSelected.includes(idx)) {
-  //         newSelected.push(idx);
-  //       }
-  //     });
-  //     setSelectedMaterialItems(newSelected);
-  //   } else {
-  //     // Remove all materials for this MOR
-  //     const newSelected = selectedMaterialItems.filter(
-  //       (idx) => !indicesForThisMor.includes(idx)
-  //     );
-  //     setSelectedMaterialItems(newSelected);
-  //   }
-  // };
-
   const handleMorSelectProject = (e, morId) => {
   const isChecked = e.target.checked;
 
@@ -583,7 +518,7 @@ const RopoMappingCreate = () => {
 
   const handleAcceptSelectedMaterials = () => {
     if (selectedMaterialItems.length === 0) {
-      alert("Please select at least one material item");
+      toast.error("Please select at least one material item");
       return;
     }
 
@@ -675,9 +610,9 @@ const RopoMappingCreate = () => {
 
       const totalNewMaterials = newMORs.length + updatedMORs.length;
       if (totalNewMaterials > 0) {
-        alert(`Added ${selectedMaterialItems.length} selected material(s) from Add MOR modal`);
+        toast.success(`Added ${selectedMaterialItems.length} selected material(s) from Add MOR modal`);
       } else {
-        alert("Selected materials are already present in the table");
+        toast.error("Selected materials are already present in the table");
       }
 
       return mergedData;
@@ -899,9 +834,9 @@ const RopoMappingCreate = () => {
 
         // Show alert message only if new items were added
         if (newPOItems.length > 0) {
-          alert(`Added ${newPOItems.length} new material(s) from Add PO page`);
+          toast.success(`Added ${newPOItems.length} new material(s) from Add PO page`);
     } else {
-          alert("Selected materials are already present in the table");
+          toast.error("Selected materials are already present in the table");
         }
 
         return mergedData;
@@ -1071,7 +1006,7 @@ const RopoMappingCreate = () => {
   // Delete selected MORs and materials
   const handleDeleteSelected = () => {
     if (selectedMORs.length === 0 && selectedMaterials.length === 0) {
-      alert("Please select at least one item to delete");
+      toast.error("Please select at least one item to delete");
       return;
     }
 
@@ -1132,7 +1067,7 @@ const RopoMappingCreate = () => {
       });
       setCollapsedMORs(newCollapsedState);
 
-      alert("Selected items have been deleted successfully");
+      toast.success("Selected items have been deleted successfully");
     }
   };
 
@@ -1220,7 +1155,7 @@ const handleOrderedQuantityChange = (poId, materialId, value) => {
   const availableQty = initialPendingQty - totalOrderedQty;
 
   if (numValue > availableQty) {
-    alert(`Order quantity cannot exceed pending quantity (${availableQty.toFixed(2)})`);
+    toast.error(`Order quantity cannot exceed pending quantity (${availableQty.toFixed(2)})`);
     return;
   }
 
@@ -1270,7 +1205,7 @@ useEffect(() => {
       });
       
       if (missingQuantities.length > 0) {
-        alert(`Please enter order quantities for the following materials:\n${missingQuantities.join('\n')}`);
+        toast.error(`Please enter order quantities for the following materials:\n${missingQuantities.join('\n')}`);
         return;
       }
     }
@@ -1290,7 +1225,7 @@ useEffect(() => {
       });
       
       if (missingQuantities.length > 0) {
-        alert(`Please enter order quantities for the following materials:\n${missingQuantities.join('\n')}`);
+        toast.error(`Please enter order quantities for the following materials:\n${missingQuantities.join('\n')}`);
         return;
       }
     }
@@ -1387,7 +1322,10 @@ useEffect(() => {
 
       console.log("ROPO mapping response:", response.data);
 
-      alert("ROPO mapping submitted successfully!");
+      toast.success("ROPO mapping submitted successfully!", {
+        autoClose: 1500,
+        onClose: () => navigate(`/ropo-mapping-list?token=${token}`),
+      });
 
       // Clear all data after successful submission
       // clearAllData();
@@ -1397,10 +1335,10 @@ useEffect(() => {
       setMappingDate(new Date().toISOString().split("T")[0]);
       setRemarks("");
       setStatus("draft");
-       navigate(`/ropo-mapping-list?token=${token}`);
+      
     } catch (error) {
       console.error("Error submitting ROPO mapping:", error);
-      alert(
+      toast.error(
         `Error submitting ROPO mapping: ${
           error.response?.data?.message || error.message
         }`
@@ -1607,7 +1545,7 @@ setPoModalApiData(
 
   const handlePoModalSubmit = () => {
     if (poSelectedRowKeys.length === 0) {
-      alert("Please select at least one material before submitting");
+      toast.error("Please select at least one material before submitting");
       return;
     }
     const selectedData = poModalApiData.filter((item) =>
@@ -1630,14 +1568,14 @@ setPoModalApiData(
     );
     const duplicateCount = selectedData.length - newItems.length;
     if (newItems.length === 0) {
-      alert("Selected materials are already present in the table");
+      toast.error("Selected materials are already present in the table");
       return;
     }
     setPoData((prev) => [...prev, ...newItems]);
-    alert(
-      `Added ${newItems.length} new material(s)${
-        duplicateCount > 0 ? `, ${duplicateCount} duplicate(s) skipped` : ""
-      } from Add PO modal`
+    toast.success(
+      `Added ${newItems.length} new material(s)`+
+        (duplicateCount > 0 ? `, ${duplicateCount} duplicate(s) skipped` : "")+
+        " from Add PO modal"
     );
     setAddPOModal(false);
   };
@@ -1796,6 +1734,7 @@ setPoModalApiData(
 
   return (
     <div>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover containerStyle={{ zIndex: 20000 }} />
       <style>
         {`
           .table-primary {

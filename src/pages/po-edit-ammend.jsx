@@ -8,6 +8,8 @@ import DownloadIcon from "../components/common/Icon/DownloadIcon";
 import { baseURL } from "../confi/apiDomain";
 import { useParams, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const PoEditAmmend = () => {
   // State variables for the modal
@@ -740,17 +742,7 @@ const formatDateTime = (dateString) => {
     if (isDuplicate) {
       const duplicateMsg =
         "Duplicate material entry with same Type, Sub-Type, Material, UOM, Brand, Colour and Specification is not allowed.";
-      setFieldErrors((prev) => ({
-        ...prev,
-        // materialType: duplicateMsg,
-        // materialSubType: duplicateMsg,
-        // material: duplicateMsg,
-        // uom: duplicateMsg,
-        // brand: duplicateMsg,
-        // colour: duplicateMsg,
-        // genericSpecification: duplicateMsg,
-      }));
-      alert(duplicateMsg);
+      toast.error(duplicateMsg);
       return;
     }
 
@@ -929,8 +921,7 @@ const formatDateTime = (dateString) => {
     // Simple test alert
 
     if (!selectedCompany) {
-      console.log("No company selected");
-      alert("Please select a company.");
+      toast.error("Please select a company.");
       return;
     }
 
@@ -938,8 +929,7 @@ const formatDateTime = (dateString) => {
     const activeRows = tableData.filter((row) => !row._destroy);
 
     if (activeRows.length === 0) {
-      console.log("No materials in table");
-      alert("Please add at least one material before submitting.");
+      toast.error("Please add at least one material before submitting.");
       return;
     }
 
@@ -947,8 +937,7 @@ const formatDateTime = (dateString) => {
     const missingMaterial = activeRows.some((row) => !row.material);
     console.log("missingMaterial:", missingMaterial);
     if (missingMaterial) {
-      console.log("Some rows missing material");
-      alert("Please select a material for all rows before submitting.");
+      toast.error("Please select a material for all rows before submitting.");
       return;
     }
 
@@ -1044,20 +1033,23 @@ const formatDateTime = (dateString) => {
           );
         }
 
-        alert("Materials submitted successfully!");
-        // Refresh page data and then change tab to Rate & Taxes
-        await refetchPurchaseOrderData();
-        setActiveTab("rate-taxes");
-        const rateTaxesTab = document.querySelector(
-          '[data-bs-target="#Domestic2"]'
-        );
-        if (rateTaxesTab) {
-          rateTaxesTab.click();
-        }
+        toast.success("Materials submitted successfully!", {
+          autoClose: 1500,
+          onClose: () => {
+            refetchPurchaseOrderData();
+            setActiveTab("rate-taxes");
+            const rateTaxesTab = document.querySelector(
+              '[data-bs-target="#Domestic2"]'
+            );
+            if (rateTaxesTab) {
+              rateTaxesTab.click();
+            }
+          },
+        });
       }
     } catch (error) {
       console.error("Error submitting materials:", error);
-      alert("Error submitting materials. Please try again.");
+      toast.error("Error submitting materials. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -1667,37 +1659,41 @@ const formatDateTime = (dateString) => {
           }));
           
 
-          alert("Tax changes saved successfully!");
-          // Reflect saved values into Rate & Taxes table row
-          try {
-            const mappedValues = {
-              material_rate: responseData.rate_per_nos ?? "",
-              discount_percentage: responseData.discount_per ?? "",
-              discount_rate: responseData.discount_rate ?? "",
-              material_cost: responseData.material_cost ?? "",
-              after_discount_value: responseData.after_discount_value ?? "",
-              total_base_cost: responseData.tax_applicable_cost ?? "",
-              all_inclusive_cost: responseData.total_material_cost ?? "",
-            };
+          toast.success("Tax changes saved successfully!", {
+            autoClose: 1500,
+            onClose: () => {
+              // Reflect saved values into Rate & Taxes table row
+              try {
+                const mappedValues = {
+                  material_rate: responseData.rate_per_nos ?? "",
+                  discount_percentage: responseData.discount_per ?? "",
+                  discount_rate: responseData.discount_rate ?? "",
+                  material_cost: responseData.material_cost ?? "",
+                  after_discount_value: responseData.after_discount_value ?? "",
+                  total_base_cost: responseData.tax_applicable_cost ?? "",
+                  all_inclusive_cost: responseData.total_material_cost ?? "",
+                };
 
-            const rateLen = Array.isArray(rateAndTaxes) ? rateAndTaxes.length : 0;
-            if (tableId < rateLen) {
-              setRateAndTaxes((prev) =>
-                prev.map((item, idx) => (idx === tableId ? { ...item, ...mappedValues } : item))
-              );
-            } else {
-              const submittedIndex = tableId - rateLen;
-              setSubmittedMaterials((prev) =>
-                prev.map((m, idx) => (idx === submittedIndex ? { ...m, ...mappedValues } : m))
-              );
-            }
-          } catch (e) {
-            console.error("Error updating Rate & Taxes row:", e);
-          }
+                const rateLen = Array.isArray(rateAndTaxes) ? rateAndTaxes.length : 0;
+                if (tableId < rateLen) {
+                  setRateAndTaxes((prev) =>
+                    prev.map((item, idx) => (idx === tableId ? { ...item, ...mappedValues } : item))
+                  );
+                } else {
+                  const submittedIndex = tableId - rateLen;
+                  setSubmittedMaterials((prev) =>
+                    prev.map((m, idx) => (idx === submittedIndex ? { ...m, ...mappedValues } : m))
+                  );
+                }
+              } catch (e) {
+                console.error("Error updating Rate & Taxes row:", e);
+              }
+            },
+          });
         }
       } catch (error) {
         console.error("Error saving tax changes:", error);
-        alert("Error saving tax changes. Please try again.");
+        toast.error("Error saving tax changes. Please try again.");
       }
     }
     handleCloseTaxModal();
@@ -2892,13 +2888,13 @@ const formatDateTime = (dateString) => {
 
       // Validate required fields
       if (!selectedCompany?.value) {
-        alert("Please select a company.");
+        toast.error("Please select a company.");
         setIsUpdatingOrder(false);
         return;
       }
 
       if (!selectedSupplier?.value) {
-        alert("Please select a supplier.");
+        toast.error("Please select a supplier.");
         setIsUpdatingOrder(false);
         return;
       }
@@ -3241,14 +3237,13 @@ const formatDateTime = (dateString) => {
       );
 
       console.log("Purchase order updated successfully:", response.data);
-      alert("Purchase order updated successfully!");
-        navigate(`/po-list?token=${token}`);
-
-      // Optionally redirect to PO list after successful update
-      // window.location.href = '/po-list'; // Uncomment to redirect
+      toast.success("Purchase order updated successfully!", {
+        autoClose: 1500,
+        onClose: () => navigate(`/po-list?token=${token}`),
+      });
     } catch (error) {
       console.error("Error updating purchase order:", error);
-      alert("Error updating purchase order. Please try again.");
+      toast.error("Error updating purchase order. Please try again.");
     } finally {
       setIsUpdatingOrder(false);
     }
@@ -3340,6 +3335,7 @@ const formatDateTime = (dateString) => {
 
   return (
     <>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover containerStyle={{ zIndex: 20000 }} />
       {/* <main className="h-100 w-100"> */}
 
       {/* Loading state */}
@@ -6328,9 +6324,9 @@ const formatDateTime = (dateString) => {
               if (
                 !taxRateData[tableId] ||
                 !taxRateData[tableId].ratePerNos ||
-                taxRateData[tableId].ratePerNos.trim() === ""
+                String(taxRateData[tableId].ratePerNos).trim() === ""
               ) {
-                alert("Rate per Nos is required.");
+                toast.error("Rate per Nos is required.");
                 return;
               }
               handleSaveTaxChanges();

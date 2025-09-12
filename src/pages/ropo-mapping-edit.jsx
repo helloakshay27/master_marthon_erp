@@ -8,6 +8,8 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import MultiSelector from "../components/base/Select/MultiSelector";
 import { Link } from "react-router-dom";
 import { useNavigate, useLocation,useParams } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const RopoMappingEdit = () => {
    const { id } = useParams();
@@ -86,7 +88,7 @@ const RopoMappingEdit = () => {
 
   const handleAddPOClick = async () => {
   if (selectedMORs.length === 0 && selectedMaterials.length === 0) {
-    alert("Please select at least one MOR or material before adding PO");
+    toast.error("Please select at least one MOR or material before adding PO");
     return;
   }
 
@@ -127,7 +129,7 @@ const RopoMappingEdit = () => {
     setAddPOModal(true);
   } catch (error) {
     console.error(error);
-    alert("Error occurred while processing the request.");
+    toast.error("Error occurred while processing the request.");
   }
 };
 
@@ -705,7 +707,7 @@ if (companyOption) {
 
   const handleAcceptSelectedMaterials = () => {
     if (selectedMaterialItems.length === 0) {
-      alert("Please select at least one material item");
+      toast.error("Please select at least one material item");
       return;
     }
 
@@ -745,7 +747,7 @@ if (companyOption) {
       existingInventoryIds.has(id)
     );
     if (duplicateInventoryIds.length > 0) {
-      alert("Selected MOR(s) already present");
+      toast.error("Selected MOR(s) already present");
       return;
     }
 
@@ -812,9 +814,9 @@ if (companyOption) {
 
       const totalNewMaterials = newMORs.length + updatedMORs.length;
       if (totalNewMaterials > 0) {
-        alert(`Added ${selectedMaterialItems.length} selected material(s) from Add MOR modal`);
+        toast.success(`Added ${selectedMaterialItems.length} selected material(s) from Add MOR modal`);
       } else {
-        alert("Selected materials are already present in the table");
+        toast.error("Selected materials are already present in the table");
       }
 
       return mergedData;
@@ -1034,9 +1036,9 @@ if (companyOption) {
 
         // Show alert message only if new items were added
         if (newPOItems.length > 0) {
-          alert(`Added ${newPOItems.length} new material(s) from Add PO page`);
+          toast.success(`Added ${newPOItems.length} new material(s) from Add PO page`);
     } else {
-          alert("Selected materials are already present in the table");
+          toast.error("Selected materials are already present in the table");
         }
 
         return mergedData;
@@ -1206,7 +1208,7 @@ if (companyOption) {
   // Delete selected MORs and materials
   const handleDeleteSelected = () => {
     if (selectedMORs.length === 0 && selectedMaterials.length === 0) {
-      alert("Please select at least one item to delete");
+      toast.error("Please select at least one item to delete");
       return;
     }
 
@@ -1267,7 +1269,7 @@ if (companyOption) {
       });
       setCollapsedMORs(newCollapsedState);
 
-      alert("Selected items have been deleted successfully");
+      toast.success("Selected items have been deleted successfully");
     }
   };
 
@@ -1395,7 +1397,7 @@ const [remainingQuantities, setRemainingQuantities] = useState({});
 
     const availableQty = computeAvailableQty(poId, materialId);
     if (safeValue > availableQty) {
-      alert(`Order quantity cannot exceed pending quantity (${availableQty.toFixed(2)})`);
+      toast.error(`Order quantity cannot exceed pending quantity (${availableQty.toFixed(2)})`);
       return;
     }
 
@@ -1557,7 +1559,10 @@ const [remainingQuantities, setRemainingQuantities] = useState({});
 
       console.log("ROPO mapping response:", response.data);
 
-      alert("ROPO mapping submitted successfully!");
+      toast.success("ROPO mapping submitted successfully!", {
+        autoClose: 1500,
+        onClose: () => navigate(`/ropo-mapping-list?token=${token}`),
+      });
 
       // Clear all data after successful submission
       // clearAllData();
@@ -1567,10 +1572,10 @@ const [remainingQuantities, setRemainingQuantities] = useState({});
       setMappingDate(new Date().toISOString().split("T")[0]);
       setRemarks("");
       setStatus("draft");
-       navigate(`/ropo-mapping-list?token=${token}`);
+      
     } catch (error) {
       console.error("Error submitting ROPO mapping:", error);
-      alert(
+      toast.error(
         `Error submitting ROPO mapping: ${
           error.response?.data?.message || error.message
         }`
@@ -1777,7 +1782,7 @@ setPoModalApiData(
 
   const handlePoModalSubmit = () => {
     if (poSelectedRowKeys.length === 0) {
-      alert("Please select at least one material before submitting");
+      toast.error("Please select at least one material before submitting");
       return;
     }
     const selectedData = poModalApiData.filter((item) =>
@@ -1800,14 +1805,14 @@ setPoModalApiData(
     );
     const duplicateCount = selectedData.length - newItems.length;
     if (newItems.length === 0) {
-      alert("Selected materials are already present in the table");
+      toast.error("Selected materials are already present in the table");
       return;
     }
     setPoData((prev) => [...prev, ...newItems]);
-    alert(
-      `Added ${newItems.length} new material(s)${
-        duplicateCount > 0 ? `, ${duplicateCount} duplicate(s) skipped` : ""
-      } from Add PO modal`
+    toast.success(
+      `Added ${newItems.length} new material(s)`+
+        (duplicateCount > 0 ? `, ${duplicateCount} duplicate(s) skipped` : "")+
+        " from Add PO modal"
     );
     setAddPOModal(false);
   };
@@ -1966,6 +1971,7 @@ setPoModalApiData(
 
   return (
     <div>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover containerStyle={{ zIndex: 20000 }} />
       <style>
         {`
           .table-primary {

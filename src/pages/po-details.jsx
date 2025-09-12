@@ -8,6 +8,8 @@ import DownloadIcon from "../components/common/Icon/DownloadIcon";
 import { baseURL } from "../confi/apiDomain";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const PoDetails = () => {
   // State variables for the modal
@@ -1899,13 +1901,13 @@ const PoDetails = () => {
       );
 
       console.log("Status update successful:", response.data);
-      alert("Status updated successfully!");
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      toast.success("Status updated successfully!", {
+        autoClose: 1500,
+        onClose: () => window.location.reload(),
+      });
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Error updating status. Please try again.");
+      toast.error("Error updating status. Please try again.");
     }
   };
 
@@ -1919,6 +1921,7 @@ const PoDetails = () => {
 
   return (
     <>
+      <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover containerStyle={{ zIndex: 20000 }} />
       {/* <main className="h-100 w-100"> */}
 
       {/* Loading state */}

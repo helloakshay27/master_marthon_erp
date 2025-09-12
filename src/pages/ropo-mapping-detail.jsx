@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import Modal from "react-bootstrap/Modal";
 import SingleSelector from "../components/base/Select/SingleSelector";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const RopoMappingDetail = () => {
   const { id } = useParams();
@@ -60,7 +62,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
 
 const handleStatusUpdate = async () => {
   if (!selectedStatus) {
-    alert('Please select a status');
+    toast.error('Please select a status');
     return;
   }
 
@@ -81,15 +83,17 @@ const handleStatusUpdate = async () => {
 
     // Check if response status is 200 or if we have data
     if (response.status === 200 || response.data) {
-      alert('Status updated successfully');
-      window.location.reload();
+      toast.success('Status updated successfully', {
+        autoClose: 1500,
+        onClose: () => window.location.reload(),
+      });
     } else {
       throw new Error('Update failed');
     }
 
   } catch (error) {
     console.error('Error updating status:', error);
-    alert(
+    toast.error(
       error.response?.data?.message || 
       error.message || 
       'Failed to update status'
@@ -110,6 +114,7 @@ const handleStatusUpdate = async () => {
 
   return (
     <div>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover containerStyle={{ zIndex: 20000 }} />
       <main className="h-100 w-100">
         <div className="main-content">
           <div className="website-content container-fluid">

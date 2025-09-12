@@ -6,6 +6,8 @@ import MultiSelector from "../components/base/Select/MultiSelector";
 import SelectBox from "../components/base/Select/SelectBox";
 import { baseURL } from "../confi/apiDomain";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const PoCreate = () => {
   // State variables for the modal
@@ -311,7 +313,7 @@ const PoCreate = () => {
         // colour: duplicateMsg,
         // genericSpecification: duplicateMsg,
       }));
-      alert(duplicateMsg);
+      toast.error(duplicateMsg);
       return;
     }
 
@@ -422,7 +424,7 @@ const PoCreate = () => {
 
     if (!selectedCompany) {
       console.log("No company selected");
-      alert("Please select a company.");
+      toast.error("Please select a company.");
       return;
     }
 
@@ -431,7 +433,7 @@ const PoCreate = () => {
 
     if (activeRows.length === 0) {
       console.log("No materials in table");
-      alert("Please add at least one material before submitting.");
+      toast.error("Please add at least one material before submitting.");
       return;
     }
 
@@ -452,7 +454,7 @@ const PoCreate = () => {
     console.log("missingMaterial:", missingMaterial);
     if (missingMaterial) {
       console.log("Some rows missing material");
-      alert("Please select a material for all rows before submitting.");
+      toast.error("Please select a material for all rows before submitting.");
       return;
     }
 
@@ -514,7 +516,7 @@ const PoCreate = () => {
           );
         }
 
-        alert("Materials submitted successfully!");
+        toast.success("Materials submitted successfully!");
         // Change tab to Rate & Taxes
         setActiveTab("rate-taxes");
         const rateTaxesTab = document.querySelector(
@@ -526,7 +528,7 @@ const PoCreate = () => {
       }
     } catch (error) {
       console.error("Error submitting materials:", error);
-      alert("Error submitting materials. Please try again.");
+      toast.error("Error submitting materials. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -1252,11 +1254,11 @@ const PoCreate = () => {
             prev.map((m, idx) => (idx === tableId ? { ...m, ...mappedValues } : m))
           );
 
-          alert("Tax changes saved successfully!");
+          toast.success("Tax changes saved successfully!");
         }
       } catch (error) {
         console.error("Error saving tax changes:", error);
-        alert("Error saving tax changes. Please try again.");
+        toast.error("Error saving tax changes. Please try again.");
       }
     }
     handleCloseTaxModal();
@@ -2284,13 +2286,13 @@ const PoCreate = () => {
 
       // Validate required fields
       if (!selectedCompany?.value) {
-        alert("Please select a company.");
+        toast.error("Please select a company.");
         setIsCreatingOrder(false);
         return;
       }
 
       if (!selectedSupplier?.value) {
-        alert("Please select a supplier.");
+        toast.error("Please select a supplier.");
         setIsCreatingOrder(false);
         return;
       }
@@ -2483,14 +2485,16 @@ const PoCreate = () => {
       );
 
       console.log("Purchase order created successfully:", response.data);
-      alert("Purchase order created successfully!");
-      navigate(`/po-list?token=${token}`);
+      toast.success("Purchase order created successfully!", {
+        autoClose: 1500,
+        onClose: () => navigate(`/po-list?token=${token}`),
+      });
 
       // Optionally redirect or clear form
       // window.location.href = '/po-list'; // Redirect to PO list
     } catch (error) {
       console.error("Error creating purchase order:", error);
-      alert("Error creating purchase order. Please try again.");
+      toast.error("Error creating purchase order. Please try again.");
     } finally {
       setIsCreatingOrder(false);
     }
@@ -2500,6 +2504,7 @@ const PoCreate = () => {
 
   return (
     <>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover containerStyle={{ zIndex: 20000 }} />
       {/* <main className="h-100 w-100"> */}
 
       {/* top navigation above */}
@@ -3693,6 +3698,7 @@ const PoCreate = () => {
                                       type="number"
                                       min={0}
                                       placeholder={0}
+                                      
                                     />
                                   </div>
                                 </div>
@@ -5413,13 +5419,12 @@ const PoCreate = () => {
           <button
             variant="primary"
             onClick={() => {
-              // Validation: Show alert if Rate per Nos is empty
-              if (
-                !taxRateData[tableId] ||
-                !taxRateData[tableId].ratePerNos ||
-                taxRateData[tableId].ratePerNos.trim() === ""
-              ) {
-                alert("Rate per Nos is required.");
+              // Validation: Show toast if Rate per Nos is empty/invalid
+              const data = taxRateData[tableId];
+              const val = data?.ratePerNos;
+              const str = typeof val === "number" ? String(val) : (val || "");
+              if (!str || str.trim() === "") {
+                toast.error("Rate per Nos is required.");
                 return;
               }
               handleSaveTaxChanges();
