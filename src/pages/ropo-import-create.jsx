@@ -794,7 +794,6 @@ const RopoImportCreate = () => {
 
     label: company.company_name,
   }));
-
   // Map suppliers to options for the dropdown
 
   const supplierOptions = suppliers.map((supplier) => ({
@@ -5290,14 +5289,8 @@ const RopoImportCreate = () => {
   const calculateSupplierAdvanceAmount = () => {
     const percentage = parseFloat(supplierAdvancePercentage) || 0;
 
-    // Base should be addition of all materials' after_discount_value (USD)
-
-    const baseUsd = submittedMaterials.reduce((sum, _mat, idx) => {
-      const afterDiscountValue =
-        parseFloat(taxRateData[idx]?.afterDiscountValue) || 0;
-
-      return sum + afterDiscountValue;
-    }, 0);
+    // Base should be Total Payable To Supplier (USD)
+    const baseUsd = parseFloat(calculatePayableToSupplier() || 0);
 
     const amount = (baseUsd * percentage) / 100;
 
@@ -5335,6 +5328,44 @@ const RopoImportCreate = () => {
 
       return sum + discount;
     }, 0);
+  };
+
+  // Sum of Other Cost net cost where scope is By Vendor
+  const calculateOtherVendorNetCost = () => {
+    try {
+      return (otherCosts || [])
+        .filter((c) => (c?.scope || "").toLowerCase() === "by vendor")
+        .reduce((sum, c) => {
+          const net = parseFloat(c?.taxes?.netCost ?? c?.realised_amount ?? c?.amount) || 0;
+          return sum + net;
+        }, 0);
+    } catch {
+      return 0;
+    }
+  };
+
+  // Total deduction taxes across materials (non-inclusive)
+  const calculateTotalMaterialDeductionTaxes = () => {
+    try {
+      const indices = Object.keys(taxRateData || {});
+      return indices.reduce((outerSum, idx) => {
+        const list = taxRateData[idx]?.deduction_bid_material_tax_details || [];
+        const rowSum = list
+          .filter((t) => !t?._destroy && !t?.inclusive)
+          .reduce((sum, t) => sum + (parseFloat(t?.amount) || 0), 0);
+        return outerSum + rowSum;
+      }, 0);
+    } catch {
+      return 0;
+    }
+  };
+
+  // Final payable to supplier = total discount + other vendor net - material deduction taxes
+  const calculatePayableToSupplier = () => {
+    const totalDiscount = parseFloat(calculateTotalDiscountAmount() || 0);
+    const otherVendorNet = parseFloat(calculateOtherVendorNetCost() || 0);
+    const totalDeductionTaxes = parseFloat(calculateTotalMaterialDeductionTaxes() || 0);
+    return totalDiscount + otherVendorNet - totalDeductionTaxes;
   };
 
   // Handle supplier advance percentage change
@@ -5614,12 +5645,7 @@ const RopoImportCreate = () => {
 
           // Payables
 
-          payable_to_supplier: submittedMaterials.reduce((sum, _mat, idx) => {
-            const materialCost =
-              parseFloat(taxRateData[idx]?.materialCost) || 0;
-
-            return sum + materialCost;
-          }, 0),
+          payable_to_supplier: parseFloat(calculatePayableToSupplier() || 0),
 
           // payable_to_service_provider:
           //   parseFloat(
@@ -5971,7 +5997,7 @@ const RopoImportCreate = () => {
     }
   };
 
-  // ...existing code...
+  // ...rest of the code...
 
   // Currency helpers for modal
 
@@ -6048,7 +6074,6 @@ const RopoImportCreate = () => {
 
     return Math.max(0, base - tax);
   };
-
   const [serviceCertAdvancePercentByRow, setServiceCertAdvancePercentByRow] =
     useState({});
 
@@ -8421,12 +8446,12 @@ const RopoImportCreate = () => {
                                   </div>
 
                                 </div> */}
-                                {/* <div className="col-md-6 mt-2">
+                                <div className="col-md-6 mt-2">
                                   <div className="form-group">
 
                                     <label className="po-fontBold">
 
-                                      Service Certificate Advance Amount
+                                      Total Payable To Suplier
 
                                     </label>
 
@@ -8436,17 +8461,14 @@ const RopoImportCreate = () => {
 
                                       type="text"
 
-                                      value={`${poCurrencyCode} ${calculateServiceCertificateAdvanceAmount().toFixed(
-
-                                        2
-
-                                      )} (INR ${convertUsdToInr(
-
-                                        calculateServiceCertificateAdvanceAmount(),
-
-                                        conversionRate
-
-                                      )})`}
+                                      value={`${poCurrencyCode} ${(
+                                        parseFloat(calculatePayableToSupplier() || 0)
+                                      ).toFixed(2)} (INR ${Number(
+                                        safeConvertUsdToInr(
+                                          parseFloat(calculatePayableToSupplier() || 0),
+                                          conversionRate
+                                        ) || 0
+                                      ).toFixed(2)})`}
 
                                       disabled
 
@@ -8454,7 +8476,7 @@ const RopoImportCreate = () => {
 
                                   </div>
 
-                                </div> */}
+                                </div> 
                               </div>
                             </div>
 
