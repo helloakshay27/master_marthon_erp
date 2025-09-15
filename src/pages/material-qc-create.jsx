@@ -441,7 +441,7 @@ const MaterialQCCreate = () => {
                                                                 />
                                                             </div>
                                                         </div>
-                                                        <div className="col-md-4 mt-2">
+                                                        {/* <div className="col-md-4 mt-2">
                                                             <div className="form-group">
                                                                 <label>Project</label>
                                                                 <input
@@ -453,8 +453,8 @@ const MaterialQCCreate = () => {
 
                                                                 />
                                                             </div>
-                                                        </div>
-                                                        <div className="col-md-4 mt-2">
+                                                        </div> */}
+                                                        {/* <div className="col-md-4 mt-2">
                                                             <div className="form-group">
                                                                 <label>Sub-Project</label>
                                                                 <input
@@ -466,7 +466,7 @@ const MaterialQCCreate = () => {
 
                                                                 />
                                                             </div>
-                                                        </div>
+                                                        </div> */}
                                                         <div className="col-md-4 mt-2">
                                                             <div className="form-group">
                                                                 <label>Store</label>

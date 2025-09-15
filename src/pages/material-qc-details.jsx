@@ -443,7 +443,7 @@ const MaterialQCDetails = () => {
                                                                 <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>Material</label></div>
                                                             </div>
 
-                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                                            {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                                                                 <div className="col-6"><label>Project</label></div>
                                                                 <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>Nexzone - Phase II</label></div>
                                                             </div>
@@ -451,7 +451,7 @@ const MaterialQCDetails = () => {
                                                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                                                                 <div className="col-6"><label>Sub Project</label></div>
                                                                 <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>Nexzone - Phase II</label></div>
-                                                            </div>
+                                                            </div> */}
 
                                                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                                                                 <div className="col-6"><label>Inspection ID</label></div>
