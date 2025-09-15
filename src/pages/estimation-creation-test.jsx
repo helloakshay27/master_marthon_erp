@@ -30,6 +30,7 @@ const EstimationCreationTest = () => {
     const [selectedWing, setSelectedWing] = useState(null);
     const [siteOptions, setSiteOptions] = useState([]);
     const [wingsOptions, setWingsOptions] = useState([]);
+     const [loading, setLoading] = useState(false); // Add loading state
     const handleAddModalRow = () => setModalRows([...modalRows, {/* default row object */ }]);
     const handleRemoveModalRow = idx => setModalRows(modalRows.filter((_, i) => i !== idx));
 
@@ -2018,6 +2019,8 @@ const EstimationCreationTest = () => {
             return;
         }
 
+        setLoading(true);
+
         try {
             const payload = {
                 company_id: selectedCompany?.value,
@@ -2040,8 +2043,9 @@ const EstimationCreationTest = () => {
 
 
             if (response.status === 201) {
-                alert("Estimation details submitted successfully!");
+                // alert("Estimation details submitted successfully!");
                 console.log("Success:", response.data);
+                 setLoading(false);
                 navigate(
                     "/estimation-creation-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
                 );
@@ -2050,9 +2054,12 @@ const EstimationCreationTest = () => {
             }
             // Optional: show toast or reset form
         } catch (error) {
+             setLoading(false);
             console.error("Error submitting estimation details:", error);
             // Optional: show error message
-        }
+        } finally {
+                setLoading(false); // Always executed
+            };
     };
 
 
@@ -6838,6 +6845,21 @@ const EstimationCreationTest = () => {
 
                 </div>
             </div>
+ {loading && (
+                <div className="loader-container">
+                    <div className="lds-ring">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <p>loading...</p>
+                </div>
+            )}
 
 
 
@@ -7013,6 +7035,7 @@ const EstimationCreationTest = () => {
             </Modal>
             <ToastContainer />
 
+            
         </>
     );
 };

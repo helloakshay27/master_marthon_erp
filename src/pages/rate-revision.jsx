@@ -1202,7 +1202,7 @@ const RateRevision = () => {
                             <button className="purple-btn2 w-100" onClick={handleSubmit}>Update</button>
                         </div>
                         <div className="col-md-2">
-                            <button className="purple-btn1 w-100" onClick={() => navigate(`/details-rate/${rateDetails?.parent_id}?token=${token}`)}>Cancle</button>
+                            <button className="purple-btn1 w-100" onClick={() => navigate(`/details-rate/${rateDetails?.parent_id}?token=${token}`)}>Cancel</button>
                         </div>
                     </div>
                 </div>

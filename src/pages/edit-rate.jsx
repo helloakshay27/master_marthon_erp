@@ -1318,7 +1318,7 @@ const EditRate = () => {
                             <button className="purple-btn2 w-100" onClick={handleSubmit}>Update</button>
                         </div>
                         <div className="col-md-2">
-                            <button className="purple-btn1 w-100" onClick={() => navigate(`/view-rate?token=${token}`)}>Cancle</button>
+                            <button className="purple-btn1 w-100" onClick={() => navigate(`/view-rate?token=${token}`)}> Cancel</button>
                         </div>
                     </div>
                 </div>

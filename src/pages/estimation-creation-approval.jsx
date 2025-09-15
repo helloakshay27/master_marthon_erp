@@ -2474,6 +2474,58 @@ const EstimationCreationApproval = () => {
 
                         <div className="details_page mt-5 mb-5 mx-3">
                             <div className="row px-3">
+                                 <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                                        <div className="col-6">
+                                                            <label>Company</label>
+                                                        </div>
+                                                        <div className="col-6">
+                                                            <label className="text">
+                                                                <span className="me-3">
+                                                                    <span className="text-dark">:</span>
+                                                                </span>
+                                                                {subProjectDetails?.company_name || "-"}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                                        <div className="col-6">
+                                                            <label>Project</label>
+                                                        </div>
+                                                        <div className="col-6">
+                                                            <label className="text">
+                                                                <span className="me-3">
+                                                                    <span className="text-dark">:</span>
+                                                                </span>
+                                                                {subProjectDetails?.project_name || "-"}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                                        <div className="col-6">
+                                                            <label>Sub-Project</label>
+                                                        </div>
+                                                        <div className="col-6">
+                                                            <label className="text">
+                                                                <span className="me-3">
+                                                                    <span className="text-dark">:</span>
+                                                                </span>
+                                                                {subProjectDetails?.sub_project_name || "-"}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                                        <div className="col-6">
+                                                            <label>Wing</label>
+                                                        </div>
+                                                        <div className="col-6">
+                                                            <label className="text">
+                                                                <span className="me-3">
+                                                                    <span className="text-dark">:</span>
+                                                                </span>
+                                                                {subProjectDetails?.wing_name || "-"}
+                                                            </label>
+                                                        </div>
+                                                    </div>
                                 <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                                     <div className="col-6">
                                         <label>RERA Area</label>
@@ -2483,7 +2535,7 @@ const EstimationCreationApproval = () => {
                                             <span className="me-3">
                                                 <span className="text-dark">:</span>
                                             </span>
-                                            {subProjectDetails?.rera_area || ""}
+                                            {subProjectDetails?.rera_area || "-"}
                                         </label>
                                     </div>
                                 </div>
