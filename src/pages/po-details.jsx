@@ -2453,7 +2453,7 @@ const PoDetails = () => {
                                         {/* <th>MOR No.</th> */}
                                         <th>Material</th>
                                         <th>UOM</th>
-                                        <th>Mor Qty</th>
+                                        <th>MOR Qty</th>
                                         <th>PO Order Qty</th>
                                         <th>GRN Qty</th>
                                       </tr>

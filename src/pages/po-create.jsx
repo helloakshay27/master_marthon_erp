@@ -76,6 +76,7 @@ const PoCreate = () => {
   // Loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [loading2, setLoading2] = useState(false);
 
   // Active tab state
   const [activeTab, setActiveTab] = useState("po-details"); // "po-details", "rate-taxes", "terms-conditions"
@@ -2283,6 +2284,7 @@ const PoCreate = () => {
   const handleCreatePurchaseOrder = async () => {
     try {
       setIsCreatingOrder(true);
+      setLoading2(true);
 
       // Validate required fields
       if (!selectedCompany?.value) {
@@ -2497,6 +2499,7 @@ const PoCreate = () => {
       toast.error("Error creating purchase order. Please try again.");
     } finally {
       setIsCreatingOrder(false);
+      setLoading2(false);
     }
   };
 
@@ -2504,6 +2507,22 @@ const PoCreate = () => {
 
   return (
     <>
+      {loading2 && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>Submitting...</p>
+        </div>
+      )}
+
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover containerStyle={{ zIndex: 20000 }} />
       {/* <main className="h-100 w-100"> */}
 

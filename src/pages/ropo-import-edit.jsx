@@ -13,6 +13,7 @@ const RopoImportEdit = () => {
   // State variables for the modal
 
   const [showModal, setShowModal] = useState(false);
+   const [loading, setLoading] = useState(false);
   const [exchangeRate, setExchangeRate] = useState();
   const [addMORModal, setAddMORModal] = useState(false);
   const [editRowIndex, setEditRowIndex] = useState(null);
@@ -6189,6 +6190,7 @@ const RopoImportEdit = () => {
         toast.error("Please select a company.");
 
         setIsCreatingOrder(false);
+        setLoading(false);
 
         return;
       }
@@ -6197,6 +6199,7 @@ const RopoImportEdit = () => {
         toast.error("Please select a supplier.");
 
         setIsCreatingOrder(false);
+        setLoading(false);
 
         return;
       }
@@ -6207,6 +6210,7 @@ const RopoImportEdit = () => {
         );
 
         setIsCreatingOrder(false);
+        setLoading(false);
 
         return;
       }
@@ -6233,6 +6237,7 @@ const RopoImportEdit = () => {
           );
 
           setIsCreatingOrder(false);
+          setLoading(false);
 
           return;
         }
@@ -6302,6 +6307,7 @@ const RopoImportEdit = () => {
       const consolidatedCharges = getConsolidatedCharges();
            const chargeIdToServiceCertPct = {};
       try {
+        setLoading(true);
         (consolidatedCharges || []).forEach((row, rowIndex) => {
           const pct =
             parseFloat(serviceCertAdvancePercentByRow[rowIndex] || 0) || 0;
@@ -6654,10 +6660,12 @@ const RopoImportEdit = () => {
       // window.location.href = '/po-list'; // Redirect to PO list
     } catch (error) {
       console.error("Error creating purchase order:", error);
+      setLoading(false);
 
       toast.error("Error creating purchase order. Please try again.");
     } finally {
       setIsCreatingOrder(false);
+      setLoading(false);
     }
   };
 
@@ -10190,6 +10198,21 @@ const RopoImportEdit = () => {
           </div>
         </div>
       </div>
+      {loading && (
+                <div className="loader-container">
+                  <div className="lds-ring">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                  </div>
+                  <p>loading...</p>
+                </div>
+              )}
 
       {/* Navigation Top */}
 

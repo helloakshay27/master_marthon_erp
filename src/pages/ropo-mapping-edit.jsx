@@ -445,6 +445,7 @@ if (companyOption) {
   const [remarks, setRemarks] = useState("");
   const [status, setStatus] = useState("draft");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading2, setLoading2] = useState(false);
 
   // Refs to prevent infinite loops in useEffect
   const poDataProcessedRef = useRef(false);
@@ -1431,6 +1432,7 @@ const [remainingQuantities, setRemainingQuantities] = useState({});
   // Handle final ROPO mapping submit
   const handleRopoMappingSubmit = async () => {
     setIsSubmitting(true);
+    setLoading2(true);
 
     try {
       // Construct the ropo_mor_inventories_attributes array from PO materials only
@@ -1582,6 +1584,7 @@ const [remainingQuantities, setRemainingQuantities] = useState({});
       );
     } finally {
       setIsSubmitting(false);
+      setLoading2(false);
     }
   };
 
@@ -2750,6 +2753,22 @@ setPoModalApiData(
             </Button>
           </Modal.Footer>
         </Modal>
+
+        {loading2 && (
+          <div className="loader-container">
+            <div className="lds-ring">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+            <p>Submitting...</p>
+          </div>
+        )}
 
         {/* Add MOR Modal */}
         <Modal show={addMORModal} onHide={closeAddMORModal} size="xl">

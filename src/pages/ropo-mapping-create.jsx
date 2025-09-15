@@ -281,6 +281,7 @@ const RopoMappingCreate = () => {
   const [remarks, setRemarks] = useState("");
   const [status, setStatus] = useState("draft");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading2, setLoading2] = useState(false);
 
   // Refs to prevent infinite loops in useEffect
   const poDataProcessedRef = useRef(false);
@@ -632,7 +633,7 @@ const RopoMappingCreate = () => {
   const handleMorReset = () => {
     setMorFormData({
       materialType: "",
-      materialSubType: "",
+      materialSubType: "", 
       material: "",
       genericSpecification: "",
       colour: "",
@@ -1190,6 +1191,7 @@ useEffect(() => {
 
   // Handle final ROPO mapping submit
   const handleRopoMappingSubmit = async () => {
+    setLoading2(true);
     // Validation: Check if order quantities are entered for all PO materials
     if (poData && poData.length > 0) {
       const missingQuantities = [];
@@ -1345,6 +1347,7 @@ useEffect(() => {
       );
     } finally {
       setIsSubmitting(false);
+      setLoading2(false);
     }
   };
 
@@ -3106,6 +3109,22 @@ setPoModalApiData(
             </button>
           </Modal.Footer>
         </Modal>
+
+        {loading2 && (
+          <div className="loader-container">
+            <div className="lds-ring">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+            <p>Submitting...</p>
+          </div>
+        )}
       </>
     </div>
   );

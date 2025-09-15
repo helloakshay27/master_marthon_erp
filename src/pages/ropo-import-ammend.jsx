@@ -13,7 +13,7 @@ const RopoImportAmmend = () => {
   // State variables for the modal
   // Read-only mode for amend page (except Order Qty in Add MOR modal)
   const isAmendReadOnly = true;
-
+ const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [exchangeRate, setExchangeRate] = useState();
   const [addMORModal, setAddMORModal] = useState(false);
@@ -6039,6 +6039,7 @@ const RopoImportAmmend = () => {
         alert("Please select a company.");
 
         setIsCreatingOrder(false);
+        setLoading(false);
 
         return;
       }
@@ -6047,6 +6048,7 @@ const RopoImportAmmend = () => {
         alert("Please select a supplier.");
 
         setIsCreatingOrder(false);
+        setLoading(false);
 
         return;
       }
@@ -6055,6 +6057,7 @@ const RopoImportAmmend = () => {
         alert(
           "Please set the Conversion Rate (USD to INR) in the PO Details tab."
         );
+        setLoading(false);
 
         setIsCreatingOrder(false);
 
@@ -6083,6 +6086,7 @@ const RopoImportAmmend = () => {
           );
 
           setIsCreatingOrder(false);
+          setLoading(false);
 
           return;
         }
@@ -6150,6 +6154,7 @@ const RopoImportAmmend = () => {
       const consolidatedCharges = getConsolidatedCharges();
       const chargeIdToServiceCertPct = {};
       try {
+        setLoading(true);
         (consolidatedCharges || []).forEach((row, rowIndex) => {
           const pct =
             parseFloat(serviceCertAdvancePercentByRow[rowIndex] || 0) || 0;
@@ -6446,10 +6451,12 @@ const RopoImportAmmend = () => {
       // window.location.href = '/po-list'; // Redirect to PO list
     } catch (error) {
       console.error("Error creating purchase order:", error);
+      setLoading(false);
 
       alert("Error creating purchase order. Please try again.");
     } finally {
       setIsCreatingOrder(false);
+      setLoading(false);
     }
   };
 
@@ -9682,6 +9689,21 @@ const RopoImportAmmend = () => {
           </div>
         </div>
       </div>
+      {loading && (
+                <div className="loader-container">
+                  <div className="lds-ring">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                  </div>
+                  <p>loading...</p>
+                </div>
+              )}
 
       {/* Navigation Top */}
 

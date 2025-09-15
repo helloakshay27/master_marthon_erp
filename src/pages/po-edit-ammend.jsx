@@ -81,6 +81,7 @@ const PoEditAmmend = () => {
   // Loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUpdatingOrder, setIsUpdatingOrder] = useState(false);
+  const [loading2, setLoading2] = useState(false);
     const [vendorGstin, setVendorGstin] = useState("");
 
   // Active tab state
@@ -2885,6 +2886,7 @@ const formatDateTime = (dateString) => {
   const handleUpdatePurchaseOrder = async () => {
     try {
       setIsUpdatingOrder(true);
+      setLoading2(true);
 
       // Validate required fields
       if (!selectedCompany?.value) {
@@ -3246,6 +3248,7 @@ const formatDateTime = (dateString) => {
       toast.error("Error updating purchase order. Please try again.");
     } finally {
       setIsUpdatingOrder(false);
+      setLoading2(false);
     }
   };
 
@@ -3335,6 +3338,22 @@ const formatDateTime = (dateString) => {
 
   return (
     <>
+      {loading2 && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>Submitting...</p>
+        </div>
+      )}
+
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover containerStyle={{ zIndex: 20000 }} />
       {/* <main className="h-100 w-100"> */}
 
