@@ -20,6 +20,7 @@ const CreateRateLabour = () => {
     const [isEditing, setIsEditing] = useState(false);  // State to manage edit mode
     const [validationMsg, setValidationMsg] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
+    const [rowFieldErrors, setRowFieldErrors] = useState([]); // <-- Add this line
     const [loading, setLoading] = useState(false); // Add loading state
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
@@ -237,82 +238,200 @@ const CreateRateLabour = () => {
         e.preventDefault();
         const errors = {};
 
-        // Validate category and effective date
-        // if (!selectedCategory) errors.category = "Main Category is required.";
-        // if (!selectedSubCategory) errors.subCategory = "Sub-category Level 2 is required.";
-        // if (!selectedSubCategoryLevel3) errors.subCategory3 = "Sub-category Level 3 is required.";
-        // if (!selectedSubCategoryLevel4) errors.subCategory4 = "Sub-category Level 4 is required.";
-        // if (!formData.effectiveDate) errors.effectiveDate = "Effective Date is required.";
-        // if (!formData.uom) errors.uom = "UOM is required.";
+        // Validate main category
+        if (!selectedCategory) errors.category = "Main Category is required.";
+        // Validate effective date
+        if (!formData.effectiveDate) errors.effectiveDate = "Effective Date is required.";
 
-        // Validate each labour row
-        // const rowErrors = labourRows.map(row => {
-        //     const r = {};
-        //     if (!row.activity) r.activity = "Labour Activity is required.";
-        //     if (!row.rate || isNaN(parseFloat(row.rate))) r.rate = "Valid Rate is required.";
-        //     return r;
-        // });
-        // // If any row has errors, show error and return
-        // if (rowErrors.some(r => Object.keys(r).length > 0)) {
-        //     toast.error("Please fill all Labour Activity and Rate fields correctly.");
-        //     setFieldErrors(errors);
-        //     return;
-        // }
-        // if (Object.keys(errors).length > 0) {
-        //     setFieldErrors(errors);
-        //     return;
-        // }
-
-        // Duplicate check: prevent same activity in the same category/row
-        const seen = new Set();
-        const hasDuplicate = labourRows.some(row => {
-            const key = `${selectedCategory?.value}|${selectedSubCategory?.value}|${selectedSubCategoryLevel3?.value}|${selectedSubCategoryLevel4?.value}|${row.activity}`;
-            if (seen.has(key)) return true;
-            seen.add(key);
+        // Validate each labour row for activity, rate, and uom
+        const rowErrors = labourRows.map((row, idx) => {
+            const r = {};
+            if (!row.activity) r.activity = "Activity is required.";
+            // If no sub-activities, require rate and uom for main activity
+            if (!row.subActivities || row.subActivities.length === 0) {
+                if (!row.rate || isNaN(parseFloat(row.rate))) r.rate = "Rate is required.";
+                if (!row.uom) r.uom = "UOM is required.";
+            } else {
+                // If sub-activities exist, require rate and uom for each sub-activity
+                r.subActivities = row.subActivities.map((sub, subIdx) => {
+                    const subErr = {};
+                    if (!sub.subActivity) subErr.subActivity = "Sub-activity is required.";
+                    if (!sub.rate || isNaN(parseFloat(sub.rate))) subErr.rate = "rate is required.";
+                    if (!sub.uom) subErr.uom = "UOM is required.";
+                    return subErr;
+                });
+            }
+            return r;
+        });
+        // If any row or sub-activity has errors, show error and return
+        const hasRowError = Object.keys(errors).length > 0 || rowErrors.some(r => {
+            if (Object.keys(r).length > 0 && (Object.keys(r).length > 1 || !('subActivities' in r))) return true;
+            if (r.subActivities && r.subActivities.some(subErr => Object.keys(subErr).length > 0)) return true;
             return false;
+        });
+        if (hasRowError) {
+            setFieldErrors(errors);
+            setRowFieldErrors(rowErrors);
+            // toast.error("Please fill all required fields.");
+            return;
+        }
+
+        // Duplicate check: prevent same activity in the same category/row (within modal rows)
+        const seen = new Set();
+        let hasDuplicate = false;
+        let duplicateRowIndex = null;
+        let duplicateSubActivity = false;
+        let duplicateSubRowIndex = null;
+        let duplicateSubIdx = null;
+        labourRows.forEach((row, idx) => {
+            const key = `${selectedCategory?.value}|${selectedSubCategory?.value}|${selectedSubCategoryLevel3?.value}|${selectedSubCategoryLevel4?.value}|${row.activity}`;
+            if (seen.has(key)) {
+                hasDuplicate = true;
+                duplicateRowIndex = idx;
+            }
+            seen.add(key);
+            // Check for duplicate sub-activities within this row
+            if (row.subActivities && row.subActivities.length > 0) {
+                const subSeen = new Set();
+                row.subActivities.forEach((sub, subIdx) => {
+                    if (!sub.subActivity) return;
+                    const subKey = `${row.activity}|${sub.subActivity}`;
+                    if (subSeen.has(subKey)) {
+                        duplicateSubActivity = true;
+                        duplicateSubRowIndex = idx;
+                        duplicateSubIdx = subIdx;
+                    }
+                    subSeen.add(subKey);
+                });
+            }
         });
         if (hasDuplicate) {
             toast.error("Duplicate Labour Activity in the same category.");
+            // Optionally, highlight the duplicate row
+            const newRowFieldErrors = rowFieldErrors.slice();
+            if (duplicateRowIndex !== null) {
+                newRowFieldErrors[duplicateRowIndex] = {
+                    ...newRowFieldErrors[duplicateRowIndex],
+                    activity: "Duplicate activity in this category."
+                };
+                setRowFieldErrors(newRowFieldErrors);
+            }
+            return;
+        }
+        if (duplicateSubActivity) {
+            toast.error("Duplicate Sub-Activity for the same Activity.");
+            // Optionally, highlight the duplicate sub-activity
+            const newRowFieldErrors = rowFieldErrors.slice();
+            if (duplicateSubRowIndex !== null && duplicateSubIdx !== null) {
+                if (!newRowFieldErrors[duplicateSubRowIndex]) newRowFieldErrors[duplicateSubRowIndex] = {};
+                if (!newRowFieldErrors[duplicateSubRowIndex].subActivities) newRowFieldErrors[duplicateSubRowIndex].subActivities = [];
+                newRowFieldErrors[duplicateSubRowIndex].subActivities[duplicateSubIdx] = {
+                    ...newRowFieldErrors[duplicateSubRowIndex].subActivities[duplicateSubIdx],
+                    subActivity: "Duplicate sub-activity for this activity."
+                };
+                setRowFieldErrors(newRowFieldErrors);
+            }
+            return;
+        }
+
+        // Duplicate check: prevent same activity or sub-activity in tableData (already added rows)
+        let duplicateInTable = false;
+        let duplicateSubInTable = false;
+        // Prepare new rows for tableData, using per-row UOM and correct mapping, and include subActivities
+        let newRows = [];
+        labourRows.forEach((row, rowIndex) => {
+            if (row.subActivities && row.subActivities.length > 0) {
+                row.subActivities.forEach(sub => {
+                    // Check for duplicate activity+subActivity in tableData
+                    const exists = tableData.some(td =>
+                        td.activity === row.activity &&
+                        td.subActivity === sub.subActivity &&
+                        td.mainCategory === selectedCategory?.value &&
+                        td.subCategory === selectedSubCategory?.value &&
+                        td.subCategory3 === selectedSubCategoryLevel3?.value &&
+                        td.subCategory4 === selectedSubCategoryLevel4?.value &&
+                        td.subCategory5 === selectedSubCategoryLevel5?.value
+                    );
+                    if (exists) duplicateSubInTable = true;
+                    newRows.push({
+                        mainCategory: selectedCategory?.value,
+                        mainCategoryLabel: selectedCategory?.label,
+                        subCategory: selectedSubCategory?.value,
+                        subCategoryLabel: selectedSubCategory?.label,
+                        subCategory3: selectedSubCategoryLevel3?.value,
+                        subCategory3Label: selectedSubCategoryLevel3?.label,
+                        subCategory4: selectedSubCategoryLevel4?.value,
+                        subCategory4Label: selectedSubCategoryLevel4?.label,
+                        subCategory5: selectedSubCategoryLevel5?.value,
+                        subCategory5Label: selectedSubCategoryLevel5?.label,
+                        effectiveDate: formData.effectiveDate,
+                        uom: sub.uom || row.uom,
+                        uomLabel: unitOfMeasures.find(opt => opt.value === (sub.uom || row.uom))?.label || "",
+                        activity: row.activity,
+                        activityLabel: labourActivities.find(opt => opt.value === row.activity)?.label || "",
+                        rate: sub.rate || row.rate,
+                        subActivity: sub.subActivity,
+                        subActivityLabel: (subActivityOptions[rowIndex]?.find(opt => opt.value === sub.subActivity)?.label) || "",
+                        subActivities: [], // This row represents a single sub-activity
+                    });
+                });
+            } else {
+                // Check for duplicate activity (no sub-activity) in tableData
+                const exists = tableData.some(td =>
+                    td.activity === row.activity &&
+                    !td.subActivity &&
+                    td.mainCategory === selectedCategory?.value &&
+                    td.subCategory === selectedSubCategory?.value &&
+                    td.subCategory3 === selectedSubCategoryLevel3?.value &&
+                    td.subCategory4 === selectedSubCategoryLevel4?.value &&
+                    td.subCategory5 === selectedSubCategoryLevel5?.value
+                );
+                if (exists) duplicateInTable = true;
+                newRows.push({
+                    mainCategory: selectedCategory?.value,
+                    mainCategoryLabel: selectedCategory?.label,
+                    subCategory: selectedSubCategory?.value,
+                    subCategoryLabel: selectedSubCategory?.label,
+                    subCategory3: selectedSubCategoryLevel3?.value,
+                    subCategory3Label: selectedSubCategoryLevel3?.label,
+                    subCategory4: selectedSubCategoryLevel4?.value,
+                    subCategory4Label: selectedSubCategoryLevel4?.label,
+                    subCategory5: selectedSubCategoryLevel5?.value,
+                    subCategory5Label: selectedSubCategoryLevel5?.label,
+                    effectiveDate: formData.effectiveDate,
+                    uom: row.uom,
+                    uomLabel: unitOfMeasures.find(opt => opt.value === row.uom)?.label || "",
+                    activity: row.activity,
+                    activityLabel: labourActivities.find(opt => opt.value === row.activity)?.label || "",
+                    rate: row.rate,
+                    subActivity: null,
+                    subActivityLabel: "",
+                    subActivities: [],
+                });
+            }
+        });
+
+        if (duplicateInTable) {
+            toast.error("This Labour Activity already exists in the table.");
+            return;
+        }
+        if (duplicateSubInTable) {
+            toast.error("This Sub-Activity for the selected Activity already exists in the table.");
             return;
         }
 
 
-        // Prepare new rows for tableData, using per-row UOM and correct mapping, and include subActivities
-        console.log("labour rowssss:", labourRows);
-        const newRows = labourRows.map(row => ({
-            mainCategory: selectedCategory?.value,
-            mainCategoryLabel: selectedCategory?.label,
-            subCategory: selectedSubCategory?.value,
-            subCategoryLabel: selectedSubCategory?.label,
-            subCategory3: selectedSubCategoryLevel3?.value,
-            subCategory3Label: selectedSubCategoryLevel3?.label,
-            subCategory4: selectedSubCategoryLevel4?.value,
-            subCategory4Label: selectedSubCategoryLevel4?.label,
-            subCategory5: selectedSubCategoryLevel5?.value,
-            subCategory5Label: selectedSubCategoryLevel5?.label,
-            effectiveDate: formData.effectiveDate,
-            uom: row.uom,
-            uomLabel: unitOfMeasures.find(opt => opt.value === row.uom)?.label || "",
-            activity: row.activity,
-            activityLabel: labourActivities.find(opt => opt.value === row.activity)?.label || "",
-            rate: row.rate,
-            subActivities: row.subActivities ? [...row.subActivities] : [],
-        }));
-
         // Edit mode: update the row(s)
         if (editRowIndex !== null) {
-            // Replace the row at editRowIndex with the first new row (or all newRows if you want to support multi-edit)
             const updatedTableData = tableData.map((row, idx) =>
                 idx === editRowIndex ? newRows[0] : row
             );
             setTableData(updatedTableData);
             setEditRowIndex(null);
         } else {
-            // Add all new rows
             setTableData([...tableData, ...newRows]);
         }
 
-        // Reset form and modal
         setFormData({
             materialType: "",
             materialSubType: "",
@@ -328,6 +447,8 @@ const CreateRateLabour = () => {
         });
         setLabourRows([{ activity: null, rate: "" }]);
         setShowModal(false);
+        setFieldErrors({});
+        setRowFieldErrors([]);
     };
 
     console.log("form data here after add********:", tableData);
@@ -559,12 +680,13 @@ const CreateRateLabour = () => {
             labour_rates: tableData.map(row => {
                 // Find the last non-null category in the chain
                 const resource_id = row.subCategory5 || row.subCategory4 || row.subCategory3 || row.subCategory || row.mainCategory;
-                console.log("resource id:", resource_id);
+                // console.log("resource id:", resource_id);
                 // If only mainCategory is present, resource_type is WorkCategory, else WorkSubCategory
                 const isOnlyMain = !!row.mainCategory && !row.subCategory && !row.subCategory3 && !row.subCategory4 && !row.subCategory5;
                 const resource_type = isOnlyMain ? "WorkCategory" : "WorkSubCategory";
                 return {
                     labour_activity_id: row.activity,
+                     labour_sub_activity_id: row.subActivity || null,
                     resource_id,
                     resource_type,
                     unit_of_measure_id: row.uom,
@@ -604,29 +726,30 @@ const CreateRateLabour = () => {
         setLoading(true);
 
         const labourRatePayload = {
-        labour_rate_detail: {
-            company_id: selectedCompany?.value || "",
-            project_id: selectedProject?.value || "",
-            pms_site_id: selectedSite?.value || "",
-            pms_wing_id: selectedWing?.value || "",
-            labour_rates: tableData.map(row => {
-                // Find the last non-null category in the chain
-                const resource_id = row.subCategory5 || row.subCategory4 || row.subCategory3 || row.subCategory || row.mainCategory;
-                console.log("resource id:", resource_id);
-                // If only mainCategory is present, resource_type is WorkCategory, else WorkSubCategory
-                const isOnlyMain = !!row.mainCategory && !row.subCategory && !row.subCategory3 && !row.subCategory4 && !row.subCategory5;
-                const resource_type = isOnlyMain ? "WorkCategory" : "WorkSubCategory";
-                return {
-                    labour_activity_id: row.activity,
-                    resource_id,
-                    resource_type,
-                    unit_of_measure_id: row.uom,
-                    effective_date: row.effectiveDate,
-                    rate: row.rate
-                };
-            })
-        }
-    };
+            labour_rate_detail: {
+                company_id: selectedCompany?.value || "",
+                project_id: selectedProject?.value || "",
+                pms_site_id: selectedSite?.value || "",
+                pms_wing_id: selectedWing?.value || "",
+                labour_rates: tableData.map(row => {
+                    // Find the last non-null category in the chain
+                    const resource_id = row.subCategory5 || row.subCategory4 || row.subCategory3 || row.subCategory || row.mainCategory;
+                    console.log("resource id:", resource_id);
+                    // If only mainCategory is present, resource_type is WorkCategory, else WorkSubCategory
+                    const isOnlyMain = !!row.mainCategory && !row.subCategory && !row.subCategory3 && !row.subCategory4 && !row.subCategory5;
+                    const resource_type = isOnlyMain ? "WorkCategory" : "WorkSubCategory";
+                    return {
+                        labour_activity_id: row.activity,
+                        labour_sub_activity_id: row.subActivity || null,
+                        resource_id,
+                        resource_type,
+                        unit_of_measure_id: row.uom,
+                        effective_date: row.effectiveDate,
+                        rate: row.rate
+                    };
+                })
+            }
+        };
 
         console.log("Submitting payload:", labourRatePayload);
 
@@ -753,8 +876,6 @@ const CreateRateLabour = () => {
 
 
     // categories
-
-    // main category and sub level2
 
     const [workCategories, setWorkCategories] = useState([]); // To store work categories fetched from the API
     const [selectedCategory, setSelectedCategory] = useState(null); // To store the selected work category
@@ -912,22 +1033,24 @@ const CreateRateLabour = () => {
 
     // --- Labour Activity State and Fetch Logic ---
     const [labourActivities, setLabourActivities] = useState([]); // Options for selector
-    const [labourRows, setLabourRows] = useState([{ activity: null, rate: "",uom:"" }]);
+    const [labourRows, setLabourRows] = useState([{ activity: null, rate: "", uom: "", subActivities: [] }]);
+    // Store sub-activity options for each main activity row
+    const [subActivityOptions, setSubActivityOptions] = useState({});
 
     // Fetch Labour Activities when all required category levels are selected
-    console.log("selected main category:", selectedCategory);
+    // console.log("selected main category:", selectedCategory);
     useEffect(() => {
         const level1 = selectedCategory?.value || "";
         const level2 = selectedSubCategory?.value || "";
         const level3 = selectedSubCategoryLevel3?.value || "";
         const level4 = selectedSubCategoryLevel4?.value || "";
-        console.log("Labour Activity Levels:", { level1, level2, level3, level4 });
+        // console.log("Labour Activity Levels:", { level1, level2, level3, level4 });
         // Fetch if any category level is selected
         if (level1 || level2 || level3 || level4) {
             const url = `https://marathon.lockated.com/activity_category_mappings/category_wise_activities.json?token=${token}&q[level_one_id_eq]=${level1}&q[level_two_id_eq]=${level2}&q[level_three_id_eq]=${level3}&q[level_four_id_eq]=${level4}`;
             axios.get(url)
                 .then(res => {
-                    console.log("res for labour activity:", res.data.mappings)
+                    // console.log("res for labour activity:", res.data.mappings)
                     // setLabourActivities(res.data.mappings || []);
                     const options = res.data.mappings.map(inventory => ({
                         value: inventory.value,
@@ -943,13 +1066,33 @@ const CreateRateLabour = () => {
             // setLabourActivities([]);
         }
     }, [selectedCategory, selectedSubCategory, selectedSubCategoryLevel3, selectedSubCategoryLevel4]);
-    console.log("labour activity options***********:", labourActivities);
+    // console.log("labour activity options***********:", labourActivities);
 
     // Handler for changing a labour activity or rate in a row
-    const handleLabourRowChange = (idx, field, value) => {
+    const handleLabourRowChange = async (idx, field, value) => {
         setLabourRows(rows => rows.map((row, i) =>
             i === idx ? { ...row, [field]: value } : row
         ));
+        // If changing the activity, fetch sub-activities for that activity
+        if (field === "activity" && value) {
+            console.log("activity valueL",value)
+            try {
+                // const token = window.token || (typeof token !== 'undefined' ? token : '');
+                  console.log("before axios");
+                const res = await axios.get(`https://marathon.lockated.com/labour_activities/${value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
+                console.log("sub act responce:",res.data)
+                const subActs = res.data.labour_sub_activities || [];
+                console.log("sub act responce sub act :",subActs)
+                const options = subActs.map(sub => ({ value: sub.id, label: sub.name }));
+                setSubActivityOptions(prev => ({ ...prev, [idx]: options }));
+                // Reset subActivities for this row
+                setLabourRows(rows => rows.map((row, i) =>
+                    i === idx ? { ...row, subActivities: [] } : row
+                ));
+            } catch (err) {
+                setSubActivityOptions(prev => ({ ...prev, [idx]: [] }));
+            }
+        }
     };
     // Add new row
     const handleAddLabourRow = () => setLabourRows(rows => ([
@@ -964,7 +1107,7 @@ const CreateRateLabour = () => {
         setLabourRows(prevRows => prevRows.map((row, idx) => {
             if (idx !== mainIdx) return row;
             const subActivities = row.subActivities ? [...row.subActivities] : [];
-            subActivities.push({ name: '', rate: '', uom: '' });
+            subActivities.push({ subActivity: null, rate: '', uom: '' });
             return {
                 ...row,
                 subActivities
@@ -988,16 +1131,16 @@ const CreateRateLabour = () => {
     };
 
     // Handler to update a sub-activity field for a main activity row
-const handleSubActivityChange = (mainIdx, subIdx, field, value) => {
-    setLabourRows(prevRows =>
-        prevRows.map((row, idx) => {
-            if (idx !== mainIdx) return row;
-            const subActivities = row.subActivities ? [...row.subActivities] : [];
-            subActivities[subIdx] = { ...subActivities[subIdx], [field]: value };
-            return { ...row, subActivities };
-        })
-    );
-};
+    const handleSubActivityChange = (mainIdx, subIdx, field, value) => {
+        setLabourRows(prevRows =>
+            prevRows.map((row, idx) => {
+                if (idx !== mainIdx) return row;
+                const subActivities = row.subActivities ? [...row.subActivities] : [];
+                subActivities[subIdx] = { ...subActivities[subIdx], [field]: value };
+                return { ...row, subActivities };
+            })
+        );
+    };
 
 
      useEffect(() => {
@@ -1250,7 +1393,7 @@ const handleSubActivityChange = (mainIdx, subIdx, field, value) => {
                                             <th className="text-start">Sr.No.</th>
                                             <th className="text-start">Category</th>
                                             <th className="text-start">Activity</th>
-                                            
+                                             <th className="text-start">Sub-Activity</th>
                                             <th className="text-start">UOM</th>
 
                                             <th className="text-start">Effective Date</th>
@@ -1266,17 +1409,30 @@ const handleSubActivityChange = (mainIdx, subIdx, field, value) => {
 
 
                                         {tableData.length > 0 ? (
-                                            tableData.map((row, index) => (
-                                                <React.Fragment key={index}>
-                                                    <tr>
-                                                        <td className="text-start"> {index + 1}</td>
-                                                        <td className="text-start">
-                                                            {[row.mainCategoryLabel, row.subCategoryLabel, row.subCategory3Label, row.subCategory4Label, row.subCategory5Label]
-                                                                .filter(Boolean)
-                                                                .join(' - ')}
-                                                        </td>
+                                            tableData.map((row, index) => {
+                                                // Prefer subActivityLabel if present (for new rows), else fallback to old logic for legacy rows
+                                                let subActivityNames = '';
+                                                if (row.subActivityLabel && row.subActivityLabel !== '') {
+                                                    subActivityNames = row.subActivityLabel;
+                                                } else if (row.subActivities && row.subActivities.length > 0) {
+                                                    subActivityNames = row.subActivities
+                                                        .map(sub => (subActivityOptions[index]?.find(opt => opt.value === sub.subActivity)?.label || ''))
+                                                        .filter(Boolean)
+                                                        .join(', ');
+                                                }
+                                                const subRates = (row.subActivities && row.subActivities.length > 0)
+                                                    ? row.subActivities.map(sub => sub.rate).filter(Boolean).join(', ')
+                                                    : '';
+                                                const subUoms = (row.subActivities && row.subActivities.length > 0)
+                                                    ? row.subActivities.map(sub => unitOfMeasures.find(opt => opt.value === sub.uom)?.label || '').filter(Boolean).join(', ')
+                                                    : '';
+                                                return (
+                                                    <tr key={index}>
+                                                        <td className="text-start">{index + 1}</td>
+                                                        <td className="text-start">{[row.mainCategoryLabel, row.subCategoryLabel, row.subCategory3Label, row.subCategory4Label, row.subCategory5Label].filter(Boolean).join(' - ')}</td>
                                                         <td className="text-start">{row.activityLabel}</td>
-                                                        <td className="text-start">{row.uomLabel}</td>
+                                                        <td className="text-start">{subActivityNames}</td>
+                                                        <td className="text-start">{row.uomLabel}{subUoms ? (row.uomLabel ? ', ' : '') + subUoms : ''}</td>
                                                         <td className="text-start" style={{ width: "140px" }}>
                                                             <input
                                                                 type="date"
@@ -1296,6 +1452,7 @@ const handleSubActivityChange = (mainIdx, subIdx, field, value) => {
                                                                     placeholder="Enter Rate"
                                                                     style={{ maxWidth: "120px" }}
                                                                 />
+                                                                {subRates && <span style={{ marginLeft: 8, color: '#6c63ff', fontStyle: 'italic' }}>{subRates}</span>}
                                                             </div>
                                                         </td>
                                                         <td className="text-start">
@@ -1318,20 +1475,8 @@ const handleSubActivityChange = (mainIdx, subIdx, field, value) => {
                                                             </button>
                                                         </td>
                                                     </tr>
-                                                    {/* Render sub-activities as indented rows */}
-                                                    {row.subActivities && row.subActivities.length > 0 && row.subActivities.map((sub, subIdx) => (
-                                                        <tr key={subIdx} style={{ background: '#f8f9fa' }}>
-                                                            <td></td>
-                                                            <td colSpan={1} style={{ fontStyle: 'italic', color: '#6c63ff' }}>Sub-Activity: {sub.name}</td>
-                                                            <td className="text-start">{sub.rate}</td>
-                                                            <td className="text-start">{unitOfMeasures.find(opt => opt.value === sub.uom)?.label || ''}</td>
-                                                            <td></td>
-                                                            <td></td>
-                                                            <td></td>
-                                                        </tr>
-                                                    ))}
-                                                </React.Fragment>
-                                            ))
+                                                );
+                                            })
                                         ) : (
                                             <tr>
                                                 <td colSpan="13" className="text-center">
@@ -1388,21 +1533,24 @@ const handleSubActivityChange = (mainIdx, subIdx, field, value) => {
                     <form acceptCharset="UTF-8">
                         <div className="row">
 
-                            <div className="col-md-4 mt-3">
-                                <div className="form-group">
-                                    <label>Main Category <span>*</span></label>
-                                    <SingleSelector
-                                        options={workCategories?.map((category) => ({
-                                            value: category.id,
-                                            label: category.name,
-                                            work_sub_categories: category.work_sub_categories, // Include subcategories in the category option
-                                        }))}
-                                        onChange={handleCategoryChange}
-                                        value={selectedCategory}
-                                        placeholder={`Select Main category`}
-                                    />
-                                </div>
-                            </div>
+                             <div className="col-md-4 mt-3">
+                                 <div className="form-group">
+                                     <label>Main Category <span>*</span></label>
+                                     <SingleSelector
+                                         options={workCategories?.map((category) => ({
+                                             value: category.id,
+                                             label: category.name,
+                                             work_sub_categories: category.work_sub_categories,
+                                         }))}
+                                         onChange={handleCategoryChange}
+                                         value={selectedCategory}
+                                         placeholder={`Select Main category`}
+                                     />
+                                     {fieldErrors.category && (
+                                         <span className="text-danger">{fieldErrors.category}</span>
+                                     )}
+                                 </div>
+                             </div>
                             <div className="col-md-4 mt-3">
                                 <div className="form-group">
                                     <label> Sub-category Level 2</label>
@@ -1447,18 +1595,18 @@ const handleSubActivityChange = (mainIdx, subIdx, field, value) => {
                                     />
                                 </div>
                             </div>
-                            <div className="col-md-4 mt-3">
-                                <div className="form-group">
-                                    <label>Effective Date <span>*</span></label>
-                                    <input className="form-control" type="date" name="effectiveDate"
-                                        value={formData.effectiveDate}
-                                        onChange={handleInputChange}
-                                    />
-                                    {fieldErrors.effectiveDate && (
-                                        <span className="text-danger">{fieldErrors.effectiveDate}</span>
-                                    )}
-                                </div>
-                            </div>
+                             <div className="col-md-4 mt-3">
+                                 <div className="form-group">
+                                     <label>Effective Date <span>*</span></label>
+                                     <input className="form-control" type="date" name="effectiveDate"
+                                         value={formData.effectiveDate}
+                                         onChange={handleInputChange}
+                                     />
+                                     {fieldErrors.effectiveDate && (
+                                         <span className="text-danger">{fieldErrors.effectiveDate}</span>
+                                     )}
+                                 </div>
+                             </div>
 
                             {/* .................................... */}
 
@@ -1480,27 +1628,33 @@ const handleSubActivityChange = (mainIdx, subIdx, field, value) => {
                                 // style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '16px', background: '#fff' }}
                                 className=" p-3 mb-2"
                                 >
-                                    {labourRows.map((row, idx) => (
-                                        <div className="row mb-2 align-items-center border rounded p-2  mb-4 position-relative" key={idx}>
-                                            <div className="col-md-3 mt-3">
-                                                <div className="form-group">
-                                                    <label>Activity</label>
-                                                    <SingleSelector
-                                                        options={labourActivities}
-                                                        value={labourActivities.find((option) => option.value === row.activity)}
-                                                        placeholder={`Select Activity`}
-                                                        onChange={(selectedOption) => handleLabourRowChange(idx, "activity", selectedOption?.value)}
-                                                    />
-                                                </div>
-                                            </div>
+                                     {labourRows.map((row, idx) => (
+                                         <div className="row mb-2 align-items-center border rounded p-2  mb-4 position-relative" key={idx}>
+                                             <div className="col-md-3 mt-3">
+                                                 <div className="form-group">
+                                                     <label>Activity</label>
+                                                     <SingleSelector
+                                                         options={labourActivities}
+                                                         value={labourActivities.find((option) => option.value === row.activity)}
+                                                         placeholder={`Select Activity`}
+                                                         onChange={(selectedOption) => handleLabourRowChange(idx, "activity", selectedOption?.value)}
+                                                     />
+                                                     {rowFieldErrors && rowFieldErrors[idx] && rowFieldErrors[idx].activity && (
+                                                         <span className="text-danger">{rowFieldErrors[idx].activity}</span>
+                                                     )}
+                                                 </div>
+                                             </div>
                                             <div className="col-md-3 mt-3">
                                                 <div className="form-group">
                                                     <label>Rate </label>
                                                     <input className="form-control" type="number" name="rate"
                                                         value={row.rate}
                                                         onChange={e => handleLabourRowChange(idx, "rate", e.target.value)}
-                                                         disabled={row.subActivities && row.subActivities.length > 0}
+                                                        disabled={row.subActivities && row.subActivities.length > 0}
                                                     />
+                                                    {rowFieldErrors && rowFieldErrors[idx] && rowFieldErrors[idx].rate && (
+                                                        <span className="text-danger">{rowFieldErrors[idx].rate}</span>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div className="col-md-3 mt-3">
@@ -1511,8 +1665,11 @@ const handleSubActivityChange = (mainIdx, subIdx, field, value) => {
                                                         value={unitOfMeasures.find((option) => option.value === row.uom)}
                                                         placeholder={`Select UOM`}
                                                         onChange={(selectedOption) => handleLabourRowChange(idx, "uom", selectedOption?.value)}
-                                                         isDisabled={row.subActivities && row.subActivities.length > 0}
+                                                        isDisabled={row.subActivities && row.subActivities.length > 0}
                                                     />
+                                                    {rowFieldErrors && rowFieldErrors[idx] && rowFieldErrors[idx].uom && (
+                                                        <span className="text-danger">{rowFieldErrors[idx].uom}</span>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div className="col-md-1 d-flex align-items-center justify-content-center mt-4">
@@ -1547,46 +1704,50 @@ const handleSubActivityChange = (mainIdx, subIdx, field, value) => {
                                             </div>
                                             {/* Render sub-activities for this main activity */}
                                             {row.subActivities && row.subActivities.map((sub, subIdx) => (
-                                                <div className="row mb-2 align-items-center   mt-3" key={subIdx} 
-                                                // style={{ background: '#f8f9fa', borderRadius: 4 }}
-                                                >
-
-
-
+                                                <div className="row mb-2 align-items-center mt-3" key={subIdx}>
                                                     <div className="col-md-3 mt-2 ms-1 ps-2 pe-2">
                                                         <div className="form-group">
-                                                      <label>Name</label>
-                                                        <input
-                                                            className="form-control"
-                                                            type="text"
-                                                            placeholder="Sub Activity Name"
-                                                            value={sub.name}
-                                                            onChange={e => handleSubActivityChange(idx, subIdx, 'name', e.target.value)}
-                                                        />
+                                                            <label>Sub Activity <span>*</span></label>
+                                                            <SingleSelector
+                                                                options={subActivityOptions[idx] || []}
+                                                                value={(subActivityOptions[idx] || []).find(opt => opt.value === sub.subActivity) || null}
+                                                                placeholder="Select Sub Activity"
+                                                                onChange={selectedOption => handleSubActivityChange(idx, subIdx, 'subActivity', selectedOption?.value)}
+                                                            />
+                                                            {rowFieldErrors && rowFieldErrors[idx] && rowFieldErrors[idx].subActivities && rowFieldErrors[idx].subActivities[subIdx] && rowFieldErrors[idx].subActivities[subIdx].subActivity && (
+                                                                <span className="text-danger">{rowFieldErrors[idx].subActivities[subIdx].subActivity}</span>
+                                                            )}
+                                                            
                                                         </div>
                                                     </div>
                                                     <div className="col-md-3 mt-2 ms-1 ps-2 pe-2">
                                                         <div className="form-group">
-                                                          <label>Rate </label>
-                                                        <input
-                                                            className="form-control"
-                                                            type="number"
-                                                            placeholder="Rate"
-                                                            value={sub.rate}
-                                                            onChange={e => handleSubActivityChange(idx, subIdx, 'rate', e.target.value)}
-                                                        />
+                                                            <label>Rate </label>
+                                                            <input
+                                                                className="form-control"
+                                                                type="number"
+                                                                placeholder="Rate"
+                                                                value={sub.rate}
+                                                                onChange={e => handleSubActivityChange(idx, subIdx, 'rate', e.target.value)}
+                                                            />
+                                                            {rowFieldErrors && rowFieldErrors[idx] && rowFieldErrors[idx].subActivities && rowFieldErrors[idx].subActivities[subIdx] && rowFieldErrors[idx].subActivities[subIdx].rate && (
+                                                                <span className="text-danger">{rowFieldErrors[idx].subActivities[subIdx].rate}</span>
+                                                            )}
                                                         </div>
                                                     </div>
                                                     <div className="col-md-3 mt-2 ms-2 ps-2 pe-2">
                                                         <div className="form-group">
-                                                          <label>UOM</label>
-                                                        <SingleSelector
-                                                            options={unitOfMeasures}
-                                                            value={unitOfMeasures.find((option) => option.value === sub.uom)}
-                                                            placeholder={`Select UOM`}
-                                                            onChange={selectedOption => handleSubActivityChange(idx, subIdx, 'uom', selectedOption?.value)}
-                                                        />
-                                                         </div>
+                                                            <label>UOM</label>
+                                                            <SingleSelector
+                                                                options={unitOfMeasures}
+                                                                value={unitOfMeasures.find((option) => option.value === sub.uom)}
+                                                                placeholder={`Select UOM`}
+                                                                onChange={selectedOption => handleSubActivityChange(idx, subIdx, 'uom', selectedOption?.value)}
+                                                            />
+                                                            {rowFieldErrors && rowFieldErrors[idx] && rowFieldErrors[idx].subActivities && rowFieldErrors[idx].subActivities[subIdx] && rowFieldErrors[idx].subActivities[subIdx].uom && (
+                                                                <span className="text-danger">{rowFieldErrors[idx].subActivities[subIdx].uom}</span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                     <div className="col-md-1 d-flex align-items-center justify-content-center mt-2 ms-2">
                                                         <button
@@ -1605,7 +1766,7 @@ const handleSubActivityChange = (mainIdx, subIdx, field, value) => {
                                     ))}
                                 </div>
                             </div>
-                            {console.log("labour rowssss:", labourRows)}
+                            {/* {console.log("labour rowssss:", labourRows)} */}
 
 
 

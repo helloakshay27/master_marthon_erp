@@ -268,7 +268,7 @@ const LabourRateDetails = () => {
                         <a href="">Setup &gt; Engineering Setup &gt; Rate</a>
                     </a>
                     <h5 class="mt-4">Rate Details (Labour)</h5>
-                    {/* {status && status.toLowerCase() === "draft" && (
+                    {status && status.toLowerCase() === "draft" && (
                         <div className="d-flex justify-content-end m-2">
 
                             <Link
@@ -285,7 +285,7 @@ const LabourRateDetails = () => {
                             </Link>
 
                         </div>
-                    )} */}
+                    )}
                     {rateDetails?.show_revision === true && (
                         <div className="d-flex justify-content-end m-2 mb-4">
 
@@ -478,11 +478,12 @@ const LabourRateDetails = () => {
                                                                     <th className="text-start">Sr.No.</th>
                                                                     <th className="text-start">Category</th>
                                                                     <th className="text-start">Activity</th>
+                                                                    <th className="text-start">Sub-Activity</th>
                                                                     <th className="text-start">UOM</th>
                                                                     <th className="text-start">Effective Date</th>
                                                                     <th className="text-start">Rate (INR)
                                                                     </th>
-                                                                    <th className="text-start">Remark</th>
+                                                                    {/* <th className="text-start">Remark</th> */}
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -496,7 +497,7 @@ const LabourRateDetails = () => {
                                                                             </td>
                                                                             <td className="text-start">{row.category}</td>
                                                                             <td className="text-start">{row.labour_activity}</td>
-
+                                                                            <td className="text-start">{row.labour_sub_activity || "-"}</td>
                                                                             <td className="text-start">{row.uom}</td>
                                                                             <td className="text-start">
                                                                                 {/* {row.effective_date} */}
@@ -509,7 +510,7 @@ const LabourRateDetails = () => {
                                                                                 {row.rate}
                                                                             </td>
 
-                                                                            <td className="text-start">
+                                                                            {/* <td className="text-start">
                                                                                 {row.remarks && (
                                                                                     <span className="boq-id-link"
                                                                                         onClick={() => {
@@ -518,7 +519,7 @@ const LabourRateDetails = () => {
                                                                                         }}
                                                                                     >Remark</span>
                                                                                 )}
-                                                                            </td>
+                                                                            </td> */}
 
                                                                         </tr>
                                                                     ))

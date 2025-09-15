@@ -737,6 +737,7 @@ const MaterialQCCreate = () => {
                                                                                 <th className="main2-th">Upload At</th>
                                                                                 <th className="main2-th">Upload File</th>
                                                                                 <th className="main2-th">Status</th>
+                                                                                <th className="main2-th">Remark</th>
                                                                                 <th className="main2-th" style={{ width: 100 }}>
                                                                                     Action
                                                                                 </th>
@@ -856,6 +857,10 @@ const MaterialQCCreate = () => {
                                                                                             classNamePrefix="react-select"
                                                                                             isClearable={false}
                                                                                         />
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        {/* <input type="text"  className="form-control"/> */}
+                                                                                        <textarea className="form-control"></textarea>
                                                                                     </td>
                                                                                     <td className="document">
                                                                                         <div style={{ display: "flex", alignItems: "center" }}>
