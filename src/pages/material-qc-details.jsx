@@ -529,18 +529,24 @@ const MaterialQCDetails = () => {
                                                                                                                     <table className="w-100">
                                                                                                                         <thead>
                                                                                                                             <tr>
-                                                                                                                                <th className="text-start">Sr. No</th>
-                                                                                                                                <th className="text-start">Material Description</th>
-                                                                                                                                <th className="text-start">MOR No.</th>
-                                                                                                                                <th className="text-start">Code</th>
-                                                                                                                                <th className="text-start">Material Type</th>
-                                                                                                                                <th className="text-start"> Material Sub-Type</th>
-                                                                                                                                {/* <th className="text-start">Brand</th> */}
-                                                                                                                                <th className="text-start">UOM</th>
-                                                                                                                                <th className="text-start">Is QC Required</th>
-                                                    
-                                                                                                                                <th className="text-start">Is MTC Received</th>
-                                                    
+                                                                                                                                <th className="text-start" rowSpan={2}>Sr. No</th>
+                                                                                                                                <th className="text-start" rowSpan={2}>Material Description</th>
+                                                                                                                                <th className="text-start" rowSpan={2}>MOR No.</th>
+                                                                                                                                <th className="text-start" rowSpan={2}>Code</th>
+                                                                                                                                <th className="text-start" rowSpan={2}>Material Type</th>
+                                                                                                                                <th className="text-start" rowSpan={2}> Material Sub-Type</th>
+                                                                                                                                {/* <th className="text-start" rowSpan={2}>Brand</th> */}
+                                                                                                                                <th className="text-start" rowSpan={2}>UOM</th>
+                                                                                                                                <th className="text-start" rowSpan={2}>Is QC Required</th>
+                                                                                                                                <th className="text-start" rowSpan={2}>Is MTC Received</th>
+                                                                                                                                <th className="text-start" colSpan={5}>Quantity</th>
+                                                                                                                            </tr>
+                                                                                                                            <tr>
+                                                                                                                                <th className="text-start">Ordered</th>
+                                                                                                                                <th className="text-start">Breakage</th>
+                                                                                                                                <th className="text-start">Defective</th>
+                                                                                                                                <th className="text-start">Accepted</th>
+                                                                                                                                <th className="text-start">Tolerance Qty</th>
                                                                                                                             </tr>
                                                                                                                         </thead>
                                                                                                                         <tbody>
@@ -548,16 +554,61 @@ const MaterialQCDetails = () => {
                                                                                                                                 <td className="text-start">{matIdx + 1}</td>
                                                                                                                                 <td className="text-start">{mat.details.description}</td>
                                                                                                                                 <td className="text-start">{mat.details.morNo}</td>
-                                                                                                                                
                                                                                                                                 <td className="text-start">{mat.details.code}</td>
                                                                                                                                 <td className="text-start">{mat.details.type}</td>
                                                                                                                                 <td className="text-start">{mat.details.subType}</td>
                                                                                                                                 {/* <td className="text-start">{mat.details.brand}</td> */}
                                                                                                                                 <td className="text-start">{mat.details.uom}</td>
                                                                                                                                 <td className="text-start">{mat.details.qcRequired}</td>
-                                                    
                                                                                                                                 <td className="text-start">{mat.details.mtcReceived}</td>
-                                                    
+                                                                                                                                <td className="text-start" style={{ minWidth: 90 }}>
+                                                                                                                                    <input
+                                                                                                                                        type="number"
+                                                                                                                                        className="form-control"
+                                                                                                                                        value={mat.details.orderedQty || ""}
+                                                                                                                                        disabled
+                                                                                                                                    />
+                                                                                                                                </td>
+                                                                                                                                <td className="text-start" style={{ minWidth: 90 }}>
+                                                                                                                                    <input
+                                                                                                                                        type="number"
+                                                                                                                                        className="form-control"
+                                                                                                                                        value={mat.details.breakageQty || ""}
+                                                                                                                                        onChange={(e) => {
+                                                                                                                                            const val = e.target.value;
+                                                                                                                                            setMaterials(prev => prev.map((m, idx) => idx === matIdx ? { ...m, details: { ...m.details, breakageQty: val } } : m));
+                                                                                                                                        }}
+                                                                                                                                        disabled
+                                                                                                                                    />
+                                                                                                                                </td>
+                                                                                                                                <td className="text-start" style={{ minWidth: 90 }}>
+                                                                                                                                    <input
+                                                                                                                                        type="number"
+                                                                                                                                        className="form-control"
+                                                                                                                                        value={mat.details.defectiveQty || ""}
+                                                                                                                                        onChange={(e) => {
+                                                                                                                                            const val = e.target.value;
+                                                                                                                                            setMaterials(prev => prev.map((m, idx) => idx === matIdx ? { ...m, details: { ...m.details, defectiveQty: val } } : m));
+                                                                                                                                        }}
+                                                                                                                                        disabled
+                                                                                                                                    />
+                                                                                                                                </td>
+                                                                                                                                <td className="text-start" style={{ minWidth: 90 }}>
+                                                                                                                                    <input
+                                                                                                                                        type="number"
+                                                                                                                                        className="form-control"
+                                                                                                                                        value={mat.details.acceptedQty || ""}
+                                                                                                                                        disabled
+                                                                                                                                    />
+                                                                                                                                </td>
+                                                                                                                                <td className="text-start" style={{ minWidth: 110 }}>
+                                                                                                                                    <input
+                                                                                                                                        type="number"
+                                                                                                                                        className="form-control"
+                                                                                                                                        value={mat.details.toleranceQty || ""}
+                                                                                                                                        disabled
+                                                                                                                                    />
+                                                                                                                                </td>
                                                                                                                             </tr>
                                                                                                                         </tbody>
                                                                                                                     </table>
