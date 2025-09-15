@@ -675,10 +675,11 @@ const MaterialQCCreate = () => {
                                                                             <th className="text-start" rowSpan={2}> Material Sub-Type</th>
                                                                             {/* <th className="text-start" rowSpan={2}>Brand</th> */}
                                                                             
-                                                                            <th className="text-start" rowSpan={2}>Is QC Required</th>
-                                                                            <th className="text-start" rowSpan={2}>Is MTC Received</th>
+                                                                            
                                                                             <th className="text-start">Ordered Qty</th>
                                                                             <th className="text-start" rowSpan={2}>UOM</th>
+                                                                            <th className="text-start" rowSpan={2}>Is QC Required</th>
+                                                                            <th className="text-start" rowSpan={2}>Is MTC Received</th>
                                                                             {/* <th className="text-start" colSpan={5}>Quantity</th> */}
                                                                         </tr>
                                                                         {/* <tr>
@@ -699,8 +700,7 @@ const MaterialQCCreate = () => {
                                                                             <td className="text-start">{mat.details.subType}</td>
                                                                             {/* <td className="text-start">{mat.details.brand}</td> */}
                                                                             
-                                                                            <td className="text-start">{mat.details.qcRequired}</td>
-                                                                            <td className="text-start">{mat.details.mtcReceived}</td>
+                                                                           
                                                                             <td className="text-start" style={{ minWidth: 90 }}>
                                                                                 <input
                                                                                     type="number"
@@ -710,6 +710,8 @@ const MaterialQCCreate = () => {
                                                                                 />
                                                                             </td>
                                                                             <td className="text-start">{mat.details.uom}</td>
+                                                                            <td className="text-start">{mat.details.qcRequired}</td>
+                                                                            <td className="text-start">{mat.details.mtcReceived}</td>
                                                                             {/* <td className="text-start" style={{ minWidth: 90 }}>
                                                                                 <input
                                                                                     type="number"

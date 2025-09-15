@@ -537,10 +537,11 @@ const MaterialQCDetails = () => {
                                                                                                                                 <th className="text-start" rowSpan={2}> Material Sub-Type</th>
                                                                                                                                 {/* <th className="text-start" rowSpan={2}>Brand</th> */}
                                                                                                                                 
-                                                                                                                                <th className="text-start" rowSpan={2}>Is QC Required</th>
-                                                                                                                                <th className="text-start" rowSpan={2}>Is MTC Received</th>
+                                                                                                                              
                                                                                                                                 <th className="text-start" rowSpan={2}>Ordered Qty</th>
                                                                                                                                 <th className="text-start" rowSpan={2}>UOM</th>
+                                                                                                                                <th className="text-start" rowSpan={2}>Is QC Required</th>
+                                                                                                                                <th className="text-start" rowSpan={2}>Is MTC Received</th>
                                                                                                                                 {/* <th className="text-start" colSpan={5}>Quantity</th>
                                                                                                                                  */}
                                                                                                                             </tr>
@@ -562,8 +563,7 @@ const MaterialQCDetails = () => {
                                                                                                                                 <td className="text-start">{mat.details.subType}</td>
                                                                                                                                 {/* <td className="text-start">{mat.details.brand}</td> */}
                                                                                                                                 
-                                                                                                                                <td className="text-start">{mat.details.qcRequired}</td>
-                                                                                                                                <td className="text-start">{mat.details.mtcReceived}</td>
+                                                                                                                               
                                                                                                                                 <td className="text-start" style={{ minWidth: 90 }}>
                                                                                                                                     <input
                                                                                                                                         type="number"
@@ -573,6 +573,8 @@ const MaterialQCDetails = () => {
                                                                                                                                     />
                                                                                                                                 </td>
                                                                                                                                 <td className="text-start">{mat.details.uom}</td>
+                                                                                                                                <td className="text-start">{mat.details.qcRequired}</td>
+                                                                                                                                <td className="text-start">{mat.details.mtcReceived}</td>
                                                                                                                                 {/* <td className="text-start" style={{ minWidth: 90 }}>
                                                                                                                                     <input
                                                                                                                                         type="number"
