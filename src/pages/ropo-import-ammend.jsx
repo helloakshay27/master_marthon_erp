@@ -187,11 +187,33 @@ const RopoImportAmmend = () => {
   // MOR list options for Add MOR modal (import type)
   const [morOptions, setMorOptions] = useState([]);
 
+  // useEffect(() => {
+  //   const fetchMorNumbers = async () => {
+  //     try {
+  //       const resp = await axios.get(
+  //         `${baseURL}pms/company_setups/get_mors.json?token=${token}&q[mor_type_eq]=import`
+  //       );
+  //       const options = (resp.data?.material_order_requests || []).map((mor) => ({
+  //         value: mor.id,
+  //         label: mor.mor_number,
+  //       }));
+  //       setMorOptions(options);
+  //     } catch (err) {
+  //       console.error("Error fetching MOR numbers:", err);
+  //       setMorOptions([]);
+  //     }
+  //   };
+  //   if (token) fetchMorNumbers();
+  // }, [token]);
+  
   useEffect(() => {
     const fetchMorNumbers = async () => {
       try {
+        const companyParam = selectedCompany?.value
+          ? `&q[company_id_in][]=${selectedCompany.value}`
+          : "";
         const resp = await axios.get(
-          `${baseURL}pms/company_setups/get_mors.json?token=${token}&q[mor_type_eq]=import`
+          `${baseURL}pms/company_setups/get_mors.json?token=${token}&q[mor_type_eq]=import${companyParam}`
         );
         const options = (resp.data?.material_order_requests || []).map((mor) => ({
           value: mor.id,
@@ -204,7 +226,7 @@ const RopoImportAmmend = () => {
       }
     };
     if (token) fetchMorNumbers();
-  }, [token]);
+  }, [token, selectedCompany]);
 
   // Terms and conditions state
 

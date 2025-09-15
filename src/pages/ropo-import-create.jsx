@@ -158,8 +158,11 @@ const RopoImportCreate = () => {
   useEffect(() => {
     const fetchMorNumbers = async () => {
       try {
+        const companyParam = selectedCompany?.value
+          ? `&q[company_id_in][]=${selectedCompany.value}`
+          : "";
         const resp = await axios.get(
-          `${baseURL}pms/company_setups/get_mors.json?token=${token}&q[mor_type_eq]=import`
+          `${baseURL}pms/company_setups/get_mors.json?token=${token}&q[mor_type_eq]=import${companyParam}`
         );
         const options = (resp.data?.material_order_requests || []).map((mor) => ({
           value: mor.id,
@@ -172,7 +175,7 @@ const RopoImportCreate = () => {
       }
     };
     if (token) fetchMorNumbers();
-  }, [token]);
+  }, [token, selectedCompany]);
 
   // Terms and conditions state
 
@@ -1767,12 +1770,13 @@ const RopoImportCreate = () => {
     if (!inventoryId) return;
     setMorOptionsByMaterialId((prev) => prev[inventoryId] ? prev : { ...prev, [inventoryId]: { loading: true } });
     try {
+      const companyParam = selectedCompany?.value ? `&q[company_id_in][]=${selectedCompany.value}` : "";
       // Generic Specifications
       const [genResp, colorResp, brandResp, uomResp] = await Promise.all([
-        axios.get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${inventoryId}&token=${token}`),
-        axios.get(`${baseURL}pms/colours.json?q[material_id_eq]=${inventoryId}&token=${token}`),
-        axios.get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${inventoryId}&token=${token}`),
-        axios.get(`${baseURL}unit_of_measures.json?q[material_id_eq]=${inventoryId}&token=${token}`),
+        axios.get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${inventoryId}${companyParam}&token=${token}`),
+        axios.get(`${baseURL}pms/colours.json?q[material_id_eq]=${inventoryId}${companyParam}&token=${token}`),
+        axios.get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${inventoryId}${companyParam}&token=${token}`),
+        axios.get(`${baseURL}unit_of_measures.json?q[material_id_eq]=${inventoryId}${companyParam}&token=${token}`),
       ]);
 
       const genericOptions = Array.isArray(genResp?.data)
