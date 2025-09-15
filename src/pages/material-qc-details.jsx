@@ -536,18 +536,21 @@ const MaterialQCDetails = () => {
                                                                                                                                 <th className="text-start" rowSpan={2}>Material Type</th>
                                                                                                                                 <th className="text-start" rowSpan={2}> Material Sub-Type</th>
                                                                                                                                 {/* <th className="text-start" rowSpan={2}>Brand</th> */}
-                                                                                                                                <th className="text-start" rowSpan={2}>UOM</th>
+                                                                                                                                
                                                                                                                                 <th className="text-start" rowSpan={2}>Is QC Required</th>
                                                                                                                                 <th className="text-start" rowSpan={2}>Is MTC Received</th>
-                                                                                                                                <th className="text-start" colSpan={5}>Quantity</th>
+                                                                                                                                <th className="text-start" rowSpan={2}>Ordered Qty</th>
+                                                                                                                                <th className="text-start" rowSpan={2}>UOM</th>
+                                                                                                                                {/* <th className="text-start" colSpan={5}>Quantity</th>
+                                                                                                                                 */}
                                                                                                                             </tr>
-                                                                                                                            <tr>
+                                                                                                                            {/* <tr>
                                                                                                                                 <th className="text-start">Ordered</th>
                                                                                                                                 <th className="text-start">Breakage</th>
                                                                                                                                 <th className="text-start">Defective</th>
                                                                                                                                 <th className="text-start">Accepted</th>
                                                                                                                                 <th className="text-start">Tolerance Qty</th>
-                                                                                                                            </tr>
+                                                                                                                            </tr> */}
                                                                                                                         </thead>
                                                                                                                         <tbody>
                                                                                                                             <tr>
@@ -558,7 +561,7 @@ const MaterialQCDetails = () => {
                                                                                                                                 <td className="text-start">{mat.details.type}</td>
                                                                                                                                 <td className="text-start">{mat.details.subType}</td>
                                                                                                                                 {/* <td className="text-start">{mat.details.brand}</td> */}
-                                                                                                                                <td className="text-start">{mat.details.uom}</td>
+                                                                                                                                
                                                                                                                                 <td className="text-start">{mat.details.qcRequired}</td>
                                                                                                                                 <td className="text-start">{mat.details.mtcReceived}</td>
                                                                                                                                 <td className="text-start" style={{ minWidth: 90 }}>
@@ -569,7 +572,8 @@ const MaterialQCDetails = () => {
                                                                                                                                         disabled
                                                                                                                                     />
                                                                                                                                 </td>
-                                                                                                                                <td className="text-start" style={{ minWidth: 90 }}>
+                                                                                                                                <td className="text-start">{mat.details.uom}</td>
+                                                                                                                                {/* <td className="text-start" style={{ minWidth: 90 }}>
                                                                                                                                     <input
                                                                                                                                         type="number"
                                                                                                                                         className="form-control"
@@ -608,7 +612,7 @@ const MaterialQCDetails = () => {
                                                                                                                                         value={mat.details.toleranceQty || ""}
                                                                                                                                         disabled
                                                                                                                                     />
-                                                                                                                                </td>
+                                                                                                                                </td> */}
                                                                                                                             </tr>
                                                                                                                         </tbody>
                                                                                                                     </table>
