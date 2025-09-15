@@ -64,7 +64,7 @@ const RopoMappingEdit = () => {
 
   //   try {
   //     const response = await axios.post(
-  //       `https://marathon.lockated.com/purchase_orders/ropo_material_matches.json?token=${token}`,
+  //       `${baseURL}/purchase_orders/ropo_material_matches.json?token=${token}`,
   //       {
   //         mor_inventory_ids: allMaterialIds,
   //         exclude_material_inventory_ids: [],
@@ -115,7 +115,7 @@ const RopoMappingEdit = () => {
       .map((id) => `mor_inventory_ids[]=${id}`)
       .join("&");
 
-    const url = `https://marathon.lockated.com/purchase_orders/ropo_material_matches.json?token=${token}&${queryParams}`;
+    const url = `${baseURL}/purchase_orders/ropo_material_matches.json?token=${token}&${queryParams}`;
 
     const response = await axios.get(url);
 
@@ -551,7 +551,7 @@ if (companyOption) {
         }
       }
 
-      const apiUrl = `https://marathon.lockated.com//material_order_requests/material_details.json?${queryParams.toString()}&q[mor_type_eq]=ropo`;
+      const apiUrl = `${baseURL}//material_order_requests/material_details.json?${queryParams.toString()}&q[mor_type_eq]=ropo`;
       console.log("API URL with filters:", apiUrl);
       console.log("Selected Project:", selectedProject);
       console.log("Selected Site:", selectedSite);

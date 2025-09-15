@@ -5,6 +5,8 @@ import Modal from "react-bootstrap/Modal";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { baseURL } from "../confi/apiDomain";
+
 
 const RopoMappingDetail = () => {
   const { id } = useParams();
@@ -25,7 +27,7 @@ const handleStatusChange = (option) => {
 
   useEffect(() => {
     axios
-      .get(`https://marathon.lockated.com/ropo_mappings/${id}.json?token=${token}`)
+      .get(`${baseURL}/ropo_mappings/${id}.json?token=${token}`)
       .then((res) => {
         setPurchaseOrderData(res.data);
          // Set initial status from API response
@@ -102,7 +104,7 @@ const handleStatusUpdate = async () => {
 
   try {
     const response = await axios.patch(
-      `https://marathon.lockated.com/ropo_mappings/${id}/update_status.json?token=${token}`,
+      `${baseURL}/ropo_mappings/${id}/update_status.json?token=${token}`,
       {
         status_log: {
           status: selectedStatus.value.toLowerCase(),

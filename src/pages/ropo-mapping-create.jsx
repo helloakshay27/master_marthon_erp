@@ -70,7 +70,7 @@ const RopoMappingCreate = () => {
       .map((id) => `mor_inventory_ids[]=${id}`)
       .join("&");
 
-    const url = `https://marathon.lockated.com/purchase_orders/ropo_material_matches.json?token=${token}&${queryParams}`;
+    const url = `${baseURL}/purchase_orders/ropo_material_matches.json?token=${token}&${queryParams}`;
 
     const response = await axios.get(url);
 
@@ -386,7 +386,7 @@ const RopoMappingCreate = () => {
         }
       }
 
-      const apiUrl = `https://marathon.lockated.com//material_order_requests/material_details.json?${queryParams.toString()}&q[mor_type_eq]=ropo`;
+      const apiUrl = `${baseURL}/material_order_requests/material_details.json?${queryParams.toString()}&q[mor_type_eq]=ropo`;
       console.log("API URL with filters:", apiUrl);
       console.log("Selected Project IDs:", overrides.projectIds ?? morFormData.projectIds);
       console.log("Selected Site IDs:", overrides.siteIds ?? morFormData.siteIds);
@@ -1315,7 +1315,7 @@ useEffect(() => {
       console.log("Submitting ROPO mapping:", payload);
 
       const response = await axios.post(
-        `https://marathon.lockated.com/ropo_mappings.json?token=${token}`,
+        `${baseURL}/ropo_mappings.json?token=${token}`,
         payload,
         { headers: { "Content-Type": "application/json" } }
       );
