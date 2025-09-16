@@ -302,21 +302,21 @@ const MaterialQCCreate = () => {
             {
                 id: 1,
                 details: {
-                    morNo: 'MOR001', code: 'Code001', qcRequired: 'Yes', type: 'Type1', subType: 'Sub-Type1', brand: 'Brand1', mtcReceived: 'No', uom: 'UOM1',
+                    morNo: 'MOR001', code: 'Code001', qcRequired: 'Yes', type: 'Type1', subType: 'Sub-Type1', brand: 'Brand1', mtcReceived: 'No', uom: 'UOM1', project: 'Project1', subProject: 'Sub-Project1', description: 'Material 1 Description',
                 },
                 attachments: [],
             },
             {
                 id: 2,
                 details: {
-                    morNo: 'MOR002', code: 'Code002', qcRequired: 'No', type: 'Type2', subType: 'Sub-Type2', brand: 'Brand2', mtcReceived: 'Yes', uom: 'UOM2',
+                    morNo: 'MOR002', code: 'Code002', qcRequired: 'No', type: 'Type2', subType: 'Sub-Type2', brand: 'Brand2', mtcReceived: 'Yes', uom: 'UOM2', project: 'Project2', subProject: 'Sub-Project2', description: 'Material 2 Description',
                 },
                 attachments: [],
             },
             {
                 id: 3,
                 details: {
-                    morNo: 'MOR003', code: 'Code003', qcRequired: 'Yes', type: 'Type3', subType: 'Sub-Type3', brand: 'Brand3', mtcReceived: 'No', uom: 'UOM3',
+                    morNo: 'MOR003', code: 'Code003', qcRequired: 'Yes', type: 'Type3', subType: 'Sub-Type3', brand: 'Brand3', mtcReceived: 'No', uom: 'UOM3', project: 'Project3', subProject: 'Sub-Project3', description: 'Material 3 Description',
                 },
                 attachments: [],
             },
@@ -668,9 +668,11 @@ const MaterialQCCreate = () => {
                                                                     <thead>
                                                                         <tr>
                                                                             <th className="text-start" rowSpan={2}>Sr. No</th>
+                                                                            <th className="text-start" rowSpan={2}>Project</th>
+                                                                            <th className="text-start" rowSpan={2}>Sub-Project</th>
                                                                             <th className="text-start" rowSpan={2}>Material Description</th>
                                                                             <th className="text-start" rowSpan={2}>MOR No.</th>
-                                                                            <th className="text-start" rowSpan={2}>Code</th>
+                                                                            <th className="text-start" rowSpan={2}> Material Code</th>
                                                                             <th className="text-start" rowSpan={2}>Material Type</th>
                                                                             <th className="text-start" rowSpan={2}> Material Sub-Type</th>
                                                                             {/* <th className="text-start" rowSpan={2}>Brand</th> */}
@@ -693,6 +695,8 @@ const MaterialQCCreate = () => {
                                                                     <tbody>
                                                                         <tr>
                                                                             <td className="text-start">{matIdx + 1}</td>
+                                                                            <td className="text-start">Nexone</td>
+                                                                            <td className="text-start">Antilia</td>
                                                                             <td className="text-start">{mat.details.description}</td>
                                                                             <td className="text-start">{mat.details.morNo}</td>
                                                                             <td className="text-start">{mat.details.code}</td>

@@ -454,7 +454,7 @@ const MaterialQCDetails = () => {
                                                             </div> */}
 
                                                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>Inspection ID</label></div>
+                                                                <div className="col-6"><label>Inspection By</label></div>
                                                                 <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>PO/SRPL/NXZPh2/18254</label></div>
                                                             </div>
 
@@ -530,9 +530,11 @@ const MaterialQCDetails = () => {
                                                                                                                         <thead>
                                                                                                                             <tr>
                                                                                                                                 <th className="text-start" rowSpan={2}>Sr. No</th>
+                                                                                                                                <th className="text-start" rowSpan={2}>Project</th>
+                                                                                                                                <th className="text-start" rowSpan={2}>Sub Project</th>
                                                                                                                                 <th className="text-start" rowSpan={2}>Material Description</th>
                                                                                                                                 <th className="text-start" rowSpan={2}>MOR No.</th>
-                                                                                                                                <th className="text-start" rowSpan={2}>Code</th>
+                                                                                                                                <th className="text-start" rowSpan={2}> Material Code</th>
                                                                                                                                 <th className="text-start" rowSpan={2}>Material Type</th>
                                                                                                                                 <th className="text-start" rowSpan={2}> Material Sub-Type</th>
                                                                                                                                 {/* <th className="text-start" rowSpan={2}>Brand</th> */}
@@ -556,7 +558,11 @@ const MaterialQCDetails = () => {
                                                                                                                         <tbody>
                                                                                                                             <tr>
                                                                                                                                 <td className="text-start">{matIdx + 1}</td>
-                                                                                                                                <td className="text-start">{mat.details.description}</td>
+                                                                                                                                <td className="text-start">Nexone</td>
+                                                                                                                                <td className="text-start">Antila</td>
+                                                                                                                                <td className="text-start">description</td>
+
+
                                                                                                                                 <td className="text-start">{mat.details.morNo}</td>
                                                                                                                                 <td className="text-start">{mat.details.code}</td>
                                                                                                                                 <td className="text-start">{mat.details.type}</td>
