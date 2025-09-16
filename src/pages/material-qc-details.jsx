@@ -126,8 +126,6 @@ const MaterialQCDetails = () => {
         }
     }, [selectedCompany]);
 
-
-
     const statusOptions = [
         {
             label: "Select Status",
@@ -170,18 +168,14 @@ const MaterialQCDetails = () => {
         setRemark2(e.target.value);
     };
 
-
     // attachment like mor******
-    const [attachments, setAttachments] = useState([
-
-    ]);
+  const [attachments, setAttachments] = useState([]);
 
     const getLocalDateTime = () => {
         const now = new Date();
         const offset = now.getTimezoneOffset(); // in minutes
         const localDate = new Date(now.getTime() - offset * 60000);
         return localDate.toISOString().slice(0, 19); // "YYYY-MM-DDTHH:MM"
-
     };
 
     const handleAddRow = () => {
@@ -263,10 +257,11 @@ const MaterialQCDetails = () => {
         );
     };
 
-    const attachmentsPayload = attachments
-        .flatMap((att) => att.attachments || []);
+  const attachmentsPayload = attachments.flatMap(
+    (att) => att.attachments || []
+  );
 
-    console.log("attachments:", attachmentsPayload)
+  console.log("attachments:", attachmentsPayload);
 
      // -----------------------
         const [materials, setMaterials] = useState([]); // Each material: { id, details, attachments: [] }
@@ -276,74 +271,95 @@ const MaterialQCDetails = () => {
                 {
                     id: 1,
                     details: {
-                        morNo: 'MOR001', code: 'Code001', qcRequired: 'Yes', type: 'Type1', subType: 'Sub-Type1', brand: 'Brand1', mtcReceived: 'No', uom: 'UOM1',
+          morNo: "MOR001",
+          code: "Code001",
+          qcRequired: "Yes",
+          type: "Type1",
+          subType: "Sub-Type1",
+          brand: "Brand1",
+          mtcReceived: "No",
+          uom: "UOM1",
                     },
                     attachments: [
                         {
                             id: 101,
-                            fileType: 'PDF',
-                            fileName: 'TestReport1.pdf',
-                            uploadDate: '2025-09-09T10:00',
-                            fileUrl: 'https://example.com/TestReport1.pdf',
+            fileType: "PDF",
+            fileName: "TestReport1.pdf",
+            uploadDate: "2025-09-09T10:00",
+            fileUrl: "https://example.com/TestReport1.pdf",
                             file: null,
                             isExisting: true,
-                            status: 'Approved',
+            status: "Approved",
                         },
                         {
                             id: 102,
-                            fileType: 'Image',
-                            fileName: 'Photo1.jpg',
-                            uploadDate: '2025-09-09T11:00',
-                            fileUrl: 'https://example.com/Photo1.jpg',
+            fileType: "Image",
+            fileName: "Photo1.jpg",
+            uploadDate: "2025-09-09T11:00",
+            fileUrl: "https://example.com/Photo1.jpg",
                             file: null,
                             isExisting: true,
-                            status: 'Pending',
+            status: "Pending",
                         },
                     ],
                 },
                 {
                     id: 2,
                     details: {
-                        morNo: 'MOR002', code: 'Code002', qcRequired: 'No', type: 'Type2', subType: 'Sub-Type2', brand: 'Brand2', mtcReceived: 'Yes', uom: 'UOM2',
+          morNo: "MOR002",
+          code: "Code002",
+          qcRequired: "No",
+          type: "Type2",
+          subType: "Sub-Type2",
+          brand: "Brand2",
+          mtcReceived: "Yes",
+          uom: "UOM2",
                     },
                     attachments: [
                         {
                             id: 201,
-                            fileType: 'PDF',
-                            fileName: 'Certificate2.pdf',
-                            uploadDate: '2025-09-08T09:30',
-                            fileUrl: 'https://example.com/Certificate2.pdf',
+            fileType: "PDF",
+            fileName: "Certificate2.pdf",
+            uploadDate: "2025-09-08T09:30",
+            fileUrl: "https://example.com/Certificate2.pdf",
                             file: null,
                             isExisting: true,
-                            status: 'Rejected',
+            status: "Rejected",
                         },
                     ],
                 },
                 {
                     id: 3,
                     details: {
-                        morNo: 'MOR003', code: 'Code003', qcRequired: 'Yes', type: 'Type3', subType: 'Sub-Type3', brand: 'Brand3', mtcReceived: 'No', uom: 'UOM3',
+          morNo: "MOR003",
+          code: "Code003",
+          qcRequired: "Yes",
+          type: "Type3",
+          subType: "Sub-Type3",
+          brand: "Brand3",
+          mtcReceived: "No",
+          uom: "UOM3",
                     },
                     attachments: [
                         {
                             id: 301,
-                            fileType: 'Excel',
-                            fileName: 'Specs3.xlsx',
-                            uploadDate: '2025-09-07T15:45',
-                            fileUrl: 'https://example.com/Specs3.xlsx',
+            fileType: "Excel",
+            fileName: "Specs3.xlsx",
+            uploadDate: "2025-09-07T15:45",
+            fileUrl: "https://example.com/Specs3.xlsx",
                             file: null,
                             isExisting: true,
-                            status: 'Approved',
+            status: "Approved",
                         },
                         {
                             id: 302,
-                            fileType: 'PDF',
-                            fileName: 'Manual3.pdf',
-                            uploadDate: '2025-09-07T16:00',
-                            fileUrl: 'https://example.com/Manual3.pdf',
+            fileType: "PDF",
+            fileName: "Manual3.pdf",
+            uploadDate: "2025-09-07T16:00",
+            fileUrl: "https://example.com/Manual3.pdf",
                             file: null,
                             isExisting: true,
-                            status: 'Pending',
+            status: "Pending",
                         },
                     ],
                 },
@@ -351,7 +367,7 @@ const MaterialQCDetails = () => {
         }, []);
     
         const handleAddAttachment = (matIdx) => {
-            setMaterials(prev =>
+    setMaterials((prev) =>
                 prev.map((mat, idx) =>
                     idx === matIdx
                         ? {
@@ -376,22 +392,25 @@ const MaterialQCDetails = () => {
         };
     
         const handleRemoveAttachment = (matIdx, attId) => {
-            setMaterials(prev =>
+    setMaterials((prev) =>
                 prev.map((mat, idx) =>
                     idx === matIdx
-                        ? { ...mat, attachments: mat.attachments.filter(att => att.id !== attId) }
+          ? {
+              ...mat,
+              attachments: mat.attachments.filter((att) => att.id !== attId),
+            }
                         : mat
                 )
             );
         };
     
         const handleAttachmentStatusChange = (matIdx, attId, newStatus) => {
-            setMaterials(prev =>
+    setMaterials((prev) =>
                 prev.map((mat, idx) =>
                     idx === matIdx
                         ? {
                             ...mat,
-                            attachments: mat.attachments.map(att =>
+              attachments: mat.attachments.map((att) =>
                                 att.id === attId ? { ...att, status: newStatus } : att
                             ),
                         }
@@ -405,10 +424,10 @@ const MaterialQCDetails = () => {
         <>
             <div className="website-content overflow-auto">
                 <div className="module-data-section ms-2">
-                    <a href="">Home &gt; Store &gt; Material QC &gt; Inward Material QC List</a>
+          <a href="">
+            Home &gt; Store &gt; Material QC &gt; Inward Material QC List
+          </a>
                     <h5 className="mt-3">Inward Material QC</h5>
-
-
 
                     <div className="row container-fluid my-4 align-items-center">
                         <div className="col-md-12 ">
@@ -430,20 +449,146 @@ const MaterialQCDetails = () => {
                                                 id="mor-material-details"
                                             >
                                                 <div className="card-body mt-0">
-
                                                     <div className="details_page">
                                                         <div className="row px-3">
                                                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>Company</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>Sanvo Resorts Pvt. Ltd.-II</label></div>
+                                <div className="col-6">
+                                  <label>Gate Entry No.</label>
+                                                            </div>
+                                <div className="col-6">
+                                  <label className="text">
+                                    <span className="me-3">
+                                      <span className="text-dark">:</span>
+                                    </span>
+                                    GE-2025-0012
+                                  </label>
+                                                            </div>
+                                                            </div>
+                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                <div className="col-6">
+                                  <label>Company</label>
+                                                            </div>
+                                <div className="col-6">
+                                  <label className="text">
+                                    <span className="me-3">
+                                      <span className="text-dark">:</span>
+                                    </span>
+                                    Sanvo Resorts Pvt. Ltd.-II
+                                  </label>
+                                </div>
+                              </div>
+                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                <div className="col-6">
+                                  <label>Supplier</label>
+                                </div>
+                                <div className="col-6">
+                                  <label className="text">
+                                    <span className="me-3">
+                                      <span className="text-dark">:</span>
+                                    </span>
+                                    LANDMARK REALTY
+                                  </label>
+                                </div>
                                                             </div>
 
                                                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>Material Category</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>Material</label></div>
+                                <div className="col-6">
+                                  <label>Gate No.</label>
+                                </div>
+                                <div className="col-6">
+                                  <label className="text">
+                                    <span className="me-3">
+                                      <span className="text-dark">:</span>
+                                    </span>
+                                    G-104
+                                  </label>
+                                </div>
                                                             </div>
 
-                                                            {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                <div className="col-6">
+                                  <label>Gate Entry Date & Time</label>
+                                </div>
+                                <div className="col-6">
+                                  <label className="text">
+                                    <span className="me-3">
+                                      <span className="text-dark">:</span>
+                                    </span>
+                                    12-08-2025 10:45 AM
+                                  </label>
+                                </div>
+                                                            </div>
+
+                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                <div className="col-6">
+                                  <label>Vehicle No.</label>
+                                </div>
+                                <div className="col-6">
+                                  <label className="text">
+                                    <span className="me-3">
+                                      <span className="text-dark">:</span>
+                                    </span>
+                                    MH12AB3456
+                                  </label>
+                                </div>
+                                                            </div>
+
+                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                <div className="col-6">
+                                  <label>Delivery Challan No.</label>
+                                </div>
+                                <div className="col-6">
+                                  <label className="text">
+                                    <span className="me-3">
+                                      <span className="text-dark">:</span>
+                                    </span>
+                                    DC-90876
+                                  </label>
+                                </div>
+                                                            </div>
+
+                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                <div className="col-6">
+                                  <label>Delivery Challan Date</label>
+                                </div>
+                                <div className="col-6">
+                                  <label className="text">
+                                    <span className="me-3">
+                                      <span className="text-dark">:</span>
+                                    </span>
+                                    11-08-2025
+                                  </label>
+                                </div>
+                                                            </div>
+
+                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                <div className="col-6">
+                                  <label>Inspection By</label>
+                                                            </div>
+                                <div className="col-6">
+                                  <label className="text">
+                                    <span className="me-3">
+                                      <span className="text-dark">:</span>
+                                    </span>
+                                    PO/SRPL/NXZPh2/18254
+                                  </label>
+                                </div>
+                              </div>
+                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                <div className="col-6">
+                                  <label>Material Category</label>
+                                </div>
+                                <div className="col-6">
+                                  <label className="text">
+                                    <span className="me-3">
+                                      <span className="text-dark">:</span>
+                                    </span>
+                                    Material
+                                  </label>
+                                </div>
+                                                            </div>
+
+                              {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                                                                 <div className="col-6"><label>Project</label></div>
                                                                 <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>Nexzone - Phase II</label></div>
                                                             </div>
@@ -454,100 +599,97 @@ const MaterialQCDetails = () => {
                                                             </div> */}
 
                                                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>Inspection By</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>PO/SRPL/NXZPh2/18254</label></div>
+                                <div className="col-6">
+                                  <label>Inspection Date</label>
+                                </div>
+                                <div className="col-6">
+                                  <label className="text">
+                                    <span className="me-3">
+                                      <span className="text-dark">:</span>
+                                    </span>
+                                    12-08-2025
+                                  </label>
+                                </div>
                                                             </div>
 
-                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>Inspection Date</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>12-08-2025</label></div>
-                                                            </div>
-
-                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>Gate No.</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>G-104</label></div>
-                                                            </div>
-
-                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>Supplier</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>LANDMARK REALTY</label></div>
-                                                            </div>
-
-                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                                                                 <div className="col-6"><label>Store</label></div>
                                                                 <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>Main Warehouse</label></div>
-                                                            </div>
+                                                            </div> */}
+
 
                                                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>Gate Entry Date & Time</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>12-08-2025 10:45 AM</label></div>
+                                <div className="col-6">
+                                  <label>QC No.</label>
+                                </div>
+                                <div className="col-6">
+                                  <label className="text">
+                                    <span className="me-3">
+                                      <span className="text-dark">:</span>
+                                    </span>
+                                    QC-56789
+                                  </label>
+                                </div>
                                                             </div>
 
-                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>PO No.</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>PO-56789</label></div>
+                              {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                <div className="col-6">
+                                  <label>Remark</label>
                                                             </div>
+                                <div className="col-6">
+                                  <label className="text">
+                                    <span className="me-3">
+                                      <span className="text-dark">:</span>
+                                    </span>
+                                    Material received in good condition
+                                  </label>
+                                </div>
+                              </div> */}
 
-                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>Vehicle No.</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>MH12AB3456</label></div>
-                                                            </div>
-
-                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>Gate Entry No.</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>GE-2025-0012</label></div>
-                                                            </div>
-
-                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>Delivery Challan No.</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>DC-90876</label></div>
-                                                            </div>
-
-                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>Remark</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>Material received in good condition</label></div>
-                                                            </div>
-
-                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>Description</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>Cement OPC 53 Grade, 500 bags</label></div>
-                                                            </div>
-
-                                                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                                                <div className="col-6"><label>Delivery Challan Date</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>11-08-2025</label></div>
-                                                            </div>
+                             
                                                         </div>
                                                     </div>
 
                                                      {materials.map((mat, matIdx) => (
                                                                                                             <React.Fragment key={mat.id}>
                                                                                                                 <div className="d-flex justify-content-between mt-5 me-2">
-                                                                                                                    <h5 className=" ">Material Details {matIdx + 1} </h5>
+                                <h5 className=" ">
+                                  Material Details {matIdx + 1}{" "}
+                                </h5>
                                                                                                                 </div>
-                                                                                                                <div className="tbl-container mt-3 mb-5" style={{ maxHeight: "500px" }}>
+                              <div
+                                className="tbl-container mt-3 mb-5"
+                                style={{ maxHeight: "500px" }}
+                              >
                                                                                                                     <table className="w-100">
                                                                                                                         <thead>
                                                                                                                             <tr>
-                                                                                                                                <th className="text-start" rowSpan={2}>Sr. No</th>
-                                                                                                                                <th className="text-start" rowSpan={2}>Project</th>
-                                                                                                                                <th className="text-start" rowSpan={2}>Sub Project</th>
-                                                                                                                                <th className="text-start" rowSpan={2}>Material Description</th>
-                                                                                                                                <th className="text-start" rowSpan={2}>MOR No.</th>
-                                                                                                                                <th className="text-start" rowSpan={2}> Material Code</th>
-                                                                                                                                <th className="text-start" rowSpan={2}>Material Type</th>
-                                                                                                                                <th className="text-start" rowSpan={2}> Material Sub-Type</th>
-                                                                                                                                {/* <th className="text-start" rowSpan={2}>Brand</th> */}
-                                                                                                                                
-                                                                                                                              
-                                                                                                                                <th className="text-start" rowSpan={2}>Ordered Qty</th>
-                                                                                                                                <th className="text-start" rowSpan={2}>UOM</th>
-                                                                                                                                <th className="text-start" rowSpan={2}>Is QC Required</th>
-                                                                                                                                <th className="text-start" rowSpan={2}>Is MTC Received</th>
-                                                                                                                                {/* <th className="text-start" colSpan={5}>Quantity</th>
-                                                                                                                                 */}
+                                      <th className="text-start" rowSpan={2}>
+                                        Sr. No
+                                      </th>
+
+                                      <th className="text-start" rowSpan={2}>
+                                        Material Description
+                                      </th>
+
+                                      {/* <th className="text-start" rowSpan={2}>Brand</th> */}
+
+                                      <th className="text-start" rowSpan={2}>
+                                        Ordered Qty
+                                      </th>
+                                      <th className="text-start" rowSpan={2}>
+                                        UOM
+                                      </th>
+                                      <th className="text-start" rowSpan={2}>
+                                        Is QC Required
+                                      </th>
+                                      <th className="text-start" rowSpan={2}>
+                                        Is MTC Received
+                                      </th>
+                                      {/* <th className="text-start" colSpan={5}>Quantity</th>
+                                       */}
                                                                                                                             </tr>
-                                                                                                                            {/* <tr>
+                                    {/* <tr>
                                                                                                                                 <th className="text-start">Ordered</th>
                                                                                                                                 <th className="text-start">Breakage</th>
                                                                                                                                 <th className="text-start">Defective</th>
@@ -557,31 +699,37 @@ const MaterialQCDetails = () => {
                                                                                                                         </thead>
                                                                                                                         <tbody>
                                                                                                                             <tr>
-                                                                                                                                <td className="text-start">{matIdx + 1}</td>
-                                                                                                                                <td className="text-start">Nexone</td>
-                                                                                                                                <td className="text-start">Antila</td>
-                                                                                                                                <td className="text-start">description</td>
-                                                                                                                                
+                                      <td className="text-start">
+                                        {matIdx + 1}
+                                      </td>
 
-                                                                                                                                <td className="text-start">{mat.details.morNo}</td>
-                                                                                                                                <td className="text-start">{mat.details.code}</td>
-                                                                                                                                <td className="text-start">{mat.details.type}</td>
-                                                                                                                                <td className="text-start">{mat.details.subType}</td>
+                                      <td className="text-start">
+                                        description
+                                      </td>
+
                                                                                                                                 {/* <td className="text-start">{mat.details.brand}</td> */}
-                                                                                                                                
-                                                                                                                               
-                                                                                                                                <td className="text-start" style={{ minWidth: 90 }}>
-                                                                                                                                    <input
-                                                                                                                                        type="number"
-                                                                                                                                        className="form-control"
-                                                                                                                                        value={mat.details.orderedQty || ""}
-                                                                                                                                        disabled
-                                                                                                                                    />
-                                                                                                                                </td>
-                                                                                                                                <td className="text-start">{mat.details.uom}</td>
-                                                                                                                                <td className="text-start">{mat.details.qcRequired}</td>
-                                                                                                                                <td className="text-start">{mat.details.mtcReceived}</td>
-                                                                                                                                {/* <td className="text-start" style={{ minWidth: 90 }}>
+
+                                      <td
+                                        className="text-start"
+                                        style={{ minWidth: 90 }}
+                                      >
+                                        <input
+                                          type="number"
+                                          className="form-control"
+                                          value={mat.details.orderedQty || ""}
+                                          disabled
+                                        />
+                                      </td>
+                                      <td className="text-start">
+                                        {mat.details.uom}
+                                      </td>
+                                      <td className="text-start">
+                                        {mat.details.qcRequired}
+                                      </td>
+                                      <td className="text-start">
+                                        {mat.details.mtcReceived}
+                                      </td>
+                                      {/* <td className="text-start" style={{ minWidth: 90 }}>
                                                                                                                                     <input
                                                                                                                                         type="number"
                                                                                                                                         className="form-control"
@@ -653,17 +801,25 @@ const MaterialQCDetails = () => {
                                                                                                                             </button> */}
                                                                                                                         </div>
                                                                                                                     </div>
-                                                                                                                    <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
+                                <div
+                                  className="tbl-container mb-4"
+                                  style={{ maxHeight: "500px" }}
+                                >
                                                                                                                         <table className="w-100">
                                                                                                                             <thead>
                                                                                                                                 <tr>
                                                                                                                                     <th className="main2-th">File Type</th>
                                                                                                                                     <th className="main2-th">File Name </th>
                                                                                                                                     <th className="main2-th">Upload At</th>
-                                                                                                                                    <th className="main2-th">Upload File</th>
+                                        <th className="main2-th">
+                                          Upload File
+                                        </th>
                                                                                                                                     <th className="main2-th">Status</th>
                                                                                                                                       <th className="main2-th">Remark</th>
-                                                                                                                                    <th className="main2-th" style={{ width: 100 }}>
+                                        <th
+                                          className="main2-th"
+                                          style={{ width: 100 }}
+                                        >
                                                                                                                                         Action
                                                                                                                                     </th>
                                                                                                                                 </tr>
@@ -685,18 +841,29 @@ const MaterialQCDetails = () => {
                                                                                                                                                 className="form-control file_name"
                                                                                                                                                 required
                                                                                                                                                 value={att.fileName}
-                                                                                                                                                onChange={e => {
-                                                                                                                                                    const newFileName = e.target.value;
-                                                                                                                                                    setMaterials(prev => prev.map((m, idx) =>
+                                              onChange={(e) => {
+                                                const newFileName =
+                                                  e.target.value;
+                                                setMaterials((prev) =>
+                                                  prev.map((m, idx) =>
                                                                                                                                                         idx === matIdx
                                                                                                                                                             ? {
                                                                                                                                                                 ...m,
-                                                                                                                                                                attachments: m.attachments.map(a =>
-                                                                                                                                                                    a.id === att.id ? { ...a, fileName: newFileName } : a
+                                                          attachments:
+                                                            m.attachments.map(
+                                                              (a) =>
+                                                                a.id === att.id
+                                                                  ? {
+                                                                      ...a,
+                                                                      fileName:
+                                                                        newFileName,
+                                                                    }
+                                                                  : a
                                                                                                                                                                 ),
                                                                                                                                                             }
                                                                                                                                                             : m
-                                                                                                                                                    ));
+                                                  )
+                                                );
                                                                                                                                                 }}
                                                                                                                                             />
                                                                                                                                         </td>
@@ -716,33 +883,53 @@ const MaterialQCDetails = () => {
                                                                                                                                                     type="file"
                                                                                                                                                     className="form-control"
                                                                                                                                                     required
-                                                                                                                                                    onChange={e => {
-                                                                                                                                                        const file = e.target.files[0];
+                                                onChange={(e) => {
+                                                  const file =
+                                                    e.target.files[0];
                                                                                                                                                         if (!file) return;
                                                                                                                                                         const contentType = file.type;
-                                                                                                                                                        const reader = new FileReader();
+                                                  const reader =
+                                                    new FileReader();
                                                                                                                                                         reader.onloadend = () => {
-                                                                                                                                                            const base64Content = reader.result.split(",")[1];
-                                                                                                                                                            setMaterials(prev => prev.map((m, idx) =>
+                                                    const base64Content =
+                                                      reader.result.split(
+                                                        ","
+                                                      )[1];
+                                                    setMaterials((prev) =>
+                                                      prev.map((m, idx) =>
                                                                                                                                                                 idx === matIdx
                                                                                                                                                                     ? {
                                                                                                                                                                         ...m,
-                                                                                                                                                                        attachments: m.attachments.map(a =>
-                                                                                                                                                                            a.id === att.id
+                                                              attachments:
+                                                                m.attachments.map(
+                                                                  (a) =>
+                                                                    a.id ===
+                                                                    att.id
                                                                                                                                                                                 ? {
                                                                                                                                                                                     ...a,
                                                                                                                                                                                     file,
-                                                                                                                                                                                    fileType: contentType,
-                                                                                                                                                                                    fileName: file.name,
+                                                                          fileType:
+                                                                            contentType,
+                                                                          fileName:
+                                                                            file.name,
                                                                                                                                                                                     isExisting: false,
-                                                                                                                                                                                    document_file_name: a.document_file_name || file.name,
-                                                                                                                                                                                    uploadDate: getLocalDateTime(),
-                                                                                                                                                                                    attachments: [
-                                                                                                                                                                                        {
-                                                                                                                                                                                            filename: file.name,
-                                                                                                                                                                                            content: base64Content,
-                                                                                                                                                                                            content_type: contentType,
-                                                                                                                                                                                            document_file_name: a.document_file_name || file.name,
+                                                                          document_file_name:
+                                                                            a.document_file_name ||
+                                                                            file.name,
+                                                                          uploadDate:
+                                                                            getLocalDateTime(),
+                                                                          attachments:
+                                                                            [
+                                                                              {
+                                                                                filename:
+                                                                                  file.name,
+                                                                                content:
+                                                                                  base64Content,
+                                                                                content_type:
+                                                                                  contentType,
+                                                                                document_file_name:
+                                                                                  a.document_file_name ||
+                                                                                  file.name,
                                                                                                                                                                                         },
                                                                                                                                                                                     ],
                                                                                                                                                                                 }
@@ -750,7 +937,8 @@ const MaterialQCDetails = () => {
                                                                                                                                                                         ),
                                                                                                                                                                     }
                                                                                                                                                                     : m
-                                                                                                                                                            ));
+                                                      )
+                                                    );
                                                                                                                                                         };
                                                                                                                                                         reader.readAsDataURL(file);
                                                                                                                                                     }}
@@ -760,23 +948,48 @@ const MaterialQCDetails = () => {
                                                                                                                                         <td>
                                                                                                                                             <SingleSelector
                                                                                                                                                 options={[
-                                                                                                                                                    { label: 'Pass', value: 'Pass' },
-                                                                                                                                                    { label: 'Fail', value: 'Fail' },
-                                                                                                                                                    { label: 'External Checking', value: 'External Checking' },
-                                                                                                                                                ]}
-                                                                                                                                                value={{ label: att.status || 'Select Status', value: att.status || '' }}
-                                                                                                                                                onChange={option => {
-                                                                                                                                                    const newStatus = option ? option.value : '';
-                                                                                                                                                    setMaterials(prev => prev.map((m, idx) =>
+                                                {
+                                                  label: "Pass",
+                                                  value: "Pass",
+                                                },
+                                                {
+                                                  label: "Fail",
+                                                  value: "Fail",
+                                                },
+                                                {
+                                                  label: "External Checking",
+                                                  value: "External Checking",
+                                                },
+                                              ]}
+                                              value={{
+                                                label:
+                                                  att.status || "Select Status",
+                                                value: att.status || "",
+                                              }}
+                                              onChange={(option) => {
+                                                const newStatus = option
+                                                  ? option.value
+                                                  : "";
+                                                setMaterials((prev) =>
+                                                  prev.map((m, idx) =>
                                                                                                                                                         idx === matIdx
                                                                                                                                                             ? {
                                                                                                                                                                 ...m,
-                                                                                                                                                                attachments: m.attachments.map(a =>
-                                                                                                                                                                    a.id === att.id ? { ...a, status: newStatus } : a
+                                                          attachments:
+                                                            m.attachments.map(
+                                                              (a) =>
+                                                                a.id === att.id
+                                                                  ? {
+                                                                      ...a,
+                                                                      status:
+                                                                        newStatus,
+                                                                    }
+                                                                  : a
                                                                                                                                                                 ),
                                                                                                                                                             }
                                                                                                                                                             : m
-                                                                                                                                                    ));
+                                                  )
+                                                );
                                                                                                                                                 }}
                                                                                                                                                 placeholder="Select Status"
                                                                                                                                                 classNamePrefix="react-select"
@@ -785,7 +998,12 @@ const MaterialQCDetails = () => {
                                                                                                                                         </td>
                                                                                                                                         <td></td>
                                                                                                                                         <td className="document">
-                                                                                                                                            <div style={{ display: "flex", alignItems: "center" }}>
+                                            <div
+                                              style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                              }}
+                                            >
                                                                                                                                                 {att.fileUrl && (
                                                                                                                                                     <a
                                                                                                                                                         href={att.fileUrl}
@@ -794,9 +1012,18 @@ const MaterialQCDetails = () => {
                                                                                                                                                         rel="noopener noreferrer"
                                                                                                                                                         className="btn btn-sm btn-link text-primary me-2"
                                                                                                                                                         title="Download"
-                                                                                                                                                        style={{ display: 'flex', alignItems: 'center' }}
-                                                                                                                                                    >
-                                                                                                                                                        <span className="material-symbols-outlined" style={{ fontSize: 36, lineHeight: 1 }}>
+                                                  style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                  }}
+                                                >
+                                                  <span
+                                                    className="material-symbols-outlined"
+                                                    style={{
+                                                      fontSize: 36,
+                                                      lineHeight: 1,
+                                                    }}
+                                                  >
                                                                                                                                                             file_download
                                                                                                                                                         </span>
                                                                                                                                                     </a>
@@ -840,16 +1067,11 @@ const MaterialQCDetails = () => {
                                                                                                                 </CollapsibleCard>
                                                                                                             </React.Fragment>
                                                                                                         ))}
-                                                    
-
                                                 </div>
                                             </div>
                                         </div>
                                     </section>
                                 </div>
-
-
-
 
                                 <div className="d-flex justify-content-between mt-5 ">
                                     <h5 className=" ">Document Attachment</h5>
@@ -880,7 +1102,10 @@ const MaterialQCDetails = () => {
                                     </div> */}
                                 </div>
 
-                                <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
+                <div
+                  className="tbl-container mb-4"
+                  style={{ maxHeight: "500px" }}
+                >
                                     <table className="w-100">
                                         <thead>
                                             <tr>
@@ -910,7 +1135,9 @@ const MaterialQCDetails = () => {
                                                             className="form-control file_name"
                                                             required
                                                             value={att.fileName}
-                                                            onChange={(e) => handleFileNameChange(att.id, e.target.value)}
+                              onChange={(e) =>
+                                handleFileNameChange(att.id, e.target.value)
+                              }
                                                         />
                                                     </td>
                                                     <td>
@@ -934,12 +1161,18 @@ const MaterialQCDetails = () => {
                                                         )}
                                                     </td>
                                                     <td className="document">
-                                                        <div style={{ display: "flex", alignItems: "center" }}>
+                            <div
+                              style={{ display: "flex", alignItems: "center" }}
+                            >
                                                             <div className="attachment-placeholder">
                                                                 {att.isExisting && (
                                                                     <div className="file-box">
                                                                         <div className="image">
-                                                                            <a href={att.fileUrl} target="_blank" rel="noreferrer">
+                                      <a
+                                        href={att.fileUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                      >
                                                                                 <img
                                                                                     alt="preview"
                                                                                     className="img-responsive"
@@ -951,7 +1184,9 @@ const MaterialQCDetails = () => {
                                                                         </div>
                                                                         <div className="file-name">
                                                                             <a href={att.fileUrl} download>
-                                                                                <span className="material-symbols-outlined">file_download</span>
+                                        <span className="material-symbols-outlined">
+                                          file_download
+                                        </span>
                                                                             </a>
                                                                             <span>{att.fileName}</span>
                                                                         </div>
@@ -963,7 +1198,9 @@ const MaterialQCDetails = () => {
                                                                 className="btn btn-sm btn-link text-danger"
                                                                 onClick={() => handleRemove(att.id)}
                                                             >
-                                                                <span className="material-symbols-outlined">cancel</span>
+                                <span className="material-symbols-outlined">
+                                  cancel
+                                </span>
                                                             </button>
                                                         </div>
                                                     </td>
@@ -971,8 +1208,6 @@ const MaterialQCDetails = () => {
                                             ))}
                                         </tbody>
                                     </table>
-
-
                                 </div>
                                 <div className="row w-100 mt-3">
                                     <div className="col-md-12">
@@ -1029,23 +1264,16 @@ const MaterialQCDetails = () => {
                                     {/* <div className="col-md-2">
                     <button className="purple-btn2 w-100">Print</button>
                   </div> */}
-                                    <div className="col-md-2 mt-2" >
-                                        <button
-                                            className="purple-btn2 w-100"
-
-                                        >
-                                            Submit
-                                        </button>
+                  <div className="col-md-2 mt-2">
+                    <button className="purple-btn2 w-100">Submit</button>
                                     </div>
                                     <div className="col-md-2">
                                         <button className="purple-btn1 w-100">Cancel</button>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
             {loading2 && (

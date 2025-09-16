@@ -212,7 +212,7 @@ function Members() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/material-rejection-slip">
+                  <Link to="/material-rejection-slip?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
                     Material Rejection Slip
                   </Link>
                 </li>

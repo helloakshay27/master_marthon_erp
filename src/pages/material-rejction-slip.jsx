@@ -19,6 +19,8 @@ import FormatDate from "../components/FormatDate";
 import { useNavigate } from "react-router-dom";
 
 const MaterialRejctionSlip = () => {
+   const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const [tableData, setTableData] = useState([]); // Store API Data
   const [loading, setLoading] = useState(true); // Loading State
   const [error, setError] = useState(null); // Error Handling
@@ -98,7 +100,7 @@ const MaterialRejctionSlip = () => {
   useEffect(() => {
     axios
       .get(
-        `${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}/pms/company_setups.json?token=${token}`
       )
       .then((response) => {
         setCompanies(response.data.companies);
@@ -153,7 +155,7 @@ const MaterialRejctionSlip = () => {
     try {
       let url = `${baseURL}/mor_rejection_slips.json`;
       const queryParams = [
-        `token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `token=${token}`,
       ]; // Always include token
 
       // Apply filters dynamically
@@ -689,14 +691,14 @@ const MaterialRejctionSlip = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-6">
+                  {/* <div className="col-md-6">
                     <div className="row justify-content-end">
                       <div className="col-md-5">
                         <div className="row justify-content-end px-3">
-                          <div className="col-md-3">
+                          <div className="col-md-3 ms-4">
                             <button
                               type="submit"
-                              className="btn btn-md"
+                              className="btn btn-md ms-4"
                               data-bs-toggle="modal"
                               data-bs-target="#settings"
                             >
@@ -707,7 +709,21 @@ const MaterialRejctionSlip = () => {
                       </div>
                       <div className="col-md-4"></div>
                     </div>
-                  </div>
+                  </div> */}
+                  <div className="col-md-6">
+  <div className="row justify-content-end">
+    <div className="col-md-12 d-flex justify-content-end">
+      <button
+        type="submit"
+        className="btn btn-md"
+        data-bs-toggle="modal"
+        data-bs-target="#settings"
+      >
+        <SettingIcon></SettingIcon>
+      </button>
+    </div>
+  </div>
+</div>
                 </div>
                 <div
                   className="tbl-container mt-3
@@ -805,7 +821,7 @@ const MaterialRejctionSlip = () => {
                                     }}
                                     onClick={() =>
                                       navigate(
-                                        `/material-rejection-slip-create/${item.id}`
+                                        `/material-rejection-slip-create/${item.id}?token=${token}`
                                       )
                                     }
                                   >

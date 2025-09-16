@@ -4,8 +4,12 @@ import { useParams } from "react-router-dom";
 import { baseURL } from "../confi/apiDomain";
 import FormatDate from "../components/FormatDate";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const MaterialRejctionSlipCreate = () => {
+     const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,12 +18,13 @@ const MaterialRejctionSlipCreate = () => {
   const { id } = useParams();
   const [submitting, setSubmitting] = useState(false); // For loading state during API call
   const navigate = useNavigate();
+  
 
   // useEffect(() => {
   //   const fetchData = async () => {
   //     try {
   //       const response = await axios.get(
-  //         `${baseURL}/mor_rejection_slips/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //         `${baseURL}/mor_rejection_slips/${id}.json?token=${token}`
   //       );
   //       const fetchedData = response.data;
   //       setData(fetchedData);
@@ -50,7 +55,7 @@ const MaterialRejctionSlipCreate = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}/mor_rejection_slips/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}/mor_rejection_slips/${id}.json?token=${token}`
         );
         const fetchedData = response.data;
         setData(fetchedData);
@@ -91,15 +96,15 @@ const MaterialRejctionSlipCreate = () => {
     setLoading(true);
 
     if (decision !== "accepted" && decision !== "rejected") {
-      alert("Please select either 'Accept' or 'Reject' before submitting.");
+      toast.error("Please select either 'Accept' or 'Reject' before submitting.");
       setLoading(false);
       return;
     }
 
     // Validation: If rejecting, reason must be provided
     if (decision === "rejected" && reason.trim() === "") {
-      alert("Rejection reason is required.");
-      setLoading(false); // ✅ Ensure loader stops
+      toast.error("Rejection reason is required.");
+      setLoading(false);
       return;
     }
 
@@ -112,7 +117,7 @@ const MaterialRejctionSlipCreate = () => {
         acceptance_reason: decision === "accepted" ? reason : "",
       };
 
-      const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"; // Add token if required
+      const token = "${token}"; // Add token if required
       const response = await axios.put(
         `${baseURL}/mor_rejection_slips/${id}.json?token=${token}`,
         payload,
@@ -124,21 +129,51 @@ const MaterialRejctionSlipCreate = () => {
       );
 
       console.log("Update successful:", response.data);
-      alert("Status updated successfully!");
+      toast.success("Status updated successfully!", { autoClose: 1200 });
       setReason("");
       navigate("/material-rejection-slip");
     } catch (error) {
       console.error("Error updating rejection slip:", error);
-      alert("Failed to update status. Please try again.");
+      let errorMessage = "Failed to update status. Please try again.";
+      const resp = error?.response;
+      if (resp?.data) {
+        const data = resp.data;
+        if (typeof data === "string") {
+          errorMessage = data;
+        } else if (Array.isArray(data)) {
+          errorMessage = data.filter(Boolean).join(", ");
+        } else if (typeof data === "object") {
+          if (typeof data.error === "string") {
+            errorMessage = data.error;
+          } else if (Array.isArray(data.error)) {
+            errorMessage = data.error.filter(Boolean).join(", ");
+          } else if (Array.isArray(data.errors)) {
+            errorMessage = data.errors.filter(Boolean).join(", ");
+          } else if (data.errors && typeof data.errors === "object") {
+            try {
+              const collected = Object.values(data.errors)
+                .flat()
+                .filter(Boolean)
+                .join(", ");
+              if (collected) errorMessage = collected;
+            } catch (_) {}
+          } else if (Array.isArray(data.full_messages)) {
+            errorMessage = data.full_messages.filter(Boolean).join(", ");
+          } else if (data.message) {
+            errorMessage = data.message;
+          }
+        }
+      }
+      toast.error(errorMessage);
     } finally {
       setSubmitting(false);
-      setLoading(false); // ✅ Ensure loader stops
+      setLoading(false);
     }
   };
 
   const handleCancel = () => {
     // Navigate to the new route when cancel is clicked
-    navigate("/material-rejection-slip");
+    navigate(`/material-rejection-slip?token=${token}`);
   };
 
   // if (loading) return <p>Loading...</p>;
@@ -511,7 +546,7 @@ const MaterialRejctionSlipCreate = () => {
                     )}
                     <button
                       // className="purple-btn2 w-100"
-                      className={`purple-btn2 w-100 ${
+                      className={`purple-btn2 mt-2 w-100 ${
                         submitting ? "disabled-btn" : ""
                       }`}
                       onClick={handleSubmit}
@@ -522,8 +557,8 @@ const MaterialRejctionSlipCreate = () => {
                     </button>
                   </div>
                 </div>
-                <div className="col-md-2">
-                  <button className="purple-btn1 w-100" onClick={handleCancel}>
+                <div className="col-md-2" >
+                  <button className="purple-btn1 w-100 " onClick={handleCancel}>
                     Cancel
                   </button>
                 </div>
@@ -537,6 +572,7 @@ const MaterialRejctionSlipCreate = () => {
           </p>
         </footer> */}
       </div>
+      <ToastContainer position="top-right" autoClose={1200} hideProgressBar={false} newestOnTop={false} closeOnClick pauseOnFocusLoss draggable pauseOnHover theme="light" />
     </main>
   );
 };

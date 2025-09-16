@@ -678,8 +678,24 @@ const MaterialQCList = () => {
         
     ];
 
+    // Columns to show when Pending content box is active
+    const pendingColumns = [
+        { field: "srNo", headerName: "Sr.No.", width: 90 },
+        { field: "company", headerName: "Company", width: 200 },
+        { field: "gate_entry_no", headerName: "Gate Entry No", width: 150 },
+        { field: "gate_entry_type", headerName: "Gate Entry Type", width: 160 },
+        { field: "po_number", headerName: "PO Number", width: 160 },
+        { field: "supplier_name", headerName: "Supplier Name", width: 180 },
+        { field: "vehicle_number", headerName: "Vehicle Number", width: 150 },
+        { field: "created_by", headerName: "Created By", width: 150 },
+        { field: "status", headerName: "Status", width: 110 },
+        { field: "in_date_time", headerName: "In Date & Time", width: 180 },
+    ];
 
-    const columns = allColumns.filter((col) => columnVisibility[col.field]);
+
+    const columns = activeTab === "open"
+        ? pendingColumns
+        : allColumns.filter((col) => columnVisibility[col.field]);
 
     const handleSettingClose = () => setSettingShow(false);
     const handleClose = () => setShow(false);
@@ -1030,7 +1046,7 @@ display:none !important;
                                         >
                                             <SettingIcon />
                                         </button>
-                                        <button className="purple-btn2 me-2"
+                                        {/* <button className="purple-btn2 me-2"
                                           onClick={() => navigate("/material-qc-create")}
                                         >
                                             <svg
@@ -1044,7 +1060,7 @@ display:none !important;
                                                 <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
                                             </svg>
                                             <span> Create</span>
-                                        </button>
+                                        </button> */}
                                     </div>
                                 </div>
                             </div>

@@ -404,7 +404,7 @@ const MaterialQCCreate = () => {
 
 
                                                     <div className="row">
-                                                        <div className="col-md-4">
+                                                        {/* <div className="col-md-4">
                                                             <label htmlFor="event-no-select">
                                                                 PO No.<span>*</span>
                                                             </label>
@@ -414,7 +414,7 @@ const MaterialQCCreate = () => {
                                                                     placeholder="Select PO No."
                                                                 />
                                                             </div>
-                                                        </div>
+                                                        </div> */}
                                                         <div className="col-md-4 ">
                                                             <div className="form-group">
                                                                 <label>
@@ -441,85 +441,7 @@ const MaterialQCCreate = () => {
                                                                 />
                                                             </div>
                                                         </div>
-                                                        {/* <div className="col-md-4 mt-2">
-                                                            <div className="form-group">
-                                                                <label>Project</label>
-                                                                <input
-                                                                    className="form-control"
-                                                                    type="text"
-                                                                    value={""}
-                                                                    placeholder=""
-                                                                    fdprocessedid="qv9ju9"
-
-                                                                />
-                                                            </div>
-                                                        </div> */}
-                                                        {/* <div className="col-md-4 mt-2">
-                                                            <div className="form-group">
-                                                                <label>Sub-Project</label>
-                                                                <input
-                                                                    className="form-control"
-                                                                    type="text"
-                                                                    value={""}
-                                                                    placeholder=""
-                                                                    fdprocessedid="qv9ju9"
-
-                                                                />
-                                                            </div>
-                                                        </div> */}
-                                                        <div className="col-md-4 mt-2">
-                                                            <div className="form-group">
-                                                                <label>Store</label>
-                                                                <input
-                                                                    className="form-control"
-                                                                    type="text"
-                                                                    value={""}
-
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <div className="col-md-4  mt-2">
-                                                            <div className="form-group">
-                                                                <label>Gate No.</label>
-
-                                                                <input
-                                                                    className="form-control"
-                                                                    type="text"
-                                                                    value={""}
-
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        {/* <div className="col-md-4 mt-2 ">
-                                                            <div className="form-group">
-                                                                <label>
-                                                                    Project
-                                                                </label>
-                                                                <SingleSelector
-                                                                    options={projects}
-                                                                    value={selectedProject}
-                                                                    onChange={handleProjectChange}
-                                                                    placeholder="Select Project"
-                                                                // isDisabled={!selectedCompany}
-                                                                />
-                                                            </div>
-                                                        </div> */}
-                                                        {/* <div className="col-md-4  mt-2">
-                                                            <div className="form-group">
-                                                                <label>
-                                                                    Sub-Project
-                                                                </label>
-
-                                                                <SingleSelector
-                                                                    options={sites}
-                                                                    onChange={handleSiteChange}
-                                                                    value={selectedSite}
-                                                                    placeholder={`Select Sub-Project`} // Dynamic placeholder
-                                                                // isDisabled={!selectedCompany}
-                                                                />
-                                                            </div>
-                                                        </div> */}
-
+                                                      
 
 
 
@@ -536,34 +458,19 @@ const MaterialQCCreate = () => {
                                                                 />
                                                             </div>
                                                         </div>
-                                                        <div className="col-md-4 mt-2">
+                                                         <div className="col-md-4  mt-2">
                                                             <div className="form-group">
-                                                                <label>Inspection ID</label>
+                                                                <label>Gate No.</label>
+
                                                                 <input
                                                                     className="form-control"
                                                                     type="text"
-                                                                    value={""} // Bind to state
+                                                                    value={""}
 
                                                                 />
                                                             </div>
                                                         </div>
-                                                        <div className="col-md-4 mt-2">
-                                                            <div className="form-group">
-                                                                <label>Inspection Date</label>
-                                                                <div
-                                                                    id="datepicker"
-                                                                    className="input-group date"
-                                                                    data-date-format="mm-dd-yyyy"
-                                                                >
-                                                                    <input
-                                                                        className="form-control"
-                                                                        type="date"
-                                                                        value={""}
-
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                      
 
 
 
@@ -627,6 +534,36 @@ const MaterialQCCreate = () => {
                                                                 </div>
                                                             </div>
                                                         </div>
+                                                          <div className="col-md-4 mt-2">
+                                                            <div className="form-group">
+                                                                <label>Inspection By</label>
+                                                                <input
+                                                                    className="form-control"
+                                                                    type="text" 
+                                                                       value={"John Doe"} // Default value
+    disabled // Make the input field disabled
+
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-md-4 mt-2">
+                                                            <div className="form-group">
+                                                                <label>Inspection Date</label>
+                                                                <div
+                                                                    id="datepicker"
+                                                                    className="input-group date"
+                                                                    data-date-format="mm-dd-yyyy"
+                                                                >
+                                                                    <input
+                                                                        className="form-control"
+                                                                        type="date"
+                                                                        value={"test"}
+                                                                        disabled
+
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
 
                                                         {/* <div className="col-md-4 mt-2">
                                                             <div className="form-group">
@@ -668,13 +605,13 @@ const MaterialQCCreate = () => {
                                                                     <thead>
                                                                         <tr>
                                                                             <th className="text-start" rowSpan={2}>Sr. No</th>
-                                                                            <th className="text-start" rowSpan={2}>Project</th>
-                                                                            <th className="text-start" rowSpan={2}>Sub-Project</th>
+                                                                            {/* <th className="text-start" rowSpan={2}>Project</th>
+                                                                            <th className="text-start" rowSpan={2}>Sub-Project</th> */}
                                                                             <th className="text-start" rowSpan={2}>Material Description</th>
-                                                                            <th className="text-start" rowSpan={2}>MOR No.</th>
+                                                                            {/* <th className="text-start" rowSpan={2}>MOR No.</th>
                                                                             <th className="text-start" rowSpan={2}> Material Code</th>
                                                                             <th className="text-start" rowSpan={2}>Material Type</th>
-                                                                            <th className="text-start" rowSpan={2}> Material Sub-Type</th>
+                                                                            <th className="text-start" rowSpan={2}> Material Sub-Type</th> */}
                                                                             {/* <th className="text-start" rowSpan={2}>Brand</th> */}
                                                                             
                                                                             
@@ -695,13 +632,13 @@ const MaterialQCCreate = () => {
                                                                     <tbody>
                                                                         <tr>
                                                                             <td className="text-start">{matIdx + 1}</td>
-                                                                            <td className="text-start">Nexone</td>
-                                                                            <td className="text-start">Antilia</td>
+                                                                            {/* <td className="text-start">Nexone</td>
+                                                                            <td className="text-start">Antilia</td> */}
                                                                             <td className="text-start">{mat.details.description}</td>
-                                                                            <td className="text-start">{mat.details.morNo}</td>
+                                                                            {/* <td className="text-start">{mat.details.morNo}</td>
                                                                             <td className="text-start">{mat.details.code}</td>
                                                                             <td className="text-start">{mat.details.type}</td>
-                                                                            <td className="text-start">{mat.details.subType}</td>
+                                                                            <td className="text-start">{mat.details.subType}</td> */}
                                                                             {/* <td className="text-start">{mat.details.brand}</td> */}
                                                                             
                                                                            
