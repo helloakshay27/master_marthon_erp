@@ -27,6 +27,8 @@ import {
 import { estimationListColumns, estimationListData } from "../constant/data";
 import { auditLogColumns, auditLogData } from "../constant/data";
 import { baseURL } from "../confi/apiDomain";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
 
@@ -209,16 +211,26 @@ const EstimationCreationDetails = () => {
                 console.log('Status updated successfully:', response.data);
                 setRemark("")
                 // setLoading2(false);
-                alert('Status updated successfully');
+                // alert('Status updated successfully');
                 // Handle success (e.g., update the UI, reset fields, etc.)
-                // toast.success("Status updated successfully!");
+                toast.success("Status updated successfully!");
             } else {
                 console.log('Error updating status:', response.data);
                 // toast.error("Failed to update status.");
                 // Handle error (e.g., show an error message)
             }
         } catch (error) {
-            console.error('Request failed:', error);
+            if (error.response && error.response.status === 422) {
+                            // Extract message from backend response
+                            const message =  error.response.data?.error;
+                            console.error("Validation Error:", message);
+                            toast.error(message);
+                            // alert(message);
+                        } else {
+                            console.error("Request failed:", error);
+                            toast.error("Something went wrong. Please try again.");
+                        }
+            // console.error('Request failed:', error);
             // Handle network or other errors (e.g., show an error message)
         } finally {
             // setLoading2(false);
@@ -3081,6 +3093,8 @@ const EstimationCreationDetails = () => {
                 </Modal.Body>
             </Modal>
 
+            
+<ToastContainer position="top-right" autoClose={3000} />
         </>
     );
 };

@@ -8,6 +8,8 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import { useParams } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 // import Modal from "react-bootstrap/Modal";
 
 const RateDetails = () => {
@@ -40,7 +42,7 @@ const RateDetails = () => {
     const openModal = () => setShowModal(true);
     const closeModal = () => setShowModal(false);
 
-    console.log("current page:",currentPage)
+    console.log("current page:", currentPage)
     const fetchRateDetails = async (page) => {
         setLoading(true);
         try {
@@ -94,7 +96,7 @@ const RateDetails = () => {
     useEffect(() => {
         fetchRateDetails(currentPage);
         setActiveTab("details");
-    }, [currentPage,id]);
+    }, [currentPage, id]);
 
     const statusOptions = [
         // {
@@ -151,23 +153,36 @@ const RateDetails = () => {
                 }
 
             );
-            await fetchRateDetails(id);
+
 
 
             if (response.status === 200) {
+                await fetchRateDetails(id);
                 console.log('Status updated successfully:', response.data);
                 setRemark("")
                 setLoading2(false);
-                alert('Status updated successfully');
+                // alert('Status updated successfully');
                 // Handle success (e.g., update the UI, reset fields, etc.)
-                // toast.success("Status updated successfully!");
+                toast.success("Status updated successfully!");
             } else {
                 console.log('Error updating status:', response.data);
+
                 // toast.error("Failed to update status.");
                 // Handle error (e.g., show an error message)
             }
         } catch (error) {
-            console.error('Request failed:', error);
+
+            if (error.response && error.response.status === 422) {
+                // Extract message from backend response
+                const message =  error.response.data?.error;
+                console.error("Validation Error:", message);
+                toast.error(message);
+                // alert(message);
+            } else {
+                console.error("Request failed:", error);
+                // toast.error("Something went wrong. Please try again.");
+            }
+            // console.error('Request failed:', error);
             // Handle network or other errors (e.g., show an error message)
         } finally {
             setLoading2(false);
@@ -269,10 +284,10 @@ const RateDetails = () => {
     };
 
     const handlePageChange = (pageNumber) => {
-    if (pageNumber > 0 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
-  };
+        if (pageNumber > 0 && pageNumber <= totalPages) {
+            setCurrentPage(pageNumber);
+        }
+    };
     return (
         <>
             <div className="website-content overflow-auto">
@@ -396,9 +411,9 @@ const RateDetails = () => {
                                 <div className="tab-content" id="nav-tabContent">
                                     {activeTab === "details" && (
                                         <div className="tab-pane fade show active" id="details" role="tabpanel">
-                                            
+
                                             <div className="details_page">
-                                            
+
 
                                                 <div className="details_page">
                                                     <div className="row px-3">
@@ -482,7 +497,7 @@ const RateDetails = () => {
                                                         </form>
                                                     </div>
                                                 </div>
-                                                <div className="mt-3 mb-2 " style={{minHeight:"400px"}}>
+                                                <div className="mt-3 mb-2 " style={{ minHeight: "400px" }}>
                                                     {/* <h5 className="mb-3">Materials</h5> */}
                                                     <div className="tbl-container  mt-1"  >
                                                         <table className="w-100">
@@ -568,8 +583,8 @@ const RateDetails = () => {
                                                                         <tr key={index}>
                                                                             <td className="text-start">
                                                                                 {/* {index + 1} */}
-                                                                                 {(currentPage - 1) * itemsPerPage + index + 1}
-                                                                                </td>
+                                                                                {(currentPage - 1) * itemsPerPage + index + 1}
+                                                                            </td>
                                                                             <td className="text-start">{row.material_type}</td>
                                                                             <td className="text-start">{row.material_sub_type}</td>
                                                                             <td className="text-start">{row.material_name}</td>
@@ -1444,6 +1459,7 @@ const RateDetails = () => {
                     </button>
                 </Modal.Footer>
             </Modal>
+            <ToastContainer position="top-right" autoClose={3000} />
 
         </>
     )

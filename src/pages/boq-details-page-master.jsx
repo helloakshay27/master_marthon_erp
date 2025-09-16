@@ -196,7 +196,17 @@ const BOQDetailsPageMaster = () => {
         // Handle error (e.g., show an error message)
       }
     } catch (error) {
-      console.error('Request failed:', error);
+      // console.error('Request failed:', error);
+      if (error.response && error.response.status === 422) {
+        // Extract message from backend response
+        const message = error.response.data?.error;
+        console.error("Validation Error:", message);
+        toast.error(message);
+        // alert(message);
+      } else {
+        console.error("Request failed:", error);
+        toast.error("Something went wrong. Please try again.");
+      }
       // Handle network or other errors (e.g., show an error message)
     } finally {
       setLoading2(false);

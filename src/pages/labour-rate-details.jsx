@@ -146,9 +146,9 @@ const LabourRateDetails = () => {
                 console.log('Status updated successfully:', response.data);
                 setRemark("")
                 setLoading2(false);
-                alert('Status updated successfully');
+                // alert('Status updated successfully');
                 // Handle success (e.g., update the UI, reset fields, etc.)
-                // toast.success("Status updated successfully!");
+                toast.success("Status updated successfully!");
             } else {
                 console.log('Error updating status:', response.data);
                 // toast.error("Failed to update status.");
@@ -157,7 +157,7 @@ const LabourRateDetails = () => {
         } catch (error) {
             if (error.response && error.response.status === 422) {
                 // Extract message from backend response
-                const message = error.response.data?.message || error.response.data?.error ;
+                const message =  error.response.data?.error ;
                 console.error("Validation Error:", message);
                 toast.error(message);
                 // alert(message);
