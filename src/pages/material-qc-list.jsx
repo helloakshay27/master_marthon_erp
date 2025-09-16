@@ -651,7 +651,9 @@ const MaterialQCList = () => {
     //   column sort and setting
     const [columnVisibility, setColumnVisibility] = useState({
         srNo: true,
+        company_name: true,
         Gate_Pass_No: true,
+        Qc_Number:true,
         PO_TO_CO_No: true,
         Supplier_Vendor: true,
         To_Store: true,
@@ -665,7 +667,9 @@ const MaterialQCList = () => {
 
     const allColumns = [
         { field: "srNo", headerName: "Sr. No.", width: 100 },
+        { field: "company_name", headerName: "Company Name", width: 150 },
         { field: "Gate_Pass_No", headerName: "Gate Entry No.", width: 150 },
+          { field: "Qc_Number", headerName: "QC No", width: 150 },
         { field: "PO_TO_CO_No", headerName: "PO/WO No.", width: 200 },
         { field: "Supplier_Vendor", headerName: "Supplier/Vendor", width: 200 },
         { field: "To_Store", headerName: "To Store", width: 150 },
