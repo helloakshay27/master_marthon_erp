@@ -357,7 +357,7 @@ const RopoMappingList = () => {
       try {
         // Single call for all PO-derived options
         const poResp = await axios.get(
-          `${baseURL}purchase_orders.json?token=${token}`
+          `${baseURL}purchase_orders.json?token=${token}&q[po_type_eq]=import&advance=true`
         );
 
         const raw = poResp?.data;

@@ -5064,6 +5064,20 @@ const PoCreate = () => {
                                     );
                                   }
                                 }}
+                                 style={{
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M10.293 3.293 6 7.586 1.707 3.293A1 1 0 0 0 .293 4.707l5 5a1 1 0 0 0 1.414 0l5-5a1 1 0 1 0-1.414-1.414z' fill='%23000000'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 0.75rem center',
+    backgroundSize: '10px',
+    appearance: 'none',
+    paddingRight: '2.5rem',
+     minWidth: '150px', // Set minimum width
+    width: 'auto', // Allow growing based on content
+    maxWidth: '100%', // Don't overflow container
+    whiteSpace: 'nowrap', // Prevent text wrapping
+    overflow: 'hidden', // Hide overflow
+    textOverflow: 'ellipsis' // Show ellipsis for overflow text
+  }}
                               >
                                 <option value="">Select Tax</option>
                                 {taxOptions.map((opt) => (
