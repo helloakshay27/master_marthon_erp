@@ -8,6 +8,8 @@ import { useParams } from "react-router-dom";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { useNavigate, useLocation } from "react-router-dom";
 import { baseURL } from "../confi/apiDomain";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ApprovalEdit = () => {
   const [filterOptions, setFilterOptions] = useState({
@@ -1118,7 +1120,7 @@ const ApprovalEdit = () => {
     // Stop execution if any errors exist
     if (errors.length > 0) {
       setLoading(false);
-      alert(errors.join("\n")); // Show all errors in a single alert
+      errors.forEach((msg, idx) => toast.error(msg, { autoClose: 1500, delay: idx * 150 }));
       return;
     }
 
@@ -1133,7 +1135,7 @@ const ApprovalEdit = () => {
     });
 
     if (hasDuplicateOrder) {
-      alert("Each approval level must have a unique order.");
+      toast.error("Each approval level must have a unique order.");
       setLoading(false);
       return;
     }
@@ -1166,7 +1168,7 @@ const ApprovalEdit = () => {
 
     // Final validation before sending the API request
     if (invoiceApprovalLevels.length === 0) {
-      alert("Approval Levels are required. Please add at least one.");
+      toast.error("Approval Levels are required. Please add at least one.");
       setLoading(false);
       return;
     }
@@ -1194,33 +1196,44 @@ const ApprovalEdit = () => {
       )
       .then((response) => {
         console.log("Approval updated successfully:", response.data);
-        alert("Approval updated successfully!");
-
-        setTimeout(() => {
-          navigate(`/approval-materics?token=${token}`);
-        }, 500);
+        toast.success("Approval updated successfully!", {
+          autoClose: 1200,
+          onClose: () => navigate(`/approval-materics?token=${token}`),
+        });
       })
       .catch((error) => {
-        if (error.response) {
-          const errorMessage = error.response.data.errors;
-          if (
-            errorMessage &&
-            errorMessage.includes(
-              "Invoice approval levels order has already been taken"
-            )
-          ) {
-            alert("Each approval level must have a unique order.");
-          } else {
-            console.error("Error Response:", error.response);
-            alert("An error occurred while updating the approval.");
+        const resp = error?.response;
+        let errorMessage = "Failed to update approval. Please try again.";
+        if (resp?.data) {
+          const data = resp.data;
+          if (typeof data === "string") {
+            errorMessage = data;
+          } else if (Array.isArray(data)) {
+            errorMessage = data.filter(Boolean).join(", ");
+          } else if (typeof data === "object") {
+            const rawErrors = data.errors || data.error || data.full_messages;
+            if (typeof rawErrors === "string") {
+              errorMessage = rawErrors;
+            } else if (Array.isArray(rawErrors)) {
+              errorMessage = rawErrors.filter(Boolean).join(", ");
+            } else if (rawErrors && typeof rawErrors === "object") {
+              try {
+                const collected = Object.values(rawErrors)
+                  .flat()
+                  .filter(Boolean)
+                  .join(", ");
+                if (collected) errorMessage = collected;
+              } catch (_) {}
+            } else if (data.message) {
+              errorMessage = data.message;
+            }
           }
-        } else if (error.request) {
-          console.error("Error Request:", error.request);
-          alert("No response received from the server.");
-        } else {
-          console.error("Error Message:", error.message);
-          alert(`Error: ${error.message}`);
         }
+        // Specific duplicate order hint
+        if (typeof errorMessage === "string" && errorMessage.toLowerCase().includes("already been taken")) {
+          errorMessage = "Each approval level must have a unique order.";
+        }
+        toast.error(errorMessage);
       })
       .finally(() => {
         setLoading(false);
@@ -1823,6 +1836,7 @@ const ApprovalEdit = () => {
           {/* Dynamic tab content will be inserted here */}
         </div>
       </div>
+      <ToastContainer position="top-right" autoClose={1200} hideProgressBar={false} newestOnTop={false} closeOnClick pauseOnFocusLoss draggable pauseOnHover theme="light" />
     </div>
   );
 };

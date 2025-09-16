@@ -7,6 +7,8 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { baseURL } from "../confi/apiDomain";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const InvoiceApproval = () => {
   const [filterOptions, setFilterOptions] = useState({
@@ -816,7 +818,9 @@ const InvoiceApproval = () => {
 
     if (errors.length > 0) {
       setLoading(false);
-      alert(errors.join("\n")); // Show all errors in an alert, one per line
+      errors.forEach((msg, idx) =>
+        toast.error(msg, { autoClose: 1500, delay: idx * 150 })
+      );
       return;
     }
 
@@ -867,24 +871,46 @@ const InvoiceApproval = () => {
       )
       .then((response) => {
         console.log("Approval Created:", response.data);
-        // alert("Approval created successfully!");
-
-        setTimeout(() => {
-          navigate(`/approval-materics?token=${token}`); // Change route as per your app
-        }, 500);
-        setTimeout(() => {
-          alert("Approval created successfully!");
-          // You can't close the native alert, but you could use a custom modal here
-          // Delay for toast visibility
-          console.log(
-            "Alert closed (This is a simulation, as the native alert can't be dismissed)."
-          );
-        }, 1000);
+        toast.success("Approval created successfully!", {
+          autoClose: 1200,
+          onClose: () => navigate(`/approval-materics?token=${token}`),
+        });
 
         // Optionally reset form data here if needed
       })
       .catch((error) => {
         console.error("Error creating invoice approval:", error);
+        const resp = error?.response;
+        let errorMessage = "Failed to create approval. Please try again.";
+        if (resp?.data) {
+          const data = resp.data;
+          if (typeof data === "string") {
+            errorMessage = data;
+          } else if (Array.isArray(data)) {
+            errorMessage = data.filter(Boolean).join(", ");
+          } else if (typeof data === "object") {
+            if (typeof data.error === "string") {
+              errorMessage = data.error;
+            } else if (Array.isArray(data.error)) {
+              errorMessage = data.error.filter(Boolean).join(", ");
+            } else if (Array.isArray(data.errors)) {
+              errorMessage = data.errors.filter(Boolean).join(", ");
+            } else if (data.errors && typeof data.errors === "object") {
+              try {
+                const collected = Object.values(data.errors)
+                  .flat()
+                  .filter(Boolean)
+                  .join(", ");
+                if (collected) errorMessage = collected;
+              } catch (_) {}
+            } else if (Array.isArray(data.full_messages)) {
+              errorMessage = data.full_messages.filter(Boolean).join(", ");
+            } else if (data.message) {
+              errorMessage = data.message;
+            }
+          }
+        }
+        toast.error(errorMessage);
       })
       .finally(() => {
         // Set loading to false when the request finishes (success or failure)
@@ -1353,6 +1379,7 @@ const InvoiceApproval = () => {
           {/* Dynamic tab content will be inserted here */}
         </div>
       </div>
+      <ToastContainer position="top-right" autoClose={1000} hideProgressBar={false} newestOnTop={false} closeOnClick pauseOnFocusLoss draggable pauseOnHover theme="light" />
     </div>
   );
 };

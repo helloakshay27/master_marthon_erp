@@ -561,7 +561,7 @@ const MaterialQCDetails = () => {
                                                                                                                                 <td className="text-start">Nexone</td>
                                                                                                                                 <td className="text-start">Antila</td>
                                                                                                                                 <td className="text-start">description</td>
-
+                                                                                                                                
 
                                                                                                                                 <td className="text-start">{mat.details.morNo}</td>
                                                                                                                                 <td className="text-start">{mat.details.code}</td>
