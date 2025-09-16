@@ -148,6 +148,7 @@ import LabourRateList from "./pages/labour-rate-list";
 import LabourRateDetails from "./pages/labour-rate-details";
 import EditRateLabour from "./pages/labour-rate-edit";
 import RopoImportAmmend from "./pages/ropo-import-ammend";
+import RevisionRateLabour from "./pages/labour-rate-revision";
 
 function App() {
   return (
@@ -656,6 +657,10 @@ function App() {
            <Route
             path="/labour-rate-edit/:id"
             element={<EditRateLabour />}
+          />
+           <Route
+            path="/labour-rate-revision/:id"
+            element={<RevisionRateLabour />}
           />
         </Routes>
       </div>

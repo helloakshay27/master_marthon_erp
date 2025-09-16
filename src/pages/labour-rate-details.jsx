@@ -8,6 +8,8 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import { useParams } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 // import Modal from "react-bootstrap/Modal";
 
 const LabourRateDetails = () => {
@@ -112,7 +114,7 @@ const LabourRateDetails = () => {
         }
     };
 
-    // console.log("detail status change", payload);
+    console.log("detail status change", payload);
     const handleSubmit = async () => {
         // Prepare the payload for the API
         const payload = {
@@ -136,10 +138,11 @@ const LabourRateDetails = () => {
                 }
 
             );
-            await fetchRateDetails(id);
+
 
 
             if (response.status === 200) {
+                            await fetchRateDetails(id);
                 console.log('Status updated successfully:', response.data);
                 setRemark("")
                 setLoading2(false);
@@ -152,7 +155,17 @@ const LabourRateDetails = () => {
                 // Handle error (e.g., show an error message)
             }
         } catch (error) {
-            console.error('Request failed:', error);
+            if (error.response && error.response.status === 422) {
+                // Extract message from backend response
+                const message = error.response.data?.message || error.response.data?.error ;
+                console.error("Validation Error:", message);
+                toast.error(message);
+                // alert(message);
+            } else {
+                console.error("Request failed:", error);
+                // toast.error("Something went wrong. Please try again.");
+            }
+            // console.error('Request failed:', error);
             // Handle network or other errors (e.g., show an error message)
         } finally {
             setLoading2(false);
@@ -290,7 +303,7 @@ const LabourRateDetails = () => {
                         <div className="d-flex justify-content-end m-2 mb-4">
 
                             <Link
-                                to={`/rate-revision/${id}?token=${token}`}
+                                to={`/labour-rate-revision/${id}?token=${token}`}
                                 className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
 
 
@@ -1005,6 +1018,8 @@ const LabourRateDetails = () => {
                     </button>
                 </Modal.Footer>
             </Modal>
+
+                        <ToastContainer position="top-right" autoClose={3000} />
 
         </>
     )

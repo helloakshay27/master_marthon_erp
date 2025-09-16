@@ -12,7 +12,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 
-const EditRateLabour = () => {
+const RevisionRateLabour = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const [showModal, setShowModal] = useState(false);
@@ -63,7 +63,7 @@ const EditRateLabour = () => {
                         return {
                             id: mat.id,
                             // For table display and edit
-                             resource_type: mat.resource_type ,
+                            resource_type: mat.resource_type ,
                             resource_id:mat.resource_id,
                             activity: mat.labour_activity_id || "",
                             activityLabel: mat.labour_activity || "",
@@ -790,20 +790,25 @@ const EditRateLabour = () => {
     // ------------
 
 
-
-    // --- Labour Rate Payload Construction ---
-    const labourRatePayload = {
+const labourRatePayload = {
         labour_rate_detail: {
-            id: rateDetails?.id || "", // include the main id for edit
-            labour_rates: tableData.map(row => {
+            company_id: rateDetails?.company_id || null,
+            project_id: rateDetails?.project_id || null,
+            pms_site_id: rateDetails?.pms_site_id || null,
+            pms_wing_id: rateDetails?.pms_wing_id || null,
+            parent_id: rateDetails?.parent_id || null,
+            labour_rates: tableData?.map(row => {
                 // Find the last non-null category in the chain
-                const resource_id = row.subCategory5 || row.subCategory4 || row.subCategory3 || row.subCategory || row.mainCategory ||row.resource_id||  null;
+                const resource_id = row.subCategory5 || row.subCategory4 || row.subCategory3 || row.subCategory || row.mainCategory || row.resource_id || null;
+                // console.log("resource id:", resource_id);
+                // If only mainCategory is present, resource_type is WorkCategory, else WorkSubCategory
                 const isOnlyMain = !!row.mainCategory && !row.subCategory && !row.subCategory3 && !row.subCategory4 && !row.subCategory5;
                 const resource_type = row.resource_type ||(isOnlyMain ? "WorkCategory" : "WorkSubCategory");
+
+               
                 return {
-                    id: row.id || null, // include id if present for edit
                     labour_activity_id: row.activity,
-                    labour_sub_activity_id: row.subActivity || null,
+                     labour_sub_activity_id: row.subActivity || null,
                     resource_id,
                     resource_type,
                     unit_of_measure_id: row.uom,
@@ -815,23 +820,36 @@ const EditRateLabour = () => {
         }
     };
 
+
+
+
+
+   
+
     console.log("labourRatePayload :", labourRatePayload);
     // console.log("table data:", tableData)
 
     const handleSubmit = () => {
 
-          const labourRatePayload = {
+    const labourRatePayload = {
         labour_rate_detail: {
-            id: rateDetails?.id || "", // include the main id for edit
-            labour_rates: tableData.map(row => {
+            company_id: rateDetails?.company_id || null,
+            project_id: rateDetails?.project_id || null,
+            pms_site_id: rateDetails?.pms_site_id || null,
+            pms_wing_id: rateDetails?.pms_wing_id || null,
+            parent_id: rateDetails?.parent_id || null,
+            labour_rates: tableData?.map(row => {
                 // Find the last non-null category in the chain
-                const resource_id = row.subCategory5 || row.subCategory4 || row.subCategory3 || row.subCategory || row.mainCategory ||row.resource_id||  null;
+                const resource_id = row.subCategory5 || row.subCategory4 || row.subCategory3 || row.subCategory || row.mainCategory || row.resource_id || null;
+                // console.log("resource id:", resource_id);
+                // If only mainCategory is present, resource_type is WorkCategory, else WorkSubCategory
                 const isOnlyMain = !!row.mainCategory && !row.subCategory && !row.subCategory3 && !row.subCategory4 && !row.subCategory5;
-                const resource_type = isOnlyMain ? "WorkCategory" : "WorkSubCategory";
+                const resource_type = row.resource_type ||(isOnlyMain ? "WorkCategory" : "WorkSubCategory");
+
+               
                 return {
-                    id: row.id || null, // include id if present for edit
                     labour_activity_id: row.activity,
-                    labour_sub_activity_id: row.subActivity || null,
+                     labour_sub_activity_id: row.subActivity || null,
                     resource_id,
                     resource_type,
                     unit_of_measure_id: row.uom,
@@ -848,7 +866,8 @@ const EditRateLabour = () => {
 
         // Simulate API call or handle submission logic
         axios
-            .patch(`${baseURL}labour_rate_details/${id}.json?token=${token}`, labourRatePayload)
+            // .patch(`${baseURL}labour_rate_details/${id}.json?token=${token}`, labourRatePayload)
+            post(`${baseURL}labour_rate_details.json?token=${token}`, labourRatePayload)
             .then((response) => {
                 alert("Submission successful!");
                 console.log("Update successful:", response.data);
@@ -873,7 +892,7 @@ const EditRateLabour = () => {
                     <a href="">
                         <a href="">Setup &gt; Engineering Setup &gt; Rate</a>
                     </a>
-                    <h5 class="mt-4">Edit Rate</h5>
+                    <h5 class="mt-4"> Rate Revision</h5>
                     <div className="card mt-3 pb-3">
                         <div className="card-body">
                             <div className="details_page">
@@ -1379,4 +1398,4 @@ const EditRateLabour = () => {
     )
 }
 
-export default EditRateLabour;
+export default RevisionRateLabour;

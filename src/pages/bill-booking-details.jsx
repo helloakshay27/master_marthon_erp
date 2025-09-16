@@ -1786,6 +1786,7 @@ const BillBookingDetails = () => {
                           <td>{log.remarks || ""}</td>
                         </tr>
                       ))} */}
+                      {console.log("ststus log:",details?.status_logs)}
                       {(details?.status_logs || [])
                         .slice(0, 10)
                         .map((log, index) => (
