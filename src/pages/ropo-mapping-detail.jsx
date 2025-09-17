@@ -183,6 +183,7 @@ const handleStatusUpdate = async () => {
   }
 
   return (
+    
     <div>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover containerStyle={{ zIndex: 20000 }} />
       <main className="h-100 w-100">
@@ -420,7 +421,8 @@ const handleStatusUpdate = async () => {
                     type="button"
                     className="purple-btn2 w-100"
                     onClick={handleStatusUpdate}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !selectedStatus || purchaseOrderData.disabled}
+                    
                   >
                     {isSubmitting ? 'Updating...' : 'Submit'}
                   </button>
@@ -476,13 +478,14 @@ const handleStatusUpdate = async () => {
       </main>
 
       {/* Approval Log Modal */}
-      <Modal size="lg" show={showModal} onHide={closeModal} centered
-        style={{
-    top: "10%", // Adjust this value to position the modal higher on the page
-    transform: "translateY(0)", // Prevents centering vertically
-    overflowY: "auto", // Enables scrolling if content overflows
-    maxHeight: "80vh", // Limits the modal height to 80% of the viewport height
-  }}>
+<Modal size="lg" show={showModal} onHide={closeModal} centered
+       style={{
+   top: "10%", // Adjust this value to position the modal higher on the page
+   transform: "translateY(0)", // Prevents centering vertically
+   overflowY: "auto", // Enables scrolling if content overflows
+   maxHeight: "80vh", // Limits the modal height to 80% of the viewport height
+   zIndex: 20000, // Ensure modal stays above headers/footers
+ }}>
         <Modal.Header closeButton>
           <h5>Approval Log</h5>
         </Modal.Header>
