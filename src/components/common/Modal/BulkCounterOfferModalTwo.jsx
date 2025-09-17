@@ -419,17 +419,17 @@ const urlParams = new URLSearchParams(location.search);
           body: JSON.stringify(payload),
         }
       );
-      // if (response.ok) {
-      //   toast.success("Counter Bid Created successfully!", {
-      //     autoClose: 1000, // Close after 3 seconds
-      //   });
-      //   setTimeout(() => {
-      //     handleClose();
-      //   }, 1000); //
-      // } else {
-      //   const errorText = await response.text();
-      //   toast.error(`Failed to submit counter bid: ${errorText}`);
-      // }
+      if (response.ok) {
+        toast.success("Counter Bid Created successfully!", {
+          autoClose: 1000, // Close after 3 seconds
+        });
+        setTimeout(() => {
+          handleClose();
+        }, 1000); //
+      } else {
+        const errorText = await response.text();
+        toast.error(`Failed to submit counter bid: ${errorText}`);
+      }
     } catch (error) {
       console.error("Error while submitting counter bid", error);
     } finally {
@@ -1265,13 +1265,6 @@ const urlParams = new URLSearchParams(location.search);
         onHide={handleClose}
         title="Counter Offer"
         size="xxl"
-        // footerButtons={[
-        //   {
-        //     label: "Save",
-        //     onClick: handleSubmit,
-        //     props: { className: submitted ? "disabled-btn" : "purple-btn2" },
-        //   },
-        // ]}
 
         footerButtons={[
           {

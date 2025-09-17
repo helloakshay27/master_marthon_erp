@@ -356,6 +356,7 @@ export default function CreateRFQForm({
       console.error("Error fetching generic info:", error);
     }
   };
+console.log("uomOptions",uomOptions);
 
   useEffect(() => {
     if (existingData) {
@@ -530,8 +531,12 @@ export default function CreateRFQForm({
 
   const handleUnitChange = (selected, rowIndex, sectionIndex) => {
     const updatedSections = [...sections];
-    updatedSections[sectionIndex].sectionData[rowIndex].unit = selected;
-
+    // If selected is an object (from SelectBox), use its value; if it's a number, use directly
+    let uomValue = selected;
+    if (selected && typeof selected === 'object' && 'value' in selected) {
+      uomValue = selected.value;
+    }
+    updatedSections[sectionIndex].sectionData[rowIndex].unit = uomValue;
     setSections(updatedSections);
   };
 
@@ -1888,6 +1893,7 @@ export default function CreateRFQForm({
                                 </div>
                               )}
                             </div>
+
 
                             {/* Attachments Accordion */}
                             <div className="mb-3">

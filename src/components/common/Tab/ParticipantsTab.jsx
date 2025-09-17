@@ -17,7 +17,9 @@ import axios from 'axios';
 
 export default function ParticipantsTab({ id }) {
   const [isSelectCheckboxes, setIsSelectCheckboxes] = useState(false);
-  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]); // legacy, not used for modal selection anymore
+  const [toAdd, setToAdd] = useState([]); // vendors to add to filteredData after Save
+  const [toRemove, setToRemove] = useState([]); // vendors to remove from filteredData after Save
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [modalSearchTerm, setModalSearchTerm] = useState("");
@@ -91,7 +93,7 @@ export default function ParticipantsTab({ id }) {
       errors.mobile = "Valid mobile number is required";
       toast.error(errors.mobile);
     }
-    if (inviteForm.gstNumber && !gstRegex.test(inviteForm.gstNumber)) {
+    if (inviteForm.gstNumber) {
       errors.gstNumber = "Invalid GST number format";
       toast.error(errors.gstNumber);
     }
@@ -210,7 +212,10 @@ export default function ParticipantsTab({ id }) {
   };
 
   const handleVendorTypeModalShow = () => {
-    setVendorModal(true);
+  setVendorModal(true);
+  // Reset toAdd and toRemove on modal open
+  setToAdd([]);
+  setToRemove([]);
   };
   const handleVendorTypeModalClose = () => {
     setVendorModal(false);
@@ -383,10 +388,21 @@ export default function ParticipantsTab({ id }) {
   };
 
   const handleCheckboxChange = (vendor, isChecked) => {
+    const vendorId = vendor.id || vendor.key;
     if (isChecked) {
-      setSelectedRows((prev) => [...prev, vendor]);
+      // If vendor is not in filteredData, mark for addition
+      if (!filteredData.some(fd => fd.id === vendorId || fd.key === vendorId)) {
+        setToAdd(prev => [...prev, vendor]);
+      }
+      // Always remove from toRemove if checked
+      setToRemove(prev => prev.filter(v => (v.id || v.key) !== vendorId));
     } else {
-      setSelectedRows((prev) => prev.filter((item) => item.id !== vendor.id));
+      // If vendor is in filteredData, mark for removal
+      if (filteredData.some(fd => fd.id === vendorId || fd.key === vendorId)) {
+        setToRemove(prev => [...prev, vendor]);
+      }
+      // Always remove from toAdd if unchecked
+      setToAdd(prev => prev.filter(v => (v.id || v.key) !== vendorId));
     }
   };
 
@@ -394,55 +410,66 @@ export default function ParticipantsTab({ id }) {
     if (isSaving) return;
     setIsSaving(true);
     setIsVendorLoading(true); // Start loader
-    const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
+    // Update filteredData: add vendors in toAdd, remove vendors in toRemove
+    setFilteredData((prev) => {
+      let newFiltered = [...prev];
+      // Remove vendors marked for removal
+      toRemove.forEach((vendor) => {
+        const vendorId = vendor.id || vendor.key;
+        newFiltered = newFiltered.filter(fd => fd.id !== vendorId && fd.key !== vendorId);
+      });
+      // Add vendors marked for addition
+      toAdd.forEach((vendor) => {
+        const vendorId = vendor.id || vendor.key;
+        const exists = newFiltered.some(fd => fd.id === vendorId || fd.key === vendorId);
+        if (!exists) {
+          newFiltered.push(vendor);
+        }
+      });
+      return newFiltered;
+    });
+
+    // Prepare vendor IDs for API call (add only)
+    const addedVendorIds = toAdd.map((vendor) => vendor.id).filter(Boolean);
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
-    const url = `${baseURL}rfq/events/${id}/add_vendors?token=${token}&pms_supplier_ids=[${selectedVendorIds.join(
-      ","
-    )}]`;
+    const url = `${baseURL}rfq/events/${id}/add_vendors?token=${token}&pms_supplier_ids=[${addedVendorIds.join(",")}]`;
 
     try {
-      const response = await fetch(url, {
-        method: "POST",
-      });
-      setVendorModal(false);
-
-      if (response.ok) {
-        const updatedTableData = tableData.filter(
-          (vendor) =>
-            !selectedRows.some(
-              (selectedVendor) => selectedVendor.id === vendor.id
-            )
-        );
-        setTableData(updatedTableData);
-
-        const updatedVendorData = [...vendorData, ...selectedRows];
-        setVendorData(updatedVendorData);
-
-        setSelectedVendors((prev) => [...prev, ...selectedRows]);
-
-        setSelectedRows([]);
-        setResetSelectedRows(true);
-        
-        // Refresh participants data immediately
-        const participantsResponse = await fetch(
-          `${baseURL}rfq/events/${id}/event_vendors?token=${token}&page=${currentParticipantPage}`
-        );
-        if (participantsResponse.ok) {
-          const participantsData = await participantsResponse.json();
-          setParticipants(participantsData || []);
-          setTotalParticipantPages(participantsData?.pagination?.total_pages || 1);
-        }
-        
-        toast.success("Vendors added successfully!", {
-          autoClose: 1000,
+      if (addedVendorIds.length > 0) {
+        const response = await fetch(url, {
+          method: "POST",
         });
-      } else {
-        throw new Error("Failed to add vendors.");
+        if (!response.ok) throw new Error("Failed to add vendors.");
       }
+      setVendorModal(false);
+      // Remove added vendors from tableData
+      const updatedTableData = tableData.filter(
+        (vendor) =>
+          !toAdd.some((addedVendor) => addedVendor.id === vendor.id)
+      );
+      setTableData(updatedTableData);
+      // Add to vendorData
+      const updatedVendorData = [...vendorData, ...toAdd];
+      setVendorData(updatedVendorData);
+      setSelectedVendors((prev) => [...prev, ...toAdd]);
+      setSelectedRows([]);
+      setResetSelectedRows(true);
+      // Refresh participants data immediately
+      const participantsResponse = await fetch(
+        `${baseURL}rfq/events/${id}/event_vendors?token=${token}&page=${currentParticipantPage}`
+      );
+      if (participantsResponse.ok) {
+        const participantsData = await participantsResponse.json();
+        setParticipants(participantsData || []);
+        setTotalParticipantPages(participantsData?.pagination?.total_pages || 1);
+      }
+      toast.success("Vendors updated successfully!", {
+        autoClose: 1000,
+      });
     } catch (error) {
-      console.error("Error adding vendors:", error);
-      toast.error("Failed to add vendors.", {
+      console.error("Error updating vendors:", error);
+      toast.error("Failed to update vendors.", {
         autoClose: 1000,
       });
     } finally {
@@ -548,6 +575,7 @@ export default function ParticipantsTab({ id }) {
     natureOfBusiness: '',
     panNumber: '',
     department: '',
+    organizationName: '',
   });
   const [organizationTypeOptions, setOrganizationTypeOptions] = useState([]);
   const [departmentOptions, setDepartmentOptions] = useState([]);
@@ -657,7 +685,7 @@ export default function ParticipantsTab({ id }) {
       setIsInviteLoading(false);
       return;
     }
-    if (inviteVendorData.gstinApplicable === 'yes' && (!inviteVendorData.gstNumber || !gstRegex.test(inviteVendorData.gstNumber))) {
+    if (inviteVendorData.gstinApplicable === 'yes' && (!inviteVendorData.gstNumber )) {
       toast.error('Valid GSTIN is required');
       setIsInviteLoading(false);
       return;
@@ -700,6 +728,7 @@ export default function ParticipantsTab({ id }) {
       email: inviteVendorData.email,
       mobile: inviteVendorData.mobile,
       pan_number: inviteVendorData.panNumber,
+      organization_name: inviteVendorData.organizationName,
     };
     try {
       const response = await axios.post(
@@ -1126,14 +1155,11 @@ export default function ParticipantsTab({ id }) {
                       }))}
                       handleCheckboxChange={handleCheckboxChange}
                       isRowSelected={(vendorId) => {
-  const modalVendor = modalFilteredTableData.find(v => v.id === vendorId || v.key === vendorId);
-  if (!modalVendor) return false;
-  return filteredData.some(fd =>
-    fd.name === modalVendor.name &&
-    fd.email === modalVendor.email &&
-    fd.phone === modalVendor.phone &&
-    fd.organisation === modalVendor.organisation
-  );
+  // Checkbox is checked if vendor is in filteredData and not in toRemove, or in toAdd
+  const inFilteredData = filteredData.some(fd => fd.id === vendorId || fd.key === vendorId);
+  const inToRemove = toRemove.some(v => (v.id || v.key) === vendorId);
+  const inToAdd = toAdd.some(v => (v.id || v.key) === vendorId);
+  return (inFilteredData && !inToRemove) || inToAdd;
 }}
                       resetSelectedRows={resetSelectedRows}
                       onResetComplete={() => setResetSelectedRows(false)}
@@ -1382,7 +1408,7 @@ export default function ParticipantsTab({ id }) {
               </Modal.Header>
               <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto', overflowX: 'hidden' }}>
                 <form className="p-2" onSubmit={handleInviteVendor}>
-                  <div className="row">
+                    <div className="row">
                     <div className="col-md-6">
                       <div className="form-group mb-3">
                         <label className="po-fontBold">First Name <span style={{ color: 'red' }}>*</span></label>
@@ -1453,6 +1479,12 @@ export default function ParticipantsTab({ id }) {
                       <div className="form-group mb-3">
                         <label className="po-fontBold">Department <span style={{ color: 'red' }}>*</span></label>
                         <SingleSelector options={departmentOptions} value={departmentOptions.find(opt => opt.value === inviteVendorData.department) || null} onChange={handleDepartmentChange} placeholder="Select Department" />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Organization Name</label>
+                        <input className="form-control" type="text" name="organizationName" placeholder="Enter Organization Name" value={inviteVendorData.organizationName} onChange={handleInviteVendorChange} />
                       </div>
                     </div>
                   </div>

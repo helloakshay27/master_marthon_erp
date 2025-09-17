@@ -1381,8 +1381,8 @@ export default function EditEvent() {
     const errors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const mobileRegex = /^[6-9]\d{9}$/; // Indian mobile number validation
-    const gstRegex =
-      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
+    // const gstRegex =
+    //   /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
     if (!inviteVendorData.name) {
@@ -1401,8 +1401,8 @@ export default function EditEvent() {
       toast.error(errors.mobile);
     }
     if (
-      inviteVendorData.gstNumber &&
-      !gstRegex.test(inviteVendorData.gstNumber)
+      inviteVendorData.gstNumber 
+      // !gstRegex.test(inviteVendorData.gstNumber)
     ) {
       errors.gstNumber = "Invalid GST number format";
       toast.error(errors.gstNumber);
@@ -1437,6 +1437,7 @@ export default function EditEvent() {
     natureOfBusiness: '',
     panNumber: '',
     department: '',
+    organizationName: '',
   });
   const [organizationTypeOptions, setOrganizationTypeOptions] = useState([]);
   const [departmentOptions, setDepartmentOptions] = useState([]);
@@ -1546,7 +1547,7 @@ export default function EditEvent() {
       setIsInviteLoading(false);
       return;
     }
-    if (inviteVendorData.gstinApplicable === 'yes' && (!inviteVendorData.gstNumber || !gstRegex.test(inviteVendorData.gstNumber))) {
+    if (inviteVendorData.gstinApplicable === 'yes' && (!inviteVendorData.gstNumber )) {
       toast.error('Valid GSTIN is required');
       setIsInviteLoading(false);
       return;
@@ -1589,6 +1590,7 @@ export default function EditEvent() {
       email: inviteVendorData.email,
       mobile: inviteVendorData.mobile,
       pan_number: inviteVendorData.panNumber,
+      organization_name: inviteVendorData.organizationName,
     };
     try {
       const response = await axios.post(
@@ -1841,7 +1843,7 @@ export default function EditEvent() {
                   <thead>
                     <tr>
                       <th style={{ width: "100px" }}>Sr No.</th>
-                      <th>Vendor Organization Name</th>
+                      <th>Name</th>
                       {/* <th>Organization</th> */}
                       <th>Mob No.</th>
                       <th>Status</th>
@@ -2559,7 +2561,7 @@ export default function EditEvent() {
               </Modal.Header>
               <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto', overflowX: 'hidden' }}>
                 <form className="p-2" onSubmit={handleInviteVendor}>
-                  <div className="row">
+                    <div className="row">
                     <div className="col-md-6">
                       <div className="form-group mb-3">
                         <label className="po-fontBold">First Name</label>
@@ -2626,12 +2628,18 @@ export default function EditEvent() {
                         <input className="form-control" type="text" name="panNumber" placeholder="Enter PAN Number" value={inviteVendorData.panNumber} onChange={handleInviteVendorChange} required />
                       </div>
                     </div>
-                    <div className="col-md-6">
-                      <div className="form-group mb-3">
-                        <label className="po-fontBold">Department</label>
-                        <SingleSelector options={departmentOptions} value={departmentOptions.find(opt => opt.value === inviteVendorData.department) || null} onChange={handleDepartmentChange} placeholder="Select Department" />
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">Department</label>
+                          <SingleSelector options={departmentOptions} value={departmentOptions.find(opt => opt.value === inviteVendorData.department) || null} onChange={handleDepartmentChange} placeholder="Select Department" />
+                        </div>
                       </div>
-                    </div>
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">Organization Name</label>
+                          <input className="form-control" type="text" name="organizationName" placeholder="Enter Organization Name" value={inviteVendorData.organizationName} onChange={handleInviteVendorChange} />
+                        </div>
+                      </div>
                   </div>
                   <div className="d-flex justify-content-center mt-2 gap-2">
                     <button className="purple-btn2" onClick={handleInviteModalClose} type="button" disabled={isInviteLoading}>Close</button>
