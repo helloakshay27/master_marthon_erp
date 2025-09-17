@@ -404,7 +404,7 @@ const BillBookingDetails = () => {
             Home &gt; Billing &amp; Accounts &gt; Bill Booking Details
           </a>
           <h5 className="mt-3">Bill Booking Details</h5>
-          {/* {status && status.toLowerCase() === "draft" && ( */}
+          {status && status.toLowerCase() === "draft" && (
           <div className="d-flex justify-content-end m-2">
 
             <Link
@@ -421,7 +421,7 @@ const BillBookingDetails = () => {
             </Link>
 
           </div>
-          {/* )} */}
+           )} 
           <div className="row my-4 align-items-center">
             <div className="col-md-12 ">
               <div className="card p-3">

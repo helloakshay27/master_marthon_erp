@@ -891,6 +891,19 @@ const creditnotecreate = () => {
   console.log("addition tax rows:", rows);
 
   const handleSubmit = async () => {
+      // Validation
+    if (!selectedPO?.id) {
+      toast.error("Please select a Purchase Order number.");
+      return;
+    }
+    if (!creditNoteDate) {
+      toast.error("Please select a Credit Note date.");
+      return;
+    }
+    if (!creditNoteAmount || isNaN(creditNoteAmount) || Number(creditNoteAmount) <= 0) {
+      toast.error("Please enter a valid Credit Note amount.");
+      return;
+    }
     setLoading2(true);
     const attachments = (documents || [])
       .map((doc) =>
@@ -1036,7 +1049,7 @@ const creditnotecreate = () => {
                   aria-labelledby="pills-home-tab"
                 >
                   <section className="mor p-2 pt-2">
-                    <div className="row justify-content-center my-4">
+                    {/* <div className="row justify-content-center my-4">
                       <div className="col-md-10">
                         <div className="progress-steps">
                           <div className="top">
@@ -1067,7 +1080,7 @@ const creditnotecreate = () => {
                           </div>
                           <div className="buttons d-m">
                             {/* Prev Button */}
-                            <button
+                            {/* <button
                               className={`btn btn-prev ${
                                 currentStep === 1 ? "disabled" : ""
                               }`}
@@ -1077,7 +1090,7 @@ const creditnotecreate = () => {
                               Prev
                             </button>
                             {/* Next Button */}
-                            <button
+                            {/* <button
                               className={`btn btn-next ${
                                 currentStep === totalSteps ? "disabled" : ""
                               }`}
@@ -1089,7 +1102,7 @@ const creditnotecreate = () => {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </div> */} 
                     <div className="row">
                       {/* form-select EXAMPLE */}
                       <div
@@ -1159,7 +1172,7 @@ const creditnotecreate = () => {
 
                             <div className="col-md-3 mt-2">
                               <div className="form-group">
-                                <label>PO / WO Number</label>
+                                <label>PO / WO Number <span>*</span></label>
                                 <input
                                   className="form-control"
                                   type="text"
@@ -1269,7 +1282,7 @@ const creditnotecreate = () => {
                             </div>
                             <div className="col-md-4 mt-2">
                               <div className="form-group">
-                                <label>Credit Note Amount</label>
+                                <label>Credit Note Amount  <span>*</span></label>
                                 <input
                                   className="form-control"
                                   type="number"
@@ -1286,7 +1299,7 @@ const creditnotecreate = () => {
                             </div>
                             <div className="col-md-4 mt-2">
                               <div className="form-group">
-                                <label>Credit Note Date</label>
+                                <label>Credit Note Date  <span>*</span></label>
                                 <div
                                   id="datepicker"
                                   className="input-group date"

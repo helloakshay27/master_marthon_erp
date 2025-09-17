@@ -1053,8 +1053,25 @@ const attachmentsPayload = attachments
   console.log("payload#########:", payload)
 
   const handleSubmit = async () => {
+    // Validation
+    if (!selectedPO?.id) {
+      toast.error("Please select a Purchase Order number.");
+      return;
+    }
+    if (!creditNoteAmount || isNaN(creditNoteAmount) || Number(creditNoteAmount) <= 0) {
+      toast.error("Please enter a valid Debit Note amount.");
+      return;
+    }
+    if (!creditNoteDate) {
+      toast.error("Please select a Debit Note date.");
+      return;
+    }
+    if (!debitNoteReason || debitNoteReason.trim() === "") {
+      toast.error("Please Select a reason.");
+      return;
+    }
+
     setLoading2(true)
-   
     const payload = {
       debit_note: {
         company_id: selectedCompany?.value || "",
@@ -1067,7 +1084,6 @@ const attachmentsPayload = attachments
         debit_note_amount: creditNoteAmount || 0,
         remark: remark2 || "",
         status: "draft",
-
         taxes_and_charges: [
           ...rows.map((row) => ({
             inclusive: row.inclusive,
@@ -1088,14 +1104,7 @@ const attachmentsPayload = attachments
             resource_type: row.resource_type || ""
           })),
         ],
-
-        // attachments: documentRows.map((row) => ({
-        //   filename: row.upload?.filename || "",
-        //   content: row.upload?.content || "",
-        //   content_type: row.upload?.content_type || "",
-        // })),
         attachments:attachmentsPayload|| [],
-
         advance_note_adjustment,
       }
     };
@@ -1109,13 +1118,12 @@ const attachmentsPayload = attachments
       );
       console.log("Response:", response.data);
       setLoading2(false)
-      // alert("debit Note submitted successfully!");
+      toast.success("Debit Note submitted successfully!");
       navigate(`/debit-note-list?token=${token}`); // Navigate to the list page
-
     } catch (error) {
       setLoading2(false)
       console.error("Error submitting Credit Note:", error);
-      alert("Failed to submit debit Note. Please try again.");
+      toast.error("Failed to submit Debit Note. Please try again.");
     } finally {
       setLoading2(false)
     }
@@ -1254,7 +1262,7 @@ const attachmentsPayload = attachments
 
                             <div className="col-md-3 mt-2">
                               <div className="form-group">
-                                <label>PO / WO Number</label>
+                                <label>PO / WO Number <span>*</span></label>
                                 <input
                                   className="form-control"
                                   type="text"
@@ -1362,7 +1370,7 @@ const attachmentsPayload = attachments
                             </div>
                             <div className="col-md-4 mt-2">
                               <div className="form-group">
-                                <label>Debit Note Amount</label>
+                                <label>Debit Note Amount  <span>*</span></label>
                                 <input
                                   className="form-control"
                                   type="number"
@@ -1375,7 +1383,7 @@ const attachmentsPayload = attachments
                             </div>
                             <div className="col-md-4 mt-2">
                               <div className="form-group">
-                                <label>Debit Note Reason</label>
+                                <label>Debit Note Reason  <span>*</span></label>
                                 <SingleSelector
                                   options={[
                                     { value: "Advance Note", label: "Advance Note" },
@@ -1402,7 +1410,7 @@ const attachmentsPayload = attachments
                             </div>
                             <div className="col-md-4 mt-2">
                               <div className="form-group">
-                                <label>Debit Note Date</label>
+                                <label>Debit Note Date  <span>*</span></label>
                                 <div
                                   id="datepicker"
                                   className="input-group date"

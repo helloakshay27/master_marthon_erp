@@ -4693,25 +4693,42 @@ const BillBookingEdit = () => {
 
               </div>
 
-              <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
-                <p className="mb-0">Status</p>
-                <select
-                  className="form-select purple-btn2"
-                  style={{ width: "150px" }}
-                  value={formData.status || "draft"}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      status: e.target.value,
-                    }))
-                  }
-                >
-                  <option value="draft">Draft</option>
-                  <option value="verified">Verified</option>
-                  <option value="approved">Approved</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="proceed">Proceed</option>
-                </select>
+              <div className="row mt-2 justify-content-end">
+                <div className="col-md-3">
+                  <div className="form-group d-flex gap-3 align-items-center">
+                    <p className="mb-0">Status</p>
+                    <SingleSelector
+                      className="form-select purple-btn2"
+                      style={{ width: "150px" }}
+                      options={[
+                        { value: "draft", label: "Draft", isDisabled: true },
+                        { value: "verified", label: "Verified" },
+                        { value: "approved", label: "Approved" },
+                        { value: "submitted", label: "Submitted" },
+                        { value: "proceed", label: "Proceed" },
+                      ]}
+                      onChange={(selectedOption) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          status: selectedOption.value,
+                        }))
+                      }
+                      value={(() => {
+                        const opts = [
+                          { value: "draft", label: "Draft", isDisabled: true },
+                          { value: "verified", label: "Verified" },
+                          { value: "approved", label: "Approved" },
+                          { value: "submitted", label: "Submitted" },
+                          { value: "proceed", label: "Proceed" },
+                        ];
+                        return opts.find((option) => option.value === (formData.status || "draft"));
+                      })()}
+                      placeholder="Select Status"
+                      classNamePrefix="react-select"
+                      isDisabled={option => option.isDisabled}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="row mt-2 justify-content-end mb-5">
