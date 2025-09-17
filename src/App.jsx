@@ -149,6 +149,11 @@ import LabourRateDetails from "./pages/labour-rate-details";
 import EditRateLabour from "./pages/labour-rate-edit";
 import RopoImportAmmend from "./pages/ropo-import-ammend";
 import RevisionRateLabour from "./pages/labour-rate-revision";
+import PoDomesticCreate from "./pages/po-domestic-create";
+import PoDomesticEdit from "./pages/po-domestic-edit";
+import PoDomesticList from "./pages/po-domestic-list";
+import PoDomesticAmmend from "./pages/po-domestic-ammend";
+import PoDomesticDetails from "./pages/po-domestic-detail";
 
 function App() {
   return (
@@ -160,6 +165,17 @@ function App() {
           <Route path="/material-qc-create" element={<MaterialQCCreate />} />
           <Route path="/material-qc-details" element={<MaterialQCDetails />} />
           <Route path="/invite-vendor" element={<InviteVendor />} />
+
+ <Route path="/po-domestic-create" element={<PoDomesticCreate />} />
+          <Route
+            path="/po-domestic-details/:id"
+            element={<PoDomesticDetails />}
+          />
+          <Route path="/po-domestic-edit/:id" element={<PoDomesticEdit />} />
+          <Route path="/po-domestic-list" element={<PoDomesticList />} />
+          <Route path="/po-domestic-ammend/:id" element={<PoDomesticAmmend />} />
+
+
           <Route path="/ropo-import-create" element={<RopoImportCreate />} />
           <Route
             path="/ropo-import-details/:id"

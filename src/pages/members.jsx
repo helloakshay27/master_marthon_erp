@@ -40,12 +40,25 @@ function Members() {
 
               <h1>ROPO</h1>
               <ul>
-                <li>
-                  <Link to="/ropo-import-details/:id">
+                  <li>
+                  <Link to="/po-domestic-details/:id">
                     {" "}
-                    ROPO Import Detail
+                  PO Domestic Detail
                   </Link>
                 </li>
+                <li>
+                  <Link to="/po-domestic-create?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    {" "}
+                    PO Domestic Create
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/po-domestic-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    {" "}
+                    PO Domestic List
+                  </Link>
+                </li>
+                
                 <li>
                   <Link to="/ropo-import-create?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
                     {" "}
