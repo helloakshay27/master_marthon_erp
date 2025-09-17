@@ -2359,7 +2359,7 @@ const RopoImportAmmend = () => {
         axios.get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${inventoryId}&token=${token}`),
         axios.get(`${baseURL}pms/colours.json?q[material_id_eq]=${inventoryId}&token=${token}`),
         axios.get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${inventoryId}&token=${token}`),
-        axios.get(`${baseURL}unit_of_measures.json?q[material_id_eq]=${inventoryId}&token=${token}`),
+        axios.get(`${baseURL}unit_of_measures.json?q[material_uoms_material_id_eq]=${inventoryId}&token=${token}`),
       ]);
 
       const genericOptions = Array.isArray(genResp?.data)
