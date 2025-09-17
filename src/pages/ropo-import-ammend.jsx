@@ -1509,13 +1509,14 @@ const RopoImportAmmend = () => {
   // Handle currency selection
 
   const handleCurrencyChange = (selectedOption) => {
-    if (selectedOption) {
-      setSelectedCurrency({
-        code: selectedOption.value,
-
-        symbol: selectedOption.symbol,
-      });
+    if (!selectedOption || !selectedOption.value) {
+      setSelectedCurrency(null);
+      return;
     }
+    setSelectedCurrency({
+      code: selectedOption.value,
+      symbol: selectedOption.symbol,
+    });
   };
 
   // Handle project selection
@@ -1536,15 +1537,11 @@ const RopoImportAmmend = () => {
 
   const [currencies, setCurrencies] = useState([]);
 
-  const [selectedCurrency, setSelectedCurrency] = useState({
-    code: "USD",
-
-    symbol: "$",
-  });
+  const [selectedCurrency, setSelectedCurrency] = useState(null);
 
   // Dynamic PO currency code for display (e.g., USD, CAD)
 
-  const poCurrencyCode = selectedCurrency?.code || "USD";
+  const poCurrencyCode = selectedCurrency?.code || "";
 
   // State for conversion rate
 
@@ -1587,6 +1584,10 @@ const RopoImportAmmend = () => {
         ? "C$"
         : currency.currency.toUpperCase(),
   }));
+  const currencyOptionsWithPlaceholder = [
+    { value: "", label: "Select Currency" },
+    ...currencyOptions,
+  ];
   // State for dropdown options
 
   const [unitOfMeasures, setUnitOfMeasures] = useState([]);
@@ -4195,35 +4196,35 @@ const RopoImportAmmend = () => {
 
         // Set fallback options if API fails
 
-        setTaxOptions([
-          { value: "CGST", label: "CGST", id: 19, type: "TaxCategory" },
+        // setTaxOptions([
+        //   { value: "CGST", label: "CGST", id: 19, type: "TaxCategory" },
 
-          { value: "SGST", label: "SGST", id: 18, type: "TaxCategory" },
+        //   { value: "SGST", label: "SGST", id: 18, type: "TaxCategory" },
 
-          { value: "IGST", label: "IGST", id: 20, type: "TaxCategory" },
+        //   { value: "IGST", label: "IGST", id: 20, type: "TaxCategory" },
 
-          {
-            value: "Handling Charges",
+        //   {
+        //     value: "Handling Charges",
 
-            label: "Handling Charges",
+        //     label: "Handling Charges",
 
-            id: 2,
+        //     id: 2,
 
-            type: "TaxCharge",
-          },
+        //     type: "TaxCharge",
+        //   },
 
-          {
-            value: "Other charges",
+        //   {
+        //     value: "Other charges",
 
-            label: "Other charges",
+        //     label: "Other charges",
 
-            id: 4,
+        //     id: 4,
 
-            type: "TaxCharge",
-          },
+        //     type: "TaxCharge",
+        //   },
 
-          { value: "Freight", label: "Freight", id: 5, type: "TaxCharge" },
-        ]);
+        //   { value: "Freight", label: "Freight", id: 5, type: "TaxCharge" },
+        // ]);
       }
     };
 
@@ -7177,25 +7178,23 @@ const RopoImportAmmend = () => {
                                 <div className="col-md-4 mt-2">
                                   <div className="form-group">
                                     <label className="po-fontBold">
-                                      PO Currency
+                                      PO Currency  <span>*</span>
                                     </label>
 
                                     <SingleSelector
-                                      options={currencyOptions}
-                                      value={currencyOptions.find(
-                                        (option) =>
-                                          option.value === selectedCurrency.code
-                                      )}
+                                      options={currencyOptionsWithPlaceholder}
+                                      value={selectedCurrency ? currencyOptionsWithPlaceholder.find((o) => o.value === selectedCurrency.code) : null}
                                       onChange={handleCurrencyChange}
                                       placeholder="Select Currency"
+                                      isClearable={true}
                                     />
                                   </div>
                                 </div>
 
                                 <div className="col-md-4 mt-2">
                                   <div className="form-group">
-                                    <label className="po-fontBold">
-                                      {`Conversion Rate (${poCurrencyCode} to INR)`}
+                                    <label className="po-fontBold"> 
+                                      {`Conversion Rate (${poCurrencyCode} to INR)`} <span>*</span>
                                     </label>
 
                                     <input

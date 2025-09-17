@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams ,useNavigate} from "react-router-dom";
 import axios from "axios";
 import Modal from "react-bootstrap/Modal";
 import SingleSelector from "../components/base/Select/SingleSelector";
@@ -10,6 +10,8 @@ import { baseURL } from "../confi/apiDomain";
 
 const RopoMappingDetail = () => {
   const { id } = useParams();
+  const navigate= useNavigate();
+
 
 
     const urlParams = new URLSearchParams(location.search);
@@ -428,7 +430,8 @@ const handleStatusUpdate = async () => {
                   </button>
                 </div>
                 <div className="col-md-2">
-                  <button type="button" className="purple-btn1 w-100">
+                  <button type="button" className="purple-btn1 w-100"
+                    onClick={() => navigate(`/ropo-mapping-list/?token=${token}`)}>
                     Cancel
                   </button>
                 </div>
