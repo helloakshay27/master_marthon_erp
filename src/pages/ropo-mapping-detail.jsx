@@ -128,6 +128,7 @@ const handleStatusUpdate = async () => {
   setIsSubmitting(true);
 
   try {
+    setLoading(true)
     const response = await axios.patch(
       `${baseURL}/ropo_mappings/${id}/update_status.json?token=${token}`,
       {
@@ -145,7 +146,7 @@ const handleStatusUpdate = async () => {
     // Check if response status is 200 or if we have data
     if (response.status === 200 || response.data) {
       toast.success('Status updated successfully', {
-        autoClose: 1500,
+        autoClose: 1000,
         onClose: () => window.location.reload(),
       });
     } else {
@@ -155,8 +156,10 @@ const handleStatusUpdate = async () => {
   } catch (error) {
     console.error('Error updating status:', error);
     toast.error(getApiErrorMessage(error));
+    setLoading(false)
   } finally {
     setIsSubmitting(false);
+  setLoading(false)
   }
 };
 

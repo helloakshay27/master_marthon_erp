@@ -668,10 +668,11 @@ const MaterialQCList = () => {
     const allColumns = [
         { field: "srNo", headerName: "Sr. No.", width: 100 },
         { field: "company_name", headerName: "Company Name", width: 150 },
-        { field: "Gate_Pass_No", headerName: "Gate Entry No.", width: 150 },
+         { field: "project_name", headerName: "Project Name", width: 200 },
+        { field: "gate_entry_no", headerName: "Gate Entry No.", width: 150 },
           { field: "Qc_Number", headerName: "QC No", width: 150 },
         { field: "PO_TO_CO_No", headerName: "PO/WO No.", width: 200 },
-        { field: "Supplier_Vendor", headerName: "Supplier/Vendor", width: 200 },
+        { field: "supplier_name", headerName: "Supplier/Vendor", width: 200 },
         { field: "To_Store", headerName: "To Store", width: 150 },
         { field: "Material_Asset_Type", headerName: "Material/Asset Type", width: 200 },
         { field: "Delivery_Challan", headerName: "Delivery Challan", width: 150 },
@@ -685,7 +686,8 @@ const MaterialQCList = () => {
     // Columns to show when Pending content box is active
     const pendingColumns = [
         { field: "srNo", headerName: "Sr.No.", width: 90 },
-        { field: "company", headerName: "Company", width: 200 },
+        { field: "company_name", headerName: "Company Name", width: 200 },
+        { field: "project_name", headerName: "Project Name", width: 200 },
         { field: "gate_entry_no", headerName: "Gate Entry No", width: 150 },
         { field: "gate_entry_type", headerName: "Gate Entry Type", width: 160 },
         { field: "po_number", headerName: "PO Number", width: 160 },
@@ -694,6 +696,20 @@ const MaterialQCList = () => {
         { field: "created_by", headerName: "Created By", width: 150 },
         { field: "status", headerName: "Status", width: 110 },
         { field: "in_date_time", headerName: "In Date & Time", width: 180 },
+        { 
+          field: "Action", 
+          headerName: "Action", 
+          width: 140,
+          sortable: false,
+          renderCell: () => (
+            <span
+              style={{ color: "#8b0203", cursor: "pointer", textDecoration: "underline" }}
+              onClick={() => navigate(`/material-qc-create?token=${token}`)}
+            >
+              Create
+            </span>
+          )
+        },
     ];
 
 
@@ -735,11 +751,46 @@ const MaterialQCList = () => {
     };
 
     const getTransformedRows = () => {
-        let rowsToShow = showOnlyPinned
-            ? [].filter((row) => pinnedRows.includes(row.id))
-            : [];
+        if (activeTab === "open") {
+            // Pending tab: one dummy row matching pendingColumns
+            return [
+                {
+                    id: "pending-dummy-1",
+                    srNo: 1,
+                    company_name: "Demo Company Pvt Ltd",
+                    project_name: "Project Alpha",
+                    gate_entry_no: "GE-0001",
+                    gate_entry_type: "Material",
+                    po_number: "PO-123456",
+                    supplier_name: "Supplier XYZ",
+                    vehicle_number: "MH12AB1234",
+                    created_by: "John Doe",
+                    status: "Pending",
+                    in_date_time: formatDate(new Date().toISOString()),
+                },
+            ];
+        }
 
-        return rowsToShow;
+        // QC List tab (total): one dummy row matching allColumns
+        return [
+            {
+                id: "qc-dummy-1",
+                srNo: 1,
+                company_name: "Demo Company Pvt Ltd",
+                project_name: "Project Alpha",
+                gate_entry_no: "GE-0001",
+                Qc_Number: "QC-0001",
+                PO_TO_CO_No: "PO-123456",
+                supplier_name: "Supplier XYZ",
+                To_Store: "Main Store",
+                Material_Asset_Type: "Material",
+                Delivery_Challan: "DC-7890",
+                created_by: "John Doe",
+                Date: formatDate(new Date().toISOString()),
+                Approved_Date: "-",
+                status: "Draft",
+            },
+        ];
     };
 
     // Calculate displayed rows for the current page
@@ -788,7 +839,7 @@ display:none !important;
                                         }} // Fetch all data (no status filter)
                                     >
                                         <h4 className="content-box-title fw-semibold">QC List</h4>
-                                        <p className="content-box-sub">{"0"}</p>
+                                        <p className="content-box-sub">{"1"}</p>
                                     </div>
                                 </div>
                                 <div className="col-md-2 text-center">
@@ -805,7 +856,7 @@ display:none !important;
                                         <h4 className="content-box-title fw-semibold">
                                             Pending
                                         </h4>
-                                        <p className="content-box-sub">{meta?.Pending || "0"}</p>
+                                        <p className="content-box-sub">{"1"}</p>
                                     </div>
                                 </div>
                                 <div className="col-md-2 text-center">

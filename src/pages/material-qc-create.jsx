@@ -420,11 +420,11 @@ const MaterialQCCreate = () => {
                                                                 <label>
                                                                     Gate Entry No.<span>*</span>
                                                                 </label>
-                                                                <SingleSelector
-                                                                    options={companies}
-                                                                    value={selectedCompany}
-                                                                    onChange={handleCompanyChange}
-                                                                    placeholder="Select Gate Entry No."
+                                                                <input
+                                                                    className="form-control"
+                                                                    type="text"
+                                                                    value={"GE-0001"}
+                                                                    disabled
                                                                 />
                                                             </div>
                                                         </div>
@@ -434,7 +434,7 @@ const MaterialQCCreate = () => {
                                                                 <input
                                                                     className="form-control"
                                                                     type="text"
-                                                                    value={""}
+                                                                    value={"Demo Company Pvt Ltd"}
                                                                     placeholder=""
                                                                     fdprocessedid="qv9ju9"
 
@@ -451,7 +451,7 @@ const MaterialQCCreate = () => {
                                                                 <input
                                                                     className="form-control"
                                                                     type="text"
-                                                                    value={""}
+                                                                    value={"Supplier XYZ"}
                                                                     placeholder=""
                                                                     fdprocessedid="qv9ju9"
 
@@ -465,7 +465,7 @@ const MaterialQCCreate = () => {
                                                                 <input
                                                                     className="form-control"
                                                                     type="text"
-                                                                    value={""}
+                                                                    value={"2"}
 
                                                                 />
                                                             </div>
@@ -484,7 +484,7 @@ const MaterialQCCreate = () => {
                                                                 <input
                                                                     className="form-control"
                                                                     type="text"
-                                                                    value={""}
+                                                                   value={" 2023-10-01 10:00 AM"}
 
                                                                 />
                                                             </div>
@@ -497,6 +497,7 @@ const MaterialQCCreate = () => {
                                                                     type="text"
                                                                     placeholder=""
                                                                     fdprocessedid="qv9ju9"
+                                                                    value={"MH12AB1234"}
 
                                                                 />
                                                             </div>
@@ -511,7 +512,7 @@ const MaterialQCCreate = () => {
                                                                     type="text"
                                                                     placeholder=""
                                                                     fdprocessedid="qv9ju9"
-                                                                    value={""}
+                                                                    value={"MH12AB1234"}
 
                                                                 />
                                                             </div>
@@ -528,7 +529,7 @@ const MaterialQCCreate = () => {
                                                                     <input
                                                                         className="form-control"
                                                                         type="date"
-                                                                        value={""}
+                                                                        value={" 2023-10-01"}
 
                                                                     />
                                                                 </div>
@@ -540,8 +541,9 @@ const MaterialQCCreate = () => {
                                                                 <input
                                                                     className="form-control"
                                                                     type="text" 
-                                                                       value={"John Doe"} // Default value
-    disabled // Make the input field disabled
+                                                                       value={"John Doe"}
+                                                                        // Default value
+    disabled // Make the input field disabled  disabled
 
                                                                 />
                                                             </div>
@@ -557,7 +559,7 @@ const MaterialQCCreate = () => {
                                                                     <input
                                                                         className="form-control"
                                                                         type="date"
-                                                                        value={"test"}
+                                                                          value={" 2023-10-01"}
                                                                         disabled
 
                                                                     />
@@ -646,7 +648,7 @@ const MaterialQCCreate = () => {
                                                                                 <input
                                                                                     type="number"
                                                                                     className="form-control"
-                                                                                    value={mat.details.orderedQty || ""}
+                                                                                    value={mat.details.orderedQty || "10"}
                                                                                     disabled
                                                                                 />
                                                                             </td>
