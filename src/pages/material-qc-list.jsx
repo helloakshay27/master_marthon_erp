@@ -652,6 +652,7 @@ const MaterialQCList = () => {
     const [columnVisibility, setColumnVisibility] = useState({
         srNo: true,
         company_name: true,
+         project_name: true,
         Gate_Pass_No: true,
         Qc_Number:true,
         PO_TO_CO_No: true,
