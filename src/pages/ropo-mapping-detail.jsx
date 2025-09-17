@@ -10,15 +10,37 @@ import { baseURL } from "../confi/apiDomain";
 
 const RopoMappingDetail = () => {
   const { id } = useParams();
-  //   const urlParams = new URLSearchParams(location.search);
-  // const token = urlParams.get("token");
-  const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
 
+
+    const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+  // const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
+const [remark, setRemark] = useState("");
+const [comment, setComment] = useState("");
   const [purchaseOrderData, setPurchaseOrderData] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const openModal = () => setShowModal(true);
   const closeModal = () => setShowModal(false);
+  // Format date and time into a standard format (e.g., DD-MM-YYYY HH:mm:ss)
+const formatDateTime = (dateTimeStr) => {
+  if (!dateTimeStr) return "-";
+  const date = new Date(dateTimeStr);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+  return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+};
+
+// Capitalize the first letter of a string
+const capitalizeFirstLetter = (str) => {
+  if (!str) return "-";
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
 
   // Add status change handler
 const handleStatusChange = (option) => {
@@ -26,6 +48,7 @@ const handleStatusChange = (option) => {
 };
 
   useEffect(() => {
+    setLoading(true);
     axios
       .get(`${baseURL}/ropo_mappings/${id}.json?token=${token}`)
       .then((res) => {
@@ -41,10 +64,12 @@ const handleStatusChange = (option) => {
       );
 
       setSelectedStatus(matchedOption || null);
+      setLoading(false);
     })
 
       .catch((err) => {
         console.error("Error fetching data", err);
+        setLoading(false);
       });
   }, [id]);
 
@@ -108,8 +133,10 @@ const handleStatusUpdate = async () => {
       {
         status_log: {
           status: selectedStatus.value.toLowerCase(),
-          remarks: '',
-          comments: '',
+          // // remarks: '',
+          // comments: '',
+            remarks: remark, // Pass remark
+          comments: comment, // Pass comment
           admin_comment: ''
         }
       }
@@ -133,13 +160,23 @@ const handleStatusUpdate = async () => {
   }
 };
 
-
-
-// Update the Submit button to use the new function
-
-
-  if (!purchaseOrderData) {
-    return <div>Loading...</div>;
+  // Show loader like Gate Pass Details during initial page load
+  if (loading) {
+    return (
+      <div className="loader-container">
+        <div className="lds-ring">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <p>loading...</p>
+      </div>
+    );
   }
 
   return (
@@ -316,6 +353,39 @@ const handleStatusUpdate = async () => {
                   </section>
                 </div>
               </div>
+               <div className="row w-100">
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label>Remark</label>
+                    <textarea
+                      className="form-control"
+                      rows={3}
+                      placeholder="Enter ..."
+                      // value={poRemark}
+                      // onChange={(e) => setPoRemark(e.target.value)}
+                       value={remark}
+        onChange={(e) => setRemark(e.target.value)} // Bind to state
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="row w-100">
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label>Comments</label>
+                    <textarea
+                      className="form-control"
+                      rows={3}
+                      placeholder="Enter ..."
+                      // value={poComments}
+                      // onChange={(e) => setPoComments(e.target.value)}
+                       value={comment}
+        onChange={(e) => setComment(e.target.value)} // Bind to state
+                    />
+
+                  </div>
+                </div>
+              </div>
 
               <div className="row mt-4 justify-content-end align-items-center mx-2">
                 <div className="col-md-3">
@@ -343,14 +413,14 @@ const handleStatusUpdate = async () => {
 
               <div className="row mt-2 justify-content-end">
                 <div className="col-md-2 mt-2">
-                 <button 
-  type="button" 
-  className="purple-btn2 w-100"
-  onClick={handleStatusUpdate}
-  disabled={isSubmitting}
->
-  {isSubmitting ? 'Updating...' : 'Submit'}
-</button>
+                  <button
+                    type="button"
+                    className="purple-btn2 w-100"
+                    onClick={handleStatusUpdate}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Updating...' : 'Submit'}
+                  </button>
                 </div>
                 <div className="col-md-2">
                   <button type="button" className="purple-btn1 w-100">
@@ -367,8 +437,8 @@ const handleStatusUpdate = async () => {
                       <th>User</th>
                       <th>Date</th>
                       <th>Status</th>
-                      <th>PO Remark</th>
-                      <th>PO Comments</th>
+                      <th> Remark</th>
+                      <th> Comments</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -377,8 +447,12 @@ const handleStatusUpdate = async () => {
                         <tr key={log.id}>
                           <td className="text-start">{idx + 1}</td>
                           <td className="text-start">{log.created_by_name || "-"}</td>
-                          <td className="text-start">{formatDate(log.created_at)}</td>
-                          <td className="text-start">{log.status || "-"}</td>
+                          {/* <td className="text-start">{formatDate(log.created_at)}</td>
+                          <td className="text-start">{log.status || "-"}</td> */}
+                          <td className="text-start">{formatDateTime(log.created_at)}</td>
+            <td className="text-start">
+              {capitalizeFirstLetter(log.status || "-")}
+            </td>
                           <td className="text-start">{log.remarks || "-"}</td>
                           <td className="text-start">{log.comments || "-"}</td>
                         </tr>
@@ -399,7 +473,13 @@ const handleStatusUpdate = async () => {
       </main>
 
       {/* Approval Log Modal */}
-      <Modal size="lg" show={showModal} onHide={closeModal} centered>
+      <Modal size="lg" show={showModal} onHide={closeModal} centered
+        style={{
+    top: "10%", // Adjust this value to position the modal higher on the page
+    transform: "translateY(0)", // Prevents centering vertically
+    overflowY: "auto", // Enables scrolling if content overflows
+    maxHeight: "80vh", // Limits the modal height to 80% of the viewport height
+  }}>
         <Modal.Header closeButton>
           <h5>Approval Log</h5>
         </Modal.Header>

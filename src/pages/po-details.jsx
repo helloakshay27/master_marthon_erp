@@ -2303,7 +2303,7 @@ const PoDetails = () => {
                                         <span className="me-3 text-dark">
                                           :
                                         </span>
-                                        {purchaseOrderData.po_type}
+                                        {purchaseOrderData.po_type.toUpperCase()}
                                       </label>
                                     </div>
                                   </div>

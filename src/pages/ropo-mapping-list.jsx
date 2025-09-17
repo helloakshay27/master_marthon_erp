@@ -13,6 +13,7 @@ import {
   SettingIcon,
   MultiSelector,
 } from "../components";
+import { Modal as BsModal } from "react-bootstrap";
 
 const RopoMappingList = () => {
     const urlParams = new URLSearchParams(location.search);
@@ -40,6 +41,19 @@ const [statusFilter, setStatusFilter] = useState(null);
   // Table data states
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
+  // Advanced filter states (same pattern as PO List)
+  const [filterShow, setFilterShow] = useState(false);
+  const [currentFilters, setCurrentFilters] = useState({});
+  const [poDateFrom, setPoDateFrom] = useState("");
+  const [poDateTo, setPoDateTo] = useState("");
+  const [morNoOptions, setMorNoOptions] = useState([]);
+  const [selectedMorNo, setSelectedMorNo] = useState(null);
+  const [statusOptions, setStatusOptions] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [supplierOptions, setSupplierOptions] = useState([]);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [createdByOptions, setCreatedByOptions] = useState([]);
+  const [selectedCreatedBy, setSelectedCreatedBy] = useState(null);
     const formatDate = (dateString) => {
     if (!dateString) return "-";
     try {
@@ -86,7 +100,7 @@ const handleSearch = () => {
 // Update the search input in your JSX
 
 // Update the fetchRopoData function
-const fetchRopoData = async () => {
+const fetchRopoData = async (overrideFilters = null) => {
   setLoading(true);
   try {
     // Build base URL with token and pagination
@@ -112,6 +126,16 @@ const fetchRopoData = async () => {
     if (selectedSite?.value) {
       url += `&q[pms_site_id_eq]=${selectedSite.value}`;
     }
+
+    // Append any advanced q[...] params captured in currentFilters (or override)
+    const adv = overrideFilters ?? currentFilters;
+    Object.entries(adv || {}).forEach(([key, value]) => {
+      if (key.startsWith("q[")) {
+        if (value !== undefined && value !== null && value !== "") {
+          url += `&${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+        }
+      }
+    });
 
     console.log("Fetching data from:", url);
     const response = await axios.get(url);
@@ -167,7 +191,7 @@ const fetchRopoData = async () => {
 // Update useEffect to call fetchRopoData when dependencies change
 useEffect(() => {
   fetchRopoData();
-}, [currentPage, pageSize, searchKeyword, selectedCompany, selectedProject, selectedSite, statusFilter, token]);
+}, [currentPage, pageSize, searchKeyword, statusFilter, token]);
 
 // Add Go button handler
 const handleGoClick = () => {
@@ -180,9 +204,15 @@ const handleReset = () => {
   setSelectedCompany(null);
   setSelectedProject(null);
   setSelectedSite(null);
+  setProjects([]);
+  setSiteOptions([]);
   setSearchKeyword("");
+  setSearchInput("");
   setStatusFilter(null);
   setCurrentPage(1);
+    setCurrentFilters({});
+  // Fetch initial (no filters)
+  fetchRopoData({});
 };
 
 
@@ -198,9 +228,10 @@ const handleReset = () => {
     company: true,
     // project: true,
     // subProject: true,
+    materialDescription: true, // Add this line
     ropoNo: true,
     ropoDate: true,
-      materialDescription: true, // Add this line
+     
    
     status: true,
     morNo: true,
@@ -247,7 +278,7 @@ const allColumns = [
     sortable: true 
     
   },
-  { field: "material_descriptions", headerName: "Material Description", width: 150, sortable: true },
+  // { field: "material_descriptions", headerName: "Material Description", width: 150, sortable: true },
 
   { 
     field: "status", 
@@ -373,6 +404,139 @@ const handleSiteChange = (selectedOption) => {
     setColumnVisibility(updated);
   };
   const handleResetColumns = () => handleShowAll();
+
+  // Advanced Filter: option loaders (mirroring PO List, adapted to ROPO Mappings)
+  useEffect(() => {
+    if (!token) return;
+    const loadFilterOptions = async () => {
+      try {
+        // Load MOR numbers
+        try {
+          const morResp = await axios.get(
+            `${baseURL}material_order_requests/filter_mor_numbers.json?token=${token}`
+          );
+          const morList = Array.isArray(morResp?.data?.mor_numbers)
+            ? morResp.data.mor_numbers
+            : Array.isArray(morResp?.data)
+            ? morResp.data
+            : [];
+          setMorNoOptions(morList.map((m) => ({ value: m, label: m })));
+        } catch {
+          setMorNoOptions([]);
+        }
+
+        // Load Status options for RopoMapping
+        try {
+          const statusResp = await axios.get(
+            `${baseURL}unique_statuses?model=RopoMapping&token=${token}`
+          );
+          const statusList = Array.isArray(statusResp?.data) ? statusResp.data : [];
+          setStatusOptions(
+            statusList
+              .filter((v) => typeof v === "string" && v.trim().length > 0)
+              .map((v) => ({ value: v, label: v }))
+          );
+        } catch {
+          setStatusOptions([]);
+        }
+
+        // Load Suppliers
+        try {
+          const supResp = await axios.get(`${baseURL}pms/suppliers.json?token=${token}`);
+          const list = Array.isArray(supResp?.data) ? supResp.data : [];
+          setSupplierOptions(
+            list
+              .map((s) => ({
+                value: s.id,
+                label: s.organization_name || s.full_name || `Supplier #${s.id}`,
+              }))
+              .filter((opt) => opt.label)
+          );
+        } catch {
+          setSupplierOptions([]);
+        }
+
+        // Load Created By options for RopoMapping
+        try {
+          const createdByResp = await axios.get(
+            `${baseURL}created_and_approved_users?model=RopoMapping&created_by=true&token=${token}`
+          );
+          const userList = Array.isArray(createdByResp?.data) ? createdByResp.data : [];
+          setCreatedByOptions(
+            userList
+              .filter((u) => u && (u.name || u.label) && u.id !== undefined)
+              .map((u) => ({ value: u.id, label: u.name || u.label }))
+          );
+        } catch {
+          setCreatedByOptions([]);
+        }
+      } catch (e) {
+        setMorNoOptions([]);
+        setStatusOptions([]);
+        setSupplierOptions([]);
+        setCreatedByOptions([]);
+      }
+    };
+    loadFilterOptions();
+  }, [token]);
+
+  // Advanced Filter: modal and handlers
+  const handleFilterModalShow = () => setFilterShow(true);
+  const handleFilterClose = () => setFilterShow(false);
+  const handlePoDateFromChange = (e) => setPoDateFrom(e.target.value);
+  const handlePoDateToChange = (e) => setPoDateTo(e.target.value);
+  const handleMorNoChange = (opt) => setSelectedMorNo(opt);
+  const handleStatusChange = (opt) => setSelectedStatus(opt);
+  const handleSupplierChange = (opt) => setSelectedSupplier(opt);
+  const handleCreatedByChange = (opt) => setSelectedCreatedBy(opt);
+
+  const handleFilterApply = () => {
+    const filterParams = {};
+    // Date range filters for PO Date
+    if (poDateFrom) filterParams["q[po_date_gteq]"] = poDateFrom;
+    if (poDateTo) filterParams["q[po_date_lteq]"] = poDateTo;
+    // MOR No (if backend supports filtering by MOR number association in list)
+    if (selectedMorNo) filterParams["q[mor_numbers][]"] = selectedMorNo.value;
+    // Status (list supports multiple)
+    if (selectedStatus) filterParams["q[list_status_in][]"] = selectedStatus.value;
+    // Supplier
+    if (selectedSupplier) filterParams["q[supplier_id_in][]"] = selectedSupplier.value;
+    // Created By
+    if (selectedCreatedBy) filterParams["q[created_by_id_in][]"] = selectedCreatedBy.value;
+
+    setCurrentFilters((prev) => ({
+      ...prev,
+      ...filterParams,
+    }));
+    setCurrentPage(1);
+    setFilterShow(false);
+    // Fetch immediately with the latest filterParams
+    fetchRopoData({ ...(currentFilters || {}), ...filterParams });
+  };
+
+  const handleFilterReset = () => {
+    setPoDateFrom("");
+    setPoDateTo("");
+    setSelectedMorNo(null);
+    setSelectedStatus(null);
+    setSelectedSupplier(null);
+    setSelectedCreatedBy(null);
+    // Also clear quick filter dropdowns to return to initial state
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setProjects([]);
+    setSiteOptions([]);
+    setSearchKeyword("");
+    setSearchInput("");
+    setStatusFilter(null);
+    // Clear all query params
+    setCurrentFilters({});
+    setCurrentPage(1);
+    setFilterShow(false);
+    // Fetch initial (no filters)
+    fetchRopoData({});
+  };
 
   return (
     <>
@@ -578,7 +742,6 @@ display:none !important;
                           )}
                         </div>
            
-
             {/* DataGrid Table with Settings */}
             <div className="card mx-3">
               <div className="card-header3">
@@ -710,13 +873,20 @@ display:none !important;
                 </form>
               </div>
               <div className="col-md-6">
-                <div className="row justify-content-end">
+                <div className="row  d-flex justify-content-end">
                   <div className="col-md-5">
-                    <div className="row justify-content-end px-3">
+                    <div className="row  d-flex justify-content-end px-3">
                      
 
 
                       <div className="col-md-3 d-flex justify-content-end">
+                        <button
+                          type="button"
+                          className="btn btn-md"
+                          onClick={handleFilterModalShow}
+                        >
+                          <FilterIcon />
+                        </button>
                         <button
                                         type="button"
                                         className="btn btn-md ms-4"
@@ -870,7 +1040,157 @@ display:none !important;
         </div>
       </div>
 
-      {/* filter modal */}
+      {/* Advanced Filter Modal (same style as PO List) */}
+      <BsModal
+        show={filterShow}
+        onHide={handleFilterClose}
+        dialogClassName="modal-right"
+        className="setting-modal"
+        backdrop={true}
+      >
+        <BsModal.Header>
+          <div className="container-fluid p-0">
+            <div className="border-0 d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="btn"
+                  aria-label="Close"
+                  onClick={handleFilterClose}
+                >
+                  <svg
+                    width="10"
+                    height="16"
+                    viewBox="0 0 10 18"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M9 1L1 9L9 17"
+                      stroke="#8B0203"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <h3 className="modal-title m-0" style={{ fontWeight: 500 }}>
+                  Filter
+                </h3>
+              </div>
+              <span
+                className="resetCSS"
+                style={{ fontSize: "14px", textDecoration: "underline" }}
+                onClick={handleFilterReset}
+                role="button"
+              >
+                Reset
+              </span>
+            </div>
+          </div>
+        </BsModal.Header>
+
+        <div className="modal-body" style={{ overflowY: "scroll" }}>
+          <div className="row">
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">ROPO Date From</label>
+              <input
+                type="date"
+                className="form-control"
+                value={poDateFrom}
+                onChange={handlePoDateFromChange}
+                placeholder="Select From Date"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">ROPO Date To</label>
+              <input
+                type="date"
+                className="form-control"
+                value={poDateTo}
+                onChange={handlePoDateToChange}
+                placeholder="Select To Date"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">MOR No.</label>
+              <SingleSelector
+                options={morNoOptions}
+                value={selectedMorNo}
+                onChange={handleMorNoChange}
+                placeholder="Select MOR No."
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Company</label>
+              <SingleSelector
+                options={Array.isArray(companies) ? companies.map((c) => ({ value: c.id, label: c.company_name })) : []}
+                value={selectedCompany}
+                onChange={handleCompanyChange}
+                placeholder="Select Company"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Project</label>
+              <SingleSelector
+                options={Array.isArray(projects) ? projects.map((p) => ({ value: p.id, label: p.name })) : []}
+                value={selectedProject}
+                onChange={handleProjectChange}
+                placeholder="Select Project"
+                isDisabled={!selectedCompany}
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Sub Project</label>
+              <SingleSelector
+                options={Array.isArray(siteOptions) ? siteOptions.map((s) => ({ value: s.id, label: s.name })) : []}
+                value={selectedSite}
+                onChange={handleSiteChange}
+                placeholder="Select Sub Project"
+                isDisabled={!selectedProject}
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Status</label>
+              <SingleSelector
+                options={statusOptions}
+                value={selectedStatus}
+                onChange={handleStatusChange}
+                placeholder="Select Status"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Supplier/Vendor</label>
+              <SingleSelector
+                options={supplierOptions}
+                value={selectedSupplier}
+                onChange={handleSupplierChange}
+                placeholder="Select Supplier"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Created By</label>
+              <SingleSelector
+                options={createdByOptions}
+                value={selectedCreatedBy}
+                onChange={handleCreatedByChange}
+                placeholder="Select Created By"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-footer justify-content-center">
+          <button
+            className="btn"
+            style={{ backgroundColor: "#8b0203", color: "#fff" }}
+            onClick={handleFilterApply}
+          >
+            Apply Filter
+          </button>
+        </div>
+      </BsModal>
+      {/* Advanced Filter Modal end */}
       <div
         className="modal fade right"
         id="sidebarModal"

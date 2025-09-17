@@ -163,7 +163,17 @@ const PoList = () => {
     },
     // ...existing code...
     { field: "poDate", headerName: "PO Date", width: 140, sortable: true },
-    { field: "poType", headerName: "PO Type", width: 120 },
+    // { field: "poType", headerName: "PO Type", width: 120 
+
+    // },
+    {
+  field: "poType",
+  headerName: "PO Type",
+  width: 120,
+  renderCell: (params) => (
+    <span>{params.value ? params.value.toUpperCase() : "-"}</span>
+  ),
+},
     {
       field: "consumptionCategory",
       headerName: "Consumption Category",
