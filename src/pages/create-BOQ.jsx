@@ -3356,11 +3356,8 @@ useEffect(() => {
                                           )}
                                         </td> */}
                                       </tr>
-                                      {expandedRows.includes(el.id) && (
-                                        <tr>
-
-
-
+                                      {/* {expandedRows.includes(el.id) && ( */}
+                                        <tr style={{ display: expandedRows.includes(el.id) ? 'table-row' : 'none' }}>
 
                                           <td colSpan={11}>
                                             {/* <BOQSubItemTable /> */}
@@ -3421,7 +3418,7 @@ useEffect(() => {
                                           /> */}
                                           </td>
                                         </tr>
-                                      )}
+                                      {/* )} */}
                                     </React.Fragment>
                                   ))}
                                 </tbody>

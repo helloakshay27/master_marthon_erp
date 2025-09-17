@@ -574,7 +574,7 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
     },
     {
       field: "advance_amount",
-      headerName: "Debit Note Amount",
+      headerName: "Advance Amount",
       width: 150,
     },
     {
