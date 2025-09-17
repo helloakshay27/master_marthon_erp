@@ -216,22 +216,14 @@ export default function ChargesDataTable({
       updatedData[selectedTableId].value = {};
     }
 
-    // If no taxes, realised_amount should be the entered amount
-    if (
-      !chargesTaxRate[selectedTableId]?.taxes_and_charges ||
-      chargesTaxRate[selectedTableId].taxes_and_charges.length === 0
-    ) {
-      updatedData[selectedTableId].realised_amount = updatedData[selectedTableId].amount || "0";
-    } else {
-      updatedData[selectedTableId].realised_amount = updatedNetCost;
-    }
+    updatedData[selectedTableId].realised_amount = updatedNetCost;
 
     // Synchronize chargesTaxRate with latest realised value
     setChargesTaxRate((prev) => {
       const updated = { ...prev };
       updated[selectedTableId] = {
         ...updated[selectedTableId],
-        afterDiscountValue: parseFloat(updatedData[selectedTableId].realised_amount) || 0,
+        afterDiscountValue: parseFloat(updatedNetCost) || 0,
       };
       return updated;
     });
@@ -253,10 +245,7 @@ export default function ChargesDataTable({
       return {
         charge_id: chargeId,
         amount: row.amount || "0", // User input
-        realised_amount:
-          row?.realised_amount !== undefined
-            ? row.realised_amount
-            : row?.amount || "0", // Use realised_amount if set, else amount
+        realised_amount: row?.realised_amount || row?.amount || "0", // Calculated amount
         taxes_and_charges: chargesTaxRate[index]?.taxes_and_charges || [],
       };
     });
@@ -461,13 +450,8 @@ export default function ChargesDataTable({
                     min="0"
                     className="form-control"
                     value={
-                      // Show entered amount if no tax calculation yet, else show calculated realised_amount
                       data[index]?.amount
-                        ? (
-                            data[index]?.realised_amount !== undefined
-                              ? parseFloat(data[index].realised_amount).toFixed(2)
-                              : parseFloat(data[index].amount).toFixed(2)
-                          )
+                        ? parseFloat(data[index].realised_amount).toFixed(2)
                         : "0.00"
                     }
                     readOnly

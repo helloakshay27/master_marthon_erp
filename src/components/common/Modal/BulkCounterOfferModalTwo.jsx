@@ -44,6 +44,7 @@ export default function BulkCounterOfferModalTwo({
   const [activityLogAccordion, setActivityLogAccordion] = useState(false);
   const [activityLogs, setActivityLogs] = useState([]);
   const [activityLogsLoading, setActivityLogsLoading] = useState(false);
+  const [smallestBidData, setSmallestBidData] = useState(null);
 
   const location = useLocation();
   const urlParams = new URLSearchParams(location.search);
@@ -332,7 +333,7 @@ const urlParams = new URLSearchParams(location.search);
           ),
         ];
         console.log("taxDetails", taxRateData, taxDetails);
-
+        
         return {
           event_material_id: item.id,
           bid_material_id: item.bid_materials?.[0]?.bid_id || null,
@@ -517,7 +518,8 @@ const urlParams = new URLSearchParams(location.search);
   //   setFormData(updatedFormData);
   //   setSumTotal(totalSum);
   // };
-
+  console.log("formData:------------", formData?.event_materials);
+  
   const productTableData =
     formData?.event_materials?.map((eventMaterial, eventIndex) => ({
       SrNo: <span>{eventIndex + 1}</span>,
@@ -722,25 +724,22 @@ const urlParams = new URLSearchParams(location.search);
           disabled
         />
       ),
+      
 
       realisedPrice: (
         <input
           type="text"
           className="form-control"
           style={{ width: "auto" }}
-          value={eventMaterial?.realised_price || "_"}
+          value={
+            !userPriceEdited[eventIndex]
+              ? eventMaterial?.bid_materials?.[0]?.realised_price || ""
+              : eventMaterial?.realised_price || ""
+          }
           readOnly
           disabled
         />
-      ),
-      taxRate: (
-        <button
-          className="purple-btn2"
-          onClick={() => handleOpenModal(eventIndex)}
-        >
-          Select
-        </button>
-      ),
+      )
     })) || [];
 
   const sideTableData = [
@@ -1258,6 +1257,90 @@ const urlParams = new URLSearchParams(location.search);
     return netCost.toFixed(2);
   };
 
+  useEffect(() => {
+    // Fetch smallest bid data when modal opens
+    if (!show) return;
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+    // Replace 347 with eventId if needed
+    fetch(`${baseURL}/rfq/events/347/bids/smallest_bid_for_counter?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => setSmallestBidData(data))
+      .catch(() => setSmallestBidData(null));
+  }, [show, location.search]);
+
+  // Use smallestBidData for initial values if available
+  useEffect(() => {
+    if (smallestBidData) {
+      // Charges
+      setShortTableData([
+        {
+          charge_id: "freight_charge_amount",
+          amount: smallestBidData.charges?.freight_charge_amount ?? "",
+          realised_amount: smallestBidData.charges?.realised_freight_charge_amount ?? "",
+          taxes_and_charges: [],
+        },
+        {
+          charge_id: "other_charge_amount",
+          amount: smallestBidData.charges?.other_charge_amount ?? "",
+          realised_amount: smallestBidData.charges?.realised_other_charge_amount ?? "",
+          taxes_and_charges: [],
+        },
+        {
+          charge_id: "handling_charge_amount",
+          amount: smallestBidData.charges?.handling_charge_amount ?? "",
+          realised_amount: smallestBidData.charges?.realised_handling_charge_amount ?? "",
+          taxes_and_charges: [],
+        },
+      ]);
+      // Materials
+      if (Array.isArray(smallestBidData.bid_materials)) {
+        setFormData((prev) => ({
+          ...prev,
+          event_materials: smallestBidData.bid_materials.map((mat) => ({
+            id: mat.event_material_id,
+            price: mat.price,
+            discount: mat.discount,
+            quantity: mat.quantity_requested,
+            quantity_available: mat.quantity_available,
+            total_amount: mat.total_amount,
+            realised_discount: mat.realised_discount,
+            gst: mat.gst,
+            realised_gst: mat.realised_gst,
+            vendor_remark: mat.vendor_remark,
+            material_type: mat.material_type,
+            inventory_name: mat.inventory_name,
+            landed_amount: mat.landed_amount,
+            bid_materials: [mat],
+            addition_bid_material_tax_details: mat.addition_bid_material_tax_details || [],
+            deduction_bid_material_tax_details: mat.deduction_bid_material_tax_details || [],
+          })),
+        }));
+      }
+      // Other fields
+      setFormData((prev) => ({
+        ...prev,
+        event_vendor_id: smallestBidData.event_vendor_id,
+        price: smallestBidData.price,
+        discount: smallestBidData.discount,
+        warranty_clause: smallestBidData.warranty_clause,
+        payment_terms: smallestBidData.payment_terms,
+        loading_unloading_clause: smallestBidData.loading_unloading_clause,
+        freight_charge_amount: smallestBidData.charges?.freight_charge_amount ?? "",
+        gst_on_freight: smallestBidData.charges?.gst_on_freight ?? "",
+        realised_freight_charge_amount: smallestBidData.charges?.realised_freight_charge_amount ?? "",
+        other_charge_amount: smallestBidData.charges?.other_charge_amount ?? "",
+        gst_on_other_charge: smallestBidData.charges?.gst_on_other_charge ?? "",
+        realised_other_charge_amount: smallestBidData.charges?.realised_other_charge_amount ?? "",
+        handling_charge_amount: smallestBidData.charges?.handling_charge_amount ?? "",
+        gst_on_handling_charge: smallestBidData.charges?.gst_on_handling_charge ?? "",
+        realised_handling_charge_amount: smallestBidData.charges?.realised_handling_charge_amount ?? "",
+      }));
+      // Set sumTotal
+      setSumTotal(parseFloat(smallestBidData.gross_total) || 0);
+    }
+  }, [smallestBidData]);
+
   return (
     <>
       <DynamicModalBox
@@ -1313,11 +1396,11 @@ const urlParams = new URLSearchParams(location.search);
           handleCloseOtherChargesModal={handleCloseOtherChargesModal}
           setGrossTotal={setSumTotal}
           grossTotal={sumTotal}
+          calculateGrossTotal={calculateGrossTotal}
           editable={true}
           onValueChange={(updated) => {
             setShortTableData(updated);
           }}
-          calculateGrossTotal={calculateGrossTotal}
         />
         <div className="d-flex justify-content-end mt-3">
           <h4>Sum Total : ₹{sumTotal}</h4>
@@ -2249,15 +2332,15 @@ const urlParams = new URLSearchParams(location.search);
                                 value,
                                 "deduction"
                               )
-                            }
+                                                       }
                           />
                         </td>
-                        {/* <td>
+                                               {/* <td>
                           <select
                             className="form-select"
                             // value={item.taxChargePerUom}
                             defaultValue={item?.tax_percentage}
-                            onChange={(e) =>
+                            onChange={(
                               handleTaxChargeChange(
                                 tableId,
                                 item.id,

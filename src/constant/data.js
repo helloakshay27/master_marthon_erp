@@ -725,7 +725,6 @@ export  const productTableColumns = [
     { label: "Landed Amount", key: "landedAmount" },
     { label: "Total Amount", key: "totalAmount" },
     { label: "Vendor Remark", key: "vendorRemark" },
-    { label: "Tax Rate", key: "taxRate" },
 ];
 
 export const biddingData = [
