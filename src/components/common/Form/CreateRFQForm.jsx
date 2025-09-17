@@ -600,7 +600,8 @@ console.log("uomOptions",uomOptions);
     }
 
     setSections(updatedSections);
-
+    
+    
     const updatedData = updatedSections.flatMap((section) =>
       section.sectionData.map((row) => ({
         id: row.id || null,
@@ -624,6 +625,7 @@ console.log("uomOptions",uomOptions);
         _destroy: row._destroy || false,
       }))
     );
+
 
     setData(updatedData);
   };
@@ -936,6 +938,7 @@ console.log("uomOptions",uomOptions);
 
       // Update parent data with all attributes, including dynamic fields
       const updatedData = updatedSections.flatMap((section) =>
+        
         section.sectionData.map((row) => ({
           id: row.id || null,
           inventory_id: Number(row.inventory_id),
@@ -976,11 +979,13 @@ console.log("uomOptions",uomOptions);
 
     if (field.field_name === "unit") {
       return (
+        <>
         <SelectBox
           options={uomOptions}
           value={fieldValue}
           onChange={(value) => handleFieldChange(value)}
         />
+        </>
       );
     }
 
@@ -1093,6 +1098,7 @@ console.log("uomOptions",uomOptions);
 
     if (fieldName === "unit") {
       return (
+        <>
         <SelectBox
           options={uomOptions}
           defaultValue={
@@ -1104,6 +1110,7 @@ console.log("uomOptions",uomOptions);
           disabled={isDisabled}
           // className={disabledClass}
         />
+        </>
       );
     }
 
@@ -1404,12 +1411,14 @@ console.log("uomOptions",uomOptions);
                     />
                   ),
                   unit: (cell, rowIndex) => (
+                    <>
                     <input
                       className="form-control"
                       type="text"
                       value={cell}
                       disabled
                     />
+                    </>
                   ),
                   type: (cell, rowIndex) => (
                     <input
@@ -2049,6 +2058,7 @@ console.log("uomOptions",uomOptions);
                         },
                         unit: (cell, rowIndex) => {
                           return (
+                            <>
                             <SelectBox
                               options={uomOptions}
                               onChange={(value) =>
@@ -2056,6 +2066,7 @@ console.log("uomOptions",uomOptions);
                               }
                               value={section?.sectionData[rowIndex]?.unit || ""}
                             />
+                            </>
                           );
                         },
                         pms_brand_id: (cell, rowIndex) => {
