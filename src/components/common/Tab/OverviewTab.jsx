@@ -62,7 +62,7 @@ export default function OverviewTab({
   const [openDynamic, setOpenDynamic] = useState(false);
   const [openAttachments, setOpenAttachments] = useState(false);
   const [sectionOptions, setSectionOptions] = useState([]);
-  
+
   // Accordion row states for each material row
   const [openDeliveryRows, setOpenDeliveryRows] = useState({});
   const [openDynamicRows, setOpenDynamicRows] = useState({});
@@ -83,7 +83,7 @@ export default function OverviewTab({
   };
 
   const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+  const token = urlParams.get("token");
 
   useEffect(() => {
     const fetchSections = async () => {
@@ -113,7 +113,7 @@ export default function OverviewTab({
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+    const token = urlParams.get("token");
     if (!activityLogAccordion) return;
     setActivityLogsLoading(true);
     axios
@@ -621,13 +621,13 @@ export default function OverviewTab({
                                 },
                                 ...(materialsArr[0]?.extra_data
                                   ? Object.keys(materialsArr[0].extra_data).map(
-                                      (key) => ({
-                                        key,
-                                        label: key
-                                          .replace(/_/g, " ")
-                                          .toUpperCase(),
-                                      })
-                                    )
+                                    (key) => ({
+                                      key,
+                                      label: key
+                                        .replace(/_/g, " ")
+                                        .toUpperCase(),
+                                    })
+                                  )
                                   : []),
                               ]}
                               data={materialsArr.map((material, idx) => ({
@@ -647,7 +647,7 @@ export default function OverviewTab({
                                   material.attachments || [];
                                 const rowKey =
                                   material.id || `${materialType}_${rowIndex}`;
-                                  
+
                                 return (
                                   <div
                                     style={{
@@ -737,7 +737,7 @@ export default function OverviewTab({
                                             </thead>
                                             <tbody>
                                               {deliverySchedules.length ===
-                                              0 ? (
+                                                0 ? (
                                                 <tr>
                                                   <td
                                                     colSpan={2}
@@ -854,7 +854,7 @@ export default function OverviewTab({
                                             </thead>
                                             <tbody>
                                               {morInventorySpecifications.length ===
-                                              0 ? (
+                                                0 ? (
                                                 <tr>
                                                   <td
                                                     colSpan={3}
@@ -1066,14 +1066,14 @@ export default function OverviewTab({
                                   value === undefined || value === null || value === "" ? "-" : value,
                                 ...(materialsArr[0]?.extra_data
                                   ? Object.keys(materialsArr[0].extra_data).reduce((acc, key) => {
-                                      acc[key] = (value) =>
-                                        value?.value === undefined ||
+                                    acc[key] = (value) =>
+                                      value?.value === undefined ||
                                         value?.value === null ||
                                         value?.value === ""
-                                          ? "-"
-                                          : value?.value;
-                                      return acc;
-                                    }, {})
+                                        ? "-"
+                                        : value?.value;
+                                    return acc;
+                                  }, {})
                                   : {}),
                               }}
                             />
@@ -1125,36 +1125,36 @@ export default function OverviewTab({
                       </thead>
                       <tbody>
                         {documentsData.map((attachment, index) => {
-                          console.log("attachment:-",attachment);
-                          
+                          // Show filename and open doc_path in new tab if present, else fallback to blob API
+                          const displayName = attachment.document_name || attachment.filename || 'No filename';
+                          let downloadUrl = '';
+                          let openInNewTab = false;
+                          if (attachment.doc_path) {
+                            downloadUrl = attachment.doc_path;
+                            openInNewTab = true;
+                          } else if (attachment.url) {
+                            downloadUrl = attachment.url;
+                            openInNewTab = true;
+                          } else if (attachment.blob_id) {
+                            downloadUrl = `${baseURL}/rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`;
+                          }
                           return (
-                            <tr key={attachment.id}>
+                            <tr key={attachment.id || index}>
                               <td className="text-start">{index + 1}</td>
+                              <td className="text-start">{displayName}</td>
+                              <td className="text-start">{attachment.blob_created_at ? formatDocDate(attachment.blob_created_at) : '-'}</td>
                               <td className="text-start">
-                                {attachment.filename}
-                              </td>
-                              <td className="text-start">
-                                {formatDocDate(attachment.blob_created_at)}
-                              </td>
-                              <td className="text-start">
-                                {/* <a
-                                  href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
-                                  download={attachment.filename}
-                                >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 16 16"
-                                    style={{ fill: "black" }}
+                                {downloadUrl ? (
+                                  <a
+                                    href={downloadUrl}
+                                    {...(openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : { download: displayName })}
+                                    className="btn purple-btn2"
                                   >
-                                    <g fill="currentColor">
-                                      <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
-                                      <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
-                                    </g>
-                                  </svg>
-                                </a> */}
-                                <DownloadPdfButton apiUrl={`${baseURL}/rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`} />
+                                    Download
+                                  </a>
+                                ) : (
+                                  <span className="text-muted">No file</span>
+                                )}
                               </td>
                             </tr>
                           );
@@ -1194,13 +1194,12 @@ export default function OverviewTab({
             <div id="terms-conditions" className="mx-5">
               <div className="card card-body p-4">
                 {overviewData?.resource_term_conditions &&
-                overviewData.resource_term_conditions.length > 0 ? (
+                  overviewData.resource_term_conditions.length > 0 ? (
                   overviewData.resource_term_conditions.map((item, index) => (
                     <div key={index}>
-                      <p>{`${index + 1}. ${
-                        item.term_condition?.condition ||
+                      <p>{`${index + 1}. ${item.term_condition?.condition ||
                         "No condition available"
-                      }`}</p>
+                        }`}</p>
                       <p>
                         {item.condition || "No additional details available"}
                       </p>

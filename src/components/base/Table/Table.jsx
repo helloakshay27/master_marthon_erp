@@ -66,6 +66,7 @@ export default function Table({
   scrollable = false, // Add scrollable prop
   accordionRender = null,
   isRowSelected = null, // Add new prop to determine if a row is selected externally
+  fullWidth = false, // NEW PROP
   ...rest
 }) {
   const [selectAll, setSelectAll] = useState(false);
@@ -401,9 +402,10 @@ export default function Table({
   ];
 
   return (
-    <div className="px-0 mt-3 max-h-none" {...rest}>
+    <div className="px-0 mt-3 max-h-none" style={fullWidth? { width: "100%", overflowX: "auto" } : {}} {...rest}>
       <div 
         style={{
+          ...(fullWidth ? { width: "100%", overflowX: "auto" } : {}),
           ...(isMinWidth ? { width: "100%", overflowX: "auto" } : {}),
           ...(scrollable ? { 
             maxHeight: "400px", 
@@ -413,8 +415,14 @@ export default function Table({
         }}
       >
         <table
-          className="w-100 tbl-container"
-          style={isMinWidth ? { minWidth: "1200px", tableLayout: "auto" } : {}}
+          className="tbl-container mx-0"
+          style={
+            fullWidth
+              ? { width: "100%", tableLayout: "auto" }
+              : isMinWidth
+              ? { minWidth: "1200px", tableLayout: "auto" }
+              : {}
+          }
         >
           <thead>
             <tr>

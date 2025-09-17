@@ -33,8 +33,8 @@ export default function EditEvent() {
   const [inviteModal, setInviteModal] = useState(false);
   const [publishEventModal, setPublishEventModal] = useState(false);
   const [eventScheduleModal, setEventScheduleModal] = useState(false);
-    const [eventScheduleText, setEventScheduleText] = useState("");
-    const [eventScheduleInputText, setEventScheduleInputText] = useState("");
+  const [eventScheduleText, setEventScheduleText] = useState("");
+  const [eventScheduleInputText, setEventScheduleInputText] = useState("");
   const [vendorModal, setVendorModal] = useState(false);
   const [eventType, setEventType] = useState("");
   const [awardType, setAwardType] = useState("");
@@ -54,6 +54,7 @@ export default function EditEvent() {
   const [inventoryTypeId, setInventoryTypeId] = useState([]);
   const [groupedData, setGroupedData] = useState([]);
   const [isInvite, setIsInvite] = useState(false);
+  const [termsOptions, setTermsOptions] = useState([]);
   const [dynamicExtensionConfigurations, setDynamicExtensionConfigurations] =
     useState({
       time_extension_type: "",
@@ -75,15 +76,6 @@ export default function EditEvent() {
       attachments: [],
     },
   ]);
-
-  const Loader = () => (
-    <div className="loader-container">
-      <div className="lds-ring">
-        <div></div>
-      </div>
-      <p>fetching existing Data</p>
-    </div>
-  );
   const [selectedStrategy, setSelectedStrategy] = useState(false);
   const [selectedVendorDetails, setSelectedVendorDetails] = useState(false);
   const [selectedVendorProfile, setSelectedVendorProfile] = useState(false);
@@ -104,6 +96,10 @@ export default function EditEvent() {
   const [onLoadScheduleData, setOnLoadScheduleData] = useState({});
   const [matchedTerm, setMatchedTerm] = useState({});
   const [materialSelectList, setMaterialSelectList] = useState([]);
+  // MultiSelector value state, default to selected material type
+  const selectedMaterialType = materialFormData?.[0]?.inventory_id;
+  const defaultMaterialOption = materialSelectList.find(opt => opt.value === selectedMaterialType);
+  const [multiSelectorValue, setMultiSelectorValue] = useState(defaultMaterialOption ? [defaultMaterialOption] : []);
   const [createdOn] = useState(new Date().toISOString().split("T")[0]);
   const [selectedVendors, setSelectedVendors] = useState([]);
   const [eventSchedule, setEventSchedule] = useState("");
@@ -116,13 +112,29 @@ export default function EditEvent() {
   const [statusLogData, setStatusLogData] = useState([]);
   const [editableStatusLogData, setEditableStatusLogData] = useState([]);
   const [specificationData, setSpecificationData] = useState([]);
+  const [eventTypeText, setEventTypeText] = useState("");
+  const [tableData, setTableData] = useState([]); // State to hold dynamic data
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1); // Default total pages
+  const [totalCount, setTotalCount] = useState(0); // Add this new state
+  const [isSaving, setIsSaving] = useState(false);
+  const [eventStatus, setEventStatus] = useState("pending");
 
+  const pageSize = 100; // Number of items per page
+  const pageRange = 6; // Number of pages to display in the pagination
   const location = useLocation();
-    const urlParams = new URLSearchParams(location.search);
-    const token = urlParams.get("token");
-    console.log("Token from URL:", token, "Location:", location, "urlParams:", urlParams);
-    
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+  console.log("Token from URL:", token, "Location:", location, "urlParams:", urlParams);
 
+  const Loader = () => (
+    <div className="loader-container">
+      <div className="lds-ring">
+        <div></div>
+      </div>
+      <p>fetching existing Data</p>
+    </div>
+  );
   const options = [
     { value: "BUILDING MATERIAL", label: "BUILDING MATERIAL" },
     { value: "MIVAN MA", label: "MIVAN MA" },
@@ -143,8 +155,8 @@ export default function EditEvent() {
   };
 
   const handleStatusLogChange = (index, field, value) => {
-    setEditableStatusLogData(prev => 
-      prev.map((item, idx) => 
+    setEditableStatusLogData(prev =>
+      prev.map((item, idx) =>
         idx === index ? { ...item, [field]: value } : item
       )
     );
@@ -207,7 +219,7 @@ export default function EditEvent() {
 
     const scheduleText = `${startDateTime} to ${endDateTime}`;
     console.log("startDateTime", startDateTime, endDateTime);
-    
+
     setEventScheduleText(scheduleText);
   };
 
@@ -260,17 +272,9 @@ export default function EditEvent() {
     setSelectedVendorProfile(profile);
   };
 
-  // useEffect(() => {
-  //   const newlyFetchedIds = materialFormData
-  //     ?.filter((item) => item?.inventory_type_id)
-  //     ?.map((item) => item?.inventory_type_id);
-  //   setInventoryTypeId([...new Set(newlyFetchedIds)]); // Ensure unique IDs
-  //   fetchData(1, searchTerm, selectedCity); // Fetch data whenever inventoryTypeId changes
-  // }, [materialFormData]); // Triggered when materialFormData changes
-
   const fetchTermsAndConditions = async () => {
     const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+    const token = urlParams.get("token");
     try {
       const response = await fetch(
         `${baseURL}rfq/events/terms_and_conditions?token=${token}&page=1`
@@ -322,20 +326,9 @@ export default function EditEvent() {
     setEventTypeText(eventTypeText);
   };
 
-  const [eventTypeText, setEventTypeText] = useState("");
-  const [tableData, setTableData] = useState([]); // State to hold dynamic data
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1); // Default total pages
-  const [totalCount, setTotalCount] = useState(0); // Add this new state
-  const pageSize = 100; // Number of items per page
-  const pageRange = 6; // Number of pages to display in the pagination
-
-  const [isSaving, setIsSaving] = useState(false);
-  const [eventStatus, setEventStatus] = useState("pending");
-
   const fetchEventData = async () => {
     const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+    const token = urlParams.get("token");
     try {
       const response = await fetch(
         `${baseURL}rfq/events/${id}?token=${token}`
@@ -380,7 +373,7 @@ export default function EditEvent() {
               ? data.data.vendors
               : [];
 
-
+          console.log("vendors on fetch :-----------", vendors);
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
             name: vendor.full_name || vendor.organization_name || "-",
@@ -396,7 +389,7 @@ export default function EditEvent() {
             data?.pagination?.total_pages ||
             data?.data?.pagination?.total_pages ||
             1;
-          totalCount = 
+          totalCount =
             data?.pagination?.total_count ||
             data?.data?.pagination?.total_count ||
             0; // Get total count from API
@@ -427,7 +420,8 @@ export default function EditEvent() {
           );
           const data = await response.json();
           const vendors = Array.isArray(data.vendors) ? data.vendors : [];
-
+          console.log("vendors2 :-----------", vendors);
+          
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
             name: vendor.full_name || vendor.organization_name || "-",
@@ -459,7 +453,35 @@ export default function EditEvent() {
     fetchData();
   }, []);
 
-  const [termsOptions, setTermsOptions] = useState([]);
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+    fetch(`${baseURL}rfq/events/material_types?token=${token}`)
+      .then(res => res.json())
+      .then(data => {
+        setMaterialSelectList(
+          (data.inventory_types || []).map(item => ({
+            value: item.value, // or item.value, depending on API
+            label: item.name // or item.label
+          }))
+        );
+
+        console.log("Fetched material types:", data, materialSelectList);
+
+      });
+  }, [eventDetails?.event_materials]);
+
+  useEffect(() => {
+    if (eventDetails?.event_materials?.[0]?.inventory_type_id && materialSelectList?.length > 0) {
+      const defaultOption = materialSelectList.find(
+        (opt) => String(opt.value) === String(eventDetails.event_materials[0].inventory_type_id)
+      );
+      if (defaultOption) {
+        setMultiSelectorValue([defaultOption]);
+      }
+    }
+  }, [eventDetails?.event_materials, materialSelectList]);
+
 
   useEffect(() => {
     if (eventDetails) {
@@ -530,8 +552,8 @@ export default function EditEvent() {
 
   const [documentRowsInitialized, setDocumentRowsInitialized] = useState(false);
 
-  console.log("event",eventDetails?.start_time, eventDetails?.end_time, eventDetails?.event_schedule?.start_time, eventDetails?.event_schedule?.end_time);
-  
+  console.log("event", eventDetails?.start_time, eventDetails?.end_time, eventDetails?.event_schedule?.start_time, eventDetails?.event_schedule?.end_time);
+
   useEffect(() => {
     if (eventDetails?.start_time && !documentRowsInitialized) {
       seteventName(eventDetails?.event_title);
@@ -542,7 +564,7 @@ export default function EditEvent() {
       setEventTypeText(eventDetails?.event_type_detail?.event_type);
       setEventDescription(eventDetails?.event_description);
       console.log("eventSchedule", eventDetails);
-      
+
       // Format the schedule text with proper timezone handling
       if (eventDetails?.event_schedule?.start_time && eventDetails?.event_schedule?.end_time) {
         const formatDateTime = (dateTime) => {
@@ -557,17 +579,17 @@ export default function EditEvent() {
             hour12: true,
           }).format(date);
         };
-        
+
         const startDateTime = formatDateTime(eventDetails.event_schedule.start_time);
         const endDateTime = formatDateTime(eventDetails.event_schedule.end_time);
         setEventScheduleText(`${startDateTime} to ${endDateTime}`);
       }
-      
+
       // Fix: Update console.log to use the correct properties
       console.log("eventScheduleText:-", eventScheduleText, `${new Date(eventDetails?.event_schedule?.start_time).toLocaleString()} ~ ${new Date(
         eventDetails?.event_schedule?.end_time
       ).toLocaleString()}`);
-      
+
       setStart_time(eventDetails?.event_schedule?.start_time);
       setEnd_time(eventDetails?.event_schedule?.end_time);
       setEvaluation_time(eventDetails?.event_schedule?.evaluation_time);
@@ -715,7 +737,7 @@ export default function EditEvent() {
         const isValidId =
           (typeof textarea.id === "string" && textarea.id.length < 10) ||
           (typeof textarea.id === "number" && String(textarea.id).length < 10);
-        
+
         if (isValidId) {
           return { ...textarea, _destroy: true };
         } else {
@@ -725,7 +747,7 @@ export default function EditEvent() {
       }
       return textarea;
     }).filter(Boolean); // Remove null items (new items that were deleted)
-    
+
     setTextareas(updatedTextareas);
   };
 
@@ -807,7 +829,7 @@ export default function EditEvent() {
 
   const updateEvent = async (id, eventData) => {
     const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+    const token = urlParams.get("token");
     const url = `${baseURL}rfq/events/${id}?token=${token}`;
     const options = {
       method: "PUT",
@@ -905,55 +927,55 @@ export default function EditEvent() {
   const [eventData1, setEventData1] = useState(eventData2);
 
   // Convert datetime to UTC ISO string format with Z
-const toUTCISOString = (dateTime) => {
-  if (!dateTime) return "";
-  
-  // If dateTime is already in correct ISO string format with Z, just return it
-  if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
-    return dateTime;
-  }
-  
-  // If it's a Date object or timestamp, convert it to UTC
-  const date = new Date(dateTime);
-  if (isNaN(date.getTime())) return "";
-  
-  // Return ISO string in UTC format with Z
-  return date.toISOString();
-};
+  const toUTCISOString = (dateTime) => {
+    if (!dateTime) return "";
 
-// Convert datetime to UTC ISO string format with Z for end time
-const toUTCEndTimeString = (dateTime) => {
-  if (!dateTime) return "";
-  
-  // If dateTime is already in correct ISO string format with Z, just return it
-  if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
-    return dateTime;
-  }
-  
-  // If it's a Date object or timestamp, convert it to UTC
-  const date = new Date(dateTime);
-  if (isNaN(date.getTime())) return "";
-  
-  // Return ISO string in UTC format with Z
-  return date.toISOString();
-};
+    // If dateTime is already in correct ISO string format with Z, just return it
+    if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
+      return dateTime;
+    }
 
-// Convert datetime to UTC ISO string format with Z for start time
-const toUTCStartTimeString = (dateTime) => {
-  if (!dateTime) return "";
-  
-  // If dateTime is already in correct ISO string format with Z, just return it
-  if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
-    return dateTime;
-  }
-  
-  // If it's a Date object or timestamp, convert it to UTC
-  const date = new Date(dateTime);
-  if (isNaN(date.getTime())) return "";
-  
-  // Return ISO string in UTC format with Z
-  return date.toISOString();
-};
+    // If it's a Date object or timestamp, convert it to UTC
+    const date = new Date(dateTime);
+    if (isNaN(date.getTime())) return "";
+
+    // Return ISO string in UTC format with Z
+    return date.toISOString();
+  };
+
+  // Convert datetime to UTC ISO string format with Z for end time
+  const toUTCEndTimeString = (dateTime) => {
+    if (!dateTime) return "";
+
+    // If dateTime is already in correct ISO string format with Z, just return it
+    if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
+      return dateTime;
+    }
+
+    // If it's a Date object or timestamp, convert it to UTC
+    const date = new Date(dateTime);
+    if (isNaN(date.getTime())) return "";
+
+    // Return ISO string in UTC format with Z
+    return date.toISOString();
+  };
+
+  // Convert datetime to UTC ISO string format with Z for start time
+  const toUTCStartTimeString = (dateTime) => {
+    if (!dateTime) return "";
+
+    // If dateTime is already in correct ISO string format with Z, just return it
+    if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
+      return dateTime;
+    }
+
+    // If it's a Date object or timestamp, convert it to UTC
+    const date = new Date(dateTime);
+    if (isNaN(date.getTime())) return "";
+
+    // Return ISO string in UTC format with Z
+    return date.toISOString();
+  };
 
 
   const handleSubmit = async (event) => {
@@ -985,8 +1007,8 @@ const toUTCStartTimeString = (dateTime) => {
         content_type: row.content_type,
         ...(row.blob_id ? { blob_id: row.blob_id } : {}),
       });
-      console.log("attachments:--", attachments);
-      
+    console.log("attachments:--", attachments);
+
 
     // Build attachments ONLY from current documentRows (UI state)
     const eventData = {
@@ -1073,8 +1095,8 @@ const toUTCStartTimeString = (dateTime) => {
             }
             return acc;
           }, {});
-          console.log("material",material.unit);
-          
+          console.log("material", material.unit);
+
 
           return {
             id: material.id || null,
@@ -1112,36 +1134,36 @@ const toUTCStartTimeString = (dateTime) => {
           comments: log.comment || log.comments || "",
         })),
         resource_term_conditions_attributes: textareas.map((textarea) => {
-  // Only include id if it's a string and length < 10 (likely a real DB id)
-  // or if it's a number and less than 1e9 (to avoid Date.now() values)
-  const isValidId =
-    (typeof textarea.id === "string" && textarea.id.length < 10) ||
-    (typeof textarea.id === "number" && String(textarea.id).length < 10);
+          // Only include id if it's a string and length < 10 (likely a real DB id)
+          // or if it's a number and less than 1e9 (to avoid Date.now() values)
+          const isValidId =
+            (typeof textarea.id === "string" && textarea.id.length < 10) ||
+            (typeof textarea.id === "number" && String(textarea.id).length < 10);
 
-  const baseAttributes = {
-    term_condition_id: textarea.textareaId,
-    condition_type: "general",
-    condition: textarea.value,
-  };
+          const baseAttributes = {
+            term_condition_id: textarea.textareaId,
+            condition_type: "general",
+            condition: textarea.value,
+          };
 
-  // If marked for destruction, add the _destroy flag
-  if (textarea._destroy) {
-    return {
-      id: textarea.id,
-      _destroy: true,
-      ...baseAttributes,
-    };
-  }
+          // If marked for destruction, add the _destroy flag
+          if (textarea._destroy) {
+            return {
+              id: textarea.id,
+              _destroy: true,
+              ...baseAttributes,
+            };
+          }
 
-  return isValidId
-    ? {
-        id: textarea.id,
-        ...baseAttributes,
-      }
-    : {
-        ...baseAttributes,
-      };
-}),
+          return isValidId
+            ? {
+              id: textarea.id,
+              ...baseAttributes,
+            }
+            : {
+              ...baseAttributes,
+            };
+        }),
         attachments,
         applied_event_template: {
           event_template_id:
@@ -1248,14 +1270,14 @@ const toUTCStartTimeString = (dateTime) => {
           vendor.tags,
           vendor.id?.toString()
         ];
-        
-        return searchFields.some(field => 
+
+        return searchFields.some(field =>
           field && field.toString().toLowerCase().includes(query.toLowerCase())
         );
       });
-      
+
       setFilteredTableData(filtered);
-      
+
       // Still fetch suggestions for the dropdown
       if (query) {
         fetchSuggestions(query);
@@ -1300,7 +1322,7 @@ const toUTCStartTimeString = (dateTime) => {
         .flatMap((subType) => Object.values(subType))
         .map((item) => item.inventory_id);
 
-        const urlParams = new URLSearchParams(location.search);
+      const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
 
       const response = await fetch(
@@ -1673,226 +1695,225 @@ const toUTCStartTimeString = (dateTime) => {
         <div className="pt-3" ref={myRef}>
           <div className="module-data-section mx-3">
             {/* <div className="card p-3 mt-3"> */}
-              <div className="row align-items-end justify-items-end mb-5 mt-3">
-                <div className="col-md-4 col-sm-6 mt-0 mb-2">
-                  <div className="form-group">
-                    <label className="po-fontBold">
-                      Event Name
-                    </label>
-                  </div>
-                  <input
-                    className="form-control"
-                    placeholder="Enter Event Name"
-                    value={eventName}
-                    onChange={(e) => seteventName(e.target.value)}
-                  />
+            <div className="row align-items-end justify-items-end mb-5 mt-3">
+              <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Name
+                  </label>
                 </div>
-                <div className="col-md-4 col-sm-6 mt-0 mb-2">
-                  <div className="form-group">
-                    <label className="po-fontBold">
-                      Event Number
-                    </label>
-                  </div>
+                <input
+                  className="form-control"
+                  placeholder="Enter Event Name"
+                  value={eventName}
+                  onChange={(e) => seteventName(e.target.value)}
+                />
+              </div>
+              <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Number
+                  </label>
+                </div>
+                <input
+                  className="form-control"
+                  placeholder="Enter Event Name"
+                  value={eventNumber}
+                  onChange={(e) => seteventName(e.target.value)}
+                  disabled
+                />
+              </div>
+              <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                <div className="form-group">
+                  <label className="po-fontBold">Created On</label>
                   <input
                     className="form-control"
-                    placeholder="Enter Event Name"
-                    value={eventNumber}
-                    onChange={(e) => seteventName(e.target.value)}
+                    type="date"
+                    defaultValue={createdOn}
+                    readOnly
                     disabled
                   />
                 </div>
-                <div className="col-md-4 col-sm-6 mt-0 mb-2">
-                  <div className="form-group">
-                    <label className="po-fontBold">Created On</label>
-                    <input
-                      className="form-control"
-                      type="date"
-                      defaultValue={createdOn}
-                      readOnly
-                      disabled
-                    />
-                  </div>
+              </div>
+              <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Type <span style={{ color: "red" }}>*</span>
+                  </label>
                 </div>
-                <div className="col-md-4 col-sm-6 mt-0 mb-2">
-                  <div className="form-group">
-                    <label className="po-fontBold">
-                      Event Type <span style={{ color: "red" }}>*</span>
-                    </label>
-                  </div>
-                  <input
-                    className="form-control"
-                    style={{ textTransform: "uppercase" }}
-                    onClick={handleEventTypeModalShow}
-                    placeholder="Configure The Event"
-                    value={eventTypeText}
-                    readOnly
-                  />
-                </div>
-                
-                <div className="col-md-4 col-sm-6 mt-2">
-                  <div className="form-group">
-                    <label className="po-fontBold">
-                      Event Schedule <span style={{ color: "red" }}>*</span>
-                    </label>
-                  </div>
-                  <input
-                    className="form-control"
-                    onClick={handleEventScheduleModalShow}
-                    placeholder="Select Event Schedule"
-                    value={eventScheduleText}
-                    readOnly
-                  />
-                </div>
-                <div className="col-md-4 col-sm-6 mt-2">
-                  <div className="form-group">
-                    <label className="po-fontBold">
-                      Event Description <span style={{ color: "red" }}>*</span>
-                    </label>
-                  </div>
-                  <textarea
-                    className="form-control"
-                    placeholder="Enter Event Description"
-                    value={eventDescription}
-                    onChange={(e) => setEventDescription(e.target.value)}
-                  />
-                </div>
-                <div className="col-md-4 col-sm-6 mt-2">
-                  <div className="form-group">
-                    <label className="po-fontBold">Event Status</label>
-                  </div>
-                  <SelectBox
-                    options={[
-                      { label: "Submitted", value: "submitted" },
-                      { label: "Approved", value: "approved" },
-                      { label: "Published", value: "published" },
-                      { label: "Expired", value: "expired" },
-                      { label: "Closed", value: "closed" },
-                      { label: "Pending", value: "pending" },
-                      { label: "Draft", value: "draft" },
-                    ]}
-                    onChange={handleStatusChange}
-                    defaultValue={eventStatus || "draft"}
-                  />
-                </div>
+                <input
+                  className="form-control"
+                  style={{ textTransform: "uppercase" }}
+                  onClick={handleEventTypeModalShow}
+                  placeholder="Configure The Event"
+                  value={eventTypeText}
+                  readOnly
+                />
               </div>
 
-              <CreateRFQForm
-                data={materialFormData}
-                setData={setMaterialFormData}
-                eventId={eventDetails?.id}
-                isService={isService}
-                templateData={eventDetails?.applied_event_template}
-                existingData={eventDetails?.grouped_event_materials}
-                deliveryData={eventDetails?.delivery_schedules}
-                isMorSelected={eventDetails?.from_mor}
-                updateSelectedTemplate={setSelectedTemplate}
-                updateBidTemplateFields={setBidTemplateFields}
-                updateAdditionalFields={setAdditionalFields}
-                isMor={false}
-                morNumber={eventDetails?.event_title}
-              />
-              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-                <h5 className=" ">
-                  Select Vendors{" "}
-                  <span style={{ color: "red", fontSize: "16px" }}>*</span>
-                </h5>
-                <div className="card-tools">
-                  <button
-                    className="purple-btn2"
-                    data-bs-toggle="modal"
-                    data-bs-target="#venderModal"
-                    onClick={handleVendorTypeModalShow}
-                  >
-                    <span className="material-symbols-outlined align-text-top me-2">
-                      add{" "}
-                    </span>
-                    <span>Add</span>
-                  </button>
+              <div className="col-md-4 col-sm-6 mt-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Schedule <span style={{ color: "red" }}>*</span>
+                  </label>
                 </div>
+                <input
+                  className="form-control"
+                  onClick={handleEventScheduleModalShow}
+                  placeholder="Select Event Schedule"
+                  value={eventScheduleText}
+                  readOnly
+                />
               </div>
-              <div className="row justify-content-center mx-1">
-                <div
-                  className="tbl-container px-0 mx-5 mt-3"
-                  style={{ maxHeight: "250px", overflowY: "auto" }}
+              <div className="col-md-4 col-sm-6 mt-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Description <span style={{ color: "red" }}>*</span>
+                  </label>
+                </div>
+                <textarea
+                  className="form-control"
+                  placeholder="Enter Event Description"
+                  value={eventDescription}
+                  onChange={(e) => setEventDescription(e.target.value)}
+                />
+              </div>
+              <div className="col-md-4 col-sm-6 mt-2">
+                <div className="form-group">
+                  <label className="po-fontBold">Event Status</label>
+                </div>
+                <SelectBox
+                  options={[
+                    { label: "Submitted", value: "submitted" },
+                    { label: "Approved", value: "approved" },
+                    { label: "Published", value: "published" },
+                    { label: "Expired", value: "expired" },
+                    { label: "Closed", value: "closed" },
+                    { label: "Pending", value: "pending" },
+                    { label: "Draft", value: "draft" },
+                  ]}
+                  onChange={handleStatusChange}
+                  defaultValue={eventStatus || "draft"}
+                />
+              </div>
+            </div>
+
+            <CreateRFQForm
+              data={materialFormData}
+              setData={setMaterialFormData}
+              eventId={eventDetails?.id}
+              isService={isService}
+              templateData={eventDetails?.applied_event_template}
+              existingData={eventDetails?.grouped_event_materials}
+              deliveryData={eventDetails?.delivery_schedules}
+              isMorSelected={eventDetails?.from_mor}
+              updateSelectedTemplate={setSelectedTemplate}
+              updateBidTemplateFields={setBidTemplateFields}
+              updateAdditionalFields={setAdditionalFields}
+              isMor={false}
+              morNumber={eventDetails?.event_title}
+            />
+            <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+              <h5 className=" ">
+                Select Vendors{" "}
+                <span style={{ color: "red", fontSize: "16px" }}>*</span>
+              </h5>
+              <div className="card-tools">
+                <button
+                  className="purple-btn2"
+                  data-bs-toggle="modal"
+                  data-bs-target="#venderModal"
+                  onClick={handleVendorTypeModalShow}
                 >
-                  <table className="w-100">
-                    <thead>
-                      <tr>
-                        <th style={{ width: "100px" }}>Sr No.</th>
-                        <th>Vendor Organization Name</th>
-                        {/* <th>Organization</th> */}
-                        <th>Mob No.</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {isInvite ? (
-                        <>
-                          <div className="loader-container">
-                            <div className="lds-ring">
-                              <div></div>
-                              <div></div>
-                              <div></div>
-                              <div></div>
-                              <div></div>
-                              <div></div>
-                              <div></div>
-                              <div></div>
-                            </div>
-                            <p>Loading...</p>
+                  <span className="material-symbols-outlined align-text-top me-2">
+                    add{" "}
+                  </span>
+                  <span>Add</span>
+                </button>
+              </div>
+            </div>
+            <div className="row justify-content-center mx-1">
+              <div
+                className="tbl-container px-0 mx-5 mt-3"
+                style={{ maxHeight: "250px", overflowY: "auto" }}
+              >
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th style={{ width: "100px" }}>Sr No.</th>
+                      <th>Vendor Organization Name</th>
+                      {/* <th>Organization</th> */}
+                      <th>Mob No.</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {isInvite ? (
+                      <>
+                        <div className="loader-container">
+                          <div className="lds-ring">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
                           </div>
-                        </>
-                      ) : selectedVendors?.length === 0 ? (
-                        <tr>
-                          <td colSpan="5" className="text-center">
-                            No vendors selected
+                          <p>Loading...</p>
+                        </div>
+                      </>
+                    ) : selectedVendors?.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="text-center">
+                          No vendors selected
+                        </td>
+                      </tr>
+                    ) : (
+                      selectedVendors?.map((vendor, index) => (
+                        <tr key={vendor.id}>
+                          <td style={{ width: "100px" }}>{index + 1}</td>
+                          <td>{vendor.name}</td>
+                          {/* <td>{vendor.organisation}</td> */}
+                          <td>{vendor.phone}</td>
+                          <td>Invited</td>
+                          <td>
+                            <button
+                              className="btn btn-danger"
+                              onClick={() =>
+                                handleRemoveVendor(vendor.pms_supplier_id)
+                              }
+                            >
+                              Remove
+                            </button>
                           </td>
                         </tr>
-                      ) : (
-                        selectedVendors?.map((vendor, index) => (
-                          <tr key={vendor.id}>
-                            {console.log("selectedVendors", selectedVendors)}
-                            <td style={{ width: "100px" }}>{index + 1}</td>
-                            <td>{vendor.name}</td>
-                            {/* <td>{vendor.organisation}</td> */}
-                            <td>{vendor.phone}</td>
-                            <td>Invited</td>
-                            <td>
-                              <button
-                                className="btn btn-danger"
-                                onClick={() =>
-                                  handleRemoveVendor(vendor.pms_supplier_id)
-                                }
-                              >
-                                Remove
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
-              <div>
-                <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-                  <h5 className="mt-3">
-                    Document Attachments{" "}
-                    <span style={{ color: "red", fontSize: "16px" }}>*</span>
-                  </h5>
-                  <button
-                    className="purple-btn2 mt-3"
-                    onClick={handleAddDocumentRow}
-                  >
-                    <span className="material-symbols-outlined align-text-top me-2">
-                      add
-                    </span>
-                    <span>Add</span>
-                  </button>
-                </div>
-                {/* New Document Attachments Table */}
-                                <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
+            </div>
+            <div>
+              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                <h5 className="mt-3">
+                  Document Attachments{" "}
+                  <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                </h5>
+                <button
+                  className="purple-btn2 mt-3"
+                  onClick={handleAddDocumentRow}
+                >
+                  <span className="material-symbols-outlined align-text-top me-2">
+                    add
+                  </span>
+                  <span>Add</span>
+                </button>
+              </div>
+              {/* New Document Attachments Table */}
+              <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
 
                 <table className="w-100">
                   <thead>
@@ -1951,7 +1972,7 @@ const toUTCStartTimeString = (dateTime) => {
                             }
                           />
                         </td>
-                        
+
                         <td>
                           {!att.isExisting && (
                             <input
@@ -2033,191 +2054,191 @@ const toUTCStartTimeString = (dateTime) => {
                     ))}
                   </tbody>
                 </table>
-                </div>
+              </div>
+            </div>
+
+            <div>
+              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                <h5 className="mt-3">
+                  Terms & Conditions{" "}
+                  <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                </h5>
+                <button
+                  className="purple-btn2 mt-3"
+                  onClick={handleAddTextarea}
+                >
+                  <span className="material-symbols-outlined align-text-top me-2">
+                    add
+                  </span>
+                  <span>Add</span>
+                </button>
               </div>
 
-              <div>
-                <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-                  <h5 className="mt-3">
-                    Terms & Conditions{" "}
-                    <span style={{ color: "red", fontSize: "16px" }}>*</span>
-                  </h5>
-                  <button
-                    className="purple-btn2 mt-3"
-                    onClick={handleAddTextarea}
-                  >
-                    <span className="material-symbols-outlined align-text-top me-2">
-                      add
-                    </span>
-                    <span>Add</span>
-                  </button>
-                </div>
-
-                <table className="tbl-container w-100">
-  <thead>
-    <tr>
-      <th>Condition Category</th>
-      <th>Condition</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    {(!textareas || textareas.filter(t => t.id !== null && !t._destroy).length === 0) ? (
-      <tr>
-        <td colSpan={3} className="text-center">No Terms & Conditions available</td>
-      </tr>
-    ) : (
-      textareas.map((textarea, idx) => {
-        if (textarea.id === null || textarea._destroy) {
-          return null;
-        }
-        return (
-          <tr key={idx}>
-            <td>
-              <SelectBox
-                options={termsOptions.map((option) => ({
-                  label: option.label,
-                  value: option.value,
-                }))}
-                onChange={(option) =>
-                  handleConditionChange(textarea.id, option)
-                }
-                defaultValue={
-                  termsOptions.find(
-                    (option) => option.condition === textarea.value
-                  )?.value
-                }
-              />
-            </td>
-            <td>
-              <textarea
-                className="form-control"
-                value={textarea.value}
-                readOnly
-              />
-            </td>
-            <td>
-              <button
-                className="btn btn-danger"
-                onClick={() => handleRemoveTextarea(textarea.id)}
-                // disabled={textareas.length === 1}
-              >
-                Remove
-              </button>
-            </td>
-          </tr>
-        );
-      })
-    )}
-  </tbody>
-</table>
-              </div>
-
-              {statusLogData?.length > 0 && (
-                <>
-                  <h5 className="mt-5">Audit Log</h5>
-                  <div className="tbl-container mt-1" style={{ maxHeight: "450px" }}>
-                    <table className="w-100">
-                      <thead>
-                        <tr>
-                          <th>Sr.No.</th>
-                          <th>Created By</th>
-                          <th>Created At</th>
-                          <th>Status</th>
-                          {/* <th>Remark</th> */}
-                          {/* <th>Comment</th> */}
+              <table className="tbl-container w-100">
+                <thead>
+                  <tr>
+                    <th>Condition Category</th>
+                    <th>Condition</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(!textareas || textareas.filter(t => t.id !== null && !t._destroy).length === 0) ? (
+                    <tr>
+                      <td colSpan={3} className="text-center">No Terms & Conditions available</td>
+                    </tr>
+                  ) : (
+                    textareas.map((textarea, idx) => {
+                      if (textarea.id === null || textarea._destroy) {
+                        return null;
+                      }
+                      return (
+                        <tr key={idx}>
+                          <td>
+                            <SelectBox
+                              options={termsOptions.map((option) => ({
+                                label: option.label,
+                                value: option.value,
+                              }))}
+                              onChange={(option) =>
+                                handleConditionChange(textarea.id, option)
+                              }
+                              defaultValue={
+                                termsOptions.find(
+                                  (option) => option.condition === textarea.value
+                                )?.value
+                              }
+                            />
+                          </td>
+                          <td>
+                            <textarea
+                              className="form-control"
+                              value={textarea.value}
+                              readOnly
+                            />
+                          </td>
+                          <td>
+                            <button
+                              className="btn btn-danger"
+                              onClick={() => handleRemoveTextarea(textarea.id)}
+                            // disabled={textareas.length === 1}
+                            >
+                              Remove
+                            </button>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {editableStatusLogData?.slice(0, 10).map((log, idx) => {
-                          if (log.id === null) return null;
-                          return (
-                            <tr key={log.id || idx}>
-                              <td className="text-start">{idx + 1}</td>
-                              <td className="text-start">{log.created_by_name || "-"}</td>
-                              <td className="text-start">
-                                {log.created_at
-                                  ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
-                                      day: "2-digit",
-                                      month: "2-digit",
-                                      year: "numeric",
-                                    }).replaceAll("/", "-")}, ${new Date(log.created_at).toLocaleTimeString("en-GB", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                      hour12: true,
-                                    }).toUpperCase()}`
-                                  : "-"}
-                              </td>
-                              <td className="text-start">
-                                {log.status
-                                  ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
-                                  : ""}
-                              </td>
-                              {/* <td className="text-start">{log.remarks || ""}</td>
-                              <td className="text-start">{log.comments || ""}</td> */}
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                    {editableStatusLogData?.length > 10 && (
-                      <div className="mt-2 text-start">
-                        <span
-                          className="boq-id-link"
-                          style={{ fontWeight: "bold", cursor: "pointer" }}
-                          onClick={() => {/* setShowAuditModal(true) or your logic here */}}
-                        >
-                          Show More
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-              <div className="row mt-2 justify-content-end align-items-center mt-4">
-                {/* <div className class="col-md-2">
-                  <button className="purple-btn2 w-100">Preview</button>
-                </div> */}
-                <div className="col-md-2">
-                  {loading && (
-                    <div className="loader-container">
-                      <div className="lds-ring">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                      </div>
-                      <p>Loading ..</p>
+            {statusLogData?.length > 0 && (
+              <>
+                <h5 className="mt-5">Audit Log</h5>
+                <div className="tbl-container mt-1" style={{ maxHeight: "450px" }}>
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th>Sr.No.</th>
+                        <th>Created By</th>
+                        <th>Created At</th>
+                        <th>Status</th>
+                        {/* <th>Remark</th> */}
+                        {/* <th>Comment</th> */}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {editableStatusLogData?.slice(0, 10).map((log, idx) => {
+                        if (log.id === null) return null;
+                        return (
+                          <tr key={log.id || idx}>
+                            <td className="text-start">{idx + 1}</td>
+                            <td className="text-start">{log.created_by_name || "-"}</td>
+                            <td className="text-start">
+                              {log.created_at
+                                ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                }).replaceAll("/", "-")}, ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                }).toUpperCase()}`
+                                : "-"}
+                            </td>
+                            <td className="text-start">
+                              {log.status
+                                ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                : ""}
+                            </td>
+                            {/* <td className="text-start">{log.remarks || ""}</td>
+                              <td className="text-start">{log.comments || ""}</td> */}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  {editableStatusLogData?.length > 10 && (
+                    <div className="mt-2 text-start">
+                      <span
+                        className="boq-id-link"
+                        style={{ fontWeight: "bold", cursor: "pointer" }}
+                        onClick={() => {/* setShowAuditModal(true) or your logic here */ }}
+                      >
+                        Show More
+                      </span>
                     </div>
                   )}
-                  <button
-                    className={
-                      submitted ? "disabled-btn w-100" : "purple-btn2 w-100"
-                    }
-                    onClick={handleSubmit}
-                    disabled={submitted}
-                  >
-                    Update
-                  </button>
                 </div>
-                <div className="col-md-2">
-                  <button
-                    className="purple-btn1 w-100"
-                    onClick={() => {
-                      navigate(
-                        `/event-list?token=${token}`
-                      );
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
+              </>
+            )}
+
+            <div className="row mt-2 justify-content-end align-items-center mt-4">
+              {/* <div className class="col-md-2">
+                  <button className="purple-btn2 w-100">Preview</button>
+                </div> */}
+              <div className="col-md-2">
+                {loading && (
+                  <div className="loader-container">
+                    <div className="lds-ring">
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                    </div>
+                    <p>Loading ..</p>
+                  </div>
+                )}
+                <button
+                  className={
+                    submitted ? "disabled-btn w-100" : "purple-btn2 w-100"
+                  }
+                  onClick={handleSubmit}
+                  disabled={submitted}
+                >
+                  Update
+                </button>
               </div>
+              <div className="col-md-2">
+                <button
+                  className="purple-btn1 w-100"
+                  onClick={() => {
+                    navigate(
+                      `/event-list?token=${token}`
+                    );
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
             {/* </div> */}
             <DynamicModalBox
               size="xl"
@@ -2306,92 +2327,51 @@ const toUTCStartTimeString = (dateTime) => {
                           /> */}
                           <MultiSelector
                             options={materialSelectList}
+                            value={multiSelectorValue}
                             onChange={async (selectedOptions) => {
+                              setMultiSelectorValue(selectedOptions);
                               try {
                                 const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
-                                if (
-                                  selectedOptions &&
-                                  selectedOptions.length > 0
-                                ) {
-                                  // Extract selected values and format them into an array
-                                  const selectedValues = selectedOptions.map(
-                                    (option) => option.value
-                                  );
-
-                                  
-
-                                  // Call the API with the selected values
-                                  const response = await fetch(
-                                    `${baseURL}rfq/events/vendor_list?token=${token}&page=1&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
-                                      selectedValues
-                                                                       )}`
-                                  );
-
-                                  const data = await response.json();
-                                  const vendors = Array.isArray(data.vendors)
-                                    ? data.vendors
-                                    : [];
-                                  const formattedData = vendors.map(
-                                    (vendor) => ({
-                                      id: vendor.id,
-                                      name:
-                                        vendor.full_name ||
-                                        vendor.organization_name ||
-                                        "-",
-                                      email: vendor.email || "-",
-                                      organisation:
-                                        vendor.organization_name || "-",
-                                      phone:
-                                        vendor.contact_number ||
-                                        vendor.mobile ||
-                                        "-",
-                                      city: vendor.city_id || "-",
-                                      tags: vendor.tags || "-",
-                                      pms_inventory_type_id:
-                                        vendor.pms_inventory_type_id,
-                                    })
-                                  );
-
-                                  setFilteredTableData(formattedData);
+                                const token = urlParams.get("token");
+                                let selectedValues;
+                                if (selectedOptions && selectedOptions.length > 0) {
+                                  selectedValues = selectedOptions.map((option) => option.value);
                                 } else {
-                                  // If no option is selected, reset to show all vendors
-                                  const response = await fetch(
-                                    `${baseURL}rfq/events/vendor_list?token=${token}&page=1&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
-                                  );
-
-                                  const data = await response.json();
-                                  const vendors = Array.isArray(data.vendors)
-                                    ? data.vendors
+                                  // Use eventDetails?.event_materials?.[0]?.inventory_id for default
+                                  selectedValues = eventDetails?.event_materials?.[0]?.inventory_id
+                                    ? [eventDetails.event_materials[0].inventory_id]
                                     : [];
-                                  const formattedData = vendors.map(
-                                    (vendor) => ({
-                                      id: vendor.id,
-                                      name:
-                                        vendor.full_name ||
-                                        vendor.organization_name ||
-                                        "-",
-                                      email: vendor.email || "-",
-                                      organisation:
-                                        vendor.organization_name || "-",
-                                      phone:
-                                        vendor.contact_number ||
-                                        vendor.mobile ||
-                                        "-",
-                                      city: vendor.city_id || "-",
-                                      tags: vendor.tags || "-",
-                                      pms_inventory_type_id:
-                                        vendor.pms_inventory_type_id,
-                                    })
-                                  );
-
-                                  setFilteredTableData(formattedData);
                                 }
-                              } catch (error) {
-                                console.error(
-                                  "Error fetching vendor data:",
-                                  error
+                                const response = await fetch(
+                                  `${baseURL}rfq/events/vendor_list?token=${token}&page=1&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(selectedValues)}`
                                 );
+                                const data = await response.json();
+                                const vendors = Array.isArray(data.vendors)
+                                  ? data.vendors
+                                  : [];
+                                  console.log("vendors :-----------", vendors);
+                                  
+                                const formattedData = vendors.map((vendor) => ({
+                                  id: vendor.id,
+                                  name:
+                                    vendor.full_name ||
+                                    vendor.organization_name ||
+                                    "-",
+                                  email: vendor.email || "-",
+                                  organisation:
+                                    vendor.organization_name || "-",
+                                  phone:
+                                    vendor.contact_number ||
+                                    vendor.mobile ||
+                                    "-",
+                                  city: vendor.city_id || "-",
+                                  tags: vendor.tags || "-",
+                                  pms_inventory_type_id:
+                                    vendor.pms_inventory_type_id,
+                                }));
+                                setFilteredTableData(formattedData);
+                              } catch (error) {
+                                console.error("Error fetching vendor data:", error);
                               }
                             }}
                           />
@@ -2460,8 +2440,8 @@ const toUTCStartTimeString = (dateTime) => {
                       />
                     </div>
                   </div>
-                  {console.log("filteredTableData", filteredTableData)}
-
+                        {console.log("filteredTableData", filteredTableData)
+                        }
                   <div className="d-flex flex-column justify-content-center align-items-center h-100">
                     {filteredTableData.length > 0 ? (
                       <Table
@@ -2479,7 +2459,7 @@ const toUTCStartTimeString = (dateTime) => {
                         cellClass="text-start"
                         currentPage={currentPage}
                         pageSize={pageSize}
-                        style={{width:"100%"}}
+                        style={{ width: "100%" }}
                         scrollable={true}
                       />
                     ) : (
@@ -2542,7 +2522,7 @@ const toUTCStartTimeString = (dateTime) => {
                       </li>
 
                       <li
-                       
+
                         className={`page-item ${currentPage === totalPages ? "disabled" : ""
                           }`}
                       >
@@ -2703,7 +2683,7 @@ const toUTCStartTimeString = (dateTime) => {
               trafficType={isTrafficSelected}
               handleTrafficChange={handleTrafficChange}
 
-/>
+            />
             <EventScheduleModal
               deliveryDate={dynamicExtensionConfigurations.delivery_date}
               show={eventScheduleModal}

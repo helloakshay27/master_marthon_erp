@@ -20,10 +20,14 @@ export default function ParticipantsTab({ id }) {
   const [selectedRows, setSelectedRows] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
+  const [modalSearchTerm, setModalSearchTerm] = useState("");
+  const [modalFilteredTableData, setModalFilteredTableData] = useState([]);
   const [inviteModal, setInviteModal] = useState(false);
   const [vendorModal, setVendorModal] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
-  const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
+  const [suggestions, setSuggestions] = useState([]); // For main table
+  const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false); // For main table
+  const [modalSuggestions, setModalSuggestions] = useState([]); // For modal
+  const [isModalSuggestionsVisible, setIsModalSuggestionsVisible] = useState(false); // For modal
   const [loading, setLoading] = useState(false);
   const [isInvite, setIsInvite] = useState(false);
   const [isVendorLoading, setIsVendorLoading] = useState(false);
@@ -169,7 +173,7 @@ export default function ParticipantsTab({ id }) {
           name: newVendor.full_name,
           phone: newVendor.mobile,
           email: newVendor.email,
-          organisation: newVendor.organization_name || "-",
+          organisation: newVendor.organization_name || "_",
         };
 
         setVendorData((prev) => [...prev, formattedVendor]);
@@ -263,9 +267,12 @@ export default function ParticipantsTab({ id }) {
     setFilteredData(
       Array.isArray(participants?.event_vendors)
         ? participants.event_vendors.map((vendor) => {
-            const { full_name, organization_name, mobile, email } =
+            const { id,full_name, organization_name, mobile, email } =
               vendor.pms_supplier || {};
+              console.log("vendor.pms_supplier",vendor.pms_supplier);
+              
             return {
+              id: id,
               name: full_name || "_",
               phone: mobile || "_",
               email: email || "_",
@@ -317,12 +324,12 @@ export default function ParticipantsTab({ id }) {
       const formattedData = vendors
         .map((vendor) => ({
           id: vendor.id,
-          name: vendor.full_name || vendor.organization_name || "-",
-          email: vendor.email || "-",
-          organisation: vendor.organization_name || "-",
-          phone: vendor.contact_number || vendor.mobile || "-",
-          city: vendor.city_id || "-",
-          tags: vendor.tags || "-",
+          name: vendor.full_name || vendor.organization_name || "_",
+          email: vendor.email || "_",
+          organisation: vendor.organization_name || "_",
+          phone: vendor.contact_number || vendor.mobile || "_",
+          city: vendor.city_id || "_",
+          tags: vendor.tags || "_",
         }))
         .filter(
           (vendor) =>
@@ -330,9 +337,7 @@ export default function ParticipantsTab({ id }) {
               (selected) => selected.pms_supplier_id === vendor.id
             )
         );
-
       setTableData(formattedData);
-
       setCurrentPage(page);
       setTotalPages(data?.pagination?.total_pages || 1);
     } catch (error) {
@@ -348,6 +353,7 @@ export default function ParticipantsTab({ id }) {
 
   useEffect(() => {
     setFilteredTableData(tableData);
+    setModalFilteredTableData(tableData);
   }, [tableData]);
 
   useEffect(() => {
@@ -465,17 +471,15 @@ export default function ParticipantsTab({ id }) {
     setSearchTerm(searchValue);
 
     if (searchValue === "") {
-      setFilteredTableData(vendorData); // Reset to original data
-      setSuggestions([]); // Clear suggestions
+      setFilteredData(vendorData); // Reset to original data
     } else {
       const filteredResults = vendorData.filter(
         (vendor) =>
-          vendor.name?.toLowerCase().includes(searchValue) ||
-          vendor.phone?.toLowerCase().includes(searchValue) ||
-          vendor.email?.toLowerCase().includes(searchValue)
+          (vendor.name && vendor.name.toLowerCase().includes(searchValue)) ||
+          (vendor.phone && vendor.phone.toLowerCase().includes(searchValue)) ||
+          (vendor.email && vendor.email.toLowerCase().includes(searchValue))
       );
-      setFilteredTableData(filteredResults); // Update filtered data
-      setSuggestions(filteredResults); // Update suggestions
+      setFilteredData(filteredResults); // Update filtered data
     }
   };
 
@@ -486,23 +490,23 @@ export default function ParticipantsTab({ id }) {
   };
 
   const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-
-    if (e.target.value === "") {
-      setSuggestions([]);
-      setFilteredTableData(tableData); // Reset filtered data to all table data
-      setIsSuggestionsVisible(false);
+    const value = e.target.value;
+    setModalSearchTerm(value);
+    if (value === "") {
+      setModalSuggestions([]);
+      setModalFilteredTableData(tableData);
+      setIsModalSuggestionsVisible(false);
     } else {
-      const allData = [...tableData, ...vendorData]; // Combine data from all pages
+      const allData = [...tableData, ...vendorData];
       const filteredSuggestions = allData.filter(
         (vendor) =>
-          vendor.name?.toLowerCase().includes(e.target.value.toLowerCase()) ||
-          vendor.phone?.toLowerCase().includes(e.target.value.toLowerCase()) ||
-          vendor.email?.toLowerCase().includes(e.target.value.toLowerCase())
+          vendor.name?.toLowerCase().includes(value.toLowerCase()) ||
+          vendor.phone?.toLowerCase().includes(value.toLowerCase()) ||
+          vendor.email?.toLowerCase().includes(value.toLowerCase())
       );
-      setSuggestions(filteredSuggestions);
-      setFilteredTableData(filteredSuggestions); // Update filtered data
-      setIsSuggestionsVisible(true);
+      setModalSuggestions(filteredSuggestions);
+      setModalFilteredTableData(filteredSuggestions);
+      setIsModalSuggestionsVisible(true);
     }
   };
 
@@ -867,7 +871,7 @@ export default function ParticipantsTab({ id }) {
                       <td style={{ textAlign: "left" }}>{vendor.phone}</td>
                       <td style={{ textAlign: "left" }}>{vendor.email}</td>
                       {/* <td style={{ textAlign: "left" }}>
-                        {vendor.organisation || "-"}
+                        {vendor.organisation || "_"}
                       </td> */}
                     </tr>
                   ))}
@@ -1017,10 +1021,10 @@ export default function ParticipantsTab({ id }) {
                   <div className="input-group w-50 position-relative">
                     <input
                       type="search"
-                      id="searchInput"
+                      id="modalSearchInput"
                       className="tbl-search form-control"
                       placeholder="Search Vendors"
-                      value={searchTerm}
+                      value={modalSearchTerm}
                       onChange={handleSearchChange}
                       onFocus={() => setIsSuggestionsVisible(true)}
                       onBlur={() =>
@@ -1036,7 +1040,7 @@ export default function ParticipantsTab({ id }) {
                         <SearchIcon />
                       </button>
                     </div>
-                    {isSuggestionsVisible && suggestions.length > 0 && (
+                    {isModalSuggestionsVisible && modalSuggestions.length > 0 && (
                       <ul
                         className="suggestions-list position-absolute bg-white border rounded w-100"
                         style={{
@@ -1046,10 +1050,15 @@ export default function ParticipantsTab({ id }) {
                           overflowY: "auto",
                         }}
                       >
-                        {suggestions.map((suggestion, id) => (
+                        {modalSuggestions.map((suggestion, id) => (
                           <li
                             key={id}
-                            onClick={() => handleSuggestionClick(suggestion)}
+                            onClick={() => {
+                              setModalSearchTerm(suggestion.name);
+                              setModalFilteredTableData([suggestion]);
+                              setModalSuggestions([]);
+                              setIsModalSuggestionsVisible(false);
+                            }}
                             className="p-2 cursor-pointer"
                           >
                             {suggestion.name}
@@ -1103,24 +1112,36 @@ export default function ParticipantsTab({ id }) {
                     />
                   </div>
                 </div>
+                {console.log("filteredData:-",filteredData,"modalFilteredTableData:-",modalFilteredTableData)
+                }
                 <div className="d-flex flex-column justify-content-center align-items-center h-100">
-                  {filteredTableData.length > 0 ? (
+                  {modalFilteredTableData.length > 0 ? (
                     <Table
-                    scrollable={true}
+                      scrollable={true}
                       columns={participantsTabColumns}
                       showCheckbox={true}
-                      data={filteredTableData.map((vendor, index) => ({
+                      data={modalFilteredTableData.map((vendor, index) => ({
                         ...vendor,
                         srNo: (currentPage - 1) * pageSize + index + 1,
                       }))}
                       handleCheckboxChange={handleCheckboxChange}
-                      isRowSelected={isVendorSelected}
+                      isRowSelected={(vendorId) => {
+  const modalVendor = modalFilteredTableData.find(v => v.id === vendorId || v.key === vendorId);
+  if (!modalVendor) return false;
+  return filteredData.some(fd =>
+    fd.name === modalVendor.name &&
+    fd.email === modalVendor.email &&
+    fd.phone === modalVendor.phone &&
+    fd.organisation === modalVendor.organisation
+  );
+}}
                       resetSelectedRows={resetSelectedRows}
                       onResetComplete={() => setResetSelectedRows(false)}
                       onRowSelect={undefined}
                       cellClass="text-start"
                       currentPage={currentPage}
                       pageSize={pageSize}
+                      fullWidth={true}
                     />
                   ) : (
                     <p>No vendors found</p>
@@ -1261,7 +1282,7 @@ export default function ParticipantsTab({ id }) {
                     inputMode="numeric"
                     pattern="[0-9]*"
                     onKeyDown={(e) => {
-                      const invalidChars = ["e", "E", "+", "-", ".", ","];
+                      const invalidChars = ["e", "E", "+", "_", ".", ","];
                       if (
                         invalidChars.includes(e.key) ||
                         (isNaN(Number(e.key)) &&
