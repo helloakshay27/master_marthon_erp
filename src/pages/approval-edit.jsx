@@ -1197,9 +1197,13 @@ const ApprovalEdit = () => {
       .then((response) => {
         console.log("Approval updated successfully:", response.data);
         toast.success("Approval updated successfully!", {
-          autoClose: 1200,
-          onClose: () => navigate(`/approval-materics?token=${token}`),
+          autoClose: 1500,
+         
         });
+        // navigate(`/approval-materics?token=${token}`)
+        setTimeout(() => {
+  navigate(`/approval-materics?token=${token}`);
+}, 1000);
       })
       .catch((error) => {
         const resp = error?.response;
