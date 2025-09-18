@@ -40,7 +40,7 @@ export default function VendorListPage() {
   const location = useLocation();
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
-  const vendortoken = window.location.hostname === "localhost" ? 'bfa5004e7b0175622be8f7e69b37d01290b737f82e078411' : window.location.hostname;
+  const vendortoken = window.location.hostname === "localhost" ? 'bfa5004e7b0175622be8f7e69b37d01290b737f82e078411' : token;
   
     const containerRef = useRef(null);
     const [containerWidth, setContainerWidth] = useState(0);
