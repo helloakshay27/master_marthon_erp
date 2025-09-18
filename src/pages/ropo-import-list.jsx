@@ -488,7 +488,7 @@ const RopoMappingList = () => {
         // Separate call for MOR numbers; handle { mor_numbers: [] } shape
         try {
           const morResp = await axios.get(
-            `${baseURL}material_order_requests/filter_mor_numbers.json?token=${token}`
+            `${baseURL}material_order_requests/filter_mor_numbers.json?token=${token}&q[mor_type_eq]=import`
           );
           const morList = Array.isArray(morResp?.data?.mor_numbers)
             ? morResp.data.mor_numbers

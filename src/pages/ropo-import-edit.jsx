@@ -13,6 +13,9 @@ const RopoImportEdit = () => {
   // State variables for the modal
 
   const [showModal, setShowModal] = useState(false);
+    const [conversionRate, setConversionRate] = useState("");
+  
+  const [chargesFromApi, setChargesFromApi] = useState([]);
    const [loading, setLoading] = useState(false);
   const [exchangeRate, setExchangeRate] = useState();
   const [addMORModal, setAddMORModal] = useState(false);
@@ -171,7 +174,7 @@ const RopoImportEdit = () => {
   const [loadingMaterialDetails, setLoadingMaterialDetails] = useState(false);
 
   const [morFormData, setMorFormData] = useState({
-    morNumber: "",
+    morNumbers: [],
 
     morStartDate: "",
 
@@ -260,6 +263,60 @@ const RopoImportEdit = () => {
   // Tax summary state
 
   const [taxSummary, setTaxSummary] = useState({});
+  const recomputeTaxSummary = useCallback(() => {
+    const rate = conversionRate;
+    const toInr = (usd) => (parseFloat(usd) || 0) * rate;
+
+    // Base = sum of afterDiscountValue across rows
+    const indices = Object.keys(taxRateData || {});
+    const totalBaseUsd = indices.reduce((sum, idx) => {
+      const v = parseFloat(taxRateData[idx]?.afterDiscountValue) || 0;
+      return sum + v;
+    }, 0);
+
+    // Charges from API list; exclude inclusive
+    const list = Array.isArray(chargesFromApi) ? chargesFromApi : [];
+    const taxAdd = list
+      .filter(
+        (c) => c.resource_type === "TaxCategory" && (parseFloat(c.amount) || 0) > 0 && c.inclusive !== true
+      )
+      .reduce((s, c) => s + (parseFloat(c.amount) || 0), 0);
+    const taxDed = list
+      .filter(
+        (c) => c.resource_type === "TaxCategory" && (parseFloat(c.amount) || 0) < 0 && c.inclusive !== true
+      )
+      .reduce((s, c) => s + Math.abs(parseFloat(c.amount) || 0), 0);
+    const totalTaxUsd = taxAdd - taxDed;
+
+    const chargeAdd = list
+      .filter(
+        (c) => c.resource_type === "TaxCharge" && (parseFloat(c.amount) || 0) > 0 && c.inclusive !== true
+      )
+      .reduce((s, c) => s + (parseFloat(c.amount) || 0), 0);
+    const chargeDed = list
+      .filter(
+        (c) => c.resource_type === "TaxCharge" && (parseFloat(c.amount) || 0) < 0 && c.inclusive !== true
+      )
+      .reduce((s, c) => s + Math.abs(parseFloat(c.amount) || 0), 0);
+    const totalChargeUsd = chargeAdd - chargeDed;
+
+    const totalInclUsd = totalBaseUsd + totalTaxUsd + totalChargeUsd;
+
+    setTaxSummary({
+      total_base_cost: totalBaseUsd.toFixed(2),
+      total_base_cost_in_inr: toInr(totalBaseUsd).toFixed(2),
+      total_tax: totalTaxUsd.toFixed(2),
+      total_tax_in_inr: toInr(totalTaxUsd).toFixed(2),
+      total_charge: totalChargeUsd.toFixed(2),
+      total_charge_in_inr: toInr(totalChargeUsd).toFixed(2),
+      total_inclusive_cost: totalInclUsd.toFixed(2),
+      total_inclusive_cost_in_inr: toInr(totalInclUsd).toFixed(2),
+    });
+  }, [taxRateData, chargesFromApi, conversionRate]);
+
+  useEffect(() => {
+    recomputeTaxSummary();
+  }, [recomputeTaxSummary]);
 
   // Active tab state
 
@@ -293,7 +350,6 @@ const RopoImportEdit = () => {
 
   // New state for charges from API
 
-  const [chargesFromApi, setChargesFromApi] = useState([]);
 
   const [selectedServiceProviders, setSelectedServiceProviders] = useState({});
 
@@ -1679,7 +1735,7 @@ const RopoImportEdit = () => {
 
   // State for conversion rate
 
-  const [conversionRate, setConversionRate] = useState("");
+
 
   // Map companies to options for the dropdown
 
@@ -2200,8 +2256,11 @@ const RopoImportEdit = () => {
         params.append("type", "edit");
       }
 
-      if (morFormData.morNumber)
-        params.append("q[id_in][]", morFormData.morNumber);
+      if (Array.isArray(morFormData.morNumbers) && morFormData.morNumbers.length > 0) {
+        morFormData.morNumbers.forEach((id) => {
+          params.append("q[id_in][]", id);
+        });
+      }
 
       if (morFormData.morStartDate)
         params.append("q[mor_date_gteq][]", morFormData.morStartDate);
@@ -2310,10 +2369,11 @@ const RopoImportEdit = () => {
 
       // Preselect already-added materials and carry over their order qty
 
+      // Strict: index only by mor_inventory_id; rows key by inventory_id
       const existingByInventoryId = new Map(
-        (Array.isArray(submittedMaterials) ? submittedMaterials : []).map(
-          (m) => [String(m.mor_inventory_id || m.inventory_id || m.id), m]
-        )
+        (Array.isArray(submittedMaterials) ? submittedMaterials : [])
+          .filter((m) => m.mor_inventory_id !== undefined && m.mor_inventory_id !== null)
+          .map((m) => [String(m.mor_inventory_id), m])
       );
 
       const preselectedIndices = [];
@@ -2362,7 +2422,7 @@ const RopoImportEdit = () => {
 
   const handleMorReset = () => {
     setMorFormData({
-      morNumber: "",
+      morNumbers: [],
 
       morStartDate: "",
 
@@ -2587,8 +2647,10 @@ const RopoImportEdit = () => {
         ? submittedMaterials
         : [];
 
-      const normalizedFromSubmitted = previouslySubmitted.map((r) => ({
-        mor_inventory_id: r.mor_inventory_id || r.inventory_id || r.id,
+      const normalizedFromSubmitted = previouslySubmitted
+        .filter((r) => r.mor_inventory_id !== undefined && r.mor_inventory_id !== null)
+        .map((r) => ({
+        mor_inventory_id: r.mor_inventory_id,
 
         po_mor_inventory_id: r.id, // ensure updates for existing
 
@@ -2604,15 +2666,13 @@ const RopoImportEdit = () => {
       }));
 
       const existingByMorInv = new Map(
-        previouslySubmitted.map((m) => [
-          String(m.mor_inventory_id || m.inventory_id || m.id),
-
-          m,
-        ])
+        previouslySubmitted
+          .filter((m) => m.mor_inventory_id !== undefined && m.mor_inventory_id !== null)
+          .map((m) => [String(m.mor_inventory_id), m])
       );
 
       const normalizedFromSelected = selectedRows.map((r) => {
-        const morInvId = r.mor_inventory_id || r.inventory_id;
+        const morInvId = r.mor_inventory_id != null ? r.mor_inventory_id : r.inventory_id;
 
         const existing = existingByMorInv.get(String(morInvId));
 
@@ -3479,7 +3539,19 @@ const RopoImportEdit = () => {
               );
             }
           } else if (field === "taxChargePerUom") {
-            currentTax[field] = value;
+            // Prevent negative values for INR input (non-percentage). Allow percentages as-is.
+            let sanitizedValue = value;
+            if (
+              typeof sanitizedValue === "string" &&
+              sanitizedValue.trim() !== "" &&
+              !sanitizedValue.includes("%")
+            ) {
+              const numeric = parseFloat(sanitizedValue);
+              if (!Number.isNaN(numeric)) {
+                sanitizedValue = Math.max(0, numeric).toString();
+              }
+            }
+            currentTax[field] = sanitizedValue;
 
             // For addition taxes, calculate amount based on input value
 
@@ -4981,21 +5053,24 @@ const RopoImportEdit = () => {
         discountPercentage
       );
 
-      setTaxRateData((prev) => ({
-        ...prev,
-
-        [tableId]: {
-          ...prev[tableId],
-
+      setTaxRateData((prev) => {
+        const next = { ...prev };
+        const currentRow = next[tableId] || {};
+        const updatedRow = {
+          ...currentRow,
           ratePerNos: value,
-
           discountRate: newDiscountRate.toString(),
-
           materialCost: newMaterialCost.toString(),
-
           afterDiscountValue: newAfterDiscountValue.toString(),
-        },
-      }));
+        };
+
+        next[tableId] = updatedRow;
+
+        const recomputedNet = calculateNetCost(tableId, next);
+        next[tableId] = { ...updatedRow, netCost: recomputedNet.toString() };
+
+        return next;
+      });
     },
 
     [tableId, taxRateData]
@@ -5035,21 +5110,24 @@ const RopoImportEdit = () => {
         value
       );
 
-      setTaxRateData((prev) => ({
-        ...prev,
-
-        [tableId]: {
-          ...prev[tableId],
-
+      setTaxRateData((prev) => {
+        const next = { ...prev };
+        const currentRow = next[tableId] || {};
+        const updatedRow = {
+          ...currentRow,
           discount: value,
-
           discountRate: newDiscountRate.toString(),
-
           materialCost: newMaterialCost.toString(),
-
           afterDiscountValue: newAfterDiscountValue.toString(),
-        },
-      }));
+        };
+
+        next[tableId] = updatedRow;
+
+        const recomputedNet = calculateNetCost(tableId, next);
+        next[tableId] = { ...updatedRow, netCost: recomputedNet.toString() };
+
+        return next;
+      });
     },
 
     [tableId, taxRateData]
@@ -5507,18 +5585,10 @@ const RopoImportEdit = () => {
           if (tax.id === taxId) {
             const updatedTax = { ...tax, [field]: value };
 
-            // Auto-calculate amount when taxType, taxPercentage, or inclusive changes
+            // Auto-calculate amount when taxType or taxPercentage changes (not on inclusive)
 
-            if (
-              field === "taxType" ||
-              field === "taxPercentage" ||
-              field === "inclusive"
-            ) {
-              if (
-                updatedTax.taxType &&
-                updatedTax.taxPercentage &&
-                !updatedTax.inclusive
-              ) {
+            if (field === "taxType" || field === "taxPercentage") {
+              if (updatedTax.taxType && updatedTax.taxPercentage) {
                 const percentage =
                   parseFloat(updatedTax.taxPercentage.replace("%", "")) || 0;
 
@@ -5526,9 +5596,11 @@ const RopoImportEdit = () => {
 
                 const calculatedAmount = (percentage / 100) * baseAmount;
 
-                updatedTax.amount = calculatedAmount.toFixed(2);
+                updatedTax.amount = Number.isFinite(calculatedAmount)
+                  ? calculatedAmount.toFixed(2)
+                  : "";
               } else {
-                updatedTax.amount = "0";
+                updatedTax.amount = "";
               }
             }
 
@@ -5568,18 +5640,10 @@ const RopoImportEdit = () => {
           if (tax.id === taxId) {
             const updatedTax = { ...tax, [field]: value };
 
-            // Auto-calculate amount when taxType, taxPercentage, or inclusive changes
+            // Auto-calculate amount when taxType or taxPercentage changes (not on inclusive)
 
-            if (
-              field === "taxType" ||
-              field === "taxPercentage" ||
-              field === "inclusive"
-            ) {
-              if (
-                updatedTax.taxType &&
-                updatedTax.taxPercentage &&
-                !updatedTax.inclusive
-              ) {
+            if (field === "taxType" || field === "taxPercentage") {
+              if (updatedTax.taxType && updatedTax.taxPercentage) {
                 const percentage =
                   parseFloat(updatedTax.taxPercentage.replace("%", "")) || 0;
 
@@ -5587,9 +5651,11 @@ const RopoImportEdit = () => {
 
                 const calculatedAmount = (percentage / 100) * baseAmount;
 
-                updatedTax.amount = calculatedAmount.toFixed(2);
+                updatedTax.amount = Number.isFinite(calculatedAmount)
+                  ? calculatedAmount.toFixed(2)
+                  : "";
               } else {
-                updatedTax.amount = "0";
+                updatedTax.amount = "";
               }
             }
 
@@ -6651,10 +6717,21 @@ const RopoImportEdit = () => {
 
       console.log("Purchase order created successfully:", response.data);
 
-      toast.success("Purchase order created successfully!", {
-        autoClose: 1500,
-        onClose: () => navigate(`/ropo-import-list?token=${token}`),
-      });
+      // toast.success("Purchase order created successfully!", {
+      //   autoClose: 1500,
+      //   onClose: () => navigate(`/ropo-import-list?token=${token}`),
+      // });
+      if (response.data?.id) {
+  const purchaseOrderId = response.data.id; // Extract the ID from the response
+
+  toast.success("Purchase order created successfully!", {
+    onClose: () => navigate(`/ropo-import-details/${purchaseOrderId}?token=${token}`),
+    autoClose: 1000,
+  });
+} else {
+  console.error("Purchase order ID not found in the response.");
+  toast.error("Failed to retrieve purchase order ID.");
+}
 
       // Optionally redirect or clear form
 
@@ -8559,7 +8636,7 @@ const RopoImportEdit = () => {
                                         Details
                                       </th>
 
-                                      <th>Cost</th>
+                                      <th>Cost ({poCurrencyCode})</th>
 
                                       <th>Scope</th>
 
@@ -9148,11 +9225,17 @@ const RopoImportEdit = () => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      value={`${poCurrencyCode} ${totalMaterialCost.toFixed(
-                                        2
-                                      )} (INR ${convertUsdToInr(
-                                        totalMaterialCost,
+                                      // value={`${poCurrencyCode} ${totalMaterialCost.toFixed(
+                                      //   2
+                                      // )} (INR ${convertUsdToInr(
+                                      //   totalMaterialCost,
 
+                                      //   conversionRate
+                                      // )})`}
+                                      value={`${poCurrencyCode} ${(
+                                        (totalMaterialCost || 0) + (calculateOtherVendorNetCost() || 0)
+                                      ).toFixed(2)} (INR ${convertUsdToInr(
+                                        (totalMaterialCost || 0) + (calculateOtherVendorNetCost() || 0),
                                         conversionRate
                                       )})`}
                                       disabled
@@ -10642,16 +10725,18 @@ const RopoImportEdit = () => {
                 <div className="form-group">
                   <label>MOR No.</label>
 
-                  <SingleSelector
+                  <MultiSelector
                     options={morOptions}
-                    value={
-                      morOptions.find((opt) => opt.value === morFormData.morNumber) || null
-                    }
+                    value={morOptions.filter((opt) =>
+                      (morFormData.morNumbers || []).includes(opt.value)
+                    )}
                     placeholder="Select MOR No."
-                    onChange={(selectedOption) =>
+                    onChange={(selectedOptions) =>
                       setMorFormData((prev) => ({
                         ...prev,
-                        morNumber: selectedOption?.value || "",
+                        morNumbers: Array.isArray(selectedOptions)
+                          ? selectedOptions.map((opt) => opt.value)
+                          : [],
                       }))
                     }
                   />

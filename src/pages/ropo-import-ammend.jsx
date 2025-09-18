@@ -167,7 +167,7 @@ const RopoImportAmmend = () => {
   const [loadingMaterialDetails, setLoadingMaterialDetails] = useState(false);
 
   const [morFormData, setMorFormData] = useState({
-    morNumber: "",
+    morNumbers: [],
 
     morStartDate: "",
 
@@ -2073,8 +2073,11 @@ const RopoImportAmmend = () => {
         params.append("type", "amend");
       }
 
-      if (morFormData.morNumber)
-        params.append("q[id_in][]", morFormData.morNumber);
+      if (Array.isArray(morFormData.morNumbers) && morFormData.morNumbers.length > 0) {
+        morFormData.morNumbers.forEach((id) => {
+          params.append("q[id_in][]", id);
+        });
+      }
 
       if (morFormData.morStartDate)
         params.append("q[mor_date_gteq][]", morFormData.morStartDate);
@@ -2235,7 +2238,7 @@ const RopoImportAmmend = () => {
 
   const handleMorReset = () => {
     setMorFormData({
-      morNumber: "",
+      morNumbers: [],
 
       morStartDate: "",
 
@@ -10141,16 +10144,18 @@ const RopoImportAmmend = () => {
                 <div className="form-group">
                   <label>MOR No.</label>
 
-                  <SingleSelector
+                  <MultiSelector
                     options={morOptions}
-                    value={
-                      morOptions.find((opt) => opt.value === morFormData.morNumber) || null
-                    }
+                    value={morOptions.filter((opt) =>
+                      (morFormData.morNumbers || []).includes(opt.value)
+                    )}
                     placeholder="Select MOR No."
-                    onChange={(selectedOption) =>
+                    onChange={(selectedOptions) =>
                       setMorFormData((prev) => ({
                         ...prev,
-                        morNumber: selectedOption?.value || "",
+                        morNumbers: Array.isArray(selectedOptions)
+                          ? selectedOptions.map((opt) => opt.value)
+                          : [],
                       }))
                     }
                   />
