@@ -383,7 +383,7 @@ export default function EditEvent() {
       
       const formattedData = vendors.map((vendor) => ({
         id: vendor.id,
-        name: vendor.full_name || vendor.organization_name || "-",
+        name: vendor.full_name || "-",
         email: vendor.email || "-",
         organisation: vendor.organization_name || "-",
         phone: vendor.contact_number || vendor.mobile || "-",
@@ -399,7 +399,7 @@ export default function EditEvent() {
       if (preSelectedVendors.length > 0) {
         const preSelectedFormatted = preSelectedVendors.map((vendor) => ({
           id: vendor.id,
-          name: vendor.full_name || vendor.organization_name || "-",
+          name: vendor.full_name || "-",
           email: vendor.email || "-",
           organisation: vendor.organization_name || "-",
           phone: vendor.contact_number || vendor.mobile || "-",
@@ -476,7 +476,7 @@ export default function EditEvent() {
 
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
-            name: vendor.full_name || vendor.organization_name || "-",
+            name: vendor.full_name || "-",
             email: vendor.email || "-",
             organisation: vendor.organization_name || "-",
             phone: vendor.contact_number || vendor.mobile || "-",
@@ -524,7 +524,7 @@ export default function EditEvent() {
 
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
-            name: vendor.full_name || vendor.organization_name || "-",
+            name: vendor.full_name || "-",
             email: vendor.email || "-",
             organisation: vendor.organization_name || "-",
             phone: vendor.contact_number || vendor.mobile || "-",
@@ -1752,11 +1752,13 @@ export default function EditEvent() {
               pms_supplier_id: newVendor?.id,
               name: newVendor?.full_name || `${inviteVendorData.firstName} ${inviteVendorData.lastName}`,
               phone: newVendor?.mobile || inviteVendorData.mobile,
-              organisation: newVendor?.organization_name || '',
+              organisation: newVendor?.organization_name || inviteVendorData.organizationName || '',
               email: newVendor?.email || inviteVendorData.email,
             },
           ]);
         }
+        // Refresh the vendor list to show the newly invited vendor
+        await fetchData();
         // Optionally reset form here
         handleInviteModalClose();
       } else {
@@ -1777,7 +1779,7 @@ export default function EditEvent() {
     if (eventDetails?.event_vendors?.length > 0) {
       const existingVendors = eventDetails.event_vendors.map((vendor) => ({
         id: vendor.id,
-        name: vendor.full_name || vendor.organization_name || "-",
+        name: vendor.full_name || "-",
         email: vendor.email || "-",
         organisation: vendor.organization_name || "-",
         phone: vendor.contact_number || vendor.mobile || "-",
@@ -1985,7 +1987,7 @@ export default function EditEvent() {
                     <tr>
                       <th style={{ width: "100px" }}>Sr No.</th>
                       <th>Name</th>
-                      {/* <th>Organization</th> */}
+                      <th>Organization</th>
                       <th>Mob No.</th>
                       <th>Status</th>
                       <th>Action</th>
@@ -2019,7 +2021,7 @@ export default function EditEvent() {
                         <tr key={vendor.id}>
                           <td style={{ width: "100px" }}>{index + 1}</td>
                           <td>{vendor.name}</td>
-                          {/* <td>{vendor.organisation}</td> */}
+                          <td>{vendor.organisation}</td>
                           <td>{vendor.phone}</td>
                           <td>Invited</td>
                           <td>

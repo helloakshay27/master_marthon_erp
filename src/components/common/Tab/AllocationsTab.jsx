@@ -304,13 +304,8 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
 
         toast.success("Allocation removed successfully");
 
-        // Switch to Purchased Orders tab after successful allocation removal
-        if (onSwitchToPurchasedOrders) {
-          setTimeout(() => {
-            onSwitchToPurchasedOrders();
-          }, 500); // Reduced wait time to 0.5 seconds
-        }
-
+        // Remove automatic tab switching from allocation removal
+        // Only switch tabs when PO is successfully created
         isUpdatingAllocation.current = false;
         return;
       }
@@ -457,6 +452,7 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
 
   const handleCreatePO = async (vendorData) => {
     if (isCreatingPO.current) return;
+    isCreatingPO.current = true;
     setPoIsLoading(true);
 
     const jsonBody = {
@@ -476,6 +472,15 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
     try {
+      const response = await axios.post(
+        `${baseURL}rfq/events/${eventId}/event_po?token=${token}`,
+        jsonBody
+      );
+      
+      // Only proceed if API call is successful
+      toast.success("PO created successfully");
+      
+      // Remove the created PO data from selectedData after successful creation
       setTimeout(() => {
         setSelectedData((prevSelectedData) =>
           prevSelectedData.filter(
@@ -483,35 +488,25 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
           )
         );
       }, 1000);
-      const response = await axios.post(
-        `${baseURL}rfq/events/${eventId}/event_po?token=${token}`,
-        jsonBody
-      );
-      toast.success("PO created successfully");
 
-      // Switch to Purchased Orders tab after successful allocation update
+      // Switch to Purchased Orders tab only after successful PO creation
       if (onSwitchToPurchasedOrders) {
         setTimeout(() => {
           onSwitchToPurchasedOrders();
-        }, 500); // Reduced wait time to 0.5 seconds
+        }, 1500); // Wait for data removal to complete
       }
 
-      // Navigate to PO tab and refresh PO data (keeping existing logic)
-      if (typeof setActiveTab === 'function') {
-        setActiveTab('po');
-      }
-      if (typeof fetchPOData === 'function') {
-        fetchPOData();
-      }
     } catch (error) {
       console.error("Error creating PO:", error);
-      if (error.response?.status === 422) {
-        toast.error("Already Ordered this purchase");
-      } else {
-        toast.error("Error creating PO");
-      }
+      // Show appropriate error message based on status code
+      const errorMessage = error.response?.status === 422 
+        ? "Already Ordered this purchase" 
+        : "Error creating PO";
+      toast.error(errorMessage);
+      // Do not switch tabs if there's an error
     } finally {
       setPoIsLoading(false);
+      isCreatingPO.current = false; // Reset the flag after completion
     }
   };
 
@@ -1164,8 +1159,9 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
                                   className="purple-btn2 mt-4"
                                   style={{ width: "200px" }}
                                   onClick={() => handleCreatePO(vendorData)}
+                                  disabled={poIsLoading || isCreatingPO.current}
                                 >
-                                  Create PO
+                                  {poIsLoading ? "Creating PO..." : "Create PO"}
                                 </button>
                               </div>
                             </div>

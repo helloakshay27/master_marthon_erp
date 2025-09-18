@@ -259,7 +259,7 @@ export default function ParticipantsTab({ id }) {
       (vendor, index) => ({
         key: vendor.id,
         serialNumber: index + 1,
-        name: vendor.pms_supplier.full_name,
+        name: vendor.organization_name || vendor.pms_supplier.full_name,
         phone: vendor.pms_supplier.mobile,
         email: vendor.pms_supplier.email,
         organisation: vendor.organization_name,
@@ -277,7 +277,7 @@ export default function ParticipantsTab({ id }) {
               
             return {
               id: id,
-              name: full_name || "_",
+              name: organization_name || full_name || "_",
               phone: mobile || "_",
               email: email || "_",
               organisation: organization_name || "_",
@@ -328,7 +328,7 @@ export default function ParticipantsTab({ id }) {
       const formattedData = vendors
         .map((vendor) => ({
           id: vendor.id,
-          name: vendor.full_name || vendor.organization_name || "_",
+          name: vendor.organization_name || vendor.full_name || "_",
           email: vendor.email || "_",
           organisation: vendor.organization_name || "_",
           phone: vendor.contact_number || vendor.mobile || "_",
@@ -503,7 +503,8 @@ export default function ParticipantsTab({ id }) {
         (vendor) =>
           (vendor.name && vendor.name.toLowerCase().includes(searchValue)) ||
           (vendor.phone && vendor.phone.toLowerCase().includes(searchValue)) ||
-          (vendor.email && vendor.email.toLowerCase().includes(searchValue))
+          (vendor.email && vendor.email.toLowerCase().includes(searchValue)) ||
+          (vendor.organisation && vendor.organisation.toLowerCase().includes(searchValue))
       );
       setFilteredData(filteredResults); // Update filtered data
     }
@@ -528,7 +529,8 @@ export default function ParticipantsTab({ id }) {
         (vendor) =>
           vendor.name?.toLowerCase().includes(value.toLowerCase()) ||
           vendor.phone?.toLowerCase().includes(value.toLowerCase()) ||
-          vendor.email?.toLowerCase().includes(value.toLowerCase())
+          vendor.email?.toLowerCase().includes(value.toLowerCase()) ||
+          vendor.organisation?.toLowerCase().includes(value.toLowerCase())
       );
       setModalSuggestions(filteredSuggestions);
       setModalFilteredTableData(filteredSuggestions);
@@ -749,7 +751,7 @@ export default function ParticipantsTab({ id }) {
             {
               id: null,
               pms_supplier_id: newVendor?.id,
-              name: newVendor?.full_name || `${inviteVendorData.firstName} ${inviteVendorData.lastName}`,
+              name: newVendor?.organization_name || newVendor?.full_name || `${inviteVendorData.firstName} ${inviteVendorData.lastName}`,
               phone: newVendor?.mobile || inviteVendorData.mobile,
               organisation: newVendor?.organization_name || '',
               email: newVendor?.email || inviteVendorData.email,
@@ -759,7 +761,7 @@ export default function ParticipantsTab({ id }) {
           const formattedVendor = {
             key: newVendor.id,
             serialNumber: vendorData.length + 1,
-            name: newVendor.full_name || `${inviteVendorData.firstName} ${inviteVendorData.lastName}`,
+            name: newVendor.organization_name || newVendor.full_name || `${inviteVendorData.firstName} ${inviteVendorData.lastName}`,
             phone: newVendor.mobile || inviteVendorData.mobile,
             email: newVendor.email || inviteVendorData.email,
             organisation: newVendor.organization_name || '',

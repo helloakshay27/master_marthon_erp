@@ -81,9 +81,9 @@ export default function ErpRfqDetailPriceTrends4h() {
           if (purchasedOrdersTabRef.current?.refreshData) {
             purchasedOrdersTabRef.current.refreshData();
           }
-        }, 200);
+        }, 300); // Slightly increased delay for data refresh
       }
-    }, 100); // Small delay to ensure DOM is ready
+    }, 200); // Increased delay to ensure DOM is ready
   };
 
   useEffect(() => {
