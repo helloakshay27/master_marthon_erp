@@ -166,26 +166,31 @@ const PoAdvanceNoteList = () => {
     try {
       let url = `${baseURL}advance_notes?token=${token}`;
 
-      // Add filters to URL if they exist
-      if (filters.companyId) {
-        url += `&q[company_id_eq]=${filters.companyId}`;
+      // Filter by company, project, and site NAME (not ID), matching credit_notes logic
+      const companyName = selectedCompany?.label|| filters.companyName || "";
+      // console.log("companyName************:",companyName)
+      // console.log("companyName************:",selectedSite?.label)
+      const projectName = selectedProject?.label || filters.projectName || "";
+      const siteName = selectedSite?.label || filters.siteName || "";
+      if (companyName) {
+        url += `&q[purchase_order_company_company_name_cont]=${encodeURIComponent(companyName)}`;
       }
-      if (filters.projectId) {
-        url += `&q[project_id_eq]=${filters.projectId}`;
+      if (projectName) {
+        url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_name_cont]=${encodeURIComponent(projectName)}`;
       }
-      if (filters.siteId) {
-        url += `&q[site_id_eq]=${filters.siteId}`;
+      if (siteName) {
+        url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_pms_site_name_cont]=${encodeURIComponent(siteName)}`;
       }
+
+
+      
 
       if (filters.status) {
         url += `&q[status_eq]=${filters.status}`;
       }
 
       if (filters.search && filters.search.trim() !== "") {
-        url += `&q[company_id_or_project_id_or_purchase_order_id_or_advance_number_or_certificate_number_or_invoice_date_or_advance_percentage_or_advance_amount_or_net_payable_or_payment_
-mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
-          filters.search.trim()
-        )}`;
+        url += `&q[advance_number_or_certificate_number_or_performa_number_or_remark_or_status_or_purchase_order_po_number_or_purchase_order_company_company_name_or_purchase_order_supplier_full_name_or_purchase_order_supplier_gstin_or_purchase_order_supplier_pan_number_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_pms_site_name_cont]=${encodeURIComponent(filters.search.trim())}`;
       }
 
       const response = await axios.get(url);
