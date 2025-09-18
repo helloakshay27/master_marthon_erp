@@ -368,8 +368,6 @@ export default function ChargesDataTable({
         {
           label: "Save",
           onClick: () => {
-            // Add debugger for troubleshooting
-            debugger;
             
             console.log("=== DEBUGGING GROSS TOTAL CALCULATION ===");
             console.log("chargesData (API data):", chargesData);
