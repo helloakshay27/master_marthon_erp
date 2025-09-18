@@ -16,8 +16,6 @@ export default function ChargesDataTable({
   calculateGrossTotal,
   ...rest
 }) {
-  // console.log("chargesData:-----", data);
-  const prevGrossRef = useRef(null);
   const [chargesData, setChargesData] = useState([]);
   const [additionalTaxOptions, setAdditionalTaxOptions] = useState([]);
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
@@ -31,6 +29,7 @@ export default function ChargesDataTable({
   const token = urlParams.get("token");
 
   useEffect(() => {
+    console.log("chargesData:-----", data, onValueChange, grossTotal, calculateGrossTotal);
     // Initialize chargesTaxRate with data from props
     const initialChargesTaxRate = data.reduce((acc, item, index) => {
       acc[index] = {
@@ -38,6 +37,8 @@ export default function ChargesDataTable({
         taxes_and_charges: item.taxes_and_charges || [],
         netCost: item.realised_amount || 0,
       };
+      console.log("initialChargesTaxRate item:-----", item, acc[index]);
+      
       return acc;
     }, {});
     setChargesTaxRate(initialChargesTaxRate);
@@ -119,91 +120,91 @@ export default function ChargesDataTable({
   };
 
   const handleTaxChargeChange = (rowIndex, id, field, value) => {
-  const updatedData = { ...chargesTaxRate };
-  const targetRow = updatedData[rowIndex];
-  if (!targetRow) return;
+    const updatedData = { ...chargesTaxRate };
+    const targetRow = updatedData[rowIndex];
+    if (!targetRow) return;
 
-  const taxCharges = [...targetRow.taxes_and_charges];
-  const chargeIndex = taxCharges.findIndex((item) => item.id === id);
-  if (chargeIndex === -1) return;
+    const taxCharges = [...targetRow.taxes_and_charges];
+    const chargeIndex = taxCharges.findIndex((item) => item.id === id);
+    if (chargeIndex === -1) return;
 
-  const charge = { ...taxCharges[chargeIndex] };
+    const charge = { ...taxCharges[chargeIndex] };
 
-  if (field === "amount") {
-    charge.amount = value;
-    if (!charge.inclusive && targetRow.afterDiscountValue) {
-      const perUOM = (
-        (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
-        100
-      ).toFixed(2);
-      charge.percentage = perUOM;
+    if (field === "amount") {
+      charge.amount = value;
+      if (!charge.inclusive && targetRow.afterDiscountValue) {
+        const perUOM = (
+          (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
+          100
+        ).toFixed(2);
+        charge.percentage = perUOM;
+      }
+    } else {
+      charge[field] = value;
     }
-  } else {
-    charge[field] = value;
-  }
 
-  // Auto-add CGST if SGST is selected, or SGST if CGST is selected
-  if (
-    field === "resource_id" &&
-    (value === 18 || value === 19) // 18: SGST, 19: CGST (adjust IDs as per your data)
-  ) {
-    const otherType = value === 18 ? 19 : 18;
-    const otherExists = taxCharges.some((item) => item.resource_id === otherType && item.addition);
-    if (!otherExists) {
-      // Find the label for the other tax type
-      const otherOption = additionalTaxOptions.find((opt) => opt.value === otherType);
-      // Use the same percentage as the current charge, or empty
-      const samePercentage = charge.percentage || "";
-      const newRow = {
-        id: Date.now().toString() + "_" + otherType,
-        resource_id: otherType,
-        percentage: samePercentage,
-        inclusive: false,
-        amount: charge.amount,
-        addition: true,
-      };
-      taxCharges.push(newRow);
-    }
-  }
-
-  // Keep percentage in sync between SGST and CGST
-  if (
-    field === "percentage" &&
-    (charge.resource_id === 18 || charge.resource_id === 19)
-  ) {
-    const otherType = charge.resource_id === 18 ? 19 : 18;
-    const otherEntry = taxCharges.find((item) => item.resource_id === otherType && item.addition);
-    if (otherEntry) {
-      otherEntry.percentage = value;
-      if (!otherEntry.inclusive && targetRow.afterDiscountValue) {
-        const amount = calculateTaxAmount(
-          value,
-          targetRow.afterDiscountValue,
-          otherEntry.inclusive
-        );
-        otherEntry.amount = amount.toFixed(2);
+    // Auto-add CGST if SGST is selected, or SGST if CGST is selected
+    if (
+      field === "resource_id" &&
+      (value === 18 || value === 19) // 18: SGST, 19: CGST (adjust IDs as per your data)
+    ) {
+      const otherType = value === 18 ? 19 : 18;
+      const otherExists = taxCharges.some((item) => item.resource_id === otherType && item.addition);
+      if (!otherExists) {
+        // Find the label for the other tax type
+        const otherOption = additionalTaxOptions.find((opt) => opt.value === otherType);
+        // Use the same percentage as the current charge, or empty
+        const samePercentage = charge.percentage || "";
+        const newRow = {
+          id: Date.now().toString() + "_" + otherType,
+          resource_id: otherType,
+          percentage: samePercentage,
+          inclusive: false,
+          amount: charge.amount,
+          addition: true,
+        };
+        taxCharges.push(newRow);
       }
     }
-  }
 
-  if (!charge.inclusive && field === "percentage") {
-    const taxAmount = calculateTaxAmount(
-      charge.percentage,
-      targetRow.afterDiscountValue,
-      charge.inclusive
-    );
-    charge.amount = taxAmount.toFixed(2);
-  }
+    // Keep percentage in sync between SGST and CGST
+    if (
+      field === "percentage" &&
+      (charge.resource_id === 18 || charge.resource_id === 19)
+    ) {
+      const otherType = charge.resource_id === 18 ? 19 : 18;
+      const otherEntry = taxCharges.find((item) => item.resource_id === otherType && item.addition);
+      if (otherEntry) {
+        otherEntry.percentage = value;
+        if (!otherEntry.inclusive && targetRow.afterDiscountValue) {
+          const amount = calculateTaxAmount(
+            value,
+            targetRow.afterDiscountValue,
+            otherEntry.inclusive
+          );
+          otherEntry.amount = amount.toFixed(2);
+        }
+      }
+    }
 
-  taxCharges[chargeIndex] = charge;
-  targetRow.taxes_and_charges = taxCharges;
-  updatedData[rowIndex] = targetRow;
+    if (!charge.inclusive && field === "percentage") {
+      const taxAmount = calculateTaxAmount(
+        charge.percentage,
+        targetRow.afterDiscountValue,
+        charge.inclusive
+      );
+      charge.amount = taxAmount.toFixed(2);
+    }
 
-  const recalculatedNetCost = calculateNetCost(rowIndex, updatedData);
-  updatedData[rowIndex].netCost = recalculatedNetCost;
+    taxCharges[chargeIndex] = charge;
+    targetRow.taxes_and_charges = taxCharges;
+    updatedData[rowIndex] = targetRow;
 
-  setChargesTaxRate(updatedData);
-};
+    const recalculatedNetCost = calculateNetCost(rowIndex, updatedData);
+    updatedData[rowIndex].netCost = recalculatedNetCost;
+
+    setChargesTaxRate(updatedData);
+  };
 
   const handleSaveTaxChanges = () => {
     const updatedData = [...data];
@@ -227,6 +228,8 @@ export default function ChargesDataTable({
       };
       return updated;
     });
+    console.log("handleSaveTaxChanges:-----", updatedData[selectedTableId], chargesTaxRate);
+    
 
     // Sync charges data (optional)
     setChargesData((prev) => {
@@ -234,6 +237,7 @@ export default function ChargesDataTable({
       updatedCharges[selectedTableId] = {
         ...updatedCharges[selectedTableId],
         realised_amount: updatedData[selectedTableId]?.realised_amount,
+        amount: updatedData[selectedTableId]?.amount,
       };
       return updatedCharges;
     });
@@ -299,18 +303,18 @@ export default function ChargesDataTable({
         console.error("Error fetching deduction tax options:", error)
       );
 
-      async function fetchTaxPercentages() {
-    try {
-      const res = await fetch(
-        `${baseURL}//rfq/events/tax_percentage?token=${token}`
-      );
-      const data = await res.json();
-      setTaxPercentageOptions(data);
-    } catch (err) {
-      setTaxPercentageOptions([]);
+    async function fetchTaxPercentages() {
+      try {
+        const res = await fetch(
+          `${baseURL}//rfq/events/tax_percentage?token=${token}`
+        );
+        const data = await res.json();
+        setTaxPercentageOptions(data);
+      } catch (err) {
+        setTaxPercentageOptions([]);
+      }
     }
-  }
-  fetchTaxPercentages();
+    fetchTaxPercentages();
   }, []);
 
   const handleInputChange = (index, e) => {
@@ -366,7 +370,9 @@ export default function ChargesDataTable({
           onClick: () => {
             // Calculate the gross total as the sum of realisedAmount values
             const updatedGrossTotal = chargesData.reduce((total, charge) => {
-              const realisedAmount = parseFloat(charge?.realised_amount || 0);
+              console.log("charge:-----", charge, total);
+              
+              const realisedAmount = parseFloat(charge?.realised_amount || charge?.amount || 0);
               return total + realisedAmount;
             }, 0);
 
@@ -375,7 +381,7 @@ export default function ChargesDataTable({
               "calcGrossTotal:-----",
               calcGrossTotal,
               updatedGrossTotal,
-              calcGrossTotal + updatedGrossTotal
+              calcGrossTotal + updatedGrossTotal, chargesData
             );
             // Get the current gross total from the parent component
             setGrossTotal(calcGrossTotal + updatedGrossTotal); // Update the gross total in the parent component
@@ -450,9 +456,17 @@ export default function ChargesDataTable({
                     min="0"
                     className="form-control"
                     value={
-                      data[index]?.amount
-                        ? parseFloat(data[index].realised_amount).toFixed(2)
-                        : "0.00"
+                      (() => {
+                        // Prefer amount if realised_amount is missing or equal to amount
+                        const amount = parseFloat(data[index]?.amount || 0);
+                        const realised = parseFloat(data[index]?.realised_amount || 0);
+                        if (!isNaN(amount) && (!data[index]?.realised_amount || amount === realised)) {
+                          return amount.toFixed(2);
+                        } else if (!isNaN(realised)) {
+                          return realised.toFixed(2);
+                        }
+                        return "0.00";
+                      })()
                     }
                     readOnly
                     disabled
@@ -615,35 +629,35 @@ export default function ChargesDataTable({
                         )} //]] Remove duplicates
                       />
                     </td>
-               <td>
-  <SelectBox
-    options={
-      (() => {
-        // Find the selected tax type name by resource_id
-        const selectedTaxType =
-          additionalTaxOptions.find((opt) => opt.value === item.resource_id)?.label;
-        const match = taxPercentageOptions.find(
-          (tax) => tax.tax_name === selectedTaxType
-        );
-        return match && Array.isArray(match.percentage)
-          ? match.percentage.map((percent) => ({
-              label: `${percent}%`,
-              value: `${percent}%`,
-            }))
-          : [];
-      })()
-    }
-    defaultValue={item?.percentage || ""}
-    onChange={(value) =>
-      handleTaxChargeChange(
-        selectedTableId,
-        item.id,
-        "percentage",
-        value
-      )
-    }
-  />
-</td>
+                    <td>
+                      <SelectBox
+                        options={
+                          (() => {
+                            // Find the selected tax type name by resource_id
+                            const selectedTaxType =
+                              additionalTaxOptions.find((opt) => opt.value === item.resource_id)?.label;
+                            const match = taxPercentageOptions.find(
+                              (tax) => tax.tax_name === selectedTaxType
+                            );
+                            return match && Array.isArray(match.percentage)
+                              ? match.percentage.map((percent) => ({
+                                label: `${percent}%`,
+                                value: `${percent}%`,
+                              }))
+                              : [];
+                          })()
+                        }
+                        defaultValue={item?.percentage || ""}
+                        onChange={(value) =>
+                          handleTaxChargeChange(
+                            selectedTableId,
+                            item.id,
+                            "percentage",
+                            value
+                          )
+                        }
+                      />
+                    </td>
                     <td className="text-center">
                       <input
                         type="checkbox"
@@ -766,33 +780,33 @@ export default function ChargesDataTable({
                       </select>
                     </td> */}
                     <td>
-  <SelectBox
-    options={
-      (() => {
-        const selectedTaxType =
-          deductionTaxOptions.find((opt) => opt.value === item.resource_id)?.label;
-        const match = taxPercentageOptions.find(
-          (tax) => tax.tax_name === selectedTaxType
-        );
-        return match && Array.isArray(match.percentage)
-          ? match.percentage.map((percent) => ({
-              label: `${percent}%`,
-              value: `${percent}%`,
-            }))
-          : [];
-      })()
-    }
-    defaultValue={item?.percentage || ""}
-    onChange={(value) =>
-      handleTaxChargeChange(
-        selectedTableId,
-        item.id,
-        "percentage",
-        value
-      )
-    }
-  />
-</td>
+                      <SelectBox
+                        options={
+                          (() => {
+                            const selectedTaxType =
+                              deductionTaxOptions.find((opt) => opt.value === item.resource_id)?.label;
+                            const match = taxPercentageOptions.find(
+                              (tax) => tax.tax_name === selectedTaxType
+                            );
+                            return match && Array.isArray(match.percentage)
+                              ? match.percentage.map((percent) => ({
+                                label: `${percent}%`,
+                                value: `${percent}%`,
+                              }))
+                              : [];
+                          })()
+                        }
+                        defaultValue={item?.percentage || ""}
+                        onChange={(value) =>
+                          handleTaxChargeChange(
+                            selectedTableId,
+                            item.id,
+                            "percentage",
+                            value
+                          )
+                        }
+                      />
+                    </td>
                     <td className="text-center">
                       <input
                         type="checkbox"

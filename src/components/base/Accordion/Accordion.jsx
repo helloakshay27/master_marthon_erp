@@ -137,6 +137,7 @@ export default function Accordion({
                       padding: "15px",
                       width: "180px",
                       textAlign: "center",
+                      justifyContent: "center",
                       whiteSpace: "nowrap",
                       backgroundColor: getBackgroundColor(amt),
                       height: "50px",

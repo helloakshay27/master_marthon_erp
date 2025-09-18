@@ -96,7 +96,7 @@ export default function EditEvent() {
   const [onLoadScheduleData, setOnLoadScheduleData] = useState({});
   const [matchedTerm, setMatchedTerm] = useState({});
   const [materialSelectList, setMaterialSelectList] = useState([]);
-  // MultiSelector value state, default to selected material type
+  // MultiSelector value, default to selected material type
   const selectedMaterialType = materialFormData?.[0]?.inventory_id;
   const defaultMaterialOption = materialSelectList.find(opt => opt.value === selectedMaterialType);
   const [multiSelectorValue, setMultiSelectorValue] = useState(defaultMaterialOption ? [defaultMaterialOption] : []);
@@ -115,17 +115,12 @@ export default function EditEvent() {
   const [eventTypeText, setEventTypeText] = useState("");
   const [tableData, setTableData] = useState([]); // State to hold dynamic data
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1); // Default total pages
-  const [totalCount, setTotalCount] = useState(0); // Add this new state
-  const [isSaving, setIsSaving] = useState(false);
   const [eventStatus, setEventStatus] = useState("pending");
-
   const pageSize = 100; // Number of items per page
   const pageRange = 6; // Number of pages to display in the pagination
   const location = useLocation();
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
-  console.log("Token from URL:", token, "Location:", location, "urlParams:", urlParams);
 
   const Loader = () => (
     <div className="loader-container">
@@ -218,7 +213,7 @@ export default function EditEvent() {
     const endDateTime = formatDateTime(data.end_time_duration);
 
     const scheduleText = `${startDateTime} to ${endDateTime}`;
-    console.log("startDateTime", startDateTime, endDateTime);
+    // console.log("startDateTime", startDateTime, endDateTime);
 
     setEventScheduleText(scheduleText);
   };
@@ -367,13 +362,20 @@ export default function EditEvent() {
           );
           const data = await response.json();
 
+          // Store pms_inventory_type_id from the first vendor (or all vendors if needed)
+          if (Array.isArray(data.vendors) && data.vendors.length > 0) {
+            const firstVendor = data.vendors[0];
+            setInventoryTypeId(firstVendor.pms_inventory_type_id || [75, 78, 65, 66, 67, 68, 64, 63]);
+          }
+
+          console.log("data from fetch with inventoryTypeId:", data);
+
           const vendors = Array.isArray(data.vendors)
             ? data.vendors
             : Array.isArray(data.data?.vendors)
               ? data.data.vendors
               : [];
 
-          console.log("vendors on fetch :-----------", vendors);
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
             name: vendor.full_name || vendor.organization_name || "-",
@@ -382,7 +384,7 @@ export default function EditEvent() {
             phone: vendor.contact_number || vendor.mobile || "-",
             city: vendor.city_id || "-",
             tags: vendor.tags || "-",
-            pms_inventory_type_id: vendor.pms_inventory_type_id,
+            pms_inventory_type_id: vendor.pms_inventory_type_id || [75, 78, 65, 66, 67, 68, 64, 63],
           }));
 
           totalPages =
@@ -395,6 +397,7 @@ export default function EditEvent() {
             0; // Get total count from API
 
           setTableData(formattedData);
+
           setSelectedVendors((prev) => {
             const newVendors = formattedData.filter(
               (vendor) =>
@@ -412,7 +415,6 @@ export default function EditEvent() {
             ];
           });
           setCurrentPage(page);
-          setTotalPages(totalPages);
           setTotalCount(totalCount); // Set the total count
         } else {
           const response = await fetch(
@@ -421,7 +423,7 @@ export default function EditEvent() {
           const data = await response.json();
           const vendors = Array.isArray(data.vendors) ? data.vendors : [];
           console.log("vendors2 :-----------", vendors);
-          
+
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
             name: vendor.full_name || vendor.organization_name || "-",
@@ -430,6 +432,7 @@ export default function EditEvent() {
             phone: vendor.contact_number || vendor.mobile || "-",
             city: vendor.city_id || "-",
             tags: vendor.tags || "-",
+            pms_inventory_type_id: vendor.pms_inventory_type_id
           }));
 
           totalPages = data?.pagination?.total_pages || 1;
@@ -437,7 +440,6 @@ export default function EditEvent() {
 
           setTableData(formattedData);
           setCurrentPage(page);
-          setTotalPages(totalPages);
           setTotalCount(totalCount); // Set the total count
         }
       }, 2000); // Delay API call by 2 seconds
@@ -453,6 +455,20 @@ export default function EditEvent() {
     fetchData();
   }, []);
 
+  // Ensure filteredTableData includes pms_inventory_type_id for each vendor
+  useEffect(() => {
+    if (tableData && Array.isArray(tableData)) {
+      console.log("tableData in filteredTableData useEffect", tableData);
+
+      const fallbackInventoryTypeId = [75, 78, 65, 66, 67, 68, 64, 63];
+      setFilteredTableData(
+        tableData.map(vendor => ({
+          ...vendor,
+          pms_inventory_type_id: vendor.pms_inventory_type_id || fallbackInventoryTypeId,
+        }))
+      );
+    }
+  }, [tableData]);
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
@@ -466,7 +482,7 @@ export default function EditEvent() {
           }))
         );
 
-        console.log("Fetched material types:", data, materialSelectList);
+        // console.log("Fetched material types:", data, materialSelectList);
 
       });
   }, [eventDetails?.event_materials]);
@@ -552,7 +568,7 @@ export default function EditEvent() {
 
   const [documentRowsInitialized, setDocumentRowsInitialized] = useState(false);
 
-  console.log("event", eventDetails?.start_time, eventDetails?.end_time, eventDetails?.event_schedule?.start_time, eventDetails?.event_schedule?.end_time);
+  // console.log("event", eventDetails?.start_time, eventDetails?.end_time, eventDetails?.event_schedule?.start_time, eventDetails?.event_schedule?.end_time);
 
   useEffect(() => {
     if (eventDetails?.start_time && !documentRowsInitialized) {
@@ -563,7 +579,7 @@ export default function EditEvent() {
       setEventStatus(eventDetails?.status);
       setEventTypeText(eventDetails?.event_type_detail?.event_type);
       setEventDescription(eventDetails?.event_description);
-      console.log("eventSchedule", eventDetails);
+      // console.log("eventSchedule", eventDetails);
 
       // Format the schedule text with proper timezone handling
       if (eventDetails?.event_schedule?.start_time && eventDetails?.event_schedule?.end_time) {
@@ -585,10 +601,10 @@ export default function EditEvent() {
         setEventScheduleText(`${startDateTime} to ${endDateTime}`);
       }
 
-      // Fix: Update console.log to use the correct properties
-      console.log("eventScheduleText:-", eventScheduleText, `${new Date(eventDetails?.event_schedule?.start_time).toLocaleString()} ~ ${new Date(
-        eventDetails?.event_schedule?.end_time
-      ).toLocaleString()}`);
+      // Fix: Update // console.log to use the correct properties
+      // console.log("eventScheduleText:-", eventScheduleText, `${new Date(eventDetails?.event_schedule?.start_time).toLocaleString()} ~ ${new Date(
+      //   eventDetails?.event_schedule?.end_time
+      // ).toLocaleString()}`);
 
       setStart_time(eventDetails?.event_schedule?.start_time);
       setEnd_time(eventDetails?.event_schedule?.end_time);
@@ -646,7 +662,7 @@ export default function EditEvent() {
       //       .map((item) => item?.inventory_type_id)
       //   )
       // );
-      // console.log("materialFormData", materialFormData, inventoryTypeId); // Debug line
+      // // console.log("materialFormData", materialFormData, inventoryTypeId); // Debug line
 
       setSelectedVendors(
         eventDetails?.event_vendors?.map((vendor) => ({
@@ -657,7 +673,7 @@ export default function EditEvent() {
           pms_supplier_id: vendor.pms_supplier_id,
         }))
       );
-      // console.log("eventDetails:---",eventDetails);
+      // // console.log("eventDetails:---",eventDetails);
 
       setSpecificationData(eventDetails?.mor_inventory_specifications);
     }
@@ -686,28 +702,6 @@ export default function EditEvent() {
       );
     });
   }, [eventDetails, matchedTerm]);
-
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      fetchData(newPage);
-    }
-  };
-
-  const getPageRange = () => {
-    let startPage = Math.max(currentPage - Math.floor(pageRange / 2), 1);
-    let endPage = startPage + pageRange - 1;
-
-    if (endPage > totalPages) {
-      endPage = totalPages;
-      startPage = Math.max(endPage - pageRange + 1, 1);
-    }
-
-    const pages = [];
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-    return pages;
-  };
 
   const handleCheckboxChange = (vendor, isChecked) => {
     if (isChecked) {
@@ -1007,7 +1001,7 @@ export default function EditEvent() {
         content_type: row.content_type,
         ...(row.blob_id ? { blob_id: row.blob_id } : {}),
       });
-    console.log("attachments:--", attachments);
+    // console.log("attachments:--", attachments);
 
 
     // Build attachments ONLY from current documentRows (UI state)
@@ -1095,7 +1089,7 @@ export default function EditEvent() {
             }
             return acc;
           }, {});
-          console.log("material", material.unit);
+          // console.log("material", material.unit);
 
 
           return {
@@ -1195,7 +1189,7 @@ export default function EditEvent() {
       },
     };
 
-    console.log("eventData:--", JSON.stringify(eventData, null, 2));
+    // console.log("eventData:--", JSON.stringify(eventData, null, 2));
 
     try {
       const urlParams = new URLSearchParams(location.search);
@@ -1210,7 +1204,7 @@ export default function EditEvent() {
           body: JSON.stringify(eventData),
         }
       );
-      console.log("eventData:--", eventData, attachments);
+      // console.log("eventData:--", eventData, attachments);
 
       if (response.ok) {
         const data = await response.json();
@@ -1240,15 +1234,49 @@ export default function EditEvent() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredTableData, setFilteredTableData] = useState([]);
+  const [filteredVendorsForTable, setFilteredVendorsForTable] = useState([]);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   useEffect(() => {
     setFilteredTableData(tableData);
   }, [tableData]);
 
+  // Update filteredVendorsForTable whenever filteredTableData or multiSelectorValue changes
+  useEffect(() => {
+    const selectedInventoryTypeIds = multiSelectorValue?.map(opt => opt.value) || [];
+    console.log("filteredTableData in filteredVendorsForTable useEffect", filteredTableData);
+    
+    const filtered = (filteredTableData || []).filter(vendor => {
+      if (selectedInventoryTypeIds.length === 0) return true;
+      if (!Array.isArray(vendor.pms_inventory_type_id)) return false;
+      return selectedInventoryTypeIds.some(id => vendor.pms_inventory_type_id.includes(id));
+    });
+    setFilteredVendorsForTable(filtered);
+    
+  }, [filteredTableData, multiSelectorValue]);
+  const totalPages = Math.max(1, Math.ceil(filteredVendorsForTable.length / pageSize));
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const getPageRange = () => {
+    let startPage = Math.max(currentPage - Math.floor(pageRange / 2), 1);
+    let endPage = startPage + pageRange - 1;
+
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = Math.max(endPage - pageRange + 1, 1);
+    }
+
+    const pages = [];
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
   const handleInputChange = (e) => {
     const query = e.target.value;
     setSearchTerm(query);
@@ -1367,6 +1395,13 @@ export default function EditEvent() {
     setResetSelectedRows(true);
   };
 
+  useEffect(() => {
+          setFilteredTableData(tableData);
+        }, [tableData]);
+
+        // Ensure filteredTableData is always initialized before use
+        // (Remove duplicate declaration of selectedInventoryTypeIds and filteredVendorsForTable)
+
   const handleRemoveVendor = (id) => {
     const updatedSelected = selectedVendors.filter(
       (vendor) => vendor.pms_supplier_id !== id
@@ -1401,7 +1436,7 @@ export default function EditEvent() {
       toast.error(errors.mobile);
     }
     if (
-      inviteVendorData.gstNumber 
+      inviteVendorData.gstNumber
       // !gstRegex.test(inviteVendorData.gstNumber)
     ) {
       errors.gstNumber = "Invalid GST number format";
@@ -1547,7 +1582,7 @@ export default function EditEvent() {
       setIsInviteLoading(false);
       return;
     }
-    if (inviteVendorData.gstinApplicable === 'yes' && (!inviteVendorData.gstNumber )) {
+    if (inviteVendorData.gstinApplicable === 'yes' && (!inviteVendorData.gstNumber)) {
       toast.error('Valid GSTIN is required');
       setIsInviteLoading(false);
       return;
@@ -1649,10 +1684,10 @@ export default function EditEvent() {
       }));
     }
   }, [eventDetails, tableData]);
-  // console.log("inventoryTypeId", inventoryTypeId);
+  // // console.log("inventoryTypeId", inventoryTypeId);
 
   useEffect(() => {
-    // console.log("inventoryTypeId changed:", inventoryTypeId); // Debugging line
+    // // console.log("inventoryTypeId changed:", inventoryTypeId); // Debugging line
 
     const fetchMaterialTypes = async () => {
       const urlParams = new URLSearchParams(location.search);
@@ -1671,6 +1706,9 @@ export default function EditEvent() {
     fetchMaterialTypes();
     // }
   }, [inventoryTypeId]); // Trigger when inventoryTypeId changes
+
+
+  // ...existing code...
 
   return (
     <>
@@ -2123,7 +2161,7 @@ export default function EditEvent() {
                             <button
                               className="btn btn-danger"
                               onClick={() => handleRemoveTextarea(textarea.id)}
-                            // disabled={textareas.length === 1}
+                            // disabled={textareas.length ===  1}
                             >
                               Remove
                             </button>
@@ -2133,7 +2171,7 @@ export default function EditEvent() {
                     })
                   )}
                 </tbody>
-              </table>
+                           </table>
             </div>
 
             {statusLogData?.length > 0 && (
@@ -2289,44 +2327,6 @@ export default function EditEvent() {
                           </button>
                         </div>
                         <div className="w-25">
-                          {/* <MultiSelector
-                            options={materialSelectList}
-                            onChange={async (selectedOptions) => {
-                              if (selectedOptions && selectedOptions.length > 0) {
-                                const selectedValues = selectedOptions.map((option) => option.value);
-                                const filteredData = tableData.filter((vendor) =>
-                                  selectedValues.some((value) =>
-                                    Array.isArray(vendor.pms_inventory_type_id)
-                                      ? vendor.pms_inventory_type_id.includes(value)
-                                      : vendor.pms_inventory_type_id === value
-                                  )
-                                );
-                                setFilteredTableData(filteredData);
-                              } else {
-                                // Reset to show all vendors if no option is selected
-                                try {
-                                  const response = await fetch(
-                                    `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
-                                  );
-                                  const data = await response.json();
-                                  const vendors = Array.isArray(data.vendors) ? data.vendors : [];
-                                  const formattedData = vendors.map((vendor) => ({
-                                    id: vendor.id,
-                                    name: vendor.full_name || vendor.organization_name || "-",
-                                    email: vendor.email || "-",
-                                    organisation: vendor.organization_name || "-",
-                                    phone: vendor.contact_number || vendor.mobile || "-",
-                                    city: vendor.city_id || "-",
-                                    tags: vendor.tags || "-",
-                                    pms_inventory_type_id: vendor.pms_inventory_type_id,
-                                  }));
-                                  setFilteredTableData(formattedData); // Reset to the full data
-                                } catch (error) {
-                                  console.error("Error fetching full vendor data:", error);
-                                }
-                              }
-                            }}
-                          /> */}
                           <MultiSelector
                             options={materialSelectList}
                             value={multiSelectorValue}
@@ -2351,8 +2351,7 @@ export default function EditEvent() {
                                 const vendors = Array.isArray(data.vendors)
                                   ? data.vendors
                                   : [];
-                                  console.log("vendors :-----------", vendors);
-                                  
+                                // Show all vendors from API response, no filter
                                 const formattedData = vendors.map((vendor) => ({
                                   id: vendor.id,
                                   name:
@@ -2442,17 +2441,17 @@ export default function EditEvent() {
                       />
                     </div>
                   </div>
-                        {console.log("filteredTableData", filteredTableData)
-                        }
                   <div className="d-flex flex-column justify-content-center align-items-center h-100">
-                    {filteredTableData.length > 0 ? (
+                    {filteredVendorsForTable.length > 0 ? (
                       <Table
                         columns={participantsTabColumns}
                         showCheckbox={true}
-                        data={filteredTableData.map((vendor, index) => ({
-                          ...vendor,
-                          srNo: (currentPage - 1) * pageSize + index + 1,
-                        }))}
+                        data={filteredVendorsForTable
+                          .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                          .map((vendor, index) => ({
+                            ...vendor,
+                            srNo: (currentPage - 1) * pageSize + index + 1,
+                          }))}
                         handleCheckboxChange={handleCheckboxChange}
                         isRowSelected={isVendorSelected}
                         resetSelectedRows={resetSelectedRows}
@@ -2468,6 +2467,8 @@ export default function EditEvent() {
                       <p>No vendors found</p>
                     )}
                   </div>
+                  {console.log("filteredTableData", filteredVendorsForTable,filteredVendorsForTable.length)
+                  }
                   <div className="d-flex justify-content-between align-items-center px-1 mt-2">
                     <ul className="pagination justify-content-center d-flex ">
                       <li
@@ -2541,14 +2542,14 @@ export default function EditEvent() {
                     <div>
                       <p>
                         Showing{" "}
-                        {totalCount > 0
+                        {filteredVendorsForTable.length > 0
                           ? (currentPage - 1) * pageSize + 1
                           : 0}{" "}
                         to{" "}
-                        {totalCount > 0
-                          ? (currentPage - 1) * pageSize + filteredTableData.length
+                        {filteredVendorsForTable.length > 0
+                          ? Math.min(currentPage * pageSize, filteredVendorsForTable.length)
                           : 0}{" "}
-                        of {totalCount} entries
+                        of {filteredVendorsForTable.length} entries
                       </p>
                     </div>
                   </div>
@@ -2561,7 +2562,7 @@ export default function EditEvent() {
               </Modal.Header>
               <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto', overflowX: 'hidden' }}>
                 <form className="p-2" onSubmit={handleInviteVendor}>
-                    <div className="row">
+                  <div className="row">
                     <div className="col-md-6">
                       <div className="form-group mb-3">
                         <label className="po-fontBold">First Name</label>
@@ -2628,18 +2629,18 @@ export default function EditEvent() {
                         <input className="form-control" type="text" name="panNumber" placeholder="Enter PAN Number" value={inviteVendorData.panNumber} onChange={handleInviteVendorChange} required />
                       </div>
                     </div>
-                      <div className="col-md-6">
-                        <div className="form-group mb-3">
-                          <label className="po-fontBold">Department</label>
-                          <SingleSelector options={departmentOptions} value={departmentOptions.find(opt => opt.value === inviteVendorData.department) || null} onChange={handleDepartmentChange} placeholder="Select Department" />
-                        </div>
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Department</label>
+                        <SingleSelector options={departmentOptions} value={departmentOptions.find(opt => opt.value === inviteVendorData.department) || null} onChange={handleDepartmentChange} placeholder="Select Department" />
                       </div>
-                      <div className="col-md-6">
-                        <div className="form-group mb-3">
-                          <label className="po-fontBold">Organization Name</label>
-                          <input className="form-control" type="text" name="organizationName" placeholder="Enter Organization Name" value={inviteVendorData.organizationName} onChange={handleInviteVendorChange} />
-                        </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Organization Name</label>
+                        <input className="form-control" type="text" name="organizationName" placeholder="Enter Organization Name" value={inviteVendorData.organizationName} onChange={handleInviteVendorChange} />
                       </div>
+                    </div>
                   </div>
                   <div className="d-flex justify-content-center mt-2 gap-2">
                     <button className="purple-btn2" onClick={handleInviteModalClose} type="button" disabled={isInviteLoading}>Close</button>

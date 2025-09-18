@@ -827,7 +827,7 @@ export default function ResponseTab({ isCounterOffer }) {
                           {eventVendors?.map((vendor) => {
                             return (
                               <td key={`gross-${vendor.id}`}>
-                                {vendor?.bids?.[0]?.gross_total || "_"}
+                                {parseFloat(vendor?.bids?.[0]?.gross_total).toFixed(2) || "_"}
                               </td>
                             );
                           })}
@@ -863,7 +863,7 @@ export default function ResponseTab({ isCounterOffer }) {
                         ) {
                           return bid.serialized_last_bid;
                         }
-                        return undefined; // or null, if you prefer
+                        return undefined;
                       }
                     );
 
@@ -914,21 +914,29 @@ export default function ResponseTab({ isCounterOffer }) {
 
                             return {
                               bestTotalAmount: material.total_amount || "_",
-                              quantityAvailable:
-                                material.quantity_available || "_",
-                              price: material.price || "_",
-                              discount: material.discount ? `${material.discount} %` : "_",
+                              quantityAvailable: material.quantity_available || "_",
+                              price:
+                                material.price !== undefined && material.price !== null && material.price !== ""
+                                  ? parseFloat(material.price).toFixed(2)
+                                  : "_",
+                              discount: material.discount
+                                ? `${parseFloat(material.discount).toFixed(2)} %`
+                                : "_",
                               realisedDiscount:
-                                material.realised_discount || "_",
+                                material.realised_discount !== undefined && material.realised_discount !== null && material.realised_discount !== ""
+                                  ? parseFloat(material.realised_discount).toFixed(2)
+                                  : "_",
                               gst: material.gst || "_",
                               realisedGST: material.realised_gst || "_",
-                              landedAmount: material.landed_amount || "_",
-                              participantAttachment:
-                                material.participant_attachment || "_",
+                              landedAmount:
+                                material.landed_amount !== undefined && material.landed_amount !== null && material.landed_amount !== ""
+                                  ? parseFloat(material.landed_amount).toFixed(2)
+                                  : "_",
+                              participantAttachment: material.participant_attachment || "_",
                               realised_tax_amount:
-                                parseFloat(
-                                  material.realised_tax_amount
-                                ).toFixed(2) || "_",
+                                material.realised_tax_amount !== undefined && material.realised_tax_amount !== null && material.realised_tax_amount !== ""
+                                  ? parseFloat(material.realised_tax_amount).toFixed(2)
+                                  : "_",
                               totalAmount: material.total_amount || "_",
                               ...material.extra_columns.reduce(
                                 (acc, column) => {
