@@ -216,17 +216,19 @@ const DebitNoteList = () => {
 
   // filter
   const fetchFilteredData = () => {
-    const companyId = selectedCompany?.value || "";
-    const projectId = selectedProject?.value || "";
-    const siteId = selectedSite?.value || "";
-    const search = searchKeyword || "";
-    setFilterCompanyId(companyId);
-    setFilterProjectId(projectId);
-    setFilterSiteId(siteId);
-    console.log("ids filter:", companyId, projectId, siteId);
-    const url = `${baseURL}debit_notes?page=1&token=${token}&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
+    // Use the new search parameters for project, site, and company
+    const projectName = selectedProject?.label || "";
+    const siteName = selectedSite?.label || "";
+    const companyName = selectedCompany?.label || "";
+    setFilterCompanyId(selectedCompany?.value || "");
+    setFilterProjectId(selectedProject?.value || "");
+    setFilterSiteId(selectedSite?.value || "");
+    console.log("filter by project, site, company name:", projectName, siteName, companyName);
+    const url = `${baseURL}debit_notes?page=1&token=${token}` +
+      (companyName ? `&q[purchase_order_company_company_name_cont]=${encodeURIComponent(companyName)}` : "") +
+      (projectName ? `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_name_cont]=${encodeURIComponent(projectName)}` : "") +
+      (siteName ? `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_pms_site_name_cont]=${encodeURIComponent(siteName)}` : "");
 
-    // console.log("url:",url)
     axios
       .get(url)
       .then((response) => {
@@ -457,9 +459,8 @@ const DebitNoteList = () => {
 
   //card filter
   const fetchFilteredData2 = (status) => {
-    const url = `${baseURL}debit_notes?page=1&token=${token}${
-      status ? `&q[status_eq]=${status}` : ""
-    }`;
+    const url = `${baseURL}debit_notes?page=1&token=${token}${status ? `&q[status_eq]=${status}` : ""
+      }`;
 
     axios
       .get(url)
@@ -495,7 +496,7 @@ const DebitNoteList = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${baseURL}debit_notes?page=1&per_page=10&token=${token}&q[debit_note_no_or_debit_note_date_or_debit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${searchKeyword}`
+        `${baseURL}debit_notes?page=1&per_page=10&token=${token}&q[debit_note_no_or_remark_or_status_or_purchase_order_po_number_or_purchase_order_company_company_name_or_purchase_order_supplier_full_name_or_purchase_order_supplier_gstin_or_purchase_order_supplier_pan_number_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_pms_site_name_cont]=${searchKeyword}`
       );
       const transformedData = response.data.debit_notes.map((entry, index) => {
         let status = entry.status;
@@ -512,6 +513,7 @@ const DebitNoteList = () => {
           status,
         };
       });
+      console.log("trans data after search:", transformedData)
       setDebitNotes(transformedData);
       // setBillEntries(response.data.bill_entries);
       setMeta(response.data.meta);
@@ -584,27 +586,29 @@ const DebitNoteList = () => {
           "-"
         ),
     },
-    { field: "debit_note_date", headerName: "Date", width: 150 ,
-       renderCell: (params) => {
+    {
+      field: "debit_note_date", headerName: "Date", width: 150,
+      renderCell: (params) => {
         const dateStr = params.value;
         const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
         return <span>{formattedDate}</span>;
       },
     },
-    { field: "reason", headerName: "Debit Note Reason", width: 150,renderCell: (params) => params.row.reason ? params.row.reason : "-" },
+    { field: "reason", headerName: "Debit Note Reason", width: 150, renderCell: (params) => params.row.reason ? params.row.reason : "-" },
     {
       field: "created_at",
       headerName: "Created On",
       width: 150,
-       renderCell: (params) => {
+      renderCell: (params) => {
         const dateStr = params.value;
         const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
         return <span>{formattedDate}</span>;
       },
     },
     { field: "po_number", headerName: "PO No.", width: 150 },
-    { field: "po_date", headerName: "PO Date", width: 150 ,
-       renderCell: (params) => {
+    {
+      field: "po_date", headerName: "PO Date", width: 150,
+      renderCell: (params) => {
         const dateStr = params.value;
         const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
         return <span>{formattedDate}</span>;
@@ -714,9 +718,8 @@ display:none !important;
               <div className="row separteinto7 justify-content-center">
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${
-                      activeTab === "total" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "total" ? "active" : ""
+                      }`}
                     data-tab="total"
                     onClick={() => {
                       setActiveTab("total");
@@ -730,9 +733,8 @@ display:none !important;
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${
-                      activeTab === "draft" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "draft" ? "active" : ""
+                      }`}
                     data-tab="draft"
                     onClick={() => {
                       setActiveTab("draft");
@@ -745,9 +747,8 @@ display:none !important;
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${
-                      activeTab === "verified" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "verified" ? "active" : ""
+                      }`}
                     data-tab="draft"
                     onClick={() => {
                       setActiveTab("verified");
@@ -760,9 +761,8 @@ display:none !important;
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${
-                      activeTab === "submited" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "submited" ? "active" : ""
+                      }`}
                     data-tab="pending-approval"
                     onClick={() => {
                       setActiveTab("submited");
@@ -775,9 +775,8 @@ display:none !important;
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${
-                      activeTab === "approved" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "approved" ? "active" : ""
+                      }`}
                     data-tab="self-overdue"
                     onClick={() => {
                       setActiveTab("approved");
@@ -790,9 +789,8 @@ display:none !important;
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${
-                      activeTab === "proceed" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "proceed" ? "active" : ""
+                      }`}
                     data-tab="self-overdue"
                     onClick={() => {
                       setActiveTab("proceed");
@@ -1052,7 +1050,7 @@ display:none !important;
                   loading={false}
                   disableSelectionOnClick
                   checkboxSelection={!!fromStatus} //
-                   localeText={{
+                  localeText={{
                     noRowsLabel: "No data available",
                   }}
                   selectionModel={selectedBoqDetails}
@@ -1089,9 +1087,9 @@ display:none !important;
                     },
                     // Black for header (select all) checkbox, even when checked
                     "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
-                      {
-                        color: "#fff",
-                      },
+                    {
+                      color: "#fff",
+                    },
                     // Make checkboxes smaller
                     "& .MuiCheckbox-root .MuiSvgIcon-root": {
                       fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
@@ -1102,9 +1100,8 @@ display:none !important;
               <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
                   <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1115,9 +1112,8 @@ display:none !important;
                     </button>
                   </li>
                   <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1131,9 +1127,8 @@ display:none !important;
                   {Array.from({ length: totalPages }, (_, index) => (
                     <li
                       key={index + 1}
-                      className={`page-item ${
-                        currentPage === index + 1 ? "active" : ""
-                      }`}
+                      className={`page-item ${currentPage === index + 1 ? "active" : ""
+                        }`}
                     >
                       <button
                         className="page-link"
@@ -1145,9 +1140,8 @@ display:none !important;
                   ))}
 
                   <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1158,9 +1152,8 @@ display:none !important;
                     </button>
                   </li>
                   <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"

@@ -214,17 +214,19 @@ const CreditNoteList = () => {
   }));
   // filter
   const fetchFilteredData = () => {
-    const companyId = selectedCompany?.value || "";
-    const projectId = selectedProject?.value || "";
-    const siteId = selectedSite?.value || "";
-    const search = searchKeyword || "";
-    setFilterCompanyId(companyId);
-    setFilterProjectId(projectId);
-    setFilterSiteId(siteId);
-    console.log("ids filter:", companyId, projectId, siteId);
-    const url = `${baseURL}credit_notes?page=1&token=${token}&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
+    // Use the new search parameters for project, site, and company by name
+    const projectName = selectedProject?.label || "";
+    const siteName = selectedSite?.label || "";
+    const companyName = selectedCompany?.label || "";
+    setFilterCompanyId(selectedCompany?.value || "");
+    setFilterProjectId(selectedProject?.value || "");
+    setFilterSiteId(selectedSite?.value || "");
+    console.log("filter by project, site, company name:", projectName, siteName, companyName);
+    const url = `${baseURL}credit_notes?page=1&token=${token}` +
+      (companyName ? `&q[purchase_order_company_company_name_cont]=${encodeURIComponent(companyName)}` : "") +
+      (projectName ? `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_name_cont]=${encodeURIComponent(projectName)}` : "") +
+      (siteName ? `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_pms_site_name_cont]=${encodeURIComponent(siteName)}` : "");
 
-    // console.log("url:",url)
     axios
       .get(url)
       .then((response) => {
@@ -516,7 +518,7 @@ const CreditNoteList = () => {
       setLoading(true);
       setActiveSearch(searchKeyword);
       const response = await axios.get(
-        `${baseURL}credit_notes?page=1&per_page=10&token=${token}&q[credit_note_no_or_credit_note_date_or_credit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${searchKeyword}`
+        `${baseURL}credit_notes?page=1&per_page=10&token=${token}&q[credit_note_no_or_remark_or_status_or_purchase_order_po_number_or_purchase_order_company_company_name_or_purchase_order_supplier_full_name_or_purchase_order_supplier_gstin_or_purchase_order_supplier_pan_number_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_pms_site_name_cont]=${searchKeyword}`
       );
       const transformedData = response.data.credit_notes.map((entry, index) => {
         // console.log("created_at raw:", entry.created_at);
