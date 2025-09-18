@@ -40,7 +40,6 @@ export default function VendorListPage() {
   const location = useLocation();
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
-  const vendortoken = window.location.hostname === "localhost" ? 'bfa5004e7b0175622be8f7e69b37d01290b737f82e078411' : token;
   
     const containerRef = useRef(null);
     const [containerWidth, setContainerWidth] = useState(0);
@@ -523,8 +522,10 @@ export default function VendorListPage() {
     try {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
+      console.log("vendortoken",vendortoken,token);
+      
       const response = await axios.get(
-        `${baseURL}rfq/events/event_vendors_list?token=${vendortoken}`
+        `${baseURL}rfq/events/event_vendors_list?token=${window.location.hostname === "localhost" ? 'bfa5004e7b0175622be8f7e69b37d01290b737f82e078411' : token}`
       );
 
       const vendorData = response.data.list;
