@@ -336,7 +336,7 @@ export default function VendorListPage() {
 
   useEffect(() => {
     fetchEvents();
-  }, [activeTab, vendorId, searchQuery]); // Add searchQuery as dependency
+  }, [activeTab, vendorId]); // Remove searchQuery dependency to prevent API calls on every keystroke
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.total_pages) {
@@ -482,13 +482,7 @@ export default function VendorListPage() {
   const handleInputChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-
-    if (query) {
-      fetchSuggestions(query);
-    } else {
-      setSuggestions([]);
-      setIsSuggestionsVisible(false);
-    }
+    // Only store the input value - no automatic search or suggestions
   };
 
   const handleSuggestionClick = (suggestion) => {
@@ -500,9 +494,17 @@ export default function VendorListPage() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setIsSuggestionsVisible(false);
+    
     // Trigger search with current searchQuery
     console.log("Search submitted for:", searchQuery);
-    fetchEvents(1); // Reset to page 1 when searching
+    
+    if (searchQuery.trim()) {
+      fetchSuggestions(searchQuery); // Perform search only on button click
+    } else {
+      // Clear suggestions if search is empty
+      setSuggestions([]);
+      fetchEvents(1); // Reset to show all events
+    }
   };
 
   const handleResetSearch = async () => {
@@ -512,17 +514,11 @@ export default function VendorListPage() {
       setSearchQuery("");
     }
   };
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      handleResetSearch();
-    }
-  }, [searchQuery]);
-
+  
   const vendorDetails = async () => {
     try {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
-      console.log("vendortoken",vendortoken,token);
       
       const response = await axios.get(
         `${baseURL}rfq/events/event_vendors_list?token=${window.location.hostname === "localhost" ? 'bfa5004e7b0175622be8f7e69b37d01290b737f82e078411' : token}`
@@ -1160,7 +1156,6 @@ export default function VendorListPage() {
 
                     <div className="d-flex mt-3 align-items-end px-3">
                       <div className="col-md-6 position-relative">
-                        <form onSubmit={handleSearchSubmit}>
                           <div className="input-group">
                             <input
                               type="search"
@@ -1169,25 +1164,18 @@ export default function VendorListPage() {
                               placeholder="Type your keywords here"
                               value={searchQuery}
                               onChange={handleInputChange}
-                              onFocus={() => setIsSuggestionsVisible(true)}
-                              onBlur={() =>
-                                setTimeout(
-                                  () => setIsSuggestionsVisible(false),
-                                  200
-                                )
-                              }
                             />
 
                             <div className="input-group-append">
                               <button
-                                type="sumbit"
+                                type="button"
                                 className="btn btn-md btn-default"
+                                onClick={handleSearchSubmit}
                               >
                                 <SearchIcon />
                               </button>
                             </div>
                           </div>
-                        </form>
                         {isSuggestionsVisible && suggestions.length > 0 && (
                           <ul className="suggestions-list">
                             {suggestions.map((suggestion) => (
