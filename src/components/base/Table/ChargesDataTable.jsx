@@ -368,24 +368,35 @@ export default function ChargesDataTable({
         {
           label: "Save",
           onClick: () => {
-            // Calculate the gross total as the sum of realisedAmount values
-            const updatedGrossTotal = chargesData.reduce((total, charge) => {
-              console.log("charge:-----", charge, total);
+            // Add debugger for troubleshooting
+            debugger;
+            
+            console.log("=== DEBUGGING GROSS TOTAL CALCULATION ===");
+            console.log("chargesData (API data):", chargesData);
+            console.log("data prop (user inputs):", data);
+            console.log("chargesTaxRate:", chargesTaxRate);
+            
+            // Calculate the gross total using the data prop instead of chargesData
+            const updatedGrossTotal = data.reduce((total, charge, index) => {
+              console.log(`Processing charge ${index}:`, charge);
               
+              // Use realised_amount if available, otherwise fall back to amount
               const realisedAmount = parseFloat(charge?.realised_amount || charge?.amount || 0);
+              console.log(`Charge ${index} - realised_amount: ${realisedAmount}`);
+              
               return total + realisedAmount;
             }, 0);
 
             const calcGrossTotal = parseFloat(calculateGrossTotal()) || 0;
-            console.log(
-              "calcGrossTotal:-----",
-              calcGrossTotal,
-              updatedGrossTotal,
-              calcGrossTotal + updatedGrossTotal, chargesData
-            );
-            // Get the current gross total from the parent component
-            setGrossTotal(calcGrossTotal + updatedGrossTotal); // Update the gross total in the parent component
-            handleCloseOtherChargesModal(); // Close the modal
+            
+            console.log("=== CALCULATION RESULTS ===");
+            console.log("updatedGrossTotal from charges:", updatedGrossTotal);
+            console.log("calcGrossTotal from parent:", calcGrossTotal);
+            console.log("Final total:", calcGrossTotal + updatedGrossTotal);
+            
+            // Update the gross total in the parent component
+            setGrossTotal(calcGrossTotal + updatedGrossTotal);
+            handleCloseOtherChargesModal();
           },
           props: { className: "purple-btn2" },
         },
