@@ -351,17 +351,27 @@ export default function VendorDetails() {
     const gst = parseFloat(updated[rowIndex].gst) || 0;
 
     const total = price * quantityAvail;
+    
+    // Calculate realised price: price after discount
     const realisedPrice = price - (price * discount) / 100;
+    
+    // Calculate realised discount: discount amount on total
     const realisedDiscount = (total * discount) / 100;
+    
+    // Calculate landed amount: total after discount
     const landedAmount = total - realisedDiscount;
+    
+    // Calculate realised GST: GST on landed amount
     const realisedGst = (landedAmount * gst) / 100;
+    
+    // Calculate final total: landed amount + GST
     const finalTotal = landedAmount + realisedGst;
 
+    // Update all calculated fields
     updated[rowIndex].realisedDiscount = realisedDiscount.toFixed(2);
     updated[rowIndex].realisedPrice = realisedPrice.toFixed(2);
     updated[rowIndex].landedAmount = landedAmount.toFixed(2);
     updated[rowIndex].realisedGst = realisedGst.toFixed(2);
-    updated[rowIndex].total = finalTotal.toFixed(2);
     updated[rowIndex].total = finalTotal.toFixed(2);
 
     setData(updated);
@@ -951,6 +961,17 @@ export default function VendorDetails() {
             descriptionOfItem: item.inventory_name || "-",
             quantity: item.quantity || "-",
             quantityAvail: bidMaterial?.quantity_available || "" || "-", // Placeholder for user input
+            price: bidMaterial?.price || "", // Add price from bid material
+            discount: bidMaterial?.discount || "", // Add discount from bid material
+            gst: bidMaterial?.gst || "", // Add GST from bid material
+            realisedPrice: bidMaterial?.realised_price || 
+                (bidMaterial?.price && bidMaterial?.discount 
+                  ? (parseFloat(bidMaterial.price) - (parseFloat(bidMaterial.price) * parseFloat(bidMaterial.discount) / 100)).toFixed(2)
+                  : ""), // Calculate realised_price if not available from API
+            realisedDiscount: bidMaterial?.realised_discount || "", // Add realised_discount from bid material
+            realisedGst: bidMaterial?.realised_gst || "", // Add realised_gst from bid material
+            landedAmount: bidMaterial?.landed_amount || "", // Add landed_amount from bid material
+            vendorRemark: bidMaterial?.vendor_remark || "", // Add vendor_remark from bid material
             unit: item.uom_name || item.uom_short_name || item.uom || "-",
             location: item.location || "-",
             rate: item.rate || "" || "-", // Placeholder if rate is not available
@@ -958,6 +979,7 @@ export default function VendorDetails() {
             subSection: item.inventory_sub_type || "-",
             amount: item.amount || "-",
             totalAmt: bidMaterial?.total_amount || "" || "-", // Placeholder for calculated total amount
+            total: bidMaterial?.total_amount || "", // Add total for calculation consistency
             attachment: null || "-", // Placeholder for attachment
             varient: item.material_type || "-", // Use extracted material_type
             extra_data: flatExtraData,
@@ -1194,6 +1216,10 @@ export default function VendorDetails() {
       gst: material.gst,
       realisedGst: material.realised_gst,
       total: material.total_amount,
+      realisedPrice: material.realised_price || 
+        (material.price && material.discount 
+          ? (parseFloat(material.price) - (parseFloat(material.price) * parseFloat(material.discount) / 100)).toFixed(2)
+          : ""), // Calculate realised_price if not available from API
       unit:
         material.event_material.uom_name ||
         material.event_material.uom_short_name,
@@ -1231,6 +1257,10 @@ export default function VendorDetails() {
             realisedDiscount: counterMaterial.realised_discount,
             gst: counterMaterial.gst,
             realisedGst: counterMaterial.realised_gst,
+            realisedPrice: counterMaterial.realised_price || 
+              (counterMaterial.price && counterMaterial.discount 
+                ? (parseFloat(counterMaterial.price) - (parseFloat(counterMaterial.price) * parseFloat(counterMaterial.discount) / 100)).toFixed(2)
+                : ""), // Calculate realised_price if not available from API
             unit: material.event_material.uom_short_name || material.event_material.uom_name,
             total: counterMaterial.total_amount,
             location: material.event_material.location,
@@ -1344,9 +1374,12 @@ export default function VendorDetails() {
         quantity_available: row.quantityAvail || row.quantity || 0,
         price: Number(row.price || 0),
         discount: Number(row.discount || 0),
+        gst: Number(row.gst || 0),
+        realised_price: Number(row.realisedPrice || 0),
         bid_material_id: row.id,
         vendor_remark: row.vendorRemark || "",
         realised_discount: discountAmount.toFixed(2),
+        realised_gst: Number(row.realisedGst || 0),
         landed_amount: landedAmount.toFixed(2),
         total_amount: Number(totalAmt).toFixed(2),
         bid_material_tax_details: taxDetails,
@@ -2390,6 +2423,10 @@ export default function VendorDetails() {
             materialType: material.material_type,
             landedAmount: material.landed_amount,
             materialRank: material.rank,
+            realisedPrice: material.realised_price || 
+              (material.price && material.discount 
+                ? (parseFloat(material.price) - (parseFloat(material.price) * parseFloat(material.discount) / 100)).toFixed(2)
+                : ""), // Calculate realised_price if not available from API
           }))
         );
 
@@ -2527,18 +2564,26 @@ export default function VendorDetails() {
       label: "Realised Price",
       key: "realisedPrice",
       realisedPrice: (cell, rowIndex) => {
-        const price = parseFloat(data[rowIndex]?.price) || 0;
-        const discount = parseFloat(data[rowIndex]?.discount) || 0;
-
-        // Calculate the realized discount amount
-        const realisedDiscountAmount = price - (price * discount) / 100;
+        const currentRowData = data[rowIndex];
+        const price = parseFloat(currentRowData?.price) || 0;
+        const discount = parseFloat(currentRowData?.discount) || 0;
+        
+        // Use the current realisedPrice from data state (which might be from API or calculated)
+        let realisedPriceValue;
+        if (currentRowData?.realisedPrice !== undefined && currentRowData?.realisedPrice !== null && currentRowData?.realisedPrice !== "") {
+          // Use the value from data state (could be from API or calculated)
+          realisedPriceValue = parseFloat(currentRowData.realisedPrice) || 0;
+        } else {
+          // Fallback calculation: price - discount amount = price - (price * discount / 100)
+          realisedPriceValue = price - (price * discount / 100);
+        }
 
         return (
           <input
             className="form-control"
             type="number"
             min="0"
-            value={realisedDiscountAmount.toFixed(2)} // Show the calculated value
+            value={realisedPriceValue.toFixed(2)}
             readOnly
             style={otherColumnsStyle}
             disabled
@@ -5028,7 +5073,8 @@ export default function VendorDetails() {
                     </div>
                   </div>
                 )}
-
+                {console.log("paginatedData:---", paginatedData)}
+  
                 {/* <div className="card-body"> */}
                 <div style={tableContainerStyle}>
                   <Table
@@ -5073,12 +5119,36 @@ export default function VendorDetails() {
                     }))}
                     customRender={{
                       realisedPrice: (cell, rowIndex) => {
+                        const currentRowData = data[rowIndex];
+                        const price = parseFloat(currentRowData?.price) || 0;
+                        const discount = parseFloat(currentRowData?.discount) || 0;
+                        
+                        // Get realised price value
+                        let realisedPriceValue;
+                        if (currentRowData?.realisedPrice !== undefined && currentRowData?.realisedPrice !== null && currentRowData?.realisedPrice !== "") {
+                          realisedPriceValue = parseFloat(currentRowData.realisedPrice) || 0;
+                        } else {
+                          // Fallback calculation
+                          realisedPriceValue = price - (price * discount / 100);
+                        }
+
+                        // Debug logging
+                        console.log("RealizedPrice Debug:", {
+                          cell,
+                          rowIndex,
+                          currentRowData: currentRowData,
+                          realisedPriceFromData: currentRowData?.realisedPrice,
+                          calculatedValue: realisedPriceValue,
+                          price,
+                          discount
+                        });
+
                         return (
                           <input
-                            value={cell || "-"}
+                            value={realisedPriceValue || "-"}
                             disabled={true}
                             className="form-control"
-                            readonly
+                            readOnly
                           />
                         );
                       },

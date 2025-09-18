@@ -51,9 +51,9 @@ export default function BulkCounterOfferModalTwo({
   const token = urlParams.get("token");
 
   useEffect(() => {
-    
-const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
     // if (!activityLogAccordion) return;
     setActivityLogsLoading(true);
     axios
@@ -117,8 +117,8 @@ const urlParams = new URLSearchParams(location.search);
           const price = parseFloat(minBidPrice) || 0;
           const quantityAvail =
             mat.quantity_available !== undefined &&
-            mat.quantity_available !== null &&
-            mat.quantity_available !== ""
+              mat.quantity_available !== null &&
+              mat.quantity_available !== ""
               ? parseFloat(mat.quantity_available) || 0
               : parseFloat(mat.quantity) || 0;
           const discount = parseFloat(mat.discount) || 0;
@@ -152,6 +152,7 @@ const urlParams = new URLSearchParams(location.search);
         (acc, item) => acc + parseFloat(item.total_amount || 0),
         0
       );
+
       setSumTotal(newSumTotal);
 
       setFormData((prev) => ({
@@ -333,7 +334,7 @@ const urlParams = new URLSearchParams(location.search);
           ),
         ];
         console.log("taxDetails", taxRateData, taxDetails);
-        
+
         return {
           event_material_id: item.id,
           bid_material_id: item.bid_materials?.[0]?.bid_id || null,
@@ -370,19 +371,19 @@ const urlParams = new URLSearchParams(location.search);
 
     const extractChargeTableData = Array.isArray(shortTableData)
       ? shortTableData?.slice(0, 3)?.map((charge) => ({
-          // Limit to first 3 elements
-          charge_id: charge.charge_id,
-          amount: charge.amount,
-          realised_amount: charge.realised_amount,
-          taxes_and_charges: charge?.taxes_and_charges?.map((tax) => ({
-            resource_id: tax.resource_id,
-            resource_type: tax.resource_type || "TaxCategory",
-            amount: tax.amount,
-            inclusive: tax.inclusive || false,
-            addition: tax.addition,
-            percentage: tax.percentage,
-          })),
-        }))
+        // Limit to first 3 elements
+        charge_id: charge.charge_id,
+        amount: charge.amount,
+        realised_amount: charge.realised_amount,
+        taxes_and_charges: charge?.taxes_and_charges?.map((tax) => ({
+          resource_id: tax.resource_id,
+          resource_type: tax.resource_type || "TaxCategory",
+          amount: tax.amount,
+          inclusive: tax.inclusive || false,
+          addition: tax.addition,
+          percentage: tax.percentage,
+        })),
+      }))
       : [];
 
     // setsubmitted(true);
@@ -453,8 +454,8 @@ const urlParams = new URLSearchParams(location.search);
     // Use quantity_available if set, otherwise fallback to quantity
     const quantityAvail =
       updatedMaterials[index].quantity_available !== undefined &&
-      updatedMaterials[index].quantity_available !== null &&
-      updatedMaterials[index].quantity_available !== ""
+        updatedMaterials[index].quantity_available !== null &&
+        updatedMaterials[index].quantity_available !== ""
         ? parseFloat(updatedMaterials[index].quantity_available) || 0
         : parseFloat(updatedMaterials[index].quantity) || 0;
     const discount = parseFloat(updatedMaterials[index].discount) || 0;
@@ -518,8 +519,7 @@ const urlParams = new URLSearchParams(location.search);
   //   setFormData(updatedFormData);
   //   setSumTotal(totalSum);
   // };
-  console.log("formData:------------", formData?.event_materials);
-  
+
   const productTableData =
     formData?.event_materials?.map((eventMaterial, eventIndex) => ({
       SrNo: <span>{eventIndex + 1}</span>,
@@ -552,8 +552,8 @@ const urlParams = new URLSearchParams(location.search);
             className="form-control"
             value={
               eventMaterial.quantity_available !== undefined &&
-              eventMaterial.quantity_available !== null &&
-              eventMaterial.quantity_available !== ""
+                eventMaterial.quantity_available !== null &&
+                eventMaterial.quantity_available !== ""
                 ? eventMaterial.quantity_available
                 : eventMaterial.quantity || ""
             }
@@ -724,7 +724,7 @@ const urlParams = new URLSearchParams(location.search);
           disabled
         />
       ),
-      
+
 
       realisedPrice: (
         <input
@@ -914,7 +914,6 @@ const urlParams = new URLSearchParams(location.search);
   // };
 
   const calculateGrossTotal = () => {
-    console.log("bidCounterData:---", bidCounterData, formData);
 
     const total = formData.event_materials.reduce((acc, material) => {
       const itemTotal = parseFloat(material.total_amount) || 0; // Ensure valid number
@@ -1006,102 +1005,102 @@ const urlParams = new URLSearchParams(location.search);
   };
 
   const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
-  const updatedData = structuredClone(taxRateData);
-  const originalData = structuredClone(originalTaxRateDataRef.current);
-  const targetRow = updatedData[rowIndex];
-  const originalRow = originalData[rowIndex];
-  if (!targetRow || !originalRow) return;
+    const updatedData = structuredClone(taxRateData);
+    const originalData = structuredClone(originalTaxRateDataRef.current);
+    const targetRow = updatedData[rowIndex];
+    const originalRow = originalData[rowIndex];
+    if (!targetRow || !originalRow) return;
 
-  const taxKey =
-    type === "addition"
-      ? "addition_bid_material_tax_details"
-      : "deduction_bid_material_tax_details";
+    const taxKey =
+      type === "addition"
+        ? "addition_bid_material_tax_details"
+        : "deduction_bid_material_tax_details";
 
-  const taxCharges = [...targetRow[taxKey]];
-  const chargeIndex = taxCharges.findIndex((item) => item.id === id);
-  if (chargeIndex === -1) return;
+    const taxCharges = [...targetRow[taxKey]];
+    const chargeIndex = taxCharges.findIndex((item) => item.id === id);
+    if (chargeIndex === -1) return;
 
-  const charge = { ...taxCharges[chargeIndex] };
+    const charge = { ...taxCharges[chargeIndex] };
 
-  if (field === "amount") {
-    charge.amount = value;
-    if (!charge.inclusive && targetRow.afterDiscountValue) {
-      const perUOM = (
-        (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
-        100
-      ).toFixed(2);
-      charge.taxChargePerUom = perUOM;
+    if (field === "amount") {
+      charge.amount = value;
+      if (!charge.inclusive && targetRow.afterDiscountValue) {
+        const perUOM = (
+          (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
+          100
+        ).toFixed(2);
+        charge.taxChargePerUom = perUOM;
+      }
+    } else {
+      charge[field] = value;
     }
-  } else {
-    charge[field] = value;
-  }
 
-  // Auto-add CGST if SGST is selected, or SGST if CGST is selected
-  if (
-    field === "taxChargeType" &&
-    type === "addition" &&
-    (value === "SGST" || value === "CGST")
-  ) {
-    const otherType = value === "SGST" ? "CGST" : "SGST";
-    const otherExists = taxCharges.some((item) => item.taxChargeType === otherType);
-    if (!otherExists) {
-      const otherOption = taxOptions.find((opt) => opt.value === otherType);
-      const samePercentage = charge.taxChargePerUom || "";
-      const newRow = {
-        id: Date.now().toString() + "_" + otherType.toLowerCase(),
-        taxChargeType: otherType,
-        taxChargePerUom: samePercentage,
-        inclusive: false,
-        amount: charge.amount,
-        resource_id: otherOption ? otherOption.id : null,
-        resource_type: otherOption?.type || "TaxCharge",
-      };
-      taxCharges.push(newRow);
-    }
-  }
-
-  // Keep percentage in sync between SGST and CGST
-  if (
-    field === "taxChargePerUom" &&
-    type === "addition" &&
-    (charge.taxChargeType === "SGST" || charge.taxChargeType === "CGST")
-  ) {
-    const otherType = charge.taxChargeType === "SGST" ? "CGST" : "SGST";
-    const otherEntry = taxCharges.find((item) => item.taxChargeType === otherType);
-    if (otherEntry) {
-      otherEntry.taxChargePerUom = value;
-      if (!otherEntry.inclusive && targetRow.afterDiscountValue) {
-        const amount = calculateTaxAmount(
-          value,
-          targetRow.afterDiscountValue,
-          otherEntry.inclusive
-        );
-        otherEntry.amount = amount.toFixed(2);
+    // Auto-add CGST if SGST is selected, or SGST if CGST is selected
+    if (
+      field === "taxChargeType" &&
+      type === "addition" &&
+      (value === "SGST" || value === "CGST")
+    ) {
+      const otherType = value === "SGST" ? "CGST" : "SGST";
+      const otherExists = taxCharges.some((item) => item.taxChargeType === otherType);
+      if (!otherExists) {
+        const otherOption = taxOptions.find((opt) => opt.value === otherType);
+        const samePercentage = charge.taxChargePerUom || "";
+        const newRow = {
+          id: Date.now().toString() + "_" + otherType.toLowerCase(),
+          taxChargeType: otherType,
+          taxChargePerUom: samePercentage,
+          inclusive: false,
+          amount: charge.amount,
+          resource_id: otherOption ? otherOption.id : null,
+          resource_type: otherOption?.type || "TaxCharge",
+        };
+        taxCharges.push(newRow);
       }
     }
-  }
 
-  if (!charge.inclusive && field === "taxChargePerUom") {
-    const taxAmount = calculateTaxAmount(
-      charge.taxChargePerUom,
-      targetRow.afterDiscountValue,
-      charge.inclusive
-    );
-    charge.amount = taxAmount.toFixed(2);
-  }
+    // Keep percentage in sync between SGST and CGST
+    if (
+      field === "taxChargePerUom" &&
+      type === "addition" &&
+      (charge.taxChargeType === "SGST" || charge.taxChargeType === "CGST")
+    ) {
+      const otherType = charge.taxChargeType === "SGST" ? "CGST" : "SGST";
+      const otherEntry = taxCharges.find((item) => item.taxChargeType === otherType);
+      if (otherEntry) {
+        otherEntry.taxChargePerUom = value;
+        if (!otherEntry.inclusive && targetRow.afterDiscountValue) {
+          const amount = calculateTaxAmount(
+            value,
+            targetRow.afterDiscountValue,
+            otherEntry.inclusive
+          );
+          otherEntry.amount = amount.toFixed(2);
+        }
+      }
+    }
 
-  taxCharges[chargeIndex] = charge;
-  targetRow[taxKey] = taxCharges;
-  updatedData[rowIndex] = targetRow;
+    if (!charge.inclusive && field === "taxChargePerUom") {
+      const taxAmount = calculateTaxAmount(
+        charge.taxChargePerUom,
+        targetRow.afterDiscountValue,
+        charge.inclusive
+      );
+      charge.amount = taxAmount.toFixed(2);
+    }
 
-  const recalculated = updatedData.map((row, idx) => ({
-    ...row,
-    netCost: calculateNetCost(idx, updatedData),
-  }));
+    taxCharges[chargeIndex] = charge;
+    targetRow[taxKey] = taxCharges;
+    updatedData[rowIndex] = targetRow;
 
-  setTaxRateData(recalculated);
-  originalTaxRateDataRef.current = structuredClone(recalculated);
-};
+    const recalculated = updatedData.map((row, idx) => ({
+      ...row,
+      netCost: calculateNetCost(idx, updatedData),
+    }));
+
+    setTaxRateData(recalculated);
+    originalTaxRateDataRef.current = structuredClone(recalculated);
+  };
 
   const handleOpenModal = (rowIndex) => {
     console.log("Opening modal for row:", rowIndex);
@@ -1120,19 +1119,19 @@ const urlParams = new URLSearchParams(location.search);
     const updatedTaxRateData =
       taxRateData.length === 0
         ? formData?.event_materials?.map((row) => ({
-            material: row.material_formatted_name || "",
-            totalPoQty: row.quantity || "",
-            discount: row.discount || "",
-            materialCost: row.price || "",
-            discountRate: row.realised_discount || "",
-            afterDiscountValue: row.total_amount || "",
-            remark: row.vendor_remark || "",
-            addition_bid_material_tax_details:
-              row?.addition_bid_material_tax_details || [],
-            deduction_bid_material_tax_details:
-              row?.deduction_bid_material_tax_details || [],
-            netCost: row.total_amount || "",
-          }))
+          material: row.material_formatted_name || "",
+          totalPoQty: row.quantity || "",
+          discount: row.discount || "",
+          materialCost: row.price || "",
+          discountRate: row.realised_discount || "",
+          afterDiscountValue: row.total_amount || "",
+          remark: row.vendor_remark || "",
+          addition_bid_material_tax_details:
+            row?.addition_bid_material_tax_details || [],
+          deduction_bid_material_tax_details:
+            row?.deduction_bid_material_tax_details || [],
+          netCost: row.total_amount || "",
+        }))
         : structuredClone(taxRateData);
 
     // Update the specific row in taxRateData with the latest values
@@ -1263,7 +1262,7 @@ const urlParams = new URLSearchParams(location.search);
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
     // Replace 347 with eventId if needed
-    fetch(`${baseURL}/rfq/events/347/bids/smallest_bid_for_counter?token=${token}`)
+    fetch(`${baseURL}/rfq/events/${eventId}/bids/smallest_bid_for_counter?token=${token}`)
       .then((res) => res.json())
       .then((data) => setSmallestBidData(data))
       .catch(() => setSmallestBidData(null));
@@ -1337,7 +1336,9 @@ const urlParams = new URLSearchParams(location.search);
         realised_handling_charge_amount: smallestBidData.charges?.realised_handling_charge_amount ?? "",
       }));
       // Set sumTotal
-      setSumTotal(parseFloat(smallestBidData.gross_total) || 0);
+      setSumTotal(parseFloat(smallestBidData.bid_materials?.reduce((acc, material) => acc + parseFloat(material.total_amount || 0), 0)) || 0);
+      console.log("Smallest Bid Data Loaded:", smallestBidData);
+
     }
   }, [smallestBidData]);
 
@@ -1374,14 +1375,14 @@ const urlParams = new URLSearchParams(location.search);
         ]}
       >
         <h5 className="mt-5">Product Sheet</h5>
-        <Table columns={productTableColumns} data={productTableData} style={{width:'100%', overflowX:'auto'}} />
+        <Table columns={productTableColumns} data={productTableData} style={{ width: '100%', overflowX: 'auto' }} />
 
         <div className="d-flex justify-content-end">
           {/* <ShortTable data={sideTableData} /> */}
           <ShortDataTable
             data={sideTableData}
             disabled={true} // Use the new disabled prop
-            onValueChange={() => {}}
+            onValueChange={() => { }}
           />
         </div>
 
@@ -1417,17 +1418,17 @@ const urlParams = new URLSearchParams(location.search);
         </div>
 
         <Table
-              columns={[
-                { label: "Activity Name", key: "activity_name" },
-                { label: "Activity Type", key: "activity_type" },
-                { label: "Created By", key: "created_by_name" },
-                { label: "Created Date", key: "created_at" },
-              ]}
-              data={activityLogs.map((log) => ({
-                ...log,
-                created_at: new Date(log.created_at).toLocaleString(),
-              }))}
-            />
+          columns={[
+            { label: "Activity Name", key: "activity_name" },
+            { label: "Activity Type", key: "activity_type" },
+            { label: "Created By", key: "created_by_name" },
+            { label: "Created Date", key: "created_at" },
+          ]}
+          data={activityLogs.map((log) => ({
+            ...log,
+            created_at: new Date(log.created_at).toLocaleString(),
+          }))}
+        />
       </DynamicModalBox>
       {/* <DynamicModalBox
         show={showOtherChargesModal}
@@ -1741,9 +1742,9 @@ const urlParams = new URLSearchParams(location.search);
                                   );
                                   return match && Array.isArray(match.percentage)
                                     ? match.percentage.map((percent) => ({
-                                        label: `${percent}%`,
-                                        value: `${percent}%`,
-                                      }))
+                                      label: `${percent}%`,
+                                      value: `${percent}%`,
+                                    }))
                                     : [];
                                 })()
                               }
@@ -1793,7 +1794,7 @@ const urlParams = new URLSearchParams(location.search);
                                   parseFloat(e.target.value) || 0;
                                 const calculatedAmount = item.inclusive
                                   ? baseAmount *
-                                    (percentage / (100 + percentage))
+                                  (percentage / (100 + percentage))
                                   : baseAmount * (percentage / 100);
 
                                 handleTaxChargeChange(
@@ -2105,9 +2106,9 @@ const urlParams = new URLSearchParams(location.search);
                         <button
                           className="btn btn-outline-danger btn-sm"
                           onClick={() => {
-                            
-                              addAdditionTaxCharge(tableId);
-                            
+
+                            addAdditionTaxCharge(tableId);
+
                           }}
                         >
                           <span>+</span>
@@ -2213,7 +2214,7 @@ const urlParams = new URLSearchParams(location.search);
                                 (() => {
                                   // Find the selected tax type name by resource_id
                                   console.log("item:----", item, taxOptions);
-                                  
+
                                   const selectedTaxType =
                                     taxOptions.find((opt) => opt.label === item.taxChargeType)?.label;
                                   const match = taxPercentageOptions.find(
@@ -2221,9 +2222,9 @@ const urlParams = new URLSearchParams(location.search);
                                   );
                                   return match && Array.isArray(match.percentage)
                                     ? match.percentage.map((percent) => ({
-                                        label: `${percent}%`,
-                                        value: `${percent}%`,
-                                      }))
+                                      label: `${percent}%`,
+                                      value: `${percent}%`,
+                                    }))
                                     : [];
                                 })()
                               }
@@ -2332,10 +2333,10 @@ const urlParams = new URLSearchParams(location.search);
                                 value,
                                 "deduction"
                               )
-                                                       }
+                            }
                           />
                         </td>
-                                               {/* <td>
+                        {/* <td>
                           <select
                             className="form-select"
                             // value={item.taxChargePerUom}
@@ -2368,14 +2369,14 @@ const urlParams = new URLSearchParams(location.search);
                                 );
                                 return match && Array.isArray(match.percentage)
                                   ? match.percentage.map((percent) => ({
-                                      label: `${percent}%`,
-                                      value: `${percent}%`,
-                                    }))
+                                    label: `${percent}%`,
+                                    value: `${percent}%`,
+                                  }))
                                   : [];
                               })()
                             }
                             defaultValue={item?.percentage || ""}
-                            onChange={(value) =>                            
+                            onChange={(value) =>
                               handleTaxChargeChange(
                                 tableId,
                                 item.id,

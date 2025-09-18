@@ -115,6 +115,8 @@ export default function EditEvent() {
   const [eventTypeText, setEventTypeText] = useState("");
   const [tableData, setTableData] = useState([]); // State to hold dynamic data
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0); // Total count from API
+  const [apiTotalPages, setApiTotalPages] = useState(1); // Total pages from API
   const [eventStatus, setEventStatus] = useState("pending");
   const pageSize = 100; // Number of items per page
   const pageRange = 6; // Number of pages to display in the pagination
@@ -219,8 +221,15 @@ export default function EditEvent() {
   };
 
 
-  const handleVendorTypeModalShow = () => {
+  const handleVendorTypeModalShow = async () => {
     setVendorModal(true);
+    
+    // Load initial vendor data with material filter
+    const selectedMaterialIds = multiSelectorValue?.map(opt => opt.value) || 
+                               eventDetails?.event_materials?.map(mat => mat.inventory_id) || 
+                               inventoryTypeId || [];
+    
+    await fetchVendorsWithMaterialFilter(1, "", selectedMaterialIds);
   };
   const handleVendorTypeModalClose = () => {
     setVendorModal(false);
@@ -343,6 +352,95 @@ export default function EditEvent() {
   useEffect(() => {
     fetchEventData();
   }, [setEventDetails]);
+
+  // Enhanced vendor fetching function with MultiSelector support
+  const fetchVendorsWithMaterialFilter = async (page = 1, searchTerm = "", selectedMaterialIds = [], selectedCity = "") => {
+    setLoading(true);
+    try {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+      
+      // Determine which material IDs to use for filtering
+      let materialIdsForFilter;
+      if (selectedMaterialIds && selectedMaterialIds.length > 0) {
+        materialIdsForFilter = selectedMaterialIds;
+      } else {
+        // Use eventDetails material IDs or inventoryTypeId as fallback
+        materialIdsForFilter = eventDetails?.event_materials?.map(mat => mat.inventory_id) || inventoryTypeId || [];
+      }
+
+      // Construct API URL with proper parameters
+      const apiUrl = `${baseURL}rfq/events/vendor_list?token=${token}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${encodeURIComponent(searchTerm)}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(materialIdsForFilter)}`;
+      
+      console.log("Fetching vendors with URL:", apiUrl);
+      
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      
+      console.log("Vendor API response:", data);
+
+      const vendors = Array.isArray(data.vendors) ? data.vendors : [];
+      
+      const formattedData = vendors.map((vendor) => ({
+        id: vendor.id,
+        name: vendor.full_name || vendor.organization_name || "-",
+        email: vendor.email || "-",
+        organisation: vendor.organization_name || "-",
+        phone: vendor.contact_number || vendor.mobile || "-",
+        city: vendor.city_id || "-",
+        tags: vendor.tags || "-",
+        pms_supplier_id: vendor.id,
+        pms_inventory_type_id: vendor.pms_inventory_type_id || [],
+        selected: vendor.selected || false, // Include selected status from API
+      }));
+
+      // Automatically add pre-selected vendors to selectedVendors and selectedRows
+      const preSelectedVendors = vendors.filter(vendor => vendor.selected === true);
+      if (preSelectedVendors.length > 0) {
+        const preSelectedFormatted = preSelectedVendors.map((vendor) => ({
+          id: vendor.id,
+          name: vendor.full_name || vendor.organization_name || "-",
+          email: vendor.email || "-",
+          organisation: vendor.organization_name || "-",
+          phone: vendor.contact_number || vendor.mobile || "-",
+          city: vendor.city_id || "-",
+          tags: vendor.tags || "-",
+          pms_supplier_id: vendor.id,
+          pms_inventory_type_id: vendor.pms_inventory_type_id || [],
+        }));
+
+        // Update selectedVendors (avoiding duplicates)
+        setSelectedVendors((prev) => {
+          const existingIds = prev.map(v => v.pms_supplier_id);
+          const newVendors = preSelectedFormatted.filter(v => !existingIds.includes(v.pms_supplier_id));
+          return [...prev, ...newVendors];
+        });
+
+        // Update selectedRows for checkbox state (avoiding duplicates)
+        setSelectedRows((prev) => {
+          const existingIds = prev.map(v => v.id);
+          const newRows = preSelectedFormatted.filter(v => !existingIds.includes(v.id));
+          return [...prev, ...newRows];
+        });
+      }
+
+      const apiPages = data?.pagination?.total_pages || 1;
+      const apiCount = data?.pagination?.total_count || 0;
+
+      setFilteredTableData(formattedData);
+      setCurrentPage(page);
+      setTotalCount(apiCount);
+      setApiTotalPages(apiPages);
+      
+      return { formattedData, totalPages: apiPages, totalCount: apiCount };
+    } catch (error) {
+      console.error("Error fetching vendor data:", error);
+      setFilteredTableData([]);
+      return { formattedData: [], totalPages: 1, totalCount: 0 };
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
     setLoading(true);
@@ -708,13 +806,16 @@ export default function EditEvent() {
       setSelectedRows((prev) => [...prev, vendor]);
     } else {
       setSelectedRows((prev) => prev.filter((item) => item.id !== vendor.id));
+      // Also remove from selectedVendors when unchecked
+      setSelectedVendors((prev) => prev.filter((item) => item.pms_supplier_id !== vendor.id));
     }
   };
 
   const isVendorSelected = (vendorId) => {
     return (
       selectedRows.some((vendor) => vendor.id === vendorId) ||
-      selectedVendors.some((vendor) => vendor.pms_supplier_id === vendorId)
+      selectedVendors.some((vendor) => vendor.pms_supplier_id === vendorId) ||
+      filteredTableData.some((vendor) => vendor.id === vendorId && vendor.selected === true)
     );
   };
 
@@ -1234,31 +1335,24 @@ export default function EditEvent() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredTableData, setFilteredTableData] = useState([]);
-  const [filteredVendorsForTable, setFilteredVendorsForTable] = useState([]);
 
 
   useEffect(() => {
     setFilteredTableData(tableData);
   }, [tableData]);
 
-  // Update filteredVendorsForTable whenever filteredTableData or multiSelectorValue changes
-  useEffect(() => {
-    const selectedInventoryTypeIds = multiSelectorValue?.map(opt => opt.value) || [];
-    console.log("filteredTableData in filteredVendorsForTable useEffect", filteredTableData);
-    
-    const filtered = (filteredTableData || []).filter(vendor => {
-      if (selectedInventoryTypeIds.length === 0) return true;
-      if (!Array.isArray(vendor.pms_inventory_type_id)) return false;
-      return selectedInventoryTypeIds.some(id => vendor.pms_inventory_type_id.includes(id));
-    });
-    setFilteredVendorsForTable(filtered);
-    
-  }, [filteredTableData, multiSelectorValue]);
-  const totalPages = Math.max(1, Math.ceil(filteredVendorsForTable.length / pageSize));
+  // filteredTableData now comes directly from API with proper filtering and pagination
+  
+  // Use apiTotalPages for pagination instead of calculating from filteredTableData
+  const totalPages = apiTotalPages;
 
-  const handlePageChange = (newPage) => {
+  const handlePageChange = async (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
+      // Get current material filter values
+      const selectedMaterialIds = multiSelectorValue?.map(opt => opt.value) || [];
+      
+      // Call API with new page
+      await fetchVendorsWithMaterialFilter(newPage, searchTerm, selectedMaterialIds);
     }
   };
 
@@ -1322,10 +1416,16 @@ export default function EditEvent() {
     fetchData(1, suggestion.first_name, "");
   };
 
-  const handleSearchSubmit = (e) => {
+  const handleSearchSubmit = async (e) => {
     e.preventDefault();
     setIsSuggestionsVisible(false);
-    fetchData(1, searchTerm, selectedCity);
+    
+    // Get current material filter values
+    const selectedMaterialIds = multiSelectorValue?.map(opt => opt.value) || [];
+    
+    // Use the enhanced function for search
+    await fetchVendorsWithMaterialFilter(1, searchTerm, selectedMaterialIds, selectedCity);
+    
   };
 
   const handleResetSearch = async () => {
@@ -1408,6 +1508,9 @@ export default function EditEvent() {
     );
 
     setSelectedVendors(updatedSelected);
+    
+    // Also remove from selectedRows to update checkbox state
+    setSelectedRows((prev) => prev.filter((vendor) => vendor.id !== id));
   };
 
   useEffect(() => { }, [filteredTableData]);
@@ -2300,12 +2403,13 @@ export default function EditEvent() {
               children={
                 <>
                   <div className="d-flex justify-content-between align-items-center">
-                    <div className="input-group w-75 position-relative">
-                      <div className="d-flex w-100">
+                    <div className="w-75 h-[40px] position-relative">
+                      <div className="input-group d-flex w-100 align-items-end">
                         <input
                           type="search"
                           id="searchInput"
-                          className="tbl-search form-control w-75"
+                          className="tbl-search form-control w-50"
+                          style={{ height: "38.2px" }}
                           placeholder="Search Vendors"
                           value={searchTerm}
                           onChange={handleInputChange}
@@ -2326,15 +2430,14 @@ export default function EditEvent() {
                             <SearchIcon />
                           </button>
                         </div>
-                        <div className="w-25">
+                        
+                        <div className="w-25 ms-3">
                           <MultiSelector
                             options={materialSelectList}
                             value={multiSelectorValue}
                             onChange={async (selectedOptions) => {
                               setMultiSelectorValue(selectedOptions);
                               try {
-                                const urlParams = new URLSearchParams(location.search);
-                                const token = urlParams.get("token");
                                 let selectedValues;
                                 if (selectedOptions && selectedOptions.length > 0) {
                                   selectedValues = selectedOptions.map((option) => option.value);
@@ -2344,33 +2447,9 @@ export default function EditEvent() {
                                     ? [eventDetails.event_materials[0].inventory_id]
                                     : [];
                                 }
-                                const response = await fetch(
-                                  `${baseURL}rfq/events/vendor_list?token=${token}&page=1&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(selectedValues)}`
-                                );
-                                const data = await response.json();
-                                const vendors = Array.isArray(data.vendors)
-                                  ? data.vendors
-                                  : [];
-                                // Show all vendors from API response, no filter
-                                const formattedData = vendors.map((vendor) => ({
-                                  id: vendor.id,
-                                  name:
-                                    vendor.full_name ||
-                                    vendor.organization_name ||
-                                    "-",
-                                  email: vendor.email || "-",
-                                  organisation:
-                                    vendor.organization_name || "-",
-                                  phone:
-                                    vendor.contact_number ||
-                                    vendor.mobile ||
-                                    "-",
-                                  city: vendor.city_id || "-",
-                                  tags: vendor.tags || "-",
-                                  pms_inventory_type_id:
-                                    vendor.pms_inventory_type_id,
-                                }));
-                                setFilteredTableData(formattedData);
+                                
+                                // Call the new enhanced function
+                                await fetchVendorsWithMaterialFilter(1, searchTerm, selectedValues);
                               } catch (error) {
                                 console.error("Error fetching vendor data:", error);
                               }
@@ -2442,13 +2521,11 @@ export default function EditEvent() {
                     </div>
                   </div>
                   <div className="d-flex flex-column justify-content-center align-items-center h-100">
-                    {filteredVendorsForTable.length > 0 ? (
+                    {filteredTableData.length > 0 ? (
                       <Table
                         columns={participantsTabColumns}
                         showCheckbox={true}
-                        data={filteredVendorsForTable
-                          .slice((currentPage - 1) * pageSize, currentPage * pageSize)
-                          .map((vendor, index) => ({
+                        data={filteredTableData.map((vendor, index) => ({
                             ...vendor,
                             srNo: (currentPage - 1) * pageSize + index + 1,
                           }))}
@@ -2462,12 +2539,13 @@ export default function EditEvent() {
                         pageSize={pageSize}
                         style={{ width: "100%" }}
                         scrollable={true}
+                        fullWidth={true}
                       />
                     ) : (
                       <p>No vendors found</p>
                     )}
                   </div>
-                  {console.log("filteredTableData", filteredVendorsForTable,filteredVendorsForTable.length)
+                  {console.log("filteredTableData", filteredTableData, filteredTableData.length)
                   }
                   <div className="d-flex justify-content-between align-items-center px-1 mt-2">
                     <ul className="pagination justify-content-center d-flex ">
@@ -2542,14 +2620,14 @@ export default function EditEvent() {
                     <div>
                       <p>
                         Showing{" "}
-                        {filteredVendorsForTable.length > 0
+                        {totalCount > 0
                           ? (currentPage - 1) * pageSize + 1
                           : 0}{" "}
                         to{" "}
-                        {filteredVendorsForTable.length > 0
-                          ? Math.min(currentPage * pageSize, filteredVendorsForTable.length)
+                        {totalCount > 0
+                          ? Math.min(currentPage * pageSize, totalCount)
                           : 0}{" "}
-                        of {filteredVendorsForTable.length} entries
+                        of {totalCount} entries
                       </p>
                     </div>
                   </div>

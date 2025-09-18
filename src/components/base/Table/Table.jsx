@@ -418,7 +418,7 @@ export default function Table({
           className="tbl-container mx-0"
           style={
             fullWidth
-              ? { width: "100%", tableLayout: "auto" }
+              ? { minWidth: "100%", tableLayout: "auto" }
               : isMinWidth
               ? { minWidth: "1200px", tableLayout: "auto" }
               : {}

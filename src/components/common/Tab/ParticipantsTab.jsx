@@ -274,7 +274,6 @@ export default function ParticipantsTab({ id }) {
         ? participants.event_vendors.map((vendor) => {
             const { id,full_name, organization_name, mobile, email } =
               vendor.pms_supplier || {};
-              console.log("vendor.pms_supplier",vendor.pms_supplier);
               
             return {
               id: id,
@@ -1141,8 +1140,6 @@ export default function ParticipantsTab({ id }) {
                     />
                   </div>
                 </div>
-                {console.log("filteredData:-",filteredData,"modalFilteredTableData:-",modalFilteredTableData)
-                }
                 <div className="d-flex flex-column justify-content-center align-items-center h-100">
                   {modalFilteredTableData.length > 0 ? (
                     <Table
