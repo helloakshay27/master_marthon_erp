@@ -357,6 +357,58 @@ const RopoImportEdit = () => {
 
   const [serviceCertificates, setServiceCertificates] = useState({});
 
+  // Advance Payment Schedule (Edit)
+  const [advancePayments, setAdvancePayments] = useState([]);
+
+  const addAdvancePaymentRow = () => {
+    setAdvancePayments((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        date: "",
+        percentage: "",
+        withTax: false,
+        amount: "0.00",
+        remark: "",
+      },
+    ]);
+  };
+
+  const removeAdvancePaymentRow = (id) => {
+    setAdvancePayments((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const getEditTotalPoBase = () => {
+    const base = parseFloat(taxSummary?.total_base_cost || 0) || 0;
+    return base;
+  };
+
+  const updateAdvancePaymentRow = (id, field, rawValue) => {
+    setAdvancePayments((prev) => {
+      const next = prev.map((row) => {
+        if (row.id !== id) return row;
+        let value = rawValue;
+        if (field === "percentage") {
+          const num = parseFloat(String(rawValue).replace(/[^0-9.]/g, ""));
+          const supplierAdv = parseFloat(calculateSupplierAdvanceAmount() || 0) || 0;
+          if (supplierAdv <= 0) {
+            return row;
+          }
+          if (isNaN(num)) value = "";
+          else if (num < 0) value = "0";
+          else if (num > 100) value = "100";
+          else value = String(num);
+        }
+        const updated = { ...row, [field]: field === "withTax" ? !!rawValue : value };
+        const pct = parseFloat(updated.percentage) || 0;
+        const supplierAdv = parseFloat(calculateSupplierAdvanceAmount() || 0) || 0;
+        const amount = (supplierAdv * pct) / 100;
+        return { ...updated, amount: amount.toFixed(2) };
+      });
+      return next;
+    });
+  };
+
   const [chargeRemarks, setChargeRemarks] = useState({});
 
   // State for advance calculations
@@ -1180,6 +1232,28 @@ const RopoImportEdit = () => {
         }));
 
       setChargesFromApi(mappedCharges);
+    }
+
+    // Populate Advance Payment Schedules
+    if (data.advance_payment_schedules && Array.isArray(data.advance_payment_schedules)) {
+      const toInputDate = (d) => {
+        if (!d) return "";
+        // Accept formats like "24/09/2025" or "2025-09-24"
+        if (d.includes("/")) {
+          const [dd, mm, yyyy] = d.split("/");
+          if (dd && mm && yyyy) return `${yyyy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
+        }
+        return d; // assume already yyyy-mm-dd
+      };
+      const rows = data.advance_payment_schedules.map((s, idx) => ({
+        id: s.id ?? Date.now() + idx,
+        date: toInputDate(s.payment_date),
+        percentage: s.payment_per !== undefined && s.payment_per !== null ? String(parseFloat(s.payment_per)) : "",
+        withTax: String(s.with_tax).toLowerCase() === "yes" || String(s.with_tax).toLowerCase() === "true",
+        amount: (parseFloat(s.payment_amount) || 0).toFixed(2),
+        remark: s.remarks || "",
+      }));
+      setAdvancePayments(rows);
     }
 
     // Populate charges data from charges_with_taxes
@@ -6499,6 +6573,16 @@ const RopoImportEdit = () => {
 
           
 
+          // Advance payment schedules
+          advance_payment_schedules_attributes: (advancePayments || []).map((r) => ({
+            ...(r?.id ? { id: r.id } : {}),
+            payment_date: r.date || null,
+            payment_per: r.percentage === "" ? null : parseFloat(r.percentage) || 0,
+            remarks: r.remark || "",
+            with_tax: !!r.withTax,
+            _destroy: false,
+          })),
+
           // charges_with_taxes_attributes: charges.map((charge) => {
           //   return {
           //     charge_id: charge.charge_id || 0,
@@ -9430,96 +9514,98 @@ const RopoImportEdit = () => {
                               </div>
                             </div>
 
-                            {/* <div className="mt-3 d-flex justify-content-between align-items-center">
-
-
-
-                            <h5 className=" mt-3">Advance Payment Schedule</h5>
-
-
-
-                            <button className="purple-btn2"> Add</button>
-
-
-
-                          </div>
-
-
-
-                          <div className="tbl-container me-2 mt-2">
-
-
-
-                            <table className="w-100">
-
-
-
-                              <thead>
-
-
-
-                                <tr>
-
-
-
-                                  <th>Payment Date</th>
-
-
-
-                                  <th>Payment %age</th>
-
-
-
-                                  <th>Payment Amount</th>
-
-
-
-                                  <th>Remark</th>
-
-
-
-                                </tr>
-
-
-
-                              </thead>
-
-
-
-                              <tbody>
-
-
-
-                                <tr>
-
-
-
-                                  <td>05-03-2024</td>
-
-
-
-                                  <td>40</td>
-
-
-
-                                  <td />
-
-
-
-                                  <td />
-
-
-
-                                </tr>
-
-
-
-                              </tbody>
-
-
-
-                            </table>
-                          </div> */}
+                             <div className="mt-3 d-flex justify-content-between align-items-center">
+                              <h5 className=" mt-3">Advance Payment Schedule</h5>
+                              <button
+                                type="button"
+                                className="purple-btn2"
+                                onClick={addAdvancePaymentRow}
+                              >
+                                Add
+                              </button>
+                            </div>
+                            <div className="tbl-container me-2 mt-2">
+                              <table className="w-100">
+                                <thead>
+                                  <tr>
+                                    <th>Payment Date</th>
+                                    <th>Payment percentage</th>
+                                    <th>With Tax</th>
+                                    <th>Payment Amount </th>
+                                    <th>Remark</th>
+                                    <th>Action</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {advancePayments.length === 0 ? (
+                                    <tr>
+                                      <td colSpan={6} className="text-center">No rows added.</td>
+                                    </tr>
+                                  ) : (
+                                    advancePayments.map((row) => (
+                                      <tr key={row.id}>
+                                        <td style={{ minWidth: 140 }}>
+                                          <input
+                                            type="date"
+                                            className="form-control"
+                                            value={row.date}
+                                            onChange={(e) => updateAdvancePaymentRow(row.id, "date", e.target.value)}
+                                          />
+                                        </td>
+                                        <td style={{ width: 140 }}>
+                                          <input
+                                            type="number"
+                                            className="form-control"
+                                            min="0"
+                                            max="100"
+                                            step="0.01"
+                                            value={row.percentage}
+                                            onChange={(e) => updateAdvancePaymentRow(row.id, "percentage", e.target.value)}
+                                            placeholder="0 - 100"
+                                          />
+                                        </td>
+                                        <td style={{ width: 100 }}>
+                                          <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            checked={row.withTax}
+                                            onChange={(e) => updateAdvancePaymentRow(row.id, "withTax", e.target.checked)}
+                                          />
+                                        </td>
+                                        <td style={{ minWidth: 180 }}>
+                                          <input
+                                            type="text"
+                                            className="form-control"
+                                            value={`${row.amount}`}
+                                            readOnly
+                                            disabled
+                                          />
+                                        </td>
+                                        <td>
+                                          <textarea
+                                            className="form-control"
+                                            rows={2}
+                                            value={row.remark}
+                                            onChange={(e) => updateAdvancePaymentRow(row.id, "remark", e.target.value)}
+                                            placeholder="Enter remark"
+                                          />
+                                        </td>
+                                        <td className="text-center" style={{ width: 80 }}>
+                                          <button
+                                            type="button"
+                                            className="btn btn-link text-danger"
+                                            onClick={() => removeAdvancePaymentRow(row.id)}
+                                            title="Remove"
+                                          >
+                                            <span className="material-symbols-outlined">cancel</span>
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
 
                             <div className="mt-3 d-flex justify-content-between align-items-center">
                               <h5 className=" mt-3">Delivery Schedule</h5>
@@ -10353,11 +10439,11 @@ const RopoImportEdit = () => {
                 <tr>
                   <th>Tax / Charge Type</th>
 
-                  <th>Tax / Charges per UOM (INR)</th>
+                  <th>Tax / Charges per UOM  ({poCurrencyCode})</th>
 
                   <th>Inclusive</th>
 
-                  <th>Amount</th>
+                  <th>Amount  ({poCurrencyCode})</th>
 
                   <th>Action</th>
                 </tr>
@@ -12260,7 +12346,7 @@ const RopoImportEdit = () => {
             }}
             className="purple-btn2"
           >
-            Save Changes
+            Save 
           </button>
         </Modal.Footer>
       </Modal>

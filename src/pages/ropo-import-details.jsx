@@ -1511,9 +1511,9 @@ const RopoImportDetails = () => {
                         tabIndex={0}
                       >
                         <div className="card-body">
-                          <div className="card-body">
+                          {/* <div className="card-body"> */}
                             <div className="row">
-                              <div className="d-flex gap-2 justify-content-end mb-3">
+                              <div className="d-flex gap-1 justify-content-end mb-4">
                                 {ropoData?.selected_status === "Draft" && (
                                   <Link
                                     to={`/ropo-import-edit/${id}?token=${token}`}
@@ -1812,11 +1812,11 @@ const RopoImportDetails = () => {
                               </div>
                             </div>
 
-                            <div className="d-flex justify-content-between  align-items-center">
+                            <div className="d-flex justify-content-between  align-items-center mt-2">
                               <h5
                                 className=" "
                                 data-bs-toggle="modal"
-                                data-bs-target="#sereneModal"
+                                // data-bs-target="#sereneModal"
                               >
                                 Material Details
                               </h5>
@@ -1892,7 +1892,7 @@ const RopoImportDetails = () => {
                                 </tbody>
                               </table>
                             </div>
-                          </div>
+                          {/* </div> */}
                         </div>
                       </div>
 
@@ -2676,6 +2676,88 @@ const RopoImportDetails = () => {
                             </table>
 
                           </div> */}
+
+                        <div className="mt-3 d-flex justify-content-between align-items-center">
+                          <h5 className=" mt-3">Advance Payment Schedule</h5>
+                        </div>
+
+                        <div className="tbl-container me-2 mt-2">
+                          <table className="w-100">
+                            <thead>
+                              <tr>
+                                <th>Payment Date</th>
+                                <th>Payment percentage</th>
+                                <th>With Tax</th>
+                                <th>Payment Amount</th>
+                                <th>Remark</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {ropoData?.advance_payment_schedules &&
+                              ropoData.advance_payment_schedules.length > 0 ? (
+                                ropoData.advance_payment_schedules.map((row, idx) => (
+                                  <tr key={row.id || idx}>
+                                    <td>
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        value={row.payment_date || ""}
+                                        readOnly
+                                        disabled
+                                      />
+                                    </td>
+                                    <td>
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        value={row.payment_per ?? ""}
+                                        readOnly
+                                        disabled
+                                      />
+                                    </td>
+                                    <td className="text-center">
+                                      <input
+                                        type="checkbox"
+                                        className="form-check-input"
+                                        checked={(String(row.with_tax).toLowerCase() === "yes") || Boolean(row.with_tax)}
+                                        readOnly
+                                        disabled
+                                      />
+                                    </td>
+                                    <td>
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        value={formatCurrencyInInr(
+                                          row.payment_amount,
+                                          row.payment_amount_in_inr,
+                                          ropoData?.po_currency || "USD"
+                                        )}
+                                        readOnly
+                                        disabled
+                                      />
+                                    </td>
+                                    <td>
+                                      <textarea
+                                        className="form-control"
+                                        rows={2}
+                                        value={row.remarks || ""}
+                                        readOnly
+                                        disabled
+                                      />
+                                    </td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan={5} className="text-center">
+                                    No Advance Payment Schedule available
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
 
                         <div className="mt-3 d-flex justify-content-between align-items-center">
                           <h5 className=" mt-3">Delivery Schedule</h5>

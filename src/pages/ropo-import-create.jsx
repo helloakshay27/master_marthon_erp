@@ -5721,6 +5721,15 @@ const RopoImportCreate = () => {
 
           ...(purchaseOrderId && { po_id: purchaseOrderId }),
 
+          // Advance payment schedules
+          advance_payment_schedules_attributes: (advancePayments || []).map((r) => ({
+            payment_date: r.date || null,
+            payment_per: r.percentage === "" ? null : parseFloat(r.percentage) || 0,
+            remarks: r.remark || "",
+            with_tax: !!r.withTax,
+            _destroy: false,
+          })),
+
           // Format other cost details with taxes
 
           other_cost_details_attributes: otherCosts.map((cost) => ({
@@ -6146,6 +6155,63 @@ const RopoImportCreate = () => {
         [rowIndex]: value,
       }));
     }
+  };
+  // Advance Payment Schedule state and handlers
+  const [advancePayments, setAdvancePayments] = useState([]);
+
+  const getTotalPoBaseUsd = () => {
+    try {
+      const base = (totalMaterialCost || 0) + (calculateOtherVendorNetCost() || 0);
+      return parseFloat(base) || 0;
+    } catch {
+      return 0;
+    }
+  };
+
+  const addAdvancePaymentRow = () => {
+    setAdvancePayments((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        date: "",
+        percentage: "",
+        withTax: false,
+        amount: "0.00",
+        remark: "",
+      },
+    ]);
+  };
+
+  const removeAdvancePaymentRow = (id) => {
+    setAdvancePayments((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const updateAdvancePaymentRow = (id, field, rawValue) => {
+    setAdvancePayments((prev) => {
+      const next = prev.map((row) => {
+        if (row.id !== id) return row;
+        let value = rawValue;
+        if (field === "percentage") {
+          const num = parseFloat(String(rawValue).replace(/[^0-9.]/g, ""));
+          const supplierAdv = parseFloat(calculateSupplierAdvanceAmount() || 0) || 0;
+          if (supplierAdv <= 0) {
+            // Block entering percentage if supplier advance is not present
+            return row;
+          }
+          if (isNaN(num)) value = "";
+          else if (num < 0) value = "0";
+          else if (num > 100) value = "100";
+          else value = String(num);
+        }
+        const updated = { ...row, [field]: field === "withTax" ? !!rawValue : value };
+        // Recompute amount as percentage of Supplier Advance Amount (in PO currency)
+        const pct = parseFloat(updated.percentage) || 0;
+        const supplierAdv = parseFloat(calculateSupplierAdvanceAmount() || 0) || 0;
+        const amountUsd = (supplierAdv * pct) / 100;
+        return { ...updated, amount: amountUsd.toFixed(2) };
+      });
+      return next;
+    });
   };
   return (
     <>
@@ -8442,7 +8508,7 @@ const RopoImportCreate = () => {
 
                                   </div>
 
-                                </div> 
+                                </div>
 
                                 <div className="col-md-6 mt-0">
                                   <div className="form-group">
@@ -8540,52 +8606,109 @@ const RopoImportCreate = () => {
                               </div>
                             </div>
 
-                            {/* <div className="mt-3 d-flex justify-content-between align-items-center">
-
+                            <div className="mt-3 d-flex justify-content-between align-items-center">
                             <h5 className=" mt-3">Advance Payment Schedule</h5>
-
-                            <button className="purple-btn2"> Add</button>
-
+                              <button
+                                type="button"
+                                className="purple-btn2"
+                                onClick={addAdvancePaymentRow}
+                                disabled={isCreatingOrder}
+                              >
+                                Add
+                              </button>
                           </div>
-
                           <div className="tbl-container me-2 mt-2">
-
                             <table className="w-100">
-
                               <thead>
-
                                 <tr>
-
                                   <th>Payment Date</th>
-
-                                  <th>Payment %age</th>
-
-                                  <th>Payment Amount</th>
-
+                                    <th>Payment percentage</th>
+                                    <th>With Tax</th>
+                                    <th>Payment Amount ({poCurrencyCode})</th>
                                   <th>Remark</th>
-
+                                    <th>Action</th>
                                 </tr>
-
                               </thead>
-
                               <tbody>
-
-                                <tr>
-
-                                  <td>05-03-2024</td>
-
-                                  <td>40</td>
-
-                                  <td />
-
-                                  <td />
-
+                                  {advancePayments.length === 0 ? (
+                                    <tr>
+                                      <td colSpan={6} className="text-center">
+                                        No rows added.
+                                      </td>
                                 </tr>
-
+                                  ) : (
+                                    advancePayments.map((row) => (
+                                      <tr key={row.id}>
+                                        <td style={{ minWidth: 140 }}>
+                                          <input
+                                            type="date"
+                                            className="form-control"
+                                            value={row.date}
+                                            onChange={(e) =>
+                                              updateAdvancePaymentRow(row.id, "date", e.target.value)
+                                            }
+                                          />
+                                        </td>
+                                        <td style={{ width: 140 }}>
+                                          <input
+                                            type="number"
+                                            className="form-control"
+                                            min="0"
+                                            max="100"
+                                            step="0.01"
+                                            value={row.percentage}
+                                            onChange={(e) =>
+                                              updateAdvancePaymentRow(row.id, "percentage", e.target.value)
+                                            }
+                                            placeholder="0 - 100"
+                                          />
+                                        </td>
+                                        <td style={{ width: 100 }}>
+                                          <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            checked={row.withTax}
+                                            onChange={(e) =>
+                                              updateAdvancePaymentRow(row.id, "withTax", e.target.checked)
+                                            }
+                                          />
+                                        </td>
+                                        <td style={{ minWidth: 180 }}>
+                                          <input
+                                            type="text"
+                                            className="form-control"
+                                            value={`${poCurrencyCode} ${row.amount}`}
+                                            readOnly
+                                            disabled
+                                          />
+                                        </td>
+                                        <td>
+                                          <textarea
+                                            className="form-control"
+                                            rows={2}
+                                            value={row.remark}
+                                            onChange={(e) =>
+                                              updateAdvancePaymentRow(row.id, "remark", e.target.value)
+                                            }
+                                            placeholder="Enter remark"
+                                          />
+                                        </td>
+                                        <td className="text-center" style={{ width: 80 }}>
+                                          <button
+                                            type="button"
+                                            className="btn btn-link text-danger"
+                                            onClick={() => removeAdvancePaymentRow(row.id)}
+                                            title="Remove"
+                                          >
+                                            <span className="material-symbols-outlined">cancel</span>
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))
+                                  )}
                               </tbody>
-
                             </table>
-                          </div> */}
+                            </div>
 
                             <div className="mt-3 d-flex justify-content-between align-items-center">
                               <h5 className=" mt-3">Delivery Schedule</h5>
@@ -9214,7 +9337,13 @@ const RopoImportCreate = () => {
                                         className="form-control"
                                         rows={3}
                                         placeholder="Enter ..."
-                                        defaultValue={""}
+                                        value={termsFormData.remark}
+                                        onChange={(e) =>
+                                          handleTermsFormChange(
+                                            "remark",
+                                            e.target.value
+                                          )
+                                        }
                                       />
                                     </div>
                                   </div>
@@ -9229,7 +9358,13 @@ const RopoImportCreate = () => {
                                         className="form-control"
                                         rows={3}
                                         placeholder="Enter ..."
-                                        defaultValue={""}
+                                        value={termsFormData.comments}
+                                        onChange={(e) =>
+                                          handleTermsFormChange(
+                                            "comments",
+                                            e.target.value
+                                          )
+                                        }
                                       />
                                     </div>
                                   </div>
@@ -9387,11 +9522,11 @@ const RopoImportCreate = () => {
                 <tr>
                   <th>Tax / Charge Type</th>
 
-                  <th>Tax / Charges per UOM (INR)</th>
+                  <th>Tax / Charges per UOM ({poCurrencyCode})</th>
 
                   <th>Inclusive</th>
 
-                  <th>Amount</th>
+                  <th>Amount  ({poCurrencyCode})</th>
 
                   <th>Action</th>
                 </tr>
@@ -11282,7 +11417,7 @@ const RopoImportCreate = () => {
             }}
             className="purple-btn2"
           >
-            Save Changes
+            Save 
           </button>
         </Modal.Footer>
       </Modal>

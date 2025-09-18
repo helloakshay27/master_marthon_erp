@@ -291,6 +291,59 @@ const RopoImportAmmend = () => {
 
   const [chargeNames, setChargeNames] = useState([]);
 
+  // Advance Payment Schedule (Amend)
+  const [advancePayments, setAdvancePayments] = useState([]);
+
+  const addAdvancePaymentRow = () => {
+    setAdvancePayments((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        date: "",
+        percentage: "",
+        withTax: false,
+        amount: "0.00",
+        remark: "",
+      },
+    ]);
+  };
+
+  const removeAdvancePaymentRow = (id) => {
+    setAdvancePayments((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const getAmendTotalPoBase = () => {
+    // total base is materials after discount + other costs by vendor where available
+    const base = (totalMaterialCost || 0) + (calculateOtherVendorNetCost?.() || 0);
+    return parseFloat(base) || 0;
+  };
+
+  const updateAdvancePaymentRow = (id, field, rawValue) => {
+    setAdvancePayments((prev) => {
+      const next = prev.map((row) => {
+        if (row.id !== id) return row;
+        let value = rawValue;
+        if (field === "percentage") {
+          const num = parseFloat(String(rawValue).replace(/[^0-9.]/g, ""));
+          const supplierAdv = parseFloat(calculateSupplierAdvanceAmount() || 0) || 0;
+          if (supplierAdv <= 0) {
+            return row;
+          }
+          if (isNaN(num)) value = "";
+          else if (num < 0) value = "0";
+          else if (num > 100) value = "100";
+          else value = String(num);
+        }
+        const updated = { ...row, [field]: field === "withTax" ? !!rawValue : value };
+        const pct = parseFloat(updated.percentage) || 0;
+        const supplierAdv = parseFloat(calculateSupplierAdvanceAmount() || 0) || 0;
+        const amount = (supplierAdv * pct) / 100;
+        return { ...updated, amount: amount.toFixed(2) };
+      });
+      return next;
+    });
+  };
+
   // New state for charges from API
 
   const [chargesFromApi, setChargesFromApi] = useState([]);
@@ -617,8 +670,9 @@ const RopoImportAmmend = () => {
   const fetchEditData = async () => {
     try {
       const response = await axios.get(
-        `${baseURL}purchase_orders/${poId}/ropo_detail.json?token=${token}&po_type=import&type=amend`
+        `${baseURL}purchase_orders/${poId}/edit.json?token=${token}&po_type=import&type=amend`
       );
+     
 
       const data = response.data;
 
@@ -713,6 +767,11 @@ const RopoImportAmmend = () => {
     setSelectedCompany(companyOption);
 
     setSelectedSupplier(supplierOption);
+
+    // Preselect PO currency (disable in UI)
+    if (data.po_currency) {
+      setSelectedCurrency({ code: data.po_currency, symbol: data.po_currency_symbol || "" });
+    }
 
     // Populate Delivery Schedules from API response
 
@@ -1002,6 +1061,27 @@ const RopoImportAmmend = () => {
         }));
 
       setChargesFromApi(mappedCharges);
+    }
+
+    // Populate Advance Payment Schedules
+    if (data.advance_payment_schedules && Array.isArray(data.advance_payment_schedules)) {
+      const toInputDate = (d) => {
+        if (!d) return "";
+        if (d.includes("/")) {
+          const [dd, mm, yyyy] = d.split("/");
+          if (dd && mm && yyyy) return `${yyyy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
+        }
+        return d;
+      };
+      const rows = data.advance_payment_schedules.map((s, idx) => ({
+        id: s.id ?? Date.now() + idx,
+        date: toInputDate(s.payment_date),
+        percentage: s.payment_per !== undefined && s.payment_per !== null ? String(parseFloat(s.payment_per)) : "",
+        withTax: String(s.with_tax).toLowerCase() === "yes" || String(s.with_tax).toLowerCase() === "true",
+        amount: (parseFloat(s.payment_amount) || 0).toFixed(2),
+        remark: s.remarks || "",
+      }));
+      setAdvancePayments(rows);
     }
 
     // Populate charges data from charges_with_taxes
@@ -6233,6 +6313,16 @@ const RopoImportAmmend = () => {
 
           ...(purchaseOrderId && { po_id: purchaseOrderId }),
 
+          // Advance payment schedules
+          advance_payment_schedules_attributes: (advancePayments || []).map((r) => ({
+            ...(r?.id ? { id: r.id } : {}),
+            payment_date: r.date || null,
+            payment_per: r.percentage === "" ? null : parseFloat(r.percentage) || 0,
+            remarks: r.remark || "",
+            with_tax: !!r.withTax,
+            _destroy: false,
+          })),
+
           // Format other cost details with taxes
 
           other_cost_details_attributes: otherCosts.map((cost) => ({
@@ -6874,6 +6964,7 @@ const RopoImportAmmend = () => {
                                       onChange={handleCompanyChange}
                                       value={selectedCompany}
                                       placeholder={`Select Company`} // Dynamic placeholder
+                                      isDisabled={true}
                                     />
                                   </div>
                                 </div>
@@ -6931,6 +7022,8 @@ const RopoImportAmmend = () => {
                                       min={
                                         new Date().toISOString().split("T")[0]
                                       }
+                                      readOnly
+                                      disabled
                                     />
                                   </div>
                                 </div>
@@ -7095,6 +7188,7 @@ const RopoImportAmmend = () => {
                                       value={selectedSupplier}
                                       onChange={handleSupplierChange}
                                       placeholder="Select Supplier"
+                                      isDisabled={true}
                                     />
                                   </div>
                                 </div>
@@ -7187,10 +7281,11 @@ const RopoImportAmmend = () => {
 
                                     <SingleSelector
                                       options={currencyOptionsWithPlaceholder}
-                                      value={selectedCurrency ? currencyOptionsWithPlaceholder.find((o) => o.value === selectedCurrency.code) : null}
+                                      value={selectedCurrency ? currencyOptionsWithPlaceholder.find((o) => o.value === selectedCurrency.code) : (selectedCurrency ? { value: selectedCurrency.code, label: selectedCurrency.code } : null)}
                                       onChange={handleCurrencyChange}
                                       placeholder="Select Currency"
                                       isClearable={true}
+                                      isDisabled={true}
                                     />
                                   </div>
                                 </div>
@@ -7232,6 +7327,8 @@ const RopoImportAmmend = () => {
                                       placeholder="Enter conversion rate"
                                       step="0.01"
                                       min="0.01"
+                                      readOnly
+                                      disabled
                                     />
                                   </div>
                                 </div>
@@ -8923,7 +9020,98 @@ const RopoImportAmmend = () => {
                               </div>
                             </div>
 
-                         
+                            <div className="mt-3 d-flex justify-content-between align-items-center">
+                              <h5 className=" mt-3">Advance Payment Schedule</h5>
+                              <button
+                                type="button"
+                                className="purple-btn2"
+                                onClick={addAdvancePaymentRow}
+                              >
+                                Add
+                              </button>
+                            </div>
+                            <div className="tbl-container me-2 mt-2">
+                              <table className="w-100">
+                                <thead>
+                                  <tr>
+                                    <th>Payment Date</th>
+                                    <th>Payment percentage</th>
+                                    <th>With Tax</th>
+                                    <th>Payment Amount ({poCurrencyCode})</th>
+                                    <th>Remark</th>
+                                    <th>Action</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {advancePayments.length === 0 ? (
+                                    <tr>
+                                      <td colSpan={6} className="text-center">No rows added.</td>
+                                    </tr>
+                                  ) : (
+                                    advancePayments.map((row) => (
+                                      <tr key={row.id}>
+                                        <td style={{ minWidth: 140 }}>
+                                          <input
+                                            type="date"
+                                            className="form-control"
+                                            value={row.date}
+                                            onChange={(e) => updateAdvancePaymentRow(row.id, "date", e.target.value)}
+                                          />
+                                        </td>
+                                        <td style={{ width: 140 }}>
+                                          <input
+                                            type="number"
+                                            className="form-control"
+                                            min="0"
+                                            max="100"
+                                            step="0.01"
+                                            value={row.percentage}
+                                            onChange={(e) => updateAdvancePaymentRow(row.id, "percentage", e.target.value)}
+                                            placeholder="0 - 100"
+                                          />
+                                        </td>
+                                        <td style={{ width: 100 }}>
+                                          <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            checked={row.withTax}
+                                            onChange={(e) => updateAdvancePaymentRow(row.id, "withTax", e.target.checked)}
+                                          />
+                                        </td>
+                                        <td style={{ minWidth: 180 }}>
+                                          <input
+                                            type="text"
+                                            className="form-control"
+                                            value={`${poCurrencyCode} ${row.amount}`}
+                                            readOnly
+                                            disabled
+                                          />
+                                        </td>
+                                        <td>
+                                          <textarea
+                                            className="form-control"
+                                            rows={2}
+                                            value={row.remark}
+                                            onChange={(e) => updateAdvancePaymentRow(row.id, "remark", e.target.value)}
+                                            placeholder="Enter remark"
+                                          />
+                                        </td>
+                                        <td className="text-center" style={{ width: 80 }}>
+                                          <button
+                                            type="button"
+                                            className="btn btn-link text-danger"
+                                            onClick={() => removeAdvancePaymentRow(row.id)}
+                                            title="Remove"
+                                          >
+                                            <span className="material-symbols-outlined">cancel</span>
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
 
                             <div className="mt-3 d-flex justify-content-between align-items-center">
                               <h5 className=" mt-3">Delivery Schedule</h5>
@@ -10487,6 +10675,7 @@ const RopoImportAmmend = () => {
                                     setMaterialDetailsData((prev) => prev.map((r, idx) => idx === index ? { ...r, uom_id: selected, uom_name: label } : r));
                                   }}
                                   placeholder="Select UOM"
+                                  isDisabled={true}
                                 />
                               );
                             })()}
@@ -10506,6 +10695,7 @@ const RopoImportAmmend = () => {
                                   value={value}
                                   onChange={(sel) => handleMorRowGenericChange(index, sel)}
                                   placeholder="Select Specification"
+                                  isDisabled={true}
                                 />
                               );
                             })()}
@@ -10525,6 +10715,7 @@ const RopoImportAmmend = () => {
                                   value={value}
                                   onChange={(sel) => handleMorRowBrandChange(index, sel)}
                                   placeholder="Select Brand"
+                                   isDisabled={true}
                                 />
                               );
                             })()}
@@ -10544,6 +10735,7 @@ const RopoImportAmmend = () => {
                                   value={value}
                                   onChange={(sel) => handleMorRowColourChange(index, sel)}
                                   placeholder="Select Color"
+                                   isDisabled={true}
                                 />
                               );
                             })()}
@@ -10567,6 +10759,8 @@ const RopoImportAmmend = () => {
                               }
                               placeholder="Enter Qty"
                               min="0"
+                              style={{ width: "150px" }} 
+                             
                             />
                           </td>
 
@@ -11672,7 +11866,7 @@ const RopoImportAmmend = () => {
             className="purple-btn2"
             disabled={true}
           >
-            Save Changes
+            Save 
           </button>
         </Modal.Footer>
       </Modal>
