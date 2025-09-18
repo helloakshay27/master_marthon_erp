@@ -112,6 +112,8 @@ const RopoImportDetails = () => {
   const [poRemark, setPoRemark] = useState("");
 
   const [poComments, setPoComments] = useState("");
+  // Show loader during status submission
+  const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
 
   // State for View Tax & Rate modal
 
@@ -315,6 +317,29 @@ const RopoImportDetails = () => {
     },
     [taxOptions, deductionTaxOptions]
   );
+
+  // Format audit log date string "DD-MM-YYYY HH:mm:ss" to show 12-hour time with AM/PM
+  const formatAuditDate = useCallback((dateStr) => {
+    try {
+      if (!dateStr || typeof dateStr !== "string") return "-";
+      const parts = dateStr.trim().split(/\s+/);
+      if (parts.length < 2) return dateStr; // not expected format, show as is
+      const datePart = parts[0];
+      const timePart = parts[1];
+      const [hhStr, mmStr = "00", ssStr = "00"] = timePart.split(":");
+      let hh = parseInt(hhStr, 10);
+      if (!isFinite(hh)) return dateStr;
+      const ampm = hh >= 12 ? "PM" : "AM";
+      hh = hh % 12;
+      if (hh === 0) hh = 12;
+      const hh12 = hh.toString();
+      const mm = (parseInt(mmStr, 10) || 0).toString().padStart(2, "0");
+      const ss = (parseInt(ssStr, 10) || 0).toString().padStart(2, "0");
+      return `${datePart} ${hh12}:${mm}:${ss} ${ampm}`;
+    } catch {
+      return dateStr;
+    }
+  }, []);
 
   // Fetch ROPO data on component mount
 
@@ -1235,6 +1260,7 @@ const RopoImportDetails = () => {
     e.preventDefault();
 
     try {
+      setIsSubmittingStatus(true);
       const payload = {
         status_log: {
           status: selectedStatus?.value.toLowerCase() || "Draft",
@@ -1256,29 +1282,34 @@ const RopoImportDetails = () => {
       console.log("Status update successful:", response.data);
 
       toast.success("Status updated successfully!", {
-        autoClose: 1500,
+        autoClose: 500,
         onClose: () => window.location.reload(),
       });
     } catch (error) {
       console.error("Error updating status:", error);
-
+      
       toast.error(getApiErrorMessage(error));
+    } finally {
+      setIsSubmittingStatus(false);
     }
   };
 
   // Loading state
 
-  if (isLoading) {
+  if (isLoading || isSubmittingStatus) {
     return (
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: "100vh" }}
-      >
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
+      <div className="loader-container">
+        <div className="lds-ring">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
         </div>
-
-        <span className="ms-3">Loading ROPO data...</span>
+        <p>{isSubmittingStatus ? "Submitting status..." : "Loading ROPO data..."}</p>
       </div>
     );
   }
@@ -1591,7 +1622,8 @@ const RopoImportDetails = () => {
                                   <label className="text">
                                     <span className="me-3 text-dark">:</span>
 
-                                    {ropoData?.po_type || "-"}
+                                    {/* {ropoData?.po_type || "-"} */}
+                                    {ropoData?.po_type ? ropoData.po_type.toUpperCase() : "-"}
                                   </label>
                                 </div>
                               </div>
@@ -3026,7 +3058,7 @@ const RopoImportDetails = () => {
 
                         <td>{log.user || "-"}</td>
 
-                        <td>{log.date || "-"}</td>
+                        <td>{formatAuditDate(log.date) || "-"}</td>
 
                         <td>{log.status || "-"}</td>
 

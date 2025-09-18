@@ -6457,6 +6457,7 @@ const RopoImportEdit = () => {
           // Format other cost details with taxes
 
           other_cost_details_attributes: otherCosts.map((cost) => ({
+            ...(cost?.id ? { id: cost.id } : {}),
             cost_type: cost.cost_name || "",
 
             cost: parseFloat(cost.amount) || 0,
