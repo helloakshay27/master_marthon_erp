@@ -6039,21 +6039,21 @@ const RopoImportCreate = () => {
 
       console.log("Purchase order created successfully:", response.data);
 
-      // toast.success("Purchase order created successfully!", {
-      //   onClose: () => navigate(`/ropo-import-list?token=${token}`),
-      //   autoClose: 1000,
-      // });
-//       if (response.data?.id) {
-//   const purchaseOrderId = response.data.id; // Extract the ID from the response
+      toast.success("Purchase order created successfully!", {
+        onClose: () => navigate(`/ropo-import-list?token=${token}`),
+        autoClose: 1000,
+      });
+      if (response.data?.id) {
+  const purchaseOrderId = response.data.id; // Extract the ID from the response
 
-//   toast.success("Purchase order created successfully!", {
-//     onClose: () => navigate(`/ropo-import-details/${purchaseOrderId}?token=${token}`),
-//     autoClose: 1000,
-//   });
-// } else {
-//   console.error("Purchase order ID not found in the response.");
-//   toast.error("Failed to retrieve purchase order ID.");
-// }
+  toast.success("Purchase order created successfully!", {
+    onClose: () => navigate(`/ropo-import-details/${purchaseOrderId}?token=${token}`),
+    autoClose: 1000,
+  });
+} else {
+  console.error("Purchase order ID not found in the response.");
+  toast.error("Failed to retrieve purchase order ID.");
+}
 
       // Optionally redirect or clear form
 
