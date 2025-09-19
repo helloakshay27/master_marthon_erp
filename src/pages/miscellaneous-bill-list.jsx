@@ -452,48 +452,48 @@ const MiscellaneousBillList = () => {
       });
   };
 
-  // const fetchSearchResults = async (page = 1) => {
-  //     try {
-  //         setLoading(true);
-  //         setActiveSearch(searchKeyword);
-  //         const response = await axios.get(
-  //             `${baseURL}miscellaneous_bills?page=1&per_page=10&token=${token}&q[credit_note_no_or_credit_note_date_or_credit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${searchKeyword}`
-  //         );
-  //         const transformedData = response.data.credit_notes.map(
-  //             (entry, index) => {
-  //                 // console.log("created_at raw:", entry.created_at);
-  //                 let formattedDate = "-";
-  //                 if (entry.created_at) {
-  //                     try {
-  //                         formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-  //                     } catch (e) {
-  //                         formattedDate = "-";
-  //                     }
-  //                 }
-  //                 let status = entry.status;
-  //                 if (status && typeof status === "string") {
-  //                     status = status.charAt(0).toUpperCase() + status.slice(1);
-  //                 }
-  //                 return {
-  //                     id: entry.id,
-  //                     srNo: (currentPage - 1) * pageSize + index + 1,
-  //                     ...entry,
-  //                     created_at: formattedDate,
-  //                     status
-  //                 }
-  //             })
-  //         setCreditNotes(transformedData);
-  //         //   setCreditNotes(response.data.credit_notes);
-  //         setMeta(response.data.meta);
-  //         setTotalPages(response.data.meta.total_pages);
-  //         setTotalEntries(response.data.meta.total_count);
-  //     } catch (err) {
-  //         setError("Failed to fetch search results");
-  //         console.error("Error fetching search results:", err);
-  //     } finally {
-  //         setLoading(false);
-  //     }
-  // };
+  const fetchSearchResults = async (page = 1) => {
+      try {
+          setLoading(true);
+          setActiveSearch(searchKeyword);
+          const response = await axios.get(
+              `${baseURL}miscellaneous_bills?page=1&per_page=10&token=${token}&q[invoice_number_or_einvoice_or_remark_or_status_or_type_of_certificate_or_bill_entry_mode_of_submission_or_bill_entry_bill_no_or_bill_purchase_orders_purchase_order_po_number_or_bill_purchase_orders_purchase_order_company_company_name_or_bill_purchase_orders_purchase_order_supplier_full_name_or_bill_purchase_orders_purchase_order_supplier_gstin_or_bill_purchase_orders_purchase_order_supplier_pan_number_or_bill_purchase_orders_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_name_or_bill_purchase_orders_purchase_order_po_mor_inventories_mor_inventory_material_order_request_pms_site_name_cont]=${searchKeyword}`
+          );
+          const transformedData = response?.data?.bills.map(
+              (entry, index) => {
+                  // console.log("created_at raw:", entry.created_at);
+                  let formattedDate = "-";
+                  if (entry.created_at) {
+                      try {
+                          formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                      } catch (e) {
+                          formattedDate = "-";
+                      }
+                  }
+                  let status = entry.status;
+                  if (status && typeof status === "string") {
+                      status = status.charAt(0).toUpperCase() + status.slice(1);
+                  }
+                  return {
+                      id: entry.id,
+                      srNo: (currentPage - 1) * pageSize + index + 1,
+                      ...entry,
+                      created_at: formattedDate,
+                      status
+                  }
+              })
+          setCreditNotes(transformedData);
+          //   setCreditNotes(response.data.credit_notes);
+          setMeta(response.data.meta);
+          setTotalPages(response.data.meta.total_pages);
+          setTotalEntries(response.data.meta.total_count);
+      } catch (err) {
+          setError("Failed to fetch search results");
+          console.error("Error fetching search results:", err);
+      } finally {
+          setLoading(false);
+      }
+  };
 
   // if (loading) return <div>Loading...</div>;
   // if (error) return <div>Error: {error}</div>;

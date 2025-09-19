@@ -154,6 +154,7 @@ import PoDomesticEdit from "./pages/po-domestic-edit";
 import PoDomesticList from "./pages/po-domestic-list";
 import PoDomesticAmmend from "./pages/po-domestic-ammend";
 import PoDomesticDetails from "./pages/po-domestic-detail";
+import BoqSubTestUI from "./pages/boq-sub-test-ui";
 
 function App() {
   return (
@@ -677,6 +678,10 @@ function App() {
            <Route
             path="/labour-rate-revision/:id"
             element={<RevisionRateLabour />}
+          />
+           <Route
+            path="/boq-sub"
+            element={<BoqSubTestUI />}
           />
         </Routes>
       </div>

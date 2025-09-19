@@ -540,15 +540,17 @@ const BillBookingList = () => {
       });
   };
 
+  console.log("searchKeyword",searchKeyword) 
   const fetchSearchResults = async () => {
+   console.log("searchKeyword",searchKeyword) 
     try {
       // setLoading(true);
       const response = await axios.get(
-        `${baseURL}bill_bookings?page=1&per_page=10&token=${token}&q[company_id_or_project_id_or_site_id_or_pms_supplier_id_or_invoice_number_or_einvoice_or_inventory_date_or_invoice_amount_or_type_of_certificate_or_department_id_or_other_deductions_or_other_deduction_remarks_or_other_additions_or_other_addition_remarks_or_retention_per_or_retention_amount_or_total_value_or_status_or_payee_name_or_payment_mode_or_payment_due_date_or_created_by_id_or_created_at_or_updated_at_or_total_amount_or_payable_amount_or_remark_or_base_cost_or_all_inclusive_cost_or_other_deduction_or_po_type_cont]=${searchKeyword}`
+        `${baseURL}bill_bookings?page=1&per_page=10&token=${token}&q[invoice_number_or_einvoice_or_remark_or_status_or_type_of_certificate_or_bill_entry_mode_of_submission_or_bill_entry_bill_no_or_bill_purchase_orders_purchase_order_po_number_or_bill_purchase_orders_purchase_order_company_company_name_or_bill_purchase_orders_purchase_order_supplier_full_name_or_bill_purchase_orders_purchase_order_supplier_gstin_or_bill_purchase_orders_purchase_order_supplier_pan_number_or_bill_purchase_orders_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_name_or_bill_purchase_orders_purchase_order_po_mor_inventories_mor_inventory_material_order_request_pms_site_name_cont]=${searchKeyword}`
       );
+      // Fix: Ensure unique id for each row to avoid duplicate key warning
       const transformedData = response.data.bill_bookings.map(
         (entry, index) => {
-          // console.log("created_at raw:", entry.created_at);
           let formattedDate = "-";
           if (entry.created_at) {
             try {
@@ -561,8 +563,9 @@ const BillBookingList = () => {
           if (status && typeof status === "string") {
             status = status.charAt(0).toUpperCase() + status.slice(1);
           }
+          // Use composite key if duplicate ids are possible
           return {
-            id: entry.id,
+            id: `${entry.id}`,
             srNo: (currentPage - 1) * pageSize + index + 1,
             ...entry,
             created_at: formattedDate,
@@ -748,8 +751,9 @@ const BillBookingList = () => {
   };
 
   const getTransformedRows = () => {
+    // Ensure pinnedRows uses the same unique id as DataGrid rows (id + index)
     let rowsToShow = showOnlyPinned
-      ? billData.filter((row) => pinnedRows.includes(row.id))
+      ? billData.filter((row, idx) => pinnedRows.includes(`${row.id}_${idx}`))
       : billData;
 
     // const normalizedSearchTerm = searchKeyword.trim().toLowerCase();
