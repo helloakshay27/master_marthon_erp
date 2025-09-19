@@ -5277,7 +5277,7 @@ const RopoImportAmmend = () => {
   // Handle taxes modal functions
 
   const handleOpenTaxesModal = (itemId, itemType = "charge") => {
-    if (isAmendReadOnly) return;
+    // if (isAmendReadOnly) return;
     console.log("opneddd");
 
     setSelectedChargeId(itemId);
@@ -8737,14 +8737,21 @@ const RopoImportAmmend = () => {
                                           <button
                                             type="button"
                                             className="btn btn-info chargeButton"
-                                             disabled={isAmendReadOnly}
-                                             onClick={() => {
-                                               if (isAmendReadOnly) return;
-                                               handleOpenTaxesModal(
-                                                 cost.id,
-                                                 "cost"
-                                               );
-                                             }}
+                                            //  disabled={isAmendReadOnly}
+                                            //  onClick={() => {
+                                            //   //  if (isAmendReadOnly) return;
+                                            //    handleOpenTaxesModal(
+                                            //      cost.id,
+                                            //      "cost"
+                                            //    );
+                                            //  }}
+                                            onClick={() =>
+                                              handleOpenTaxesModal(
+                                                cost.id,
+
+                                                "cost"
+                                              )
+                                            }
                                           >
                                             Add Taxes and Charges
                                           </button>
@@ -11070,7 +11077,7 @@ const RopoImportAmmend = () => {
                 <div className="mb-3">
                   <label className="form-label fw-bold">
                     {" "}
-                    Rate per Nos ({poCurrencyCode}) <span> *</span>
+                    Rate per Nos  <span> *</span>
                     
                   </label>
 

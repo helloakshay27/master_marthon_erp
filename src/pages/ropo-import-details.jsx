@@ -133,6 +133,26 @@ const RopoImportDetails = () => {
     netCost: "0",
   });
 
+  // Computed Net Cost for Add Taxes & Charges modal (base + non-inclusive additions − non-inclusive deductions)
+  const computedChargesNetCost = React.useMemo(() => {
+    try {
+      const base = parseFloat(chargeTaxes?.baseCost) || 0;
+      const add = (chargeTaxes?.additionTaxes || []).reduce(
+        (sum, t) => sum + ((t?.inclusive ? 0 : (parseFloat(t?.amount) || 0))),
+        0
+      );
+      const ded = (chargeTaxes?.deductionTaxes || []).reduce(
+        (sum, t) => sum + ((t?.inclusive ? 0 : (parseFloat(t?.amount) || 0))),
+        0
+      );
+      return (base + add - ded).toFixed(2);
+    } catch (_) {
+      return typeof chargeTaxes?.netCost === "string"
+        ? chargeTaxes.netCost
+        : formatTwoDecimals(chargeTaxes?.netCost || 0);
+    }
+  }, [chargeTaxes]);
+
   // State for tax options
 
   const [chargesAdditionTaxOptions, setChargesAdditionTaxOptions] = useState(
@@ -222,12 +242,57 @@ const RopoImportDetails = () => {
 
     if (!hasCurrency && !hasInr) return "-";
 
-    const currencyVal = hasCurrency ? `${currency.toUpperCase()} ${currencyAmount}` : "-";
+    const toTwo = (val) => {
+      const num = parseFloat(val);
+      return isFinite(num) ? num.toFixed(2) : String(val);
+    };
 
-    const inrVal = hasInr ? `INR ${inr}` : "-";
+    const currencyVal = hasCurrency ? `${currency.toUpperCase()} ${toTwo(currencyAmount)}` : "-";
+
+    const inrVal = hasInr ? `INR ${toTwo(inr)}` : "-";
 
     return `${currencyVal} (${inrVal})`;
   }, []);
+
+  // Generic helper to format any numeric-like value to 2 decimals for display
+  const formatTwoDecimals = useCallback((value) => {
+    const num = parseFloat(value);
+    if (!isFinite(num)) {
+      if (value === 0) return "0.00";
+      return value ?? "-";
+    }
+    return num.toFixed(2);
+  }, []);
+
+  // Resolve tax/charge option label by id from various option shapes (align with edit page behavior)
+  const getOptionLabelById = useCallback((optionsArray, optionId) => {
+    if (!Array.isArray(optionsArray) || optionId == null) return "";
+    const idStr = optionId.toString();
+
+    const match = optionsArray.find((opt) => {
+      const candidates = [opt?.id, opt?.tax_category_id, opt?.resource_id, opt?.value, opt?.label];
+      return candidates.some((c) => c != null && c.toString() === idStr);
+    });
+
+    if (match) {
+      return (
+        match.name ||
+        match.label ||
+        match.value ||
+        match.resource_name ||
+        ""
+      );
+    }
+
+    // Fallback: derive label from percentages master (tax_percentage endpoint)
+    const cat = (chargesTaxPercentages || []).find((c) => {
+      const candidates = [c?.tax_category_id, c?.id];
+      return candidates.some((v) => v != null && v.toString() === idStr);
+    });
+    if (cat) return cat.tax_name || cat.name || "";
+
+    return "";
+  }, [chargesTaxPercentages]);
 
   // Safe PO currency → INR converter for display in the modal
 
@@ -449,12 +514,17 @@ const RopoImportDetails = () => {
     if (data.tax_summary) {
       setTaxSummary({
         total_base_cost: data.tax_summary.total_base_cost ?? 0,
+        total_base_cost_in_inr: data.tax_summary.total_base_cost_in_inr ?? 0,
 
         total_tax: data.tax_summary.total_tax ?? 0,
+        total_tax_in_inr: data.tax_summary.total_tax_in_inr ?? 0,
 
         total_charge: data.tax_summary.total_charge ?? 0,
+        total_charge_in_inr: data.tax_summary.total_charge_in_inr ?? 0,
 
         total_inclusive_cost: data.tax_summary.total_inclusive_cost ?? 0,
+        total_inclusive_cost_in_inr:
+          data.tax_summary.total_inclusive_cost_in_inr ?? 0,
       });
     }
 
@@ -482,6 +552,10 @@ const RopoImportDetails = () => {
                 id: tax.id || Date.now(),
 
                 taxType: tax.resource_id?.toString() || "",
+                resourceType: tax.resource_type || "",
+                // prefer explicit category id; if missing and resource is category, use resource_id
+                taxCategoryId:
+                  (tax.tax_category_id ?? (tax.resource_type === "TaxCategory" ? tax.resource_id : null))?.toString() || "",
 
                 taxPercentage: tax.percentage?.toString() || "",
 
@@ -499,6 +573,9 @@ const RopoImportDetails = () => {
                 id: tax.id || Date.now(),
 
                 taxType: tax.resource_id?.toString() || "",
+                resourceType: tax.resource_type || "",
+                taxCategoryId:
+                  (tax.tax_category_id ?? (tax.resource_type === "TaxCategory" ? tax.resource_id : null))?.toString() || "",
 
                 taxPercentage: tax.percentage?.toString() || "",
 
@@ -538,6 +615,9 @@ const RopoImportDetails = () => {
                 id: tax.id || Date.now(),
 
                 taxType: tax.resource_id?.toString() || "",
+                resourceType: tax.resource_type || "",
+                taxCategoryId:
+                  (tax.tax_category_id ?? (tax.resource_type === "TaxCategory" ? tax.resource_id : null))?.toString() || "",
 
                 taxPercentage: tax.percentage?.toString() || "",
 
@@ -555,6 +635,9 @@ const RopoImportDetails = () => {
                 id: tax.id || Date.now(),
 
                 taxType: tax.resource_id?.toString() || "",
+                resourceType: tax.resource_type || "",
+                taxCategoryId:
+                  (tax.tax_category_id ?? (tax.resource_type === "TaxCategory" ? tax.resource_id : null))?.toString() || "",
 
                 taxPercentage: tax.percentage?.toString() || "",
 
@@ -780,6 +863,10 @@ const RopoImportDetails = () => {
 
         taxType: tax.taxType?.toString() || "",
 
+        resourceType: tax.resourceType || "",
+
+        taxCategoryId: tax.taxCategoryId?.toString() || "",
+
         taxPercentage: tax.taxPercentage || "",
 
         inclusive: tax.inclusive || false,
@@ -792,6 +879,10 @@ const RopoImportDetails = () => {
 
         taxType: tax.taxType?.toString() || "",
 
+        resourceType: tax.resourceType || "",
+
+        taxCategoryId: tax.taxCategoryId?.toString() || "",
+
         taxPercentage: tax.taxPercentage || "",
 
         inclusive: tax.inclusive || false,
@@ -799,12 +890,16 @@ const RopoImportDetails = () => {
         amount: tax.amount?.toString() || "",
       }));
 
+      const sumAdd = additionTaxes.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+      const sumDed = deductionTaxes.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+      const computedNet = (baseCost + sumAdd - sumDed).toFixed(2);
+
       savedTaxes = {
         additionTaxes: additionTaxes,
 
         deductionTaxes: deductionTaxes,
 
-        netCost: item.taxes?.netCost || baseCost.toFixed(2),
+        netCost: item.taxes?.netCost || computedNet,
       };
     } else {
       // Load previously saved tax data if it exists
@@ -1679,7 +1774,7 @@ const RopoImportDetails = () => {
                                   <label className="text">
                                     <span className="me-3 text-dark">:</span>
 
-                                    {ropoData?.total_value || "-"}
+                                    {ropoData?.total_value != null ? formatTwoDecimals(ropoData.total_value) : "-"}
                                   </label>
                                 </div>
                               </div>
@@ -1707,7 +1802,7 @@ const RopoImportDetails = () => {
                                   <label className="text">
                                     <span className="me-3 text-dark">:</span>
 
-                                    {ropoData?.conversion_rate ?? "-"}
+                                    {ropoData?.conversion_rate != null ? formatTwoDecimals(ropoData.conversion_rate) : "-"}
                                   </label>
                                 </div>
                               </div>
@@ -1750,7 +1845,7 @@ const RopoImportDetails = () => {
                                   <label className="text">
                                     <span className="me-3 text-dark">:</span>
 
-                                    {ropoData?.total_discount || "-"}
+                                    {ropoData?.total_discount != null ? formatTwoDecimals(ropoData.total_discount) : "-"}
                                   </label>
                                 </div>
                               </div>
@@ -1870,13 +1965,13 @@ const RopoImportDetails = () => {
 
                                           <td>{mat.material || "-"}</td>
 
-                                          <td>{mat.mor_qty || "-"}</td>
+                                          <td>{mat?.mor_qty != null ? formatTwoDecimals(mat.mor_qty) : "-"}</td>
 
-                                          <td>{mat.po_order_qty || "-"}</td>
+                                          <td>{mat?.po_order_qty != null ? formatTwoDecimals(mat.po_order_qty) : "-"}</td>
 
-                                          <td>{mat.grn_qty || "-"}</td>
+                                          <td>{mat?.grn_qty != null ? formatTwoDecimals(mat.grn_qty) : "-"}</td>
 
-                                          <td>{mat.po_balance_qty || "-"}</td>
+                                          <td>{mat?.po_balance_qty != null ? formatTwoDecimals(mat.po_balance_qty) : "-"}</td>
 
                                        
                                         </tr>
@@ -1977,11 +2072,11 @@ const RopoImportDetails = () => {
 
                                     <td>{item.uom || "-"}</td>
 
-                                    <td>{item.po_qty || "-"}</td>
+                                    <td>{item?.po_qty != null ? formatTwoDecimals(item.po_qty) : "-"}</td>
 
-                                    <td>{item.adjusted_qty || "-"}</td>
+                                    <td>{item?.adjusted_qty != null ? formatTwoDecimals(item.adjusted_qty) : "-"}</td>
 
-                                    <td>{item.tolerance_qty || "-"}</td>
+                                    <td>{item?.tolerance_qty != null ? formatTwoDecimals(item.tolerance_qty) : "-"}</td>
 
                                     <td>
                                       {formatCurrencyInInr(
@@ -1999,7 +2094,7 @@ const RopoImportDetails = () => {
                                       )}
                                     </td>
 
-                                    <td>{item.discount_percentage || "-"}</td>
+                                    <td>{item?.discount_percentage != null ? formatTwoDecimals(item.discount_percentage) : "-"}</td>
 
                                     <td>
                                       {formatCurrencyInInr(
@@ -2101,25 +2196,25 @@ const RopoImportDetails = () => {
                               <tr>
                                 <td>Total Base Cost</td>
 
-                                <td>{taxSummary.total_base_cost || "0"}</td>
+                                <td>{formatTwoDecimals(taxSummary.total_base_cost_in_inr ?? taxSummary.total_base_cost ?? 0)}</td>
 
-                                <td>{taxSummary.total_base_cost || "0"}</td>
+                                <td>{formatTwoDecimals(taxSummary.total_base_cost ?? 0)}</td>
                               </tr>
 
                               <tr>
                                 <td>Total Tax</td>
 
-                                <td>{taxSummary.total_tax || "0"}</td>
+                                <td>{formatTwoDecimals(taxSummary.total_tax_in_inr ?? taxSummary.total_tax ?? 0)}</td>
 
-                                <td>{taxSummary.total_tax || "0"}</td>
+                                <td>{formatTwoDecimals(taxSummary.total_tax ?? 0)}</td>
                               </tr>
 
                               <tr>
                                 <td>Total Charge</td>
 
-                                <td>{taxSummary.total_charge || "0"}</td>
+                                <td>{formatTwoDecimals(taxSummary.total_charge_in_inr ?? taxSummary.total_charge ?? 0)}</td>
 
-                                <td>{taxSummary.total_charge || "0"}</td>
+                                <td>{formatTwoDecimals(taxSummary.total_charge ?? 0)}</td>
                               </tr>
 
                               <tr>
@@ -2128,11 +2223,11 @@ const RopoImportDetails = () => {
                                 </td>
 
                                 <td className="fw-bold">
-                                  {taxSummary.total_inclusive_cost || "0"}
+                                  {formatTwoDecimals(taxSummary.total_inclusive_cost_in_inr ?? taxSummary.total_inclusive_cost ?? 0)}
                                 </td>
 
                                 <td className="fw-bold">
-                                  {taxSummary.total_inclusive_cost || "0"}
+                                  {formatTwoDecimals(taxSummary.total_inclusive_cost ?? 0)}
                                 </td>
                               </tr>
                             </tbody>
@@ -2229,15 +2324,11 @@ const RopoImportDetails = () => {
                                     </td>
 
                                     <td style={{ width: "100px" }}>
-                                      INR{" "}
-                                       {parseFloat(row.amount_in_inr ?? 0).toFixed(2)}
+                                      INR {formatTwoDecimals(row.amount_in_inr ?? 0)}
                                     </td>
 
                                     <td style={{ width: "100px" }}>
-                                      {(
-                                        ropoData?.po_currency || "USD"
-                                       ).toUpperCase()} {" "}
-                                       {parseFloat(row.amount ?? 0).toFixed(2)}
+                                      {(ropoData?.po_currency || "USD").toUpperCase()} {formatTwoDecimals(row.amount ?? 0)}
                                     </td>
 
                                     <td style={{ width: "100px" }}>
@@ -2263,7 +2354,7 @@ const RopoImportDetails = () => {
                                     </td>
 
                                     <td style={{ width: "150px" }}>
-                                       {row.service_certificate_advance_percentage}
+                                       {row.service_certificate_advance_percentage != null ? formatTwoDecimals(row.service_certificate_advance_percentage) : "-"}
                                     </td>
 
                                     {/* <td style={{ width: "150px" }}>
@@ -2274,7 +2365,7 @@ const RopoImportDetails = () => {
      const poCurrency = ropoData?.po_currency || "USD";
      const poAmount = parseFloat(row.service_certificate_advance_amount) || 0;
      const inrAmount = safeConvertCurrencyToInr(poAmount, ropoData?.conversion_rate) || 0;
-     return `${poCurrency.toUpperCase()} ${poAmount.toFixed(2)} (INR ${inrAmount.toFixed(2)})`;
+     return `${poCurrency.toUpperCase()} ${formatTwoDecimals(poAmount)} (INR ${formatTwoDecimals(inrAmount)})`;
   })()}
                                     </td>
                                   </tr>
@@ -2710,7 +2801,7 @@ const RopoImportDetails = () => {
                                       <input
                                         type="text"
                                         className="form-control"
-                                        value={row.payment_per ?? ""}
+                                        value={row.payment_per != null ? formatTwoDecimals(row.payment_per) : ""}
                                         readOnly
                                         disabled
                                       />
@@ -5717,9 +5808,9 @@ const RopoImportDetails = () => {
                         type="text"
                         className="form-control"
                         value={
-                          chargesAdditionTaxOptions.find(
-                            (opt) => opt.id.toString() === tax.taxType
-                          )?.name || ""
+                          tax.resourceType === "TaxCategory"
+                            ? (getOptionLabelById(chargesAdditionTaxOptions, tax.taxCategoryId) || getOptionLabelById(chargesAdditionTaxOptions, tax.taxType))
+                            : getOptionLabelById(chargesAdditionTaxOptions, tax.taxType)
                         }
                         disabled={true}
                         readOnly
@@ -5787,9 +5878,9 @@ const RopoImportDetails = () => {
                         type="text"
                         className="form-control"
                         value={
-                          chargesDeductionTaxOptions.find(
-                            (opt) => opt.id.toString() === tax.taxType
-                          )?.name || ""
+                          tax.resourceType === "TaxCategory"
+                            ? (getOptionLabelById(chargesDeductionTaxOptions, tax.taxCategoryId) || getOptionLabelById(chargesDeductionTaxOptions, tax.taxType))
+                            : getOptionLabelById(chargesDeductionTaxOptions, tax.taxType)
                         }
                         disabled={true}
                         readOnly
@@ -5843,7 +5934,7 @@ const RopoImportDetails = () => {
                     <input
                       type="text"
                       className="form-control net-cost"
-                      value={chargeTaxes.netCost}
+                      value={computedChargesNetCost}
                       readOnly
                       disabled
                     />

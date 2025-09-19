@@ -5674,7 +5674,10 @@ const RopoImportCreate = () => {
           // survice_certificate_advance: parseFloat(serviceCertificateAdvancePercentage || 0),
           total_discount: parseFloat(calculateTotalDiscountAmount() || 0),
 
-          total_value: parseFloat(totalMaterialCost || 0),
+          // total_value: parseFloat(totalMaterialCost || 0),
+          total_value: parseFloat(
+  (totalMaterialCost || 0) + (calculateOtherVendorNetCost() || 0)
+),
 
           po_date: getLocalDateTime().split("T")[0], // Current date
 
@@ -6040,17 +6043,17 @@ const RopoImportCreate = () => {
       //   onClose: () => navigate(`/ropo-import-list?token=${token}`),
       //   autoClose: 1000,
       // });
-      if (response.data?.id) {
-  const purchaseOrderId = response.data.id; // Extract the ID from the response
+//       if (response.data?.id) {
+//   const purchaseOrderId = response.data.id; // Extract the ID from the response
 
-  toast.success("Purchase order created successfully!", {
-    onClose: () => navigate(`/ropo-import-details/${purchaseOrderId}?token=${token}`),
-    autoClose: 1000,
-  });
-} else {
-  console.error("Purchase order ID not found in the response.");
-  toast.error("Failed to retrieve purchase order ID.");
-}
+//   toast.success("Purchase order created successfully!", {
+//     onClose: () => navigate(`/ropo-import-details/${purchaseOrderId}?token=${token}`),
+//     autoClose: 1000,
+//   });
+// } else {
+//   console.error("Purchase order ID not found in the response.");
+//   toast.error("Failed to retrieve purchase order ID.");
+// }
 
       // Optionally redirect or clear form
 
@@ -10629,7 +10632,7 @@ const RopoImportCreate = () => {
                 <div className="mb-3">
                   <label className="form-label fw-bold">
                     {" "}
-                    Rate per Nos ({poCurrencyCode}) <span> *</span>
+                    Rate per Nos  <span> *</span>
                   </label>
 
                   <input

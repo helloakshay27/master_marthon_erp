@@ -302,15 +302,19 @@ const RopoImportEdit = () => {
 
     const totalInclUsd = totalBaseUsd + totalTaxUsd + totalChargeUsd;
 
-    setTaxSummary({
-      total_base_cost: totalBaseUsd.toFixed(2),
-      total_base_cost_in_inr: toInr(totalBaseUsd).toFixed(2),
-      total_tax: totalTaxUsd.toFixed(2),
-      total_tax_in_inr: toInr(totalTaxUsd).toFixed(2),
-      total_charge: totalChargeUsd.toFixed(2),
-      total_charge_in_inr: toInr(totalChargeUsd).toFixed(2),
-      total_inclusive_cost: totalInclUsd.toFixed(2),
-      total_inclusive_cost_in_inr: toInr(totalInclUsd).toFixed(2),
+    setTaxSummary((prev) => {
+      if (prev && prev._lockedFromApi) return prev;
+      return {
+        total_base_cost: totalBaseUsd.toFixed(2),
+        total_base_cost_in_inr: toInr(totalBaseUsd).toFixed(2),
+        total_tax: totalTaxUsd.toFixed(2),
+        total_tax_in_inr: toInr(totalTaxUsd).toFixed(2),
+        total_charge: totalChargeUsd.toFixed(2),
+        total_charge_in_inr: toInr(totalChargeUsd).toFixed(2),
+        total_inclusive_cost: totalInclUsd.toFixed(2),
+        total_inclusive_cost_in_inr: toInr(totalInclUsd).toFixed(2),
+        _lockedFromApi: false,
+      };
     });
   }, [taxRateData, chargesFromApi, conversionRate]);
 
@@ -1197,7 +1201,7 @@ const RopoImportEdit = () => {
     // Populate tax summary
 
     if (data.tax_summary) {
-      setTaxSummary(data.tax_summary);
+      setTaxSummary({ ...data.tax_summary, _lockedFromApi: true });
     }
 
     // Populate charges data from mor_inventory_tax_details (map to internal shape)
@@ -4423,6 +4427,9 @@ const RopoImportEdit = () => {
           }
 
           toast.success("Tax changes saved successfully!");
+
+          // Unlock API summary to allow recompute after edits
+          setTaxSummary((prev) => ({ ...prev, _lockedFromApi: false }));
         }
       } catch (error) {
         console.error("Error saving tax changes:", error);
@@ -5538,13 +5545,11 @@ const RopoImportEdit = () => {
         netCost: (
           baseCost +
           additionTaxes.reduce(
-            (sum, tax) => sum + parseFloat(tax.amount || 0),
-
+            (sum, tax) => sum + (tax.inclusive ? 0 : (parseFloat(tax.amount || 0))),
             0
           ) -
           deductionTaxes.reduce(
-            (sum, tax) => sum + parseFloat(tax.amount || 0),
-
+            (sum, tax) => sum + (tax.inclusive ? 0 : (parseFloat(tax.amount || 0))),
             0
           )
         ).toFixed(2),
@@ -6239,8 +6244,27 @@ const RopoImportEdit = () => {
       return (otherCosts || [])
         .filter((c) => (c?.scope || "").toLowerCase() === "by vendor")
         .reduce((sum, c) => {
-          const net = parseFloat(c?.taxes?.netCost ?? c?.realised_amount ?? c?.amount) || 0;
-          return sum + net;
+          // Prefer computed modal net if present
+          if (c?.taxes?.netCost != null && c.taxes.netCost !== "") {
+            const net = parseFloat(c.taxes.netCost) || 0;
+            return sum + net;
+          }
+
+          // If API provided raw taxes list, compute base + non-inclusive additions - non-inclusive deductions
+          if (Array.isArray(c?.taxes_and_charges) && c.taxes_and_charges.length > 0) {
+            const base = parseFloat(c?.amount) || 0;
+            const add = c.taxes_and_charges
+              .filter((t) => t?.addition)
+              .reduce((s, t) => s + (t?.inclusive ? 0 : (parseFloat(t?.amount) || 0)), 0);
+            const ded = c.taxes_and_charges
+              .filter((t) => !t?.addition)
+              .reduce((s, t) => s + (t?.inclusive ? 0 : (parseFloat(t?.amount) || 0)), 0);
+            return sum + (base + add - ded);
+          }
+
+          // Fallbacks
+          const fallback = parseFloat(c?.realised_amount ?? c?.amount) || 0;
+          return sum + fallback;
         }, 0);
     } catch {
       return 0;
@@ -6487,7 +6511,14 @@ const RopoImportEdit = () => {
 
           total_discount: parseFloat(calculateTotalDiscountAmount() || 0),
 
-          total_value: parseFloat(totalMaterialCost || 0),
+          // total_value: parseFloat(
+          //   (taxSummary?.total_inclusive_cost != null
+          //     ? taxSummary.total_inclusive_cost
+          //     : (totalMaterialCost || 0) + (calculateOtherVendorNetCost() || 0)) || 0
+          // ),
+            total_value: parseFloat(
+  (totalMaterialCost || 0) + (calculateOtherVendorNetCost() || 0)
+),
 
           po_date: getLocalDateTime().split("T")[0], // Current date
 
@@ -9328,30 +9359,7 @@ const RopoImportEdit = () => {
                                   </div>
                                 </div>
 
-                                <div className="col-md-6 mt-0">
-                                  <div className="form-group">
-                                    <label className="po-fontBold">
-                                      Supplier Advance Allowed (%)
-                                    </label>
-
-                                    <input
-                                      className="form-control"
-                                      type="number"
-                                      value={supplierAdvancePercentage}
-                                      onChange={(e) =>
-                                        handleSupplierAdvancePercentageChange(
-                                          e.target.value
-                                        )
-                                      }
-                                      placeholder="0"
-                                      min="0"
-                                      max="100"
-                                      step="0.01"
-                                    />
-                                  </div>
-                                </div>
-
-                                <div className="col-md-6 mt-2">
+                                  <div className="col-md-6 ">
                                   <div className="form-group">
                                     <label className="po-fontBold">
                                       Total Discount
@@ -9372,27 +9380,7 @@ const RopoImportEdit = () => {
                                   </div>
                                 </div>
 
-                                <div className="col-md-6 mt-2">
-                                  <div className="form-group">
-                                    <label className="po-fontBold">
-                                      Supplier Advance Amount
-                                    </label>
-
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      value={`${poCurrencyCode} ${calculateSupplierAdvanceAmount().toFixed(
-                                        2
-                                      )} (INR ${convertUsdToInr(
-                                        calculateSupplierAdvanceAmount(),
-
-                                        conversionRate
-                                      )})`}
-                                      disabled
-                                    />
-                                  </div>
-                                </div>
-                                <div className="col-md-6 mt-2">
+                                 <div className="col-md-6 mt-2">
                                   <div className="form-group">
 
                                     <label className="po-fontBold">
@@ -9424,93 +9412,53 @@ const RopoImportEdit = () => {
 
                                 </div> 
 
-                                {/* <div className="col-md-6 mt-2">
 
+                                <div className="col-md-6 mt-2">
                                   <div className="form-group">
-
                                     <label className="po-fontBold">
-
-                                      Service Certificate Advance Allowed (%)
-
+                                      Supplier Advance Allowed (%)
                                     </label>
 
-
-
                                     <input
-
                                       className="form-control"
-
                                       type="number"
-
-                                      value={
-
-                                        serviceCertificateAdvancePercentage
-
-                                      }
-
+                                      value={supplierAdvancePercentage}
                                       onChange={(e) =>
-
-                                        handleServiceCertificateAdvancePercentageChange(
-
+                                        handleSupplierAdvancePercentageChange(
                                           e.target.value
-
                                         )
-
                                       }
-
                                       placeholder="0"
-
                                       min="0"
-
                                       max="100"
-
                                       step="0.01"
-
                                     />
-
                                   </div>
+                                </div>
 
-                                </div> */}
-
-                                {/* <div className="col-md-6 mt-2">
-
+                              
+                                <div className="col-md-6 mt-2">
                                   <div className="form-group">
-
                                     <label className="po-fontBold">
-
-                                      Service Certificate Advance Amount
-
+                                      Supplier Advance Amount
                                     </label>
 
-
-
                                     <input
-
                                       className="form-control"
-
                                       type="text"
-
-                                      value={`${poCurrencyCode} ${calculateServiceCertificateAdvanceAmount().toFixed(
-
+                                      value={`${poCurrencyCode} ${calculateSupplierAdvanceAmount().toFixed(
                                         2
-
                                       )} (INR ${convertUsdToInr(
-
-                                        calculateServiceCertificateAdvanceAmount(),
-
-
+                                        calculateSupplierAdvanceAmount(),
 
                                         conversionRate
-
                                       )})`}
-
                                       disabled
-
                                     />
-
                                   </div>
+                                </div>
+                               
 
-                                </div> */}
                               </div>
                             </div>
 
@@ -11544,7 +11492,7 @@ const RopoImportEdit = () => {
                 <div className="mb-3">
                   <label className="form-label fw-bold">
                     {" "}
-                    Rate per Nos ({poCurrencyCode}) <span> *</span>
+                    Rate per Nos  <span> *</span>
                   </label>
 
                   <input
