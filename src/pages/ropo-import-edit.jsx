@@ -1539,18 +1539,13 @@ const RopoImportEdit = () => {
           const totalInr = parseFloat(row.total_amount_inr || 0) || 0;
           if (totalInr <= 0) return;
 
-          // Sum INR advance amount across all charges in this consolidated row
-          const sumAdvanceInr = (row.charge_ids || []).reduce((sum, id) => {
-            const charge = (chargesFromApi || []).find((c) => c.id === id);
-            const advInr = parseFloat(
-              charge?.service_certificate_advance_amount || 0
-            );
-            return sum + (isNaN(advInr) ? 0 : advInr);
-          }, 0);
-
-          if (sumAdvanceInr > 0) {
-            const percent = (sumAdvanceInr / totalInr) * 100;
-            next[idx] = percent.toFixed(2);
+          // Use API percentage directly from first charge in the row
+          const firstChargeId = (row.charge_ids || [])[0];
+          const firstCharge = (chargesFromApi || []).find((c) => c.id === firstChargeId);
+          const apiPercentage = parseFloat(firstCharge?.service_certificate_advance_percentage || 0);
+          
+          if (apiPercentage > 0) {
+            next[idx] = apiPercentage.toString();
           }
         });
         return next;
@@ -6238,6 +6233,14 @@ const RopoImportEdit = () => {
     }, 0);
   }; 
 
+    
+  const calculateTotalDiscountAmountPayble = () => {
+    return submittedMaterials.reduce((sum, _mat, idx) => {
+      const afterDisc = parseFloat(taxRateData[idx]?.afterDiscountValue) || 0;
+      return sum + afterDisc;
+    }, 0);
+  };
+
 
   const calculateOtherVendorNetCost = () => {
     try {
@@ -6289,7 +6292,9 @@ const RopoImportEdit = () => {
 
   // Final payable to supplier = total discount + other vendor net - material deduction taxes
   const calculatePayableToSupplier = () => {
-    const totalDiscount = parseFloat(calculateTotalDiscountAmount() || 0);
+    // const totalDiscount = parseFloat(calculateTotalDiscountAmount() || 0);
+    
+    const totalDiscount = parseFloat(calculateTotalDiscountAmountPayble () || 0);
     const otherVendorNet = parseFloat(calculateOtherVendorNetCost() || 0);
     const totalDeductionTaxes = parseFloat(calculateTotalMaterialDeductionTaxes() || 0);
     return totalDiscount + otherVendorNet - totalDeductionTaxes;
@@ -7773,9 +7778,9 @@ const RopoImportEdit = () => {
 
                                     <th>PO Qty</th>
 
-                                    <th>Adjusted Qty</th>
+                                    {/* <th>Adjusted Qty</th>
 
-                                    <th>Tolerance Qty</th>
+                                    <th>Tolerance Qty</th> */}
 
                                     <th style={{ minWidth: "160px" }}>
                                       Material Rate
@@ -7857,13 +7862,13 @@ const RopoImportEdit = () => {
 
                                             <td>{material.order_qty || ""}</td>
 
-                                            <td>
+                                            {/* <td>
                                               {material.adjusted_qty ?? ""}
                                             </td>
 
                                             <td>
                                               {material.tolerance_qty ?? ""}
-                                            </td>
+                                            </td> */}
 
                                             <td>
                                               {poCurrencyCode}{" "}

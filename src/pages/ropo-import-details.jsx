@@ -2014,9 +2014,9 @@ const RopoImportDetails = () => {
 
                                 <th>PO Qty</th>
 
-                                <th>Adjusted Qty</th>
+                                {/* <th>Adjusted Qty</th>
 
-                                <th>Tolerance Qty</th>
+                                <th>Tolerance Qty</th> */}
 
                                 <th style={{ minWidth: "160px" }}>
                                   Material Rate
@@ -2073,10 +2073,10 @@ const RopoImportDetails = () => {
                                     <td>{item.uom || "-"}</td>
 
                                     <td>{item?.po_qty != null ? formatTwoDecimals(item.po_qty) : "-"}</td>
-
+{/* 
                                     <td>{item?.adjusted_qty != null ? formatTwoDecimals(item.adjusted_qty) : "-"}</td>
 
-                                    <td>{item?.tolerance_qty != null ? formatTwoDecimals(item.tolerance_qty) : "-"}</td>
+                                    <td>{item?.tolerance_qty != null ? formatTwoDecimals(item.tolerance_qty) : "-"}</td> */}
 
                                     <td>
                                       {formatCurrencyInInr(

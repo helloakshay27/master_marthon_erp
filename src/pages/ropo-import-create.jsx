@@ -6039,10 +6039,10 @@ const RopoImportCreate = () => {
 
       console.log("Purchase order created successfully:", response.data);
 
-      toast.success("Purchase order created successfully!", {
-        onClose: () => navigate(`/ropo-import-list?token=${token}`),
-        autoClose: 1000,
-      });
+      // toast.success("Purchase order created successfully!", {
+      //   onClose: () => navigate(`/ropo-import-list?token=${token}`),
+      //   autoClose: 1000,
+      // });
       if (response.data?.id) {
   const purchaseOrderId = response.data.id; // Extract the ID from the response
 
@@ -7038,9 +7038,9 @@ const RopoImportCreate = () => {
 
                                     <th>PO Qty</th>
 
-                                    <th>Adjusted Qty</th>
+                                    {/* <th>Adjusted Qty</th>
 
-                                    <th>Tolerance Qty</th>
+                                    <th>Tolerance Qty</th> */}
 
                                     <th style={{ minWidth: "160px" }}>
                                       Material Rate
@@ -7111,13 +7111,13 @@ const RopoImportCreate = () => {
 
                                             <td>{material.order_qty ?? ""}</td>
 
-                                            <td>
+                                            {/* <td>
                                               {material.adjusted_qty ?? ""}
                                             </td>
 
                                             <td>
                                               {material.tolerance_qty ?? ""}
-                                            </td>
+                                            </td> */}
 
                                             <td>
                                               {poCurrencyCode}{" "}

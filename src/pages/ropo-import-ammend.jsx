@@ -57,6 +57,12 @@ const RopoImportAmmend = () => {
     uom: "",
   });
 
+  // API totals for prepopulation
+  const [apiTotals, setApiTotals] = useState({ totalValue: null, totalValueInInr: null });
+
+  // API supplier advance amount for prepopulation
+  const [apiSupplierAdvance, setApiSupplierAdvance] = useState(null);
+
   // States to store data company, project ,subproject ,wing
 
   const [companies, setCompanies] = useState([]);
@@ -761,6 +767,17 @@ const RopoImportAmmend = () => {
 
       totalDiscountInInr: data.total_discount_in_inr?.toString() || "",
     }));
+
+    // Prepopulate totals from API
+    setApiTotals({
+      totalValue: data.total_value != null ? parseFloat(data.total_value) : null,
+      totalValueInInr: data.total_value_in_inr != null ? parseFloat(data.total_value_in_inr) : null,
+    });
+
+    // Prepopulate supplier advance from API
+    if (data.terms_and_conditions?.supplier_advance != null) {
+      setApiSupplierAdvance(parseFloat(data.terms_and_conditions.supplier_advance));
+    }
 
     // Also set the selected company and supplier states
 
@@ -7653,9 +7670,9 @@ const RopoImportAmmend = () => {
 
                                     <th>PO Qty</th>
 
-                                    <th>Adjusted Qty</th>
+                                    {/* <th>Adjusted Qty</th>
 
-                                    <th>Tolerance Qty</th>
+                                    <th>Tolerance Qty</th> */}
 
                                     <th style={{ minWidth: "160px" }}>
                                       Material Rate
@@ -7737,13 +7754,13 @@ const RopoImportAmmend = () => {
 
                                             <td>{material.order_qty || ""}</td>
 
-                                            <td>
+                                            {/* <td>
                                               {material.adjusted_qty ?? ""}
                                             </td>
 
                                             <td>
                                               {material.tolerance_qty ?? ""}
-                                            </td>
+                                            </td> */}
 
                                             <td>
                                               {poCurrencyCode}{" "}
@@ -8945,16 +8962,66 @@ const RopoImportAmmend = () => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      value={`${poCurrencyCode} ${totalMaterialCost.toFixed(
+                                      value={(() => {
+                                        const usd = apiTotals.totalValue != null ? apiTotals.totalValue : (totalMaterialCost || 0);
+                                        const inr = apiTotals.totalValueInInr != null ? apiTotals.totalValueInInr : convertUsdToInr(usd, conversionRate);
+                                        return `${poCurrencyCode} ${usd.toFixed(2)} (INR ${Number(inr).toFixed(2)})`;
+                                      })()}
+                                      disabled
+                                    />
+                                  </div>
+                                </div>
+                                 <div className="col-md-6 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Total Discount
+                                    </label>
+
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      value={`${poCurrencyCode} ${calculateTotalDiscountAmount().toFixed(
                                         2
                                       )} (INR ${convertUsdToInr(
-                                        totalMaterialCost,
+                                        calculateTotalDiscountAmount(),
 
                                         conversionRate
                                       )})`}
                                       disabled
                                     />
                                   </div>
+                                </div>
+
+                                  <div className="col-md-6 mt-2">
+                                  <div className="form-group">
+
+                                    <label className="po-fontBold">
+
+                                      Total Payable To Suplier
+
+                                    </label>
+
+                                    <input
+
+                                      className="form-control"
+
+                                      type="text"
+
+                                      value={`${poCurrencyCode} ${(
+                                        parseFloat(formData.payableToSupplier || 0)
+                                      ).toFixed(2)} (INR ${Number(
+                                        safeConvertUsdToInr(
+                                          parseFloat(formData.payableToSupplier || 0),
+                                          conversionRate
+                                        ) || 0
+                                      ).toFixed(2)})`}
+
+                                      disabled
+
+                                    />
+
+                                  </div>
+
                                 </div>
 
                                 <div className="col-md-6 mt-0">
@@ -8981,26 +9048,7 @@ const RopoImportAmmend = () => {
                                   </div>
                                 </div>
 
-                                <div className="col-md-6 mt-2">
-                                  <div className="form-group">
-                                    <label className="po-fontBold">
-                                      Total Discount
-                                    </label>
-
-                                    <input
-                                      className="form-control"
-                                      type="text"
-                                      value={`${poCurrencyCode} ${calculateTotalDiscountAmount().toFixed(
-                                        2
-                                      )} (INR ${convertUsdToInr(
-                                        calculateTotalDiscountAmount(),
-
-                                        conversionRate
-                                      )})`}
-                                      disabled
-                                    />
-                                  </div>
-                                </div>
+                               
 
                                 <div className="col-md-6 mt-2">
                                   <div className="form-group">
@@ -9011,13 +9059,11 @@ const RopoImportAmmend = () => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      value={`${poCurrencyCode} ${calculateSupplierAdvanceAmount().toFixed(
-                                        2
-                                      )} (INR ${convertUsdToInr(
-                                        calculateSupplierAdvanceAmount(),
-
-                                        conversionRate
-                                      )})`}
+                                      value={(() => {
+                                        const usd = apiSupplierAdvance != null ? apiSupplierAdvance : calculateSupplierAdvanceAmount();
+                                        const inr = convertUsdToInr(usd, conversionRate);
+                                        return `${poCurrencyCode} ${usd.toFixed(2)} (INR ${Number(inr).toFixed(2)})`;
+                                      })()}
                                       disabled
                                     />
                                   </div>
