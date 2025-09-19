@@ -301,7 +301,7 @@ const BillEntryList = () => {
 
         // Add search
         if (searchKeyword) {
-          url += `&q[bill_no_or_status_or_vendor_remark_or_mode_of_submission_or_bill_type_or_purchase_order_company_company_name_or_purchase_order_supplier_gstin_or_purchase_order_supplier_pan_number_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_pms_site_name_cont]=${searchKeyword}`;
+          url += `&q[bill_id_or_bill_no_or_status_or_vendor_remark_or_mode_of_submission_or_bill_type_or_purchase_order_company_company_name_or_purchase_order_supplier_gstin_or_purchase_order_supplier_pan_number_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_pms_site_name_cont]=${searchKeyword}`;
         }
         const response = await axios.get(url);
         const data = response.data.bill_entries.map((entry, index) => ({

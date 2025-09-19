@@ -457,7 +457,7 @@ const MiscellaneousBillList = () => {
           setLoading(true);
           setActiveSearch(searchKeyword);
           const response = await axios.get(
-              `${baseURL}miscellaneous_bills?page=1&per_page=10&token=${token}&q[invoice_number_or_einvoice_or_remark_or_status_or_type_of_certificate_or_bill_entry_mode_of_submission_or_bill_entry_bill_no_or_bill_purchase_orders_purchase_order_po_number_or_bill_purchase_orders_purchase_order_company_company_name_or_bill_purchase_orders_purchase_order_supplier_full_name_or_bill_purchase_orders_purchase_order_supplier_gstin_or_bill_purchase_orders_purchase_order_supplier_pan_number_or_bill_purchase_orders_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_name_or_bill_purchase_orders_purchase_order_po_mor_inventories_mor_inventory_material_order_request_pms_site_name_cont]=${searchKeyword}`
+              `${baseURL}miscellaneous_bills?page=1&per_page=10&token=${token}&q[bill_no_or_remark_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_supplier_full_name_or_supplier_organization_name_or_supplier_pan_number_or_supplier_gstin_cont]=${searchKeyword}`
           );
           const transformedData = response?.data?.bills.map(
               (entry, index) => {
