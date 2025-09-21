@@ -1,13 +1,4 @@
-// import React from 'react'
 
-// const PoDomesticCreate = () => {
-//   return (
-//     <div>po-domestic-create</div>
-//   )
-// }
-
-// export default PoDomesticCreate 
-// PoDomesticCreate
 import React, { useState, useEffect, useCallback } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
@@ -44,26 +35,17 @@ const PoDomesticCreate = () => {
   const [inventorySubTypes2, setInventorySubTypes2] = useState([]);
 
   const [selectedSubType2, setSelectedSubType2] = useState(null);
-
   const [inventoryMaterialTypes2, setInventoryMaterialTypes2] = useState([]);
-
   const [selectedInventoryMaterialTypes2, setSelectedInventoryMaterialTypes2] =
     useState(null);
 
-  // Tax modal state variables
-
+  // Tax modal state variables     
   const [showTaxModal, setShowTaxModal] = useState(false);
-
   const [tableId, setTableId] = useState(null);
-
   const [taxRateData, setTaxRateData] = useState({});
-
   const [taxOptions, setTaxOptions] = useState([]);
-
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
-
   const [taxPercentageOptions, setTaxPercentageOptions] = useState([]);
-
   const [materialTaxPercentages, setMaterialTaxPercentages] = useState({});
 
   // Route any existing alert() calls in this module to toast notifications
@@ -6300,7 +6282,7 @@ const PoDomesticCreate = () => {
                               defaultChecked
                             />
 
-                            <label className="form-check-label">IMPORT</label>
+                            <label className="form-check-label">Domestic</label>
                           </div>
                         </div>
                       </div>
@@ -6313,7 +6295,7 @@ const PoDomesticCreate = () => {
                 <div className="card ms-3">
                   <div className="card-body">
                     <div className=" text-center">
-                      <h4>PO for New Material (Import)</h4>
+                      <h4>PO for New Material (Domestic)</h4>
                     </div>
 
                     <section className="mor p-2 pt-2">
@@ -6615,20 +6597,6 @@ const PoDomesticCreate = () => {
                                   </div>
                                 </div>
 
-                                <div className="col-md-4 mt-2">
-                                  <div className="form-group">
-                                    <label className="po-fontBold">
-                                      PO Currency  <span>*</span>
-                                    </label>
-
-                                    <SingleSelector
-                                      options={currencyOptionsWithPlaceholder}
-                                      value={selectedCurrency ? currencyOptionsWithPlaceholder.find((o) => o.value === selectedCurrency.code) : currencyOptionsWithPlaceholder[0]}
-                                      onChange={handleCurrencyChange}
-                                      placeholder="Select Currency"
-                                    />
-                                  </div>
-                                </div>
 
                                 <div className="col-md-4 mt-2">
                                   <div className="form-group">
@@ -7014,45 +6982,15 @@ const PoDomesticCreate = () => {
                                             </td>
 
                                             <td>
-                                              {poCurrencyCode}{" "}
                                               {parseFloat(
                                                 rateRow.ratePerNos || 0
-                                              ).toFixed(2)}{" "}
-                                              (INR{" "}
-                                              {(() => {
-                                                const inr = parseFloat(
-                                                  convertUsdToInr(
-                                                    rateRow.ratePerNos || 0,
-                                                    conversionRate
-                                                  )
-                                                );
-
-                                                return isNaN(inr)
-                                                  ? "0.00"
-                                                  : inr.toFixed(2);
-                                              })()}
-                                              )
+                                              ).toFixed(2)}
                                             </td>
 
                                             <td>
-                                              {poCurrencyCode}{" "}
                                               {parseFloat(
                                                 rateRow.materialCost || 0
-                                              ).toFixed(2)}{" "}
-                                              (INR{" "}
-                                              {(() => {
-                                                const inr = parseFloat(
-                                                  convertUsdToInr(
-                                                    rateRow.materialCost || 0,
-                                                    conversionRate
-                                                  )
-                                                );
-
-                                                return isNaN(inr)
-                                                  ? "0.00"
-                                                  : inr.toFixed(2);
-                                              })()}
-                                              )
+                                              ).toFixed(2)}
                                             </td>
 
                                             <td>
@@ -7062,94 +7000,30 @@ const PoDomesticCreate = () => {
                                             </td>
 
                                             <td>
-                                              {poCurrencyCode}{" "}
                                               {parseFloat(
                                                 rateRow.discountRate || 0
-                                              ).toFixed(2)}{" "}
-                                              (INR{" "}
-                                              {(() => {
-                                                const inr = parseFloat(
-                                                  convertUsdToInr(
-                                                    rateRow.discountRate || 0,
-                                                    conversionRate
-                                                  )
-                                                );
-
-                                                return isNaN(inr)
-                                                  ? "0.00"
-                                                  : inr.toFixed(2);
-                                              })()}
-                                              )
+                                              ).toFixed(2)}
                                             </td>
 
                                             <td>
-                                              {poCurrencyCode}{" "}
                                               {parseFloat(
                                                 rateRow.afterDiscountValue || 0
-                                              ).toFixed(2)}{" "}
-                                              (INR{" "}
-                                              {(() => {
-                                                const inr = parseFloat(
-                                                  convertUsdToInr(
-                                                    rateRow.afterDiscountValue ||
-                                                      0,
-                                                    conversionRate
-                                                  )
-                                                );
-
-                                                return isNaN(inr)
-                                                  ? "0.00"
-                                                  : inr.toFixed(2);
-                                              })()}
-                                              )
+                                              ).toFixed(2)}
                                             </td>
 
                                             <td>
-                                              {poCurrencyCode}{" "}
                                               {calculatedValues.taxAddition?.toFixed(
                                                 2
-                                              ) || "0.00"}{" "}
-                                              (INR{" "}
-                                              {(() => {
-                                                const inr = parseFloat(
-                                                  convertUsdToInr(
-                                                    calculatedValues.taxAddition ||
-                                                      0,
-                                                    conversionRate
-                                                  )
-                                                );
-
-                                                return isNaN(inr)
-                                                  ? "0.00"
-                                                  : inr.toFixed(2);
-                                              })()}
-                                              )
+                                              ) || "0.00"}
                                             </td>
 
                                             <td>
-                                              {poCurrencyCode}{" "}
                                               {calculatedValues.taxDeductions?.toFixed(
                                                 2
-                                              ) || "0.00"}{" "}
-                                              (INR{" "}
-                                              {(() => {
-                                                const inr = parseFloat(
-                                                  convertUsdToInr(
-                                                    calculatedValues.taxDeductions ||
-                                                      0,
-                                                    conversionRate
-                                                  )
-                                                );
-
-                                                return isNaN(inr)
-                                                  ? "0.00"
-                                                  : inr.toFixed(2);
-                                              })()}
-                                              )
+                                              ) || "0.00"}
                                             </td>
 
                                             <td>
-                                              {poCurrencyCode}{" "}
                                               {(() => {
                                                 const usd =
                                                   (parseFloat(
@@ -7160,55 +7034,16 @@ const PoDomesticCreate = () => {
                                                   ) || 0);
 
                                                 return usd.toFixed(2);
-                                              })()}{" "}
-                                              (INR{" "}
-                                              {(() => {
-                                                const usd =
-                                                  (parseFloat(
-                                                    calculatedValues.otherAddition
-                                                  ) || 0) -
-                                                  (parseFloat(
-                                                    calculatedValues.otherDeductions
-                                                  ) || 0);
-
-                                                const inr = parseFloat(
-                                                  convertUsdToInr(
-                                                    usd || 0,
-                                                    conversionRate
-                                                  )
-                                                );
-
-                                                return isNaN(inr)
-                                                  ? "0.00"
-                                                  : inr.toFixed(2);
                                               })()}
-                                              )
                                             </td>
 
                                             <td>
-                                              {poCurrencyCode}{" "}
                                               {parseFloat(
                                                 rateRow.afterDiscountValue || 0
-                                              ).toFixed(2)}{" "}
-                                              (INR{" "}
-                                              {(() => {
-                                                const inr = parseFloat(
-                                                  convertUsdToInr(
-                                                    rateRow.afterDiscountValue ||
-                                                      0,
-                                                    conversionRate
-                                                  )
-                                                );
-
-                                                return isNaN(inr)
-                                                  ? "0.00"
-                                                  : inr.toFixed(2);
-                                              })()}
-                                              )
+                                              ).toFixed(2)}
                                             </td>
 
                                             <td>
-                                              {poCurrencyCode}{" "}
                                               {(() => {
                                                 const usd = parseFloat(
                                                   rateRow.netCost ||
@@ -7217,27 +7052,7 @@ const PoDomesticCreate = () => {
                                                 );
 
                                                 return (usd || 0).toFixed(2);
-                                              })()}{" "}
-                                              (INR{" "}
-                                              {(() => {
-                                                const usd = parseFloat(
-                                                  rateRow.netCost ||
-                                                    rateRow.total_material_cost ||
-                                                    0
-                                                );
-
-                                                const inr = parseFloat(
-                                                  convertUsdToInr(
-                                                    usd || 0,
-                                                    conversionRate
-                                                  )
-                                                );
-
-                                                return isNaN(inr)
-                                                  ? "0.00"
-                                                  : inr.toFixed(2);
                                               })()}
-                                              )
                                             </td>
 
                                             <td
@@ -10599,30 +10414,10 @@ const PoDomesticCreate = () => {
                     <thead className="tax-table-header">
                       <tr>
                         <th>Tax / Charge Type</th>
-
-                        <th colSpan="2">Tax / Charges per UOM (INR)</th>
-
+                        <th>Tax / Charges per UOM (INR)</th>
                         <th>Inclusive</th>
-
-                        <th colSpan="2">Tax / Charges Amount</th>
-
+                        <th>Amount</th>
                         <th>Action</th>
-                      </tr>
-
-                      <tr>
-                        <th></th>
-
-                        <th>INR</th>
-
-                        <th>{poCurrencyCode}</th>
-
-                        <th></th>
-
-                        <th>INR</th>
-
-                        <th>{poCurrencyCode}</th>
-
-                        <th></th>
                       </tr>
                     </thead>
 
@@ -10631,27 +10426,8 @@ const PoDomesticCreate = () => {
 
                       <tr>
                         <td>Total Base Cost</td>
-
                         <td></td>
-
                         <td></td>
-
-                        <td></td>
-
-                        <td>
-                          <input
-                            type="number"
-                            className="form-control "
-                            value={safeConvertUsdToInr(
-                              taxRateData[tableId]?.afterDiscountValue,
-
-                              conversionRate
-                            )}
-                            readOnly
-                            disabled={true}
-                          />
-                        </td>
-
                         <td>
                           <input
                             type="number"
@@ -10663,7 +10439,6 @@ const PoDomesticCreate = () => {
                             disabled={true}
                           />
                         </td>
-
                         <td></td>
                       </tr>
 
@@ -10671,17 +10446,9 @@ const PoDomesticCreate = () => {
 
                       <tr>
                         <td>Addition Tax & Charges</td>
-
                         <td></td>
-
                         <td></td>
-
                         <td></td>
-
-                        <td></td>
-
-                        <td></td>
-
                         <td className="text-center">
                           <button
                             className="btn btn-outline-danger btn-sm"
@@ -10813,82 +10580,41 @@ const PoDomesticCreate = () => {
                             </td>
 
                             <td>
-                              {isPercentageTax(item.taxChargeType) ? (
-                                <select
-                                  className="form-control"
-                                  value={item?.taxChargePerUom || ""}
-                                  onChange={(e) =>
-                                    handleTaxChargeChange(
-                                      tableId,
+                              <select
+                                className="form-control"
+                                value={item?.taxChargePerUom || ""}
+                                onChange={(e) =>
+                                  handleTaxChargeChange(
+                                    tableId,
+                                    item.id,
+                                    "taxChargePerUom",
+                                    e.target.value,
+                                    "addition"
+                                  )
+                                }
+                                disabled={
+                                  (materialTaxPercentages[item.id] || [])
+                                    .length === 0
+                                }
+                              >
+                                <option value="">
+                                  {(materialTaxPercentages[item.id] || [])
+                                    .length === 0
+                                    ? "No percentages available"
+                                    : "Select percentage"}
+                                </option>
 
-                                      item.id,
-
-                                      "taxChargePerUom",
-
-                                      e.target.value,
-
-                                      "addition"
-                                    )
-                                  }
-                                  disabled={
-                                    (materialTaxPercentages[item.id] || [])
-                                      .length === 0
-                                  }
-                                >
-                                  <option value="">
-                                    {(materialTaxPercentages[item.id] || [])
-                                      .length === 0
-                                      ? "No percentages available"
-                                      : "Select percentage"}
-                                  </option>
-
-                                  {(materialTaxPercentages[item.id] || []).map(
-                                    (percent) => (
-                                      <option
-                                        key={percent.id}
-                                        value={`${percent.percentage}%`}
-                                      >
-                                        {percent.percentage}%
-                                      </option>
-                                    )
-                                  )}
-                                </select>
-                              ) : (
-                                <input
-                                  type="number"
-                                  className="form-control"
-                                  value={item?.taxChargePerUom || ""}
-                                  onChange={(e) =>
-                                    handleTaxChargeChange(
-                                      tableId,
-
-                                      item.id,
-
-                                      "taxChargePerUom",
-
-                                      e.target.value,
-
-                                      "addition"
-                                    )
-                                  }
-                                  placeholder="Enter amount"
-                                />
-                              )}
-                            </td>
-
-                            <td>
-                              {isPercentageTax(item.taxChargeType) ? (
-                                <span></span>
-                              ) : (
-                                <input
-                                  type="number"
-                                  className="form-control"
-                                  value={convertInrToUsd(item?.taxChargePerUom)}
-                                  readOnly
-                                  disabled={true}
-                                  placeholder="Auto calculated"
-                                />
-                              )}
+                                {(materialTaxPercentages[item.id] || []).map(
+                                  (percent) => (
+                                    <option
+                                      key={percent.id}
+                                      value={`${percent.percentage}%`}
+                                    >
+                                      {percent.percentage}%
+                                    </option>
+                                  )
+                                )}
+                              </select>
                             </td>
 
                             <td className="text-center">
@@ -10916,38 +10642,50 @@ const PoDomesticCreate = () => {
                               <input
                                 type="text"
                                 className="form-control"
-                                value={
-                                  parseFloat(item.amount_inr || 0).toFixed(2)
-                                }
+                                value={item.amount || ""}
                                 onChange={(e) =>
                                   handleTaxChargeChange(
                                     tableId,
-
                                     item.id,
-
                                     "amount",
-
                                     e.target.value,
-
                                     "addition"
                                   )
                                 }
-                                disabled={true}
-                                placeholder="Tax Amount"
-                              />
-                            </td>
-
-                            <td>
-                              <input
-                                type="text"
-                                className="form-control"
-                                value={
-                                  // Show only the Tax / Charges Amount in PO currency (USD)
-                                  parseFloat(item.amount || 0).toFixed(2)
+                                disabled={
+                                  item.taxType === "TaxCategory" ||
+                                  (item.taxChargeType &&
+                                    ["SGST", "CGST", "IGST", "TDS"].includes(
+                                      item.taxChargeType
+                                    ) &&
+                                    item.taxChargePerUom &&
+                                    item.taxChargePerUom.includes("%")) ||
+                                  (item.tax_category_id &&
+                                    (
+                                      materialTaxPercentages[item.id] || []
+                                    ).find(
+                                      (option) =>
+                                        option.id === item.tax_category_id
+                                    ))
                                 }
-                                readOnly
-                                disabled={true}
-                                placeholder="Auto calculated"
+                                placeholder={
+                                  item.taxType === "TaxCategory" ||
+                                  (item.taxChargeType &&
+                                    ["SGST", "CGST", "IGST", "TDS"].includes(
+                                      item.taxChargeType
+                                    ) &&
+                                    item.taxChargePerUom &&
+                                    item.taxChargePerUom.includes("%")) ||
+                                  (item.tax_category_id &&
+                                    (
+                                      materialTaxPercentages[item.id] || []
+                                    ).find(
+                                      (option) =>
+                                        option.id === item.tax_category_id
+                                    ))
+                                    ? "Auto-calculated"
+                                    : "Enter amount"
+                                }
                               />
                             </td>
 
@@ -10972,17 +10710,9 @@ const PoDomesticCreate = () => {
 
                       <tr>
                         <td>Deduction Tax</td>
-
                         <td></td>
-
                         <td></td>
-
                         <td></td>
-
-                        <td></td>
-
-                        <td></td>
-
                         <td className="text-center">
                           <button
                             className="btn btn-outline-danger btn-sm"
@@ -11046,49 +10776,38 @@ const PoDomesticCreate = () => {
                             </td>
 
                             <td>
-                              <select
-                                className="form-control"
-                                value={item?.taxChargePerUom || ""}
-                                onChange={(e) =>
+                              <SingleSelector
+                                options={(() => {
+                                  const percentages =
+                                    materialTaxPercentages[item.id] || [];
+                                  if (percentages.length > 0) {
+                                    return percentages.map((percent) => ({
+                                      label: `${percent.percentage}%`,
+                                      value: `${percent.percentage}%`,
+                                      id: percent.id,
+                                    }));
+                                  }
+                                  return [];
+                                })()}
+                                value={
+                                  item?.taxChargePerUom
+                                    ? {
+                                        value: item.taxChargePerUom,
+                                        label: item.taxChargePerUom,
+                                      }
+                                    : null
+                                }
+                                onChange={(selected) => {
                                   handleTaxChargeChange(
                                     tableId,
-
                                     item.id,
-
                                     "taxChargePerUom",
-
-                                    e.target.value,
-
+                                    selected?.value || "",
                                     "deduction"
-                                  )
-                                }
-                                disabled={
-                                  (materialTaxPercentages[item.id] || [])
-                                    .length === 0
-                                }
-                              >
-                                <option value="">
-                                  {(materialTaxPercentages[item.id] || [])
-                                    .length === 0
-                                    ? "No percentages available"
-                                    : "Select percentage"}
-                                </option>
-
-                                {(materialTaxPercentages[item.id] || []).map(
-                                  (percent) => (
-                                    <option
-                                      key={percent.id}
-                                      value={`${percent.percentage}%`}
-                                    >
-                                      {percent.percentage}%
-                                    </option>
-                                  )
-                                )}
-                              </select>
-                            </td>
-
-                            <td>
-                              <span></span>
+                                  );
+                                }}
+                                isClearable={false}
+                              />
                             </td>
 
                             <td className="text-center">
@@ -11116,35 +10835,43 @@ const PoDomesticCreate = () => {
                               <input
                                 type="text"
                                 className="form-control"
-                                value={
-                                  parseFloat(item.amount_inr || 0).toFixed(2)
-                                }
+                                value={item.amount || ""}
                                 onChange={(e) =>
                                   handleTaxChargeChange(
                                     tableId,
-
                                     item.id,
-
                                     "amount",
-
                                     e.target.value,
-
                                     "deduction"
                                   )
                                 }
-                                disabled={true}
-                                placeholder="Tax Amount"
-                              />
-                            </td>
-
-                            <td>
-                              <input
-                                type="text"
-                                className="form-control"
-                                value={parseFloat(item.amount || 0).toFixed(2)}
-                                readOnly
-                                disabled={true}
-                                placeholder="Auto calculated"
+                                disabled={
+                                  item.taxType === "TaxCategory" ||
+                                  (item.taxChargeType &&
+                                    ["SGST", "CGST", "IGST", "TDS"].includes(
+                                      item.taxChargeType
+                                    ) &&
+                                    item.taxChargePerUom &&
+                                    item.taxChargePerUom.includes("%")) ||
+                                  (item.tax_category_id &&
+                                    (
+                                      materialTaxPercentages[item.id] || []
+                                    ).find(
+                                      (option) =>
+                                        option.id === item.tax_category_id
+                                    ))
+                                }
+                                placeholder={
+                                  item.taxType === "TaxCategory" ||
+                                  (item.taxChargeType &&
+                                    ["SGST", "CGST", "IGST", "TDS"].includes(
+                                      item.taxChargeType
+                                    ) &&
+                                    item.taxChargePerUom &&
+                                    item.taxChargePerUom.includes("%"))
+                                    ? "Auto-calculated"
+                                    : "Enter amount"
+                                }
                               />
                             </td>
 
@@ -11169,28 +10896,9 @@ const PoDomesticCreate = () => {
 
                       <tr>
                         <td>Net Cost</td>
-
                         <td></td>
-
                         <td></td>
-
-                        <td></td>
-
-                        <td>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={safeConvertUsdToInr(
-                              taxRateData[tableId]?.netCost,
-
-                              conversionRate
-                            )}
-                            readOnly
-                            disabled={true}
-                          />
-                        </td>
-
-                        <td>
+                        <td className="text-center">
                           <input
                             type="text"
                             className="form-control"
@@ -11199,7 +10907,6 @@ const PoDomesticCreate = () => {
                             disabled={true}
                           />
                         </td>
-
                         <td></td>
                       </tr>
                     </tbody>
