@@ -39,7 +39,7 @@ export default function VendorDetails() {
   const [showModal, setShowModal] = useState(false);
   const [showModal1, setShowModal1] = useState(false);
   const [taxRateData, setTaxRateData] = useState([]);
-  
+
   // Debug: Track taxRateData changes  
   useEffect(() => {
     if (taxRateData.length > 0 && taxRateData[tableId]?.addition_bid_material_tax_details) {
@@ -360,19 +360,19 @@ export default function VendorDetails() {
     const gst = parseFloat(updated[rowIndex].gst) || 0;
 
     const total = price * quantityAvail;
-    
+
     // Calculate realised price: price after discount
     const realisedPrice = price - (price * discount) / 100;
-    
+
     // Calculate realised discount: discount amount on total
     const realisedDiscount = (total * discount) / 100;
-    
+
     // Calculate landed amount: total after discount
     const landedAmount = total - realisedDiscount;
-    
+
     // Calculate realised GST: GST on landed amount
     const realisedGst = (landedAmount * gst) / 100;
-    
+
     // Calculate final total: landed amount + GST
     const finalTotal = landedAmount + realisedGst;
 
@@ -532,11 +532,11 @@ export default function VendorDetails() {
   const [showOtherChargesModal, setShowOtherChargesModal] = useState(false);
 
   const handleOpenOtherChargesModal = () => {
-    if (isTaxRateDataChanged) {
+    // if (isTaxRateDataChanged) {
       setShowOtherChargesModal(true);
-    } else {
-      toast.error("Please fill the tax details to fill other charges");
-    }
+    // } else {
+    //   toast.error("Please fill the tax details to fill other charges");
+    // }
   };
   const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);
   const [isBidCreated, setIsBidCreated] = useState(false); // Track bid creation status
@@ -747,10 +747,10 @@ export default function VendorDetails() {
       }
     }
 
-    if (field === "amount") {      
+    if (field === "amount") {
       // Handle direct amount entry for handling charges, freight, and other charges
       taxEntry.amount = value;
-      
+
       // For amount-based charges, don't calculate percentage
       if (["Handling Charges", "Other charges", "Freight"].includes(taxEntry.taxChargeType)) {
         // Keep the amount as entered by user, no percentage calculation needed
@@ -781,7 +781,7 @@ export default function VendorDetails() {
         // Update the existing tax entry
         const updatedTaxEntry = { ...taxEntry };
         row[taxKey][rowTaxEntryIndex] = updatedTaxEntry;
-        
+
         // Debug amount-based charges specifically
         if (["Handling Charges", "Other charges", "Freight"].includes(taxEntry.taxChargeType)) {
         }
@@ -789,7 +789,7 @@ export default function VendorDetails() {
         // Add the tax entry if it doesn't exist
         const clonedTaxEntry = { ...taxEntry };
         row[taxKey].push(clonedTaxEntry);
-        
+
         // Debug amount-based charges specifically
         if (["Handling Charges", "Other charges", "Freight"].includes(taxEntry.taxChargeType)) {
         }
@@ -826,9 +826,9 @@ export default function VendorDetails() {
 
     const charge = { ...taxCharges[chargeIndex] };
 
-    if (field === "amount") {      
+    if (field === "amount") {
       charge.amount = value;
-      
+
       // Handle amount-based charges differently from percentage-based taxes
       if (["Handling Charges", "Other charges", "Freight"].includes(charge.taxChargeType)) {
         // For amount-based charges, keep the amount as entered, no percentage calculation
@@ -1003,37 +1003,34 @@ export default function VendorDetails() {
 
           // Map the row data
           const rowData = {
-            pmsBrand: item.pms_brand_name || "-",
-            pmsColour: item.pms_colour_name || "-",
-            genericInfo: item.generic_info_name || "-",
-            eventMaterialId: item.id || "-",
-            descriptionOfItem: item.inventory_name || "-",
-            quantity: item.quantity || "-",
-            quantityAvail: bidMaterial?.quantity_available || "" || "-", // Placeholder for user input
-            price: bidMaterial?.price || "", // Add price from bid material
-            discount: bidMaterial?.discount || "", // Add discount from bid material
-            gst: bidMaterial?.gst || "", // Add GST from bid material
-            realisedPrice: bidMaterial?.realised_price || 
-                (bidMaterial?.price && bidMaterial?.discount 
-                  ? (parseFloat(bidMaterial.price) - (parseFloat(bidMaterial.price) * parseFloat(bidMaterial.discount) / 100)).toFixed(2)
-                  : ""), // Calculate realised_price if not available from API
-            realisedDiscount: bidMaterial?.realised_discount || "", // Add realised_discount from bid material
-            realisedGst: bidMaterial?.realised_gst || "", // Add realised_gst from bid material
-            landedAmount: bidMaterial?.landed_amount || "", // Add landed_amount from bid material
-            vendorRemark: bidMaterial?.vendor_remark || "", // Add vendor_remark from bid material
-            unit: item.uom_name || item.uom_short_name || item.uom || "-",
-            location: item.location || "-",
-            rate: item.rate || "" || "-", // Placeholder if rate is not available
-            section: item.material_type || "-",
-            subSection: item.inventory_sub_type || "-",
-            amount: item.amount || "-",
-            totalAmt: bidMaterial?.total_amount || "" || "-", // Placeholder for calculated total amount
-            total: bidMaterial?.total_amount || "", // Add total for calculation consistency
-            attachment: null || "-", // Placeholder for attachment
-            varient: item.material_type || "-", // Use extracted material_type
-            extra_data: flatExtraData,
-            revised_bid: initialResponse.data?.revised_bid, // Placeholder for bid ID
-          };
+          pmsBrand: item.pms_brand_name || "-",
+          pmsColour: item.pms_colour_name || "-",
+          genericInfo: item.generic_info_name || "-",
+          eventMaterialId: item.id || "-",
+          descriptionOfItem: item.inventory_name || "-",
+          quantity: item.quantity || "-",
+          quantityAvail: "", // EMPTY for new bids
+          price: "", // EMPTY for new bids
+          discount: "", // EMPTY for new bids
+          gst: "", // EMPTY for new bids
+          realisedPrice: "", // EMPTY for new bids
+          realisedDiscount: "", // EMPTY for new bids
+          realisedGst: "", // EMPTY for new bids
+          landedAmount: "", // EMPTY for new bids
+          vendorRemark: "", // EMPTY for new bids
+          unit: item.uom_name || item.uom_short_name || item.uom || "-",
+          location: item.location || "-",
+          rate: "", // EMPTY for new bids
+          section: item.material_type || "-",
+          subSection: item.inventory_sub_type || "-",
+          amount: item.amount || "-",
+          totalAmt: "", // EMPTY for new bids
+          total: "", // EMPTY for new bids
+          attachment: null || "-",
+          varient: item.material_type || "-",
+          extra_data: flatExtraData,
+          revised_bid: initialResponse.data?.revised_bid,
+        };
 
           // Add extra data dynamically to the row
           additionalColumns.forEach((col) => {
@@ -1257,8 +1254,8 @@ export default function VendorDetails() {
       gst: material.gst,
       realisedGst: material.realised_gst,
       total: material.total_amount,
-      realisedPrice: material.realised_price || 
-        (material.price && material.discount 
+      realisedPrice: material.realised_price ||
+        (material.price && material.discount
           ? (parseFloat(material.price) - (parseFloat(material.price) * parseFloat(material.discount) / 100)).toFixed(2)
           : ""), // Calculate realised_price if not available from API
       unit:
@@ -1298,8 +1295,8 @@ export default function VendorDetails() {
             realisedDiscount: counterMaterial.realised_discount,
             gst: counterMaterial.gst,
             realisedGst: counterMaterial.realised_gst,
-            realisedPrice: counterMaterial.realised_price || 
-              (counterMaterial.price && counterMaterial.discount 
+            realisedPrice: counterMaterial.realised_price ||
+              (counterMaterial.price && counterMaterial.discount
                 ? (parseFloat(counterMaterial.price) - (parseFloat(counterMaterial.price) * parseFloat(counterMaterial.discount) / 100)).toFixed(2)
                 : ""), // Calculate realised_price if not available from API
             unit: material.event_material.uom_short_name || material.event_material.uom_name,
@@ -1548,7 +1545,7 @@ export default function VendorDetails() {
         autoClose: 1000, // Close after 3 seconds
       });
       setIsBidCreated(true);
-      setRevisedBid(true); 
+      setRevisedBid(true);
       setTimeout(() => {
         navigate(
           `/vendor-list?token=${token}`
@@ -2372,8 +2369,8 @@ export default function VendorDetails() {
             materialType: material.material_type,
             landedAmount: material.landed_amount,
             materialRank: material.rank,
-            realisedPrice: material.realised_price || 
-              (material.price && material.discount 
+            realisedPrice: material.realised_price ||
+              (material.price && material.discount
                 ? (parseFloat(material.price) - (parseFloat(material.price) * parseFloat(material.discount) / 100)).toFixed(2)
                 : ""), // Calculate realised_price if not available from API
           }))
@@ -2516,7 +2513,7 @@ export default function VendorDetails() {
         const currentRowData = data[rowIndex];
         const price = parseFloat(currentRowData?.price) || 0;
         const discount = parseFloat(currentRowData?.discount) || 0;
-        
+
         // Use the current realisedPrice from data state (which might be from API or calculated)
         let realisedPriceValue;
         if (currentRowData?.realisedPrice !== undefined && currentRowData?.realisedPrice !== null && currentRowData?.realisedPrice !== "") {
@@ -2626,11 +2623,11 @@ export default function VendorDetails() {
   }, [data]); // Remove taxRateData from dependencies to prevent infinite loop
 
   const handleOpenModal = (rowIndex) => {
-    
+
     // INDIVIDUAL MODAL: Only show data specific to this material (NOT Apply All data)
     // This ensures each material modal shows only its individual tax settings
     const updatedTaxRateData = data.map((selectedRow, index) => {
-      
+
       // Calculate the ORIGINAL base amount (before any tax calculations)
       const quantityAvail = parseFloat(selectedRow.quantityAvail || selectedRow.quantity || 0);
       const price = parseFloat(selectedRow.price || 0);
@@ -2638,7 +2635,7 @@ export default function VendorDetails() {
       const originalTotal = price * quantityAvail;
       const discountAmount = (originalTotal * discount) / 100;
       const originalAfterDiscountValue = originalTotal - discountAmount;
-            
+
       // Always use saved individual data or empty arrays - never Apply All data
       return {
         material: selectedRow.section || "",
@@ -2660,61 +2657,53 @@ export default function VendorDetails() {
 
     originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
     setTaxRateData(updatedTaxRateData);
-    
+
     setTableId(rowIndex);
     setShowModal(true);
-  };  const handleSaveAllTaxChanges = () => {
-    
+  };
+  const handleSaveAllTaxChanges = () => {
     const updatedData = [...data];
 
+    // Use the first row of parentTaxRateData as the template for all materials
+    const templateAddition = parentTaxRateData[0]?.addition_bid_material_tax_details || [];
+    const templateDeduction = parentTaxRateData[0]?.deduction_bid_material_tax_details || [];
+
     // Apply tax changes to all items
-    data.forEach((_, index) => {
-      
-      // OVERRIDE: Replace with Apply All data only
-      updatedData[index].addition_bid_material_tax_details = 
-        [...(parentTaxRateData[index]?.addition_bid_material_tax_details || [])];
-      updatedData[index].deduction_bid_material_tax_details = 
-        [...(parentTaxRateData[index]?.deduction_bid_material_tax_details || [])];
-      
-      
-      // CRITICAL: calculateNetCost expects afterDiscountValue, but updatedData (main data) 
-      // uses different field structure. We need to calculate the base amount manually.
+    updatedData.forEach((_, index) => {
+      // Deep clone to avoid reference issues
+      updatedData[index].addition_bid_material_tax_details = templateAddition.map(item => ({ ...item }));
+      updatedData[index].deduction_bid_material_tax_details = templateDeduction.map(item => ({ ...item }));
+
+      // Calculate net cost for each material
       const quantityAvail = parseFloat(updatedData[index].quantityAvail || updatedData[index].quantity || 0);
       const price = parseFloat(updatedData[index].price || 0);
       const discount = parseFloat(updatedData[index].discount || 0);
       const originalTotal = price * quantityAvail;
       const discountAmount = (originalTotal * discount) / 100;
       const calculatedAfterDiscountValue = originalTotal - discountAmount;
-            
-      // Create a temporary object with the structure calculateNetCost expects
+
       const tempCalculationData = [{
         ...updatedData[index],
         afterDiscountValue: calculatedAfterDiscountValue.toFixed(2),
         addition_bid_material_tax_details: updatedData[index].addition_bid_material_tax_details || [],
         deduction_bid_material_tax_details: updatedData[index].deduction_bid_material_tax_details || []
       }];
-      
-      // Calculate net cost using the properly structured data
+
       const updatedNetCost = calculateNetCost(0, tempCalculationData, 'applyAll');
-      
       updatedData[index].total = updatedNetCost;
-      
     });
-    
 
     setData(updatedData);
-    
-    
-    // Update taxRateData to reflect the Apply All override results for individual modals
+
+    // Update taxRateData for individual modals
     const syncedTaxRateData = updatedData.map((selectedRow, index) => {
-      // Calculate the base amount for taxRateData
       const quantityAvail = parseFloat(selectedRow.quantityAvail || selectedRow.quantity || 0);
       const price = parseFloat(selectedRow.price || 0);
       const discount = parseFloat(selectedRow.discount || 0);
       const originalTotal = price * quantityAvail;
       const discountAmount = (originalTotal * discount) / 100;
       const originalAfterDiscountValue = originalTotal - discountAmount;
-      
+
       return {
         material: selectedRow.section || "",
         hsnCode: selectedRow.hsnCode || "",
@@ -2725,25 +2714,23 @@ export default function VendorDetails() {
         discountRate: selectedRow.realisedDiscount || "",
         afterDiscountValue: originalAfterDiscountValue.toFixed(2),
         remark: selectedRow.vendorRemark || "",
-        // Use the updated tax details from Apply All override
         addition_bid_material_tax_details: selectedRow.addition_bid_material_tax_details || [],
         deduction_bid_material_tax_details: selectedRow.deduction_bid_material_tax_details || [],
         netCost: selectedRow.total || "",
       };
     });
-    
+
     setTaxRateData(syncedTaxRateData);
-    
-    // Update the original tax rate reference to reflect the merged state
     originalTaxRateDataRef.current = structuredClone(syncedTaxRateData);
+
     const updatedGrossTotal = calculateGrossTotal();
     setGrossTotal(parseFloat(updatedGrossTotal));
-    
+
     handleCloseModal1();
   };
 
   const handleAllTaxModal = () => {
-    
+
     // Initialize tax data for all items if not already done
     if (parentTaxRateData?.length === 0) {
       const updatedTaxRateData = data.map((selectedRow, index) => {
@@ -2754,7 +2741,7 @@ export default function VendorDetails() {
         const originalTotal = price * quantityAvail;
         const discountAmount = (originalTotal * discount) / 100;
         const originalAfterDiscountValue = originalTotal - discountAmount;
-                
+
         return {
           material: selectedRow.section || "",
           hsnCode: selectedRow.hsnCode || "",
@@ -2778,7 +2765,7 @@ export default function VendorDetails() {
       // Use existing parentTaxRateData but recalculate base amounts in case material data changed
       const restoredTaxRateData = parentTaxRateData.map((savedRow, index) => {
         const currentMaterialData = data[index];
-        
+
         // Recalculate original base amount in case material data changed
         const quantityAvail = parseFloat(currentMaterialData.quantityAvail || currentMaterialData.quantity || 0);
         const price = parseFloat(currentMaterialData.price || 0);
@@ -2786,7 +2773,7 @@ export default function VendorDetails() {
         const originalTotal = price * quantityAvail;
         const discountAmount = (originalTotal * discount) / 100;
         const originalAfterDiscountValue = originalTotal - discountAmount;
-                
+
         return {
           ...savedRow, // Keep all saved tax data
           // Update material info that might have changed
@@ -2823,7 +2810,7 @@ export default function VendorDetails() {
   // Function to add a new addition tax charge row
 
   const addAdditionTaxCharge = (rowIndex) => {
-    
+
     const newItem = {
       id: Date.now().toString(),
       taxChargeType: "",
@@ -2834,7 +2821,7 @@ export default function VendorDetails() {
 
     // Determine if we're in Apply All context or Individual context
     const isApplyAllContext = showModal1; // Apply All modal is open
-    
+
     if (isApplyAllContext) {
       const updatedParentData = [...parentTaxRateData];
       updatedParentData[rowIndex]?.addition_bid_material_tax_details?.push(newItem);
@@ -2857,7 +2844,7 @@ export default function VendorDetails() {
 
     // Determine if we're in Apply All context or Individual context
     const isApplyAllContext = showModal1; // Apply All modal is open
-    
+
     if (isApplyAllContext) {
       const updatedParentData = [...parentTaxRateData];
       updatedParentData[rowIndex].deduction_bid_material_tax_details.push(newItem);
@@ -2871,13 +2858,13 @@ export default function VendorDetails() {
 
   // Function to remove a tax charge item
   const removeTaxChargeItem = (rowIndex, id, type) => {
-    
+
     // Determine if we're in Apply All context or Individual context
     const isApplyAllContext = showModal1; // Apply All modal is open
-    
+
     if (isApplyAllContext) {
       const updatedParentData = [...parentTaxRateData];
-      
+
       if (type === "addition") {
         updatedParentData[rowIndex].addition_bid_material_tax_details =
           updatedParentData[rowIndex].addition_bid_material_tax_details.filter(
@@ -2889,10 +2876,10 @@ export default function VendorDetails() {
             (item) => item.id !== id
           );
       }
-      
+
       setParentTaxRateData(updatedParentData);
       const updatedMainData = [...data];
-      
+
       updatedMainData.forEach((_, index) => {
         if (type === "addition") {
           updatedMainData[index].addition_bid_material_tax_details =
@@ -2905,18 +2892,18 @@ export default function VendorDetails() {
               (item) => item.id !== id
             );
         }
-        
+
         // Recalculate net cost for each material after removal
         const updatedNetCost = calculateNetCost(index, updatedParentData, 'applyAll');
         updatedMainData[index].total = updatedNetCost;
-        
+
       });
-      
+
       setData(updatedMainData);
-      
+
     } else {
       const updatedTaxData = [...taxRateData];
-      
+
       if (type === "addition") {
         updatedTaxData[rowIndex].addition_bid_material_tax_details =
           updatedTaxData[rowIndex].addition_bid_material_tax_details.filter(
@@ -2928,7 +2915,7 @@ export default function VendorDetails() {
             (item) => item.id !== id
           );
       }
-      
+
       setTaxRateData(updatedTaxData);
     }
   };
@@ -2945,9 +2932,9 @@ export default function VendorDetails() {
   };
 
   const calculateNetCost = (rowIndex, updatedData = taxRateData, forceDataSource = null) => {
-    
+
     let taxRateRow;
-    
+
     if (forceDataSource === 'individual') {
       // Force use of individual data (for individual material saves)
       taxRateRow = updatedData[rowIndex];
@@ -2958,13 +2945,13 @@ export default function VendorDetails() {
       // Default behavior: Use provided data
       taxRateRow = updatedData[rowIndex];
     }
-    
+
     if (!taxRateRow) {
       return "0.00";
     }
-    
+
     const baseAmount = parseFloat(taxRateRow.afterDiscountValue) || 0;
-    
+
     let additionTaxTotal = 0;
     let deduction_bid_material_tax_detailsTotal = 0;
     let directChargesTotal = 0;
@@ -3023,17 +3010,17 @@ export default function VendorDetails() {
     return total.toFixed(2); // Return the total as a string with two decimal places
   };
   const handleSaveTaxChanges = () => {
-    
+
     const updatedData = [...data];
 
     // Debug current material's tax details before calculation
     if (taxRateData[tableId]) {
-      
+
       if (taxRateData[tableId].addition_bid_material_tax_details) {
         taxRateData[tableId].addition_bid_material_tax_details.forEach((item, itemIndex) => {
         });
       }
-      
+
       if (taxRateData[tableId].deduction_bid_material_tax_details) {
         taxRateData[tableId].deduction_bid_material_tax_details.forEach((item, itemIndex) => {
         });
@@ -3042,21 +3029,21 @@ export default function VendorDetails() {
 
     // Update the net cost for the specific tableId (row index) using ONLY individual data
     const updatedNetCost = calculateNetCost(tableId, taxRateData, 'individual');
-    
+
     updatedData[tableId].total = updatedNetCost;
-    
+
     // Update the tax details for the specific row from taxRateData
     if (taxRateData[tableId]) {
-      updatedData[tableId].addition_bid_material_tax_details = 
+      updatedData[tableId].addition_bid_material_tax_details =
         taxRateData[tableId].addition_bid_material_tax_details || [];
-      updatedData[tableId].deduction_bid_material_tax_details = 
+      updatedData[tableId].deduction_bid_material_tax_details =
         taxRateData[tableId].deduction_bid_material_tax_details || [];
-      
+
     }
 
     // Update the data state with the modified row
     setData(updatedData);
-    
+
     // Update the original tax rate reference to reflect the current state
     originalTaxRateDataRef.current = structuredClone(taxRateData);
 
@@ -3064,7 +3051,7 @@ export default function VendorDetails() {
     const updatedGrossTotal = calculateGrossTotal();
     setGrossTotal(parseFloat(updatedGrossTotal));
 
-    
+
     handleCloseModal();
     setIsTaxRateDataChanged(true);
 
@@ -3435,7 +3422,7 @@ export default function VendorDetails() {
                             columns={[
                               { label: "Material", key: "descriptionOfItem" },
                               { label: "Material Type", key: "section" },
-                              { label: "Material Sub Type", key: "subSection" },
+                              // { label: "Material Sub Type", key: "subSection" },
                               { label: "Quantity Requested", key: "quantity" },
                               {
                                 label: "Quantity Available",
@@ -4261,7 +4248,7 @@ export default function VendorDetails() {
                                                 columns={[
                                                   { key: "srNo", label: "Sr.No." },
                                                   { key: "material_type", label: "Material Type" },
-                                                  { key: "inventory_sub_type", label: "Material Sub Type" },
+                                                  // { key: "inventory_sub_type", label: "Material Sub Type" },
                                                   { key: "inventory_name", label: "Material Name" },
                                                   { key: "quantity", label: "Quantity" },
                                                   { key: "uom", label: "UOM" },
@@ -5214,18 +5201,18 @@ export default function VendorDetails() {
                     </div>
                   </div>
                 )}
-  
+
                 {/* <div className="card-body"> */}
                 <div style={tableContainerStyle}>
                   <Table
                     columns={[
                       { label: "Sr No", key: "srNo" },
                       {
-                        label: "Material Name",
+                        label: "Material Namenkjnjk",
                         key: "descriptionOfItem",
                       },
                       { label: "Material Type", key: "section" },
-                      { label: "Material Sub Type", key: "subSection" },
+                      // { label: "Material Sub Type", key: "subSection" },
                       { label: "UOM", key: "unit" },
                       { label: "Brand", key: "pmsBrand" },
                       { label: "Colour", key: "pmsColour" },
@@ -5259,28 +5246,32 @@ export default function VendorDetails() {
                     }))}
                     customRender={{
                       realisedPrice: (cell, rowIndex) => {
-                        const currentRowData = data[rowIndex];
-                        const price = parseFloat(currentRowData?.price) || 0;
-                        const discount = parseFloat(currentRowData?.discount) || 0;
-                        
-                        // Get realised price value
-                        let realisedPriceValue;
-                        if (currentRowData?.realisedPrice !== undefined && currentRowData?.realisedPrice !== null && currentRowData?.realisedPrice !== "") {
-                          realisedPriceValue = parseFloat(currentRowData.realisedPrice) || 0;
-                        } else {
-                          // Fallback calculation
-                          realisedPriceValue = price - (price * discount / 100);
-                        }
+    const currentRowData = data[rowIndex];
+    const price = parseFloat(currentRowData?.price) || 0;
+    const discount = parseFloat(currentRowData?.discount) || 0;
+    
+    // Get realised price value
+    let realisedPriceValue;
+    if (currentRowData?.realisedPrice !== undefined && currentRowData?.realisedPrice !== null && currentRowData?.realisedPrice !== "") {
+      realisedPriceValue = parseFloat(currentRowData.realisedPrice) || 0;
+    } else {
+      // Fallback calculation only if not revisedBid or if user has entered values
+      if (!revisedBid || (price > 0 && discount >= 0)) {
+        realisedPriceValue = price - (price * discount / 100);
+      } else {
+        realisedPriceValue = "";
+      }
+    }
 
-                        return (
-                          <input
-                            value={realisedPriceValue || "-"}
-                            disabled={true}
-                            className="form-control"
-                            readOnly
-                          />
-                        );
-                      },
+    return (
+      <input
+        value={realisedPriceValue || "-"}
+        disabled={true}
+        className="form-control"
+        readOnly
+      />
+    );
+  },
                       taxRate: (cell, rowIndex) => (
                         <button
                           className="purple-btn2"
@@ -5416,171 +5407,153 @@ export default function VendorDetails() {
                       ),
 
                       price: (cell, rowIndex) => {
-                        const previousPrice =
-                          previousData[rowIndex]?.price || cell; // Fallback to `cell` if `previousData` is undefined
-                        const updatedPrice =
-                          updatedData[rowIndex]?.price || previousPrice; // Use `updatedPrice` if available
+    const previousPrice = previousData[rowIndex]?.price || cell;
+    const updatedPrice = updatedData[rowIndex]?.price || previousPrice;
+    const showArrow = counterData && previousPrice !== updatedPrice;
 
-                        const showArrow =
-                          counterData && previousPrice !== updatedPrice; // Show arrow if `counterData` exists and prices differ
+    // For revised bid, start with empty value unless user has entered something
+    const displayValue = revisedBid && !counterData 
+      ? (data[rowIndex]?.price || "") 
+      : previousPrice;
 
-                        return showArrow ? (
-                          <div
-                            // className="form-control"
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                            }}
-                          >
-                            <span
-                              style={{
-                                textDecoration: "line-through",
-                                marginRight: "5px",
-                                color: "gray",
-                              }}
-                            >
-                              ₹{previousPrice}
-                            </span>
-                            <span className="me-2">
-                              {" "}
-                              <svg
-                                className="me-2"
-                                viewBox="64 64 896 896"
-                                focusable="false"
-                                class=""
-                                data-icon="arrow-right"
-                                width="1em"
-                                height="1em"
-                                fill="currentColor"
-                                aria-hidden="true"
-                              >
-                                <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                              </svg>
-                            </span>
-                            <span
-                              style={{
-                                backgroundColor: "#b45253", // Yellow background
-                                padding: "4px 10px", // Add padding to resemble a badge
-                                borderRadius: "5px",
-                                marginEnd: "",
-                                // color:"#7c2d12",
-                                lineHeight: "1",
-                                color: "white",
-
-                                // Rounded edges for the badge
-                                // Make text bold
-                              }}
-                            >
-                              ₹{updatedPrice}
-                            </span>
-
-                            {/* <span>→{updatedDiscount}</span> */}
-                          </div>
-                        ) : counterData ? (
-                          // Show updated price if `counterData` exists but no change in value
-                          <span>{updatedPrice}</span>
-                        ) : (
-                          // If no `counterData`, provide an editable input
-                          <input
-                            className="form-control"
-                            type="number"
-                            min="0"
-                            value={previousPrice}
-                            onChange={(e) =>
-                              handleInputChange(
-                                e.target.value,
-                                rowIndex,
-                                "price"
-                              )
-                            }
-                            style={otherColumnsStyle}
-                            disabled={isBid}
-                          />
-                        );
-                      },
+    return showArrow ? (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        <span
+          style={{
+            textDecoration: "line-through",
+            marginRight: "5px",
+            color: "gray",
+          }}
+        >
+          ₹{previousPrice}
+        </span>
+        <span className="me-2">
+          <svg
+            className="me-2"
+            viewBox="64 64 896 896"
+            focusable="false"
+            data-icon="arrow-right"
+            width="1em"
+            height="1em"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+          </svg>
+        </span>
+        <span
+          style={{
+            backgroundColor: "#b45253",
+            padding: "4px 10px",
+            borderRadius: "5px",
+            marginEnd: "",
+            lineHeight: "1",
+            color: "white",
+          }}
+        >
+          ₹{updatedPrice}
+        </span>
+      </div>
+    ) : counterData ? (
+      <span>{updatedPrice}</span>
+    ) : (
+      <input
+        className="form-control"
+        type="number"
+        min="0"
+        value={displayValue}
+        onChange={(e) =>
+          handleInputChange(
+            e.target.value,
+            rowIndex,
+            "price"
+          )
+        }
+        style={otherColumnsStyle}
+        disabled={isBid}
+        placeholder={revisedBid ? "Enter price" : ""}
+      />
+    );
+  },
                       discount: (cell, rowIndex) => {
-                        const previousDiscount =
-                          previousData[rowIndex]?.discount || cell;
-                        const updatedDiscount =
-                          updatedData[rowIndex]?.discount ||
-                          previousDiscount;
-                        const showArrow =
-                          counterData &&
-                          previousDiscount !== updatedDiscount;
+    const previousDiscount = previousData[rowIndex]?.discount || cell;
+    const updatedDiscount = updatedData[rowIndex]?.discount || previousDiscount;
+    const showArrow = counterData && previousDiscount !== updatedDiscount;
 
-                        return showArrow ? (
-                          <div
-                            // className="form-control"
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                            }}
-                          >
-                            <span
-                              style={{
-                                textDecoration: "line-through",
-                                marginRight: "5px",
-                                color: "gray",
-                              }}
-                            >
-                              {previousDiscount}%
-                            </span>
+    // For revised bid, start with empty value unless user has entered something
+    const displayValue = revisedBid && !counterData 
+      ? (data[rowIndex]?.discount || "") 
+      : previousDiscount;
 
-                            <span className="me-2">
-                              {" "}
-                              <svg
-                                className="me-2"
-                                viewBox="64 64 896 896"
-                                focusable="false"
-                                class=""
-                                data-icon="arrow-right"
-                                width="1em"
-                                height="1em"
-                                fill="currentColor"
-                                aria-hidden="true"
-                              >
-                                <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                              </svg>
-                            </span>
-                            <span
-                              style={{
-                                backgroundColor: "#b45253", // Yellow background
-                                padding: "4px 10px", // Add padding to resemble a badge
-                                borderRadius: "5px",
-                                marginEnd: "",
-                                // color:"#7c2d12",
-                                lineHeight: "1",
-                                color: "white",
-
-                                // Rounded edges for the badge
-                                // Make text bold
-                              }}
-                            >
-                              {updatedDiscount}%
-                            </span>
-
-                            {/* <span>→{updatedDiscount}</span> */}
-                          </div>
-                        ) : counterData ? (
-                          <span>{updatedDiscount}</span>
-                        ) : (
-                          <input
-                            className="form-control"
-                            type="number"
-                            min="0"
-                            value={previousDiscount}
-                            onChange={(e) =>
-                              handleInputChange(
-                                e.target.value,
-                                rowIndex,
-                                "discount"
-                              )
-                            }
-                            style={otherColumnsStyle}
-                            disabled={isBid}
-                          />
-                        );
-                      },
+    return showArrow ? (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        <span
+          style={{
+            textDecoration: "line-through",
+            marginRight: "5px",
+            color: "gray",
+          }}
+        >
+          {previousDiscount}%
+        </span>
+        <span className="me-2">
+          <svg
+            className="me-2"
+            viewBox="64 64 896 896"
+            focusable="false"
+            data-icon="arrow-right"
+            width="1em"
+            height="1em"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+          </svg>
+        </span>
+        <span
+          style={{
+            backgroundColor: "#b45253",
+            padding: "4px 10px",
+            borderRadius: "5px",
+            marginEnd: "",
+            lineHeight: "1",
+            color: "white",
+          }}
+        >
+          {updatedDiscount}%
+        </span>
+      </div>
+    ) : counterData ? (
+      <span>{updatedDiscount}</span>
+    ) : (
+      <input
+        className="form-control"
+        type="number"
+        min="0"
+        value={displayValue}
+        onChange={(e) =>
+          handleInputChange(
+            e.target.value,
+            rowIndex,
+            "discount"
+          )
+        }
+        style={otherColumnsStyle}
+        disabled={isBid}
+        placeholder={revisedBid ? "Enter discount %" : ""}
+      />
+    );
+  },
                       rate: (cell, rowIndex) => (
                         <input
                           className="form-control"
@@ -5677,141 +5650,151 @@ export default function VendorDetails() {
                         );
                       },
                       quantityAvail: (cell, rowIndex) => {
-                        const row = data[rowIndex];
-                        const quantityRequested =
-                          parseFloat(row.quantity) || 0;
-                        const quantityAvail = row.quantityAvail ?? ""; // editable input
-                        const price = parseFloat(row.price) || 0;
+    const row = data[rowIndex];
+    const quantityRequested = parseFloat(row.quantity) || 0;
+    const quantityAvail = row.quantityAvail ?? "";
+    
+    const handleQuantityChange = (e) => {
+      const value = parseFloat(e.target.value) || 0;
 
-                        const handleQuantityChange = (e) => {
-                          const value = parseFloat(e.target.value) || 0;
+      if (value > quantityRequested) {
+        toast.error(
+          "The quantity available value cannot be greater than the quantity requested."
+        );
+        return;
+      }
 
-                          if (value > quantityRequested) {
-                            toast.error(
-                              "The quantity available value cannot be greater than the quantity requested."
-                            );
-                            return;
-                          }
+      handleInputChange(
+        value,
+        rowIndex,
+        "quantityAvail"
+      );
+    };
 
-                          handleInputChange(
-                            value,
-                            rowIndex,
-                            "quantityAvail"
-                          );
-                        };
+    const showArrow = counterData &&
+      (previousData[rowIndex]?.quantityAvail ?? "") !==
+      (updatedData[rowIndex]?.quantityAvail ?? "");
 
-                        const showArrow =
-                          counterData &&
-                          (previousData[rowIndex]?.quantityAvail ??
-                            "") !==
-                          (updatedData[rowIndex]?.quantityAvail ?? "");
+    // For revised bid, start with empty value unless user has entered something
+    const displayValue = revisedBid && !counterData
+      ? (quantityAvail !== "" && quantityAvail !== undefined ? quantityAvail : "")
+      : (quantityAvail !== "" && quantityAvail !== undefined ? quantityAvail : quantityRequested);
 
-                        return showArrow ? (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                            }}
-                          >
-                            <span
-                              style={{
-                                textDecoration: "line-through",
-                                marginRight: "5px",
-                                color: "gray",
-                              }}
-                            >
-                              {previousData[rowIndex]?.quantityAvail ||
-                                quantityRequested}
-                            </span>
-                            <span className="me-2">
-                              <svg
-                                viewBox="64 64 896 896"
-                                width="1em"
-                                height="1em"
-                                fill="currentColor"
-                              >
-                                <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z" />
-                              </svg>
-                            </span>
-                            <span
-                              style={{
-                                backgroundColor: "#b45253",
-                                padding: "4px 10px",
-                                borderRadius: "5px",
-                                color: "white",
-                                lineHeight: "1",
-                              }}
-                            >
-                              {updatedData[rowIndex]?.quantityAvail ||
-                                quantityAvail}
-                            </span>
-                          </div>
-                        ) : counterData ? (
-                          <span>{quantityAvail}</span>
-                        ) : (
-                          <input
-                            className="form-control"
-                            type="number"
-                            value={
-                              quantityAvail !== "" &&
-                                quantityAvail !== undefined
-                                ? quantityAvail
-                                : quantityRequested
-                            }
-                            onChange={handleQuantityChange}
-                            style={otherColumnsStyle}
-                            disabled={isBid}
-                          />
-                        );
-                      },
+    return showArrow ? (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        <span
+          style={{
+            textDecoration: "line-through",
+            marginRight: "5px",
+            color: "gray",
+          }}
+        >
+          {previousData[rowIndex]?.quantityAvail || quantityRequested}
+        </span>
+        <span className="me-2">
+          <svg
+            viewBox="64 64 896 896"
+            width="1em"
+            height="1em"
+            fill="currentColor"
+          >
+            <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z" />
+          </svg>
+        </span>
+        <span
+          style={{
+            backgroundColor: "#b45253",
+            padding: "4px 10px",
+            borderRadius: "5px",
+            color: "white",
+            lineHeight: "1",
+          }}
+        >
+          {updatedData[rowIndex]?.quantityAvail || quantityAvail}
+        </span>
+      </div>
+    ) : counterData ? (
+      <span>{quantityAvail}</span>
+    ) : (
+      <input
+        className="form-control"
+        type="number"
+        value={displayValue}
+        onChange={handleQuantityChange}
+        style={otherColumnsStyle}
+        disabled={isBid}
+        placeholder={revisedBid ? "Enter quantity available" : ""}
+      />
+    );
+  },
                       landedAmount: (cell, rowIndex) => {
-                        const previousLandedAmount =
-                          previousData[rowIndex]?.landedAmount || cell;
-                        const updatedLandedAmount =
-                          updatedData[rowIndex]?.landedAmount ||
-                          previousLandedAmount;
-                        const showArrow =
-                          counterData &&
-                          previousLandedAmount !== updatedLandedAmount;
+    const previousLandedAmount = previousData[rowIndex]?.landedAmount || cell;
+    const updatedLandedAmount = updatedData[rowIndex]?.landedAmount || previousLandedAmount;
+    const showArrow = counterData && previousLandedAmount !== updatedLandedAmount;
 
-                        return showArrow ? (
-                          <div
-                            className="form-control"
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                            }}
-                          >
-                            <span
-                              style={{
-                                textDecoration: "line-through",
-                                marginRight: "5px",
-                              }}
-                            >
-                              {previousLandedAmount}
-                            </span>
-                            <span style={{ marginRight: "5px" }}>→</span>
-                            <span>{updatedLandedAmount}</span>
-                          </div>
-                        ) : counterData ? (
-                          <span>{updatedLandedAmount}</span>
-                        ) : (
-                          <input
-                            className="form-control"
-                            type="number"
-                            value={previousLandedAmount}
-                            onChange={(e) =>
-                              handleInputChange(
-                                e.target.value,
-                                rowIndex,
-                                "landedAmount"
-                              )
-                            }
-                            style={otherColumnsStyle}
-                            disabled={isBid}
-                          />
-                        );
-                      },
+    // For revised bid, show calculated value or empty if no user input
+    const currentRowData = data[rowIndex];
+    const price = parseFloat(currentRowData?.price) || 0;
+    const quantityAvail = parseFloat(currentRowData?.quantityAvail) || 0;
+    const discount = parseFloat(currentRowData?.discount) || 0;
+    
+    let displayValue;
+    if (revisedBid && !counterData) {
+      if (price > 0 && quantityAvail > 0) {
+        const total = price * quantityAvail;
+        const discountAmount = (total * discount) / 100;
+        displayValue = (total - discountAmount).toFixed(2);
+      } else {
+        displayValue = "";
+      }
+    } else {
+      displayValue = previousLandedAmount;
+    }
+
+    return showArrow ? (
+      <div
+        className="form-control"
+        style={{
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        <span
+          style={{
+            textDecoration: "line-through",
+            marginRight: "5px",
+          }}
+        >
+          {previousLandedAmount}
+        </span>
+        <span style={{ marginRight: "5px" }}>→</span>
+        <span>{updatedLandedAmount}</span>
+      </div>
+    ) : counterData ? (
+      <span>{updatedLandedAmount}</span>
+    ) : (
+      <input
+        className="form-control"
+        type="number"
+        value={displayValue}
+        onChange={(e) =>
+          handleInputChange(
+            e.target.value,
+            rowIndex,
+            "landedAmount"
+          )
+        }
+        style={otherColumnsStyle}
+        disabled={true} // Keep disabled as it's calculated
+        placeholder={revisedBid ? "Calculated amount" : ""}
+      />
+    );
+  },
                       realisedDiscount: (cell, rowIndex) => {
                         const previousRealisedDiscount =
                           previousData[rowIndex]?.realisedDiscount ||
@@ -5969,83 +5952,82 @@ export default function VendorDetails() {
                         );
                       },
                       total: (cell, rowIndex) => {
-                        const previousTotal =
-                          previousData[rowIndex]?.total || cell;
-                        const updatedTotal =
-                          updatedData[rowIndex]?.total || previousTotal;
-                        const showArrow =
-                          counterData && previousTotal !== updatedTotal;
+    const previousTotal = previousData[rowIndex]?.total || cell;
+    const updatedTotal = updatedData[rowIndex]?.total || previousTotal;
+    const showArrow = counterData && previousTotal !== updatedTotal;
 
-                        return showArrow ? (
-                          <div
-                            // className="form-control"
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              maxWidth: "120%",
-                            }}
-                          >
-                            <span
-                              style={{
-                                textDecoration: "line-through",
-                                marginRight: "5px",
-                                color: "gray",
-                              }}
-                            >
-                              ₹{previousTotal}
-                            </span>
-                            <span className="me-2">
-                              {" "}
-                              <svg
-                                className="me-2"
-                                viewBox="64 64 896 896"
-                                focusable="false"
-                                class=""
-                                data-icon="arrow-right"
-                                width="1em"
-                                height="1em"
-                                fill="currentColor"
-                                aria-hidden="true"
-                              >
-                                <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                              </svg>
-                            </span>
-                            <span
-                              style={{
-                                backgroundColor: "#b45253", // Yellow background
-                                padding: "4px 10px", // Add padding to resemble a badge
-                                borderRadius: "5px",
+    // For revised bid, show calculated value or empty if no user input
+    const currentRowData = data[rowIndex];
+    let displayValue;
+    if (revisedBid && !counterData) {
+      displayValue = currentRowData?.total || "";
+    } else {
+      displayValue = previousTotal;
+    }
 
-                                // color:"#7c2d12",
-                                lineHeight: "1",
-                                color: "white",
-
-                                // Rounded edges for the badge
-                                // Make text bold
-                              }}
-                            >
-                              ₹{updatedTotal}
-                            </span>
-                          </div>
-                        ) : counterData ? (
-                          <span>{updatedTotal}</span>
-                        ) : (
-                          <input
-                            className="form-control"
-                            type="number"
-                            value={previousTotal}
-                            onChange={(e) =>
-                              handleInputChange(
-                                e.target.value,
-                                rowIndex,
-                                "total"
-                              )
-                            }
-                            style={otherColumnsStyle}
-                            disabled={isBid}
-                          />
-                        );
-                      },
+    return showArrow ? (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          maxWidth: "120%",
+        }}
+      >
+        <span
+          style={{
+            textDecoration: "line-through",
+            marginRight: "5px",
+            color: "gray",
+          }}
+        >
+          ₹{previousTotal}
+        </span>
+        <span className="me-2">
+          <svg
+            className="me-2"
+            viewBox="64 64 896 896"
+            focusable="false"
+            data-icon="arrow-right"
+            width="1em"
+            height="1em"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+          </svg>
+        </span>
+        <span
+          style={{
+            backgroundColor: "#b45253",
+            padding: "4px 10px",
+            borderRadius: "5px",
+            lineHeight: "1",
+            color: "white",
+          }}
+        >
+          ₹{updatedTotal}
+        </span>
+      </div>
+    ) : counterData ? (
+      <span>{updatedTotal}</span>
+    ) : (
+      <input
+        className="form-control"
+        type="number"
+        value={displayValue}
+        onChange={(e) =>
+          handleInputChange(
+            e.target.value,
+            rowIndex,
+            "total"
+          )
+        }
+        style={otherColumnsStyle}
+        disabled={true} // Keep disabled as it's calculated
+        placeholder={revisedBid ? "Calculated total" : ""}
+      />
+    );
+  },
                       vendorRemark: (cell, rowIndex) => (
                         <textarea
                           className="form-control"
@@ -6110,87 +6092,6 @@ export default function VendorDetails() {
                           />
                         );
                       },
-                      // ...additionalColumns.reduce((acc, col) => {
-                      //   acc[col.key] = (cell, rowIndex) => {
-                      //     const row = data[rowIndex]; // Correctly reference the row
-                      //     const extraData =
-                      //       row?.extra_data?.[col.key] || {
-                      //         value: "",
-                      //         readonly: false,
-                      //       }; // Ensure extra_data is initialized
-                      //     return (
-                      //       <input
-                      //         value={extraData.value || ""
-                      //           } // Use the value conditionally
-                      //         className="form-control"
-                      //         onChange={(e) => {
-                      //           // if (revisedBid) {
-                      //             // Update the value in extra_data immutably
-                      //             setData((prevData) => {
-                      //               const updatedData = prevData.map(
-                      //                 (item, index) => {
-                      //                   if (index === rowIndex) {
-                      //                     const updatedRow = { ...item };
-                      //                     if (!updatedRow.extra_data) {
-                      //                       updatedRow.extra_data = {};
-                      //                     }
-                      //                     updatedRow.extra_data[col.key] =
-                      //                       {
-                      //                         ...updatedRow.extra_data[
-                      //                           col.key
-                      //                         ],
-                      //                         value: e.target.value,
-                      //                       };
-                      //                     return updatedRow;
-                      //                   }
-                      //                   return item;
-                      //                 }
-                      //               );
-                      //               return updatedData;
-                      //             });
-
-                      //         }}
-                      //         onFocus={(e) => e.target.select()} // Ensure the input remains focused
-                      //         readOnly={!revisedBid} // Make input read-only if not revisedBid
-                      //       />
-                      //     );
-                      //   };
-                      //   return acc;
-                      // }, {}),
-                      // ...additionalColumns.reduce((acc, col) => {
-                      //   acc[col.key] = (cell, rowIndex) => {
-                      //     const row = data[rowIndex]; // Correctly reference the row
-                      //     const extraData = row?.extra_data?.[col.key] || { value: "", readonly: false }; // Ensure extra_data is initialized
-                      //     return (
-                      //       <input
-                      //         value={typeof extraData === "object" ? extraData.value || "" : extraData || ""}
-                      //         className="form-control"
-                      //         onChange={(e) => {
-                      //           // Update the value in extra_data immutably
-                      //           setData((prevData) => {
-                      //             const updatedData = prevData.map((item, index) => {
-                      //               if (index === rowIndex) {
-                      //                 const updatedRow = { ...item };
-                      //                 if (!updatedRow.extra_data) {
-                      //                   updatedRow.extra_data = {};
-                      //                 }
-                      //                 updatedRow.extra_data[col.key] = {
-                      //                   ...updatedRow.extra_data[col.key],
-                      //                   value: e.target.value,
-                      //                 };
-                      //                 return updatedRow;
-                      //               }
-                      //               return item;
-                      //             });
-                      //             return updatedData;
-                      //           });
-                      //         }}
-                      //         onFocus={(e) => e.target.select()}
-                      //       />
-                      //     );
-                      //   };
-                      //   return acc;
-                      // }, {}),
                       ...additionalColumns.reduce((acc, col) => {
                         acc[col.key] = (cell, rowIndex) => {
                           const row = data[rowIndex];
@@ -6668,7 +6569,7 @@ export default function VendorDetails() {
                         </button>
                       </td>
                     </tr>
-                    
+
                     {parentTaxRateData[
                       tableId
                     ]?.addition_bid_material_tax_details.map(
@@ -6750,7 +6651,7 @@ export default function VendorDetails() {
                               const isAmountBasedCharge = ["Handling Charges", "Other charges", "Freight"].includes(selectedTaxType);
 
                               if (isAmountBasedCharge) {
-                                
+
                                 return (
                                   <input
                                     key={`apply-all-amount-${item.id}`}
@@ -6776,11 +6677,11 @@ export default function VendorDetails() {
 
                                 const options = match && Array.isArray(match.percentage)
                                   ? match.percentage.map((percent) => ({
-                                      label: `${percent}%`,
-                                      value: `${percent}%`,
-                                    }))
+                                    label: `${percent}%`,
+                                    value: `${percent}%`,
+                                  }))
                                   : [];
-                                    
+
                                 return (
                                   <SelectBox
                                     options={options}
@@ -7294,15 +7195,15 @@ export default function VendorDetails() {
 
                                 const options = match && Array.isArray(match.percentage)
                                   ? match.percentage.map((percent) => ({
-                                      label: `${percent}%`,
-                                      value: `${percent}%`,
-                                    }))
+                                    label: `${percent}%`,
+                                    value: `${percent}%`,
+                                  }))
                                   : [
-                                      { label: "5%", value: "5%" },
-                                      { label: "12%", value: "12%" },
-                                      { label: "18%", value: "18%" },
-                                      { label: "28%", value: "28%" },
-                                    ];
+                                    { label: "5%", value: "5%" },
+                                    { label: "12%", value: "12%" },
+                                    { label: "18%", value: "18%" },
+                                    { label: "28%", value: "28%" },
+                                  ];
 
                                 return (
                                   <SelectBox
@@ -7340,51 +7241,51 @@ export default function VendorDetails() {
                             />
                           </td>
 
-                        <td>
-                          {(() => {
-                            // Check if this is an amount-based charge
-                            const selectedTaxType =
-                              item.taxChargeType ||
-                              taxOptions.find((option) => option.id === item.resource_id)?.name ||
-                              taxOptions.find((option) => option.id === item.resource_id)?.value;
+                          <td>
+                            {(() => {
+                              // Check if this is an amount-based charge
+                              const selectedTaxType =
+                                item.taxChargeType ||
+                                taxOptions.find((option) => option.id === item.resource_id)?.name ||
+                                taxOptions.find((option) => option.id === item.resource_id)?.value;
 
-                            const isAmountBasedCharge = ["Handling Charges", "Other charges", "Freight"].includes(selectedTaxType);
+                              const isAmountBasedCharge = ["Handling Charges", "Other charges", "Freight"].includes(selectedTaxType);
 
-                            if (isAmountBasedCharge) {
-                              // For amount-based charges, show editable input
-                              return (
-                                <input
-                                  key={`amount-column-${item.id}`}
-                                  type="number"
-                                  className="form-control"
-                                  placeholder="Enter amount (INR)"
-                                  value={item.amount || ""}
-                                  onChange={(e) =>
-                                    handleTaxChargeChange(
-                                      tableId,
-                                      item.id,
-                                      "amount",
-                                      e.target.value,
-                                      "addition"
-                                    )
-                                  }
-                                />
-                              );
-                            } else {
-                              // For percentage-based taxes, show calculated amount as read-only
-                              return (
-                                <input
-                                  type="text"
-                                  className="form-control"
-                                  value={item.amount || "0.00"}
-                                  readOnly
-                                  disabled={true}
-                                  title="Calculated from percentage"
-                                />
-                              );
-                            }
-                          })()}
-                        </td>                          <td className="text-center">
+                              if (isAmountBasedCharge) {
+                                // For amount-based charges, show editable input
+                                return (
+                                  <input
+                                    key={`amount-column-${item.id}`}
+                                    type="number"
+                                    className="form-control"
+                                    placeholder="Enter amount (INR)"
+                                    value={item.amount || ""}
+                                    onChange={(e) =>
+                                      handleTaxChargeChange(
+                                        tableId,
+                                        item.id,
+                                        "amount",
+                                        e.target.value,
+                                        "addition"
+                                      )
+                                    }
+                                  />
+                                );
+                              } else {
+                                // For percentage-based taxes, show calculated amount as read-only
+                                return (
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={item.amount || "0.00"}
+                                    readOnly
+                                    disabled={true}
+                                    title="Calculated from percentage"
+                                  />
+                                );
+                              }
+                            })()}
+                          </td>                          <td className="text-center">
                             <button
                               className="btn btn-outline-danger btn-sm"
                               onClick={() =>

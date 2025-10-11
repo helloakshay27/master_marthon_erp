@@ -447,7 +447,7 @@ export default function OverviewTab({
           )}
         </div>
 
-        <div className="col-12 my-3">
+        {/* <div className="col-12 my-3">
           <a
             className="btn"
             data-bs-toggle="collapse"
@@ -512,7 +512,8 @@ export default function OverviewTab({
               </div>
             </div>
           )}
-        </div>
+        </div> */}
+
         <div className="col-12 my-3">
           <a
             className="btn"

@@ -488,8 +488,7 @@ export default function ResponseTab({ isCounterOffer }) {
         error
       );
       toast.error(
-        `Failed to ${
-          status === "accepted" ? "accept" : "decline"
+        `Failed to ${status === "accepted" ? "accept" : "decline"
         } the offer. Please try again.`
       );
     } finally {
@@ -732,14 +731,13 @@ export default function ResponseTab({ isCounterOffer }) {
                                     </div>
                                   </div>
                                   <button
-                                    className={`purple-btn1 mt-2 ${
-                                      isCounterOffer ? "disabled-btn" : ""
-                                    } position-absolute bottom-0 start-50 translate-middle-x`}
+                                    className={`purple-btn1 mt-2 ${isCounterOffer ? "disabled-btn" : ""
+                                      } position-absolute bottom-0 start-50 translate-middle-x`}
                                     onClick={async () => {
                                       if (
                                         vendor?.bids?.length > 0 &&
                                         vendor?.bids[0]?.bid_materials?.length >
-                                          0
+                                        0
                                       ) {
                                         const bidId =
                                           vendor.bids[0].bid_materials[0]
@@ -775,7 +773,7 @@ export default function ResponseTab({ isCounterOffer }) {
                                         }
                                       }
                                     }}
-                                    // disabled={isCounterOffer}
+                                  // disabled={isCounterOffer}
                                   >
                                     Counter
                                   </button>
@@ -859,7 +857,7 @@ export default function ResponseTab({ isCounterOffer }) {
                         if (
                           bid.status === "pending" &&
                           bid.serialized_last_bid?.event_vendor_id ===
-                            bid?.event_vendor_id
+                          bid?.event_vendor_id
                         ) {
                           return bid.serialized_last_bid;
                         }
@@ -944,17 +942,15 @@ export default function ResponseTab({ isCounterOffer }) {
                                     const value = extraData[column].value;
                                     acc[column] = Array.isArray(value)
                                       ? value
-                                          .map(
-                                            (item) =>
-                                              `${item.taxChargeType || ""}: ${
-                                                item.amount || 0
-                                              }${
-                                                item.taxChargePerUom
-                                                  ? ` (${item.taxChargePerUom})`
-                                                  : ""
-                                              }`
-                                          )
-                                          .join(", ")
+                                        .map(
+                                          (item) =>
+                                            `${item.taxChargeType || ""}: ${item.amount || 0
+                                            }${item.taxChargePerUom
+                                              ? ` (${item.taxChargePerUom})`
+                                              : ""
+                                            }`
+                                        )
+                                        .join(", ")
                                       : value || "_";
                                   } else {
                                     acc[column] = "_";
@@ -1109,18 +1105,21 @@ export default function ResponseTab({ isCounterOffer }) {
             </div>
           )}
           {activityLogs.length > 0 && eventVendors.length > 0 && (
-            <Table
-              columns={[
-                { label: "Activity Name", key: "activity_name" },
-                { label: "Activity Type", key: "activity_type" },
-                { label: "Created By", key: "created_by_name" },
-                { label: "Created Date", key: "created_at" },
-              ]}
-              data={activityLogs.map((log, idx) => ({
-                ...log,
-                created_at: new Date(log.created_at).toLocaleString(),
-              }))}
-            />
+            <div className="w-100" style={{ width: "100%" }}>
+              <Table
+                isMinWidth={true}
+                columns={[
+                  { label: "Activity Name", key: "activity_name" },
+                  { label: "Activity Type", key: "activity_type" },
+                  { label: "Created By", key: "created_by_name" },
+                  { label: "Created Date", key: "created_at" },
+                ]}
+                data={activityLogs.map((log, idx) => ({
+                  ...log,
+                  created_at: new Date(log.created_at).toLocaleString(),
+                }))}
+              />
+            </div>
           )}
         </FullScreen>
       )}
@@ -1328,10 +1327,10 @@ export default function ResponseTab({ isCounterOffer }) {
                                     ? item.tax_percentage
                                     : `${item.tax_percentage}%`
                                   : item?.taxChargePerUom
-                                  ? item.taxChargePerUom.includes("%")
-                                    ? item.taxChargePerUom
-                                    : `${item.taxChargePerUom}%`
-                                  : ""
+                                    ? item.taxChargePerUom.includes("%")
+                                      ? item.taxChargePerUom
+                                      : `${item.taxChargePerUom}%`
+                                    : ""
                               }
                               onChange={(e) =>
                                 handleTaxChargeChange(
@@ -1377,7 +1376,7 @@ export default function ResponseTab({ isCounterOffer }) {
                               type="text"
                               className="form-control"
                               value={item.amount}
-                              onChange={(e) => {}}
+                              onChange={(e) => { }}
                               readOnly
                               disabled={true}
                             />
@@ -1522,9 +1521,8 @@ export default function ResponseTab({ isCounterOffer }) {
             <div className="d-flex justify-content-between align-items-center px-1 mt-2">
               <ul className="pagination justify-content-center d-flex">
                 <li
-                  className={`page-item ${
-                    currentReminderPage === 1 ? "disabled" : ""
-                  }`}
+                  className={`page-item ${currentReminderPage === 1 ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
@@ -1535,9 +1533,8 @@ export default function ResponseTab({ isCounterOffer }) {
                 </li>
 
                 <li
-                  className={`page-item ${
-                    currentReminderPage === 1 ? "disabled" : ""
-                  }`}
+                  className={`page-item ${currentReminderPage === 1 ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
@@ -1552,9 +1549,8 @@ export default function ResponseTab({ isCounterOffer }) {
                 {getReminderPageRange().map((page) => (
                   <li
                     key={page}
-                    className={`page-item ${
-                      currentReminderPage === page ? "active" : ""
-                    }`}
+                    className={`page-item ${currentReminderPage === page ? "active" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1566,9 +1562,8 @@ export default function ResponseTab({ isCounterOffer }) {
                 ))}
 
                 <li
-                  className={`page-item ${
-                    currentReminderPage === totalReminderPages ? "disabled" : ""
-                  }`}
+                  className={`page-item ${currentReminderPage === totalReminderPages ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
@@ -1581,9 +1576,8 @@ export default function ResponseTab({ isCounterOffer }) {
                 </li>
 
                 <li
-                  className={`page-item ${
-                    currentReminderPage === totalReminderPages ? "disabled" : ""
-                  }`}
+                  className={`page-item ${currentReminderPage === totalReminderPages ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
@@ -1802,7 +1796,7 @@ export default function ResponseTab({ isCounterOffer }) {
                         type="text"
                         className="form-control"
                         value={item.amount}
-                        onChange={(e) => {}}
+                        onChange={(e) => { }}
                         readOnly
                         disabled={true}
                       />

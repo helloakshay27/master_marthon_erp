@@ -7,6 +7,7 @@ import {
   SearchIcon,
   SelectBox,
   Table,
+  MultiSelector,
 } from "../components";
 import { baseURL } from "../confi/apiDomain";
 import { citiesList, participantsTabColumns } from "../constant/data";
@@ -57,7 +58,7 @@ export default function CreateEvent() {
   const [selectedStrategy, setSelectedStrategy] = useState(false);
   const [selectedVendorDetails, setSelectedVendorDetails] = useState(false);
   const [selectedVendorProfile, setSelectedVendorProfile] = useState(false);
-  const [eventStatus, setEventStatus] = useState("");
+  const [eventStatus, setEventStatus] = useState("draft");
   const [showPopup, setShowPopup] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
   const [selectedCity, setSelectedCity] = useState([]);
@@ -82,15 +83,33 @@ export default function CreateEvent() {
   ]);
   // State to manage invite vendor form data
   const [inviteVendorData, setInviteVendorData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     mobile: "",
+    gstinApplicable: "",
     gstNumber: "",
+    vendorType: "",
+    organizationType: "",
+    natureOfBusiness: "",
     panNumber: "",
+    department: "",
+    organizationName: "",
     company: "",
     organization: "",
   });
+  
+  const [organizationTypeOptions, setOrganizationTypeOptions] = useState([]);
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [vendorTypeOptions, setVendorTypeOptions] = useState([]);
+  const [natureOfBusinessOptions, setNatureOfBusinessOptions] = useState([]);
   const [companyList, setCompanyList] = useState([]);
+  
+  // Material selection state for vendor filtering
+  const [materialSelectList, setMaterialSelectList] = useState([]);
+  const [multiSelectorValue, setMultiSelectorValue] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [apiTotalPages, setApiTotalPages] = useState(1);
 
   const location = useLocation()
 
@@ -192,8 +211,15 @@ export default function CreateEvent() {
     setEventScheduleText(scheduleText);
   };
 
-  const handleVendorTypeModalShow = () => {
+  const handleVendorTypeModalShow = async () => {
     setVendorModal(true);
+    
+    // Load initial vendor data with material filter - same pattern as edit-event.jsx
+    const selectedMaterialIds = multiSelectorValue?.map(opt => opt.value) || 
+                               eventDetails?.event_materials?.map(mat => mat.inventory_id) || 
+                               inventoryTypeId || [];
+    
+    await fetchVendorsWithMaterialFilter(1, "", selectedMaterialIds);
   };
   const handleVendorTypeModalClose = () => {
     setVendorModal(false);
@@ -269,6 +295,66 @@ export default function CreateEvent() {
 
   const [loading, setLoading] = useState(false);
 
+  // Enhanced vendor fetching function with MultiSelector support
+  const fetchVendorsWithMaterialFilter = async (page = 1, searchTerm = "", selectedMaterialIds = [], selectedCity = "") => {
+    setLoading(true);
+    try {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+      
+      // Determine which material IDs to use for filtering
+      let materialIdsForFilter;
+      if (selectedMaterialIds && selectedMaterialIds.length > 0) {
+        materialIdsForFilter = selectedMaterialIds;
+      } else {
+        // Use materialFormData inventory_id as fallback
+        materialIdsForFilter = materialFormData?.map(mat => mat.inventory_id).filter(id => id) || [];
+      }
+
+      // Construct API URL with proper parameters - format array as [63,64]
+      let apiUrl = `${baseURL}rfq/events/vendor_list?token=${token}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${encodeURIComponent(searchTerm)}`;
+      
+      if (materialIdsForFilter.length > 0) {
+        const formattedIds = `[${materialIdsForFilter.join(',')}]`;
+        apiUrl += `&q[supplier_product_and_services_resource_id_in]=${formattedIds}`;
+      }
+      
+      console.log("Fetching vendors with URL:", apiUrl);
+      console.log("Material IDs for filtering:", materialIdsForFilter);
+      
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      
+      console.log("Vendor API response:", data);
+
+      const vendors = Array.isArray(data.vendors) ? data.vendors : [];
+      
+      const formattedData = vendors.map((vendor) => ({
+        id: vendor.id,
+        pms_supplier_id: vendor.id,
+        name: vendor.full_name || vendor.organization_name || "-",
+        email: vendor.email || "-",
+        organisation: vendor.organization_name || "-",
+        phone: vendor.contact_number || vendor.mobile || "-",
+        city: vendor.city_id || "-",
+        tags: vendor.tags || "-",
+        pms_inventory_type_id: vendor.pms_inventory_type_id || [],
+      }));
+
+      // Show all vendors, including already selected ones (they will appear with checked checkboxes)
+      setTableData(formattedData);
+      setFilteredTableData(formattedData);
+      setCurrentPage(page);
+      setTotalCount(data?.pagination?.total_count || 0);
+      setApiTotalPages(data?.pagination?.total_pages || 1);
+      setTotalPages(data?.pagination?.total_pages || 1);
+    } catch (error) {
+      console.error("Error fetching vendor data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
     const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
@@ -283,23 +369,17 @@ export default function CreateEvent() {
 
       const vendors = Array.isArray(data.vendors) ? data.vendors : [];
 
-      const formattedData = vendors
-        .map((vendor) => ({
-          id: vendor.id,
-          name: vendor.full_name || vendor.organization_name || "-",
-          email: vendor.email || "-",
-          organisation: vendor.organization_name || "-",
-          phone: vendor.contact_number || vendor.mobile || "-",
-          city: vendor.city_id || "-",
-          tags: vendor.tags || "-",
-        }))
-        .filter(
-          (vendor) =>
-            !selectedVendors.some(
-              (selected) => selected.pms_supplier_id === vendor.id
-            )
-        );
+      const formattedData = vendors.map((vendor) => ({
+        id: vendor.id,
+        name: vendor.full_name || vendor.organization_name || "-",
+        email: vendor.email || "-",
+        organisation: vendor.organization_name || "-",
+        phone: vendor.contact_number || vendor.mobile || "-",
+        city: vendor.city_id || "-",
+        tags: vendor.tags || "-",
+      }));
 
+      // Show all vendors, including already selected ones (they will appear with checked checkboxes)
       setTableData(formattedData);
 
       setCurrentPage(page);
@@ -313,11 +393,73 @@ export default function CreateEvent() {
 
   useEffect(() => {
     fetchData();
+    
+    // Fetch material types for MultiSelector
+    const fetchMaterialTypes = async () => {
+      try {
+        const urlParams = new URLSearchParams(location.search);
+        const token = urlParams.get("token");
+        const response = await fetch(`${baseURL}rfq/events/material_types?token=${token}`);
+        const data = await response.json();
+        
+        console.log("Raw material types API response:", data);
+        
+        setMaterialSelectList(
+          (data.inventory_types || []).map((material) => ({
+            label: material.name,
+            value: material.value,
+          }))
+        );
+        
+        console.log("Processed material types for MultiSelector:", (data.inventory_types || []).map((material) => ({
+          label: material.name,
+          value: material.value,
+        })));
+      } catch (error) {
+        console.error("Error fetching material types:", error);
+      }
+    };
+    
+    fetchMaterialTypes();
   }, []);
 
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      fetchData(newPage);
+  // Set default MultiSelector value when materialFormData changes - same pattern as edit-event.jsx
+  useEffect(() => {
+    console.log("materialFormData:-",materialFormData);
+    
+    if (materialFormData?.[0]?.inventory_type_id && materialSelectList?.length > 0) {
+      const defaultOption = materialSelectList.find(
+        (opt) => String(opt.value) === String(materialFormData[0].inventory_type_id)
+      );
+      if (defaultOption) {
+        setMultiSelectorValue([defaultOption]);
+      }
+    }
+  }, [materialFormData, materialSelectList]);
+
+  // Initialize selectedRows with already selected vendors when vendor data is fetched
+  useEffect(() => {
+    if (vendorModal && filteredTableData.length > 0 && selectedVendors.length > 0) {
+      const currentlySelectedVendors = filteredTableData.filter(vendor =>
+        selectedVendors.some(selectedVendor => 
+          selectedVendor.id === vendor.id || 
+          selectedVendor.pms_supplier_id === vendor.id ||
+          selectedVendor.id === vendor.pms_supplier_id ||
+          selectedVendor.pms_supplier_id === vendor.pms_supplier_id
+        )
+      );
+      
+      if (currentlySelectedVendors.length > 0) {
+        console.log("Setting selectedRows from already selected vendors:", currentlySelectedVendors);
+        setSelectedRows(currentlySelectedVendors);
+      }
+    }
+  }, [vendorModal, filteredTableData, selectedVendors]);
+
+  const handlePageChange = async (newPage) => {
+    if (newPage >= 1 && newPage <= apiTotalPages) {
+      const selectedMaterialIds = multiSelectorValue?.map(opt => opt.value) || [];
+      await fetchVendorsWithMaterialFilter(newPage, searchTerm, selectedMaterialIds);
     }
   };
 
@@ -327,8 +469,8 @@ export default function CreateEvent() {
     let endPage = startPage + pageRange - 1;
 
     // Ensure the range doesn't exceed the total pages
-    if (endPage > totalPages) {
-      endPage = totalPages;
+    if (endPage > apiTotalPages) {
+      endPage = apiTotalPages;
       startPage = Math.max(endPage - pageRange + 1, 1);
     }
 
@@ -340,35 +482,77 @@ export default function CreateEvent() {
   };
 
   const handleCheckboxChange = (vendor, isChecked) => {
+    console.log("Checkbox change:", vendor, isChecked);
+    
     if (isChecked) {
-      setSelectedRows((prev) => [...prev, vendor]);
+      // Add vendor to selectedRows if not already present
+      setSelectedRows((prev) => {
+        const isAlreadySelected = prev.some(item => 
+          item.id === vendor.id || 
+          item.pms_supplier_id === vendor.id ||
+          item.id === vendor.pms_supplier_id ||
+          item.pms_supplier_id === vendor.pms_supplier_id
+        );
+        
+        if (!isAlreadySelected) {
+          return [...prev, vendor];
+        }
+        return prev;
+      });
     } else {
-      setSelectedRows((prev) => prev.filter((item) => item.id !== vendor.id));
+      // Remove vendor from selectedRows
+      setSelectedRows((prev) => prev.filter((item) => 
+        item.id !== vendor.id && 
+        item.pms_supplier_id !== vendor.id &&
+        item.id !== vendor.pms_supplier_id &&
+        item.pms_supplier_id !== vendor.pms_supplier_id
+      ));
+      
+      // Also remove from selectedVendors if it's there (for immediate deselection)
+      setSelectedVendors((prev) => prev.filter((item) => 
+        item.id !== vendor.id && 
+        item.pms_supplier_id !== vendor.id &&
+        item.id !== vendor.pms_supplier_id &&
+        item.pms_supplier_id !== vendor.pms_supplier_id
+      ));
     }
   };
 
   const handleSaveButtonClick = () => {
-    setSelectedVendors((prev) => {
-      const newVendors = selectedRows.filter(
-        (vendor) =>
-          !prev.some((existingVendor) => existingVendor.id === vendor.id)
-      );
+    console.log("Save button clicked. Selected rows:", selectedRows);
+    console.log("Current selected vendors:", selectedVendors);
+    
+    // Update selectedVendors to match current selectedRows state
+    const newSelectedVendors = selectedRows.map((vendor) => ({
+      ...vendor,
+      id: vendor.id || vendor.pms_supplier_id,
+      pms_supplier_id: vendor.pms_supplier_id || vendor.id,
+    }));
+    
+    console.log("New selected vendors:", newSelectedVendors);
+    setSelectedVendors(newSelectedVendors);
 
-      return [
-        ...prev,
-        ...newVendors.map((vendor) => ({
-          ...vendor,
-          id: vendor.id,
-          pms_supplier_id: vendor.id,
-        })),
-      ];
-    });
+    // Remove deselected vendors from filteredTableData and add them back to tableData
+    const deselectedVendors = selectedVendors.filter(selectedVendor =>
+      !selectedRows.some(row => 
+        row.id === selectedVendor.id || 
+        row.pms_supplier_id === selectedVendor.id ||
+        row.id === selectedVendor.pms_supplier_id ||
+        row.pms_supplier_id === selectedVendor.pms_supplier_id
+      )
+    );
 
+    if (deselectedVendors.length > 0) {
+      console.log("Adding deselected vendors back to table:", deselectedVendors);
+      setTableData((prevTableData) => [...prevTableData, ...deselectedVendors]);
+    }
+
+    // Remove newly selected vendors from tableData
     setTableData((prevTableData) =>
       prevTableData.filter(
         (vendor) =>
           !selectedRows.some(
-            (selectedVendor) => selectedVendor.id === vendor.id
+            (selectedVendor) => selectedVendor.id === vendor.id || selectedVendor.pms_supplier_id === vendor.id
           )
       )
     );
@@ -389,10 +573,18 @@ export default function CreateEvent() {
   };
 
   const isVendorSelected = (vendorId) => {
-    return (
-      selectedRows.some((vendor) => vendor.id === vendorId) ||
-      selectedVendors.some((vendor) => vendor.id === vendorId)
+    // Check if vendor is in selectedRows (currently being selected in modal)
+    const isInSelectedRows = selectedRows.some((vendor) => vendor.id === vendorId || vendor.pms_supplier_id === vendorId);
+    
+    // Check if vendor is already in selectedVendors (previously saved selections)
+    const isInSelectedVendors = selectedVendors.some((vendor) => 
+      vendor.id === vendorId || 
+      vendor.pms_supplier_id === vendorId ||
+      (vendor.id && vendor.id === vendorId) ||
+      (vendor.pms_supplier_id && vendor.pms_supplier_id === vendorId)
     );
+    
+    return isInSelectedRows || isInSelectedVendors;
   };
 
   const handleAddTextarea = () => {
@@ -722,38 +914,52 @@ export default function CreateEvent() {
     setFilteredTableData(tableData);
   }, [tableData]);
 
-  const handleSearchChange = (e) => {
+  const handleInputChange = (e) => {
     setSearchTerm(e.target.value);
 
     if (e.target.value === "") {
       setSuggestions([]);
       setIsSuggestionsVisible(false);
     } else {
-      const filteredSuggestions = tableData.filter((vendor) =>
-        vendor.name?.toLowerCase().includes(e.target.value.toLowerCase())
-      );
-      setSuggestions(filteredSuggestions);
+      const fetchSuggestions = async (query) => {
+        try {
+          const urlParams = new URLSearchParams(location.search);
+          const token = urlParams.get("token");
+          const response = await fetch(
+            `${baseURL}rfq/events/vendor_list?token=${token}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${query}&per_page=10`
+          );
+          const data = await response.json();
+          const vendors = Array.isArray(data.vendors) ? data.vendors : [];
+          setSuggestions(vendors);
+          setIsSuggestionsVisible(true);
+        } catch (error) {
+          console.error("Error fetching suggestions:", error);
+          setSuggestions([]);
+          setIsSuggestionsVisible(false);
+        }
+      };
 
-      setIsSuggestionsVisible(true);
+      if (e.target.value.length > 2) {
+        fetchSuggestions(e.target.value);
+      }
     }
   };
 
   const handleSuggestionClick = (suggestion) => {
-    setSearchTerm(suggestion.name);
+    setSearchTerm(suggestion.full_name);
     setIsSuggestionsVisible(false);
-    fetchData(1, suggestion.name, selectedCity);
   };
 
-  const handleSearchClick = () => {
-    if (searchTerm.trim() === "") {
-      setFilteredTableData(tableData);
-    } else {
-      const filteredSuggestions = tableData.filter((vendor) =>
-        vendor.name?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredTableData(filteredSuggestions);
-    }
-    setIsSuggestionsVisible(true);
+  const handleSearchSubmit = async (e) => {
+    e.preventDefault();
+    const selectedMaterialIds = multiSelectorValue?.map(opt => opt.value) || [];
+    await fetchVendorsWithMaterialFilter(1, searchTerm, selectedMaterialIds);
+  };
+
+  const handleResetSearch = async () => {
+    setSearchTerm("");
+    const selectedMaterialIds = multiSelectorValue?.map(opt => opt.value) || [];
+    await fetchVendorsWithMaterialFilter(1, "", selectedMaterialIds);
   };
 
   const [termsOptions, setTermsOptions] = useState([]);
@@ -780,6 +986,65 @@ export default function CreateEvent() {
 
   useEffect(() => {
     fetchTermsAndConditions();
+    
+    // Fetch organization type list from API
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+    
+    fetch(`${baseURL}rfq/events/type_of_organizations_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.type_of_organizations)) {
+          const options = data.type_of_organizations.map((org) => ({
+            value: org.value,
+            label: org.name,
+          }));
+          console.log("Organization type options loaded:", options);
+          setOrganizationTypeOptions(options);
+        }
+      });
+      
+    // Fetch department list from API
+    fetch(`${baseURL}rfq/events/department_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.list)) {
+          const options = data.list.map((dept) => ({
+            value: dept.value,
+            label: dept.name,
+          }));
+          console.log("Department options loaded:", options);
+          setDepartmentOptions(options);
+        }
+      });
+      
+    // Fetch vendor type list from API
+    fetch(`${baseURL}rfq/events/supplier_type_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.supplier_type)) {
+          const options = data.supplier_type.map((type) => ({
+            value: type.value,
+            label: type.name,
+          }));
+          console.log("Vendor type options loaded:", options);
+          setVendorTypeOptions(options);
+        }
+      });
+      
+    // Fetch nature of business list from API
+    fetch(`${baseURL}rfq/events/nature_of_business_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.list)) {
+          const options = data.list.map((item) => ({
+            value: item.value,
+            label: item.name,
+          }));
+          console.log("Nature of business options loaded:", options);
+          setNatureOfBusinessOptions(options);
+        }
+      });
   }, []);
 
   const [savingsSummaryModal, setSavingsSummaryModal] = useState(false);
@@ -813,30 +1078,39 @@ export default function CreateEvent() {
   const handleInviteVendor = async (event) => {
     event.preventDefault();
 
+    console.log("Submit button clicked - validating invite vendor form...");
     const errors = validateInviteVendorForm();
     if (Object.keys(errors).length > 0) return;
 
     setIsInvite(true);
     const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+    const token = urlParams.get("token");
+    
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/3/invite_vendor?token=${token}&add_vendor=true&organization_name=${inviteVendorData?.organization}&company_id=${inviteVendorData?.company}`,
+        `${baseURL}rfq/events/invite_vendors?token=${token}&add_vendor=true`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            name: inviteVendorData.name,
+            supplier_type_id: parseInt(inviteVendorData.vendorType),
+            department_id: parseInt(inviteVendorData.department),
+            nature_of_business_id: parseInt(inviteVendorData.natureOfBusiness),
+            type_of_organization_id: parseInt(inviteVendorData.organizationType),
+            first_name: inviteVendorData.firstName,
+            last_name: inviteVendorData.lastName,
+            gstin_applicable: inviteVendorData.gstinApplicable,
+            gstin: inviteVendorData.gstNumber || "",
+            name: inviteVendorData.lastName, // Using last name as 'name'
             email: inviteVendorData.email,
             mobile: inviteVendorData.mobile,
-            gst_number: inviteVendorData.gstNumber,
-            pan_number: inviteVendorData.panNumber,
+            pan_number: inviteVendorData.panNumber || "",
+            organization_name: inviteVendorData.organizationName || "",
           }),
         }
       );
-      // console.log("response:--", response);
 
       if (response.ok) {
         const newVendor = await response.json();
@@ -854,19 +1128,43 @@ export default function CreateEvent() {
         setFilteredTableData((prev) => [...prev, vendorData]);
 
         setInviteVendorData({
-          name: "",
+          firstName: "",
+          lastName: "",
           email: "",
           mobile: "",
           gstNumber: "",
           panNumber: "",
           company: "",
+          vendorType: "",
+          organizationType: "",
+          department: "",
+          natureOfBusiness: "",
+          gstinApplicable: "",
+          organizationName: "",
         });
 
         handleInviteModalClose();
       } else {
         const errorData = await response.json();
         console.error("Error inviting vendor:", errorData);
-        toast.error("Failed to invite vendor.");
+        
+        // Handle specific status codes
+        if (response.status === 402) {
+          // Show API error message for 402 status
+          const errorMessage = errorData?.message || errorData?.error;
+          toast.error(errorMessage);
+        } else if (response.status === 422) {
+          // Handle 422 validation errors
+          if (errorData?.errors && Array.isArray(errorData.errors)) {
+            // Show first error from the errors array
+            toast.error(errorData.errors[0]);
+          } else {
+            const errorMessage = errorData?.message || errorData?.error || "Validation failed";
+            toast.error(errorMessage);
+          }
+        } else {
+          toast.error("Failed to invite vendor.");
+        }
       }
     } catch (error) {
       console.error("Error:", error);
@@ -884,9 +1182,20 @@ export default function CreateEvent() {
       /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
-    if (!inviteVendorData.name) {
-      errors.name = "Name is required";
-      toast.error(errors.name);
+    // Debug logging to see the current state
+    console.log("Validating invite vendor form data:", inviteVendorData);
+    console.log("vendorType:", inviteVendorData.vendorType);
+    console.log("organizationType:", inviteVendorData.organizationType);
+    console.log("department:", inviteVendorData.department);
+    console.log("natureOfBusiness:", inviteVendorData.natureOfBusiness);
+
+    if (!inviteVendorData.firstName) {
+      errors.firstName = "First Name is required";
+      toast.error(errors.firstName);
+    }
+    if (!inviteVendorData.lastName) {
+      errors.lastName = "Last Name is required";
+      toast.error(errors.lastName);
     }
     if (!inviteVendorData.email || !emailRegex.test(inviteVendorData.email)) {
       errors.email = "Valid email is required";
@@ -899,11 +1208,8 @@ export default function CreateEvent() {
       errors.mobile = "Valid mobile number is required";
       toast.error(errors.mobile);
     }
-    if (
-      inviteVendorData.gstNumber &&
-      !gstRegex.test(inviteVendorData.gstNumber)
-    ) {
-      errors.gstNumber = "Invalid GST number format";
+    if (inviteVendorData.gstinApplicable === 'yes' && !inviteVendorData.gstNumber) {
+      errors.gstNumber = "Valid GSTIN is required";
       toast.error(errors.gstNumber);
     }
     if (
@@ -913,14 +1219,24 @@ export default function CreateEvent() {
       errors.panNumber = "Invalid PAN number format";
       toast.error(errors.panNumber);
     }
-    if (!inviteVendorData.company) {
-      errors.company = "Company is required";
-      toast.error(errors.company);
+    if (!inviteVendorData.vendorType) {
+      errors.vendorType = "Vendor Type is required";
+      toast.error(errors.vendorType);
     }
-    if (!inviteVendorData.organization) {
-      errors.organization = "Organization Name is required";
-      toast.error(errors.organization);
+    if (!inviteVendorData.organizationType) {
+      errors.organizationType = "Organization Type is required";
+      toast.error(errors.organizationType);
     }
+    if (!inviteVendorData.natureOfBusiness) {
+      errors.natureOfBusiness = "Nature of Business is required";
+      toast.error(errors.natureOfBusiness);
+    }
+    if (!inviteVendorData.department) {
+      errors.department = "Department is required";
+      toast.error(errors.department);
+    }
+    
+    console.log("Validation errors:", errors);
     return errors;
   };
 
@@ -940,6 +1256,34 @@ export default function CreateEvent() {
     setInviteVendorData((prevData) => ({
       ...prevData,
       [name]: capitalizedValue,
+    }));
+  };
+
+  const handleOrganizationTypeChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ 
+      ...prev, 
+      organizationType: selectedOption ? selectedOption.value : '' 
+    }));
+  };
+  
+  const handleDepartmentChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ 
+      ...prev, 
+      department: selectedOption ? selectedOption.value : '' 
+    }));
+  };
+  
+  const handleVendorTypeChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ 
+      ...prev, 
+      vendorType: selectedOption ? selectedOption.value : '' 
+    }));
+  };
+  
+  const handleNatureOfBusinessChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ 
+      ...prev, 
+      natureOfBusiness: selectedOption ? selectedOption.value : '' 
     }));
   };
 
@@ -1036,7 +1380,7 @@ export default function CreateEvent() {
                     onChange={(e) => setEventDescription(e.target.value)}
                   />
                 </div>
-                <div className="col-md-4 col-sm-6 mt-2">
+                {/* <div className="col-md-4 col-sm-6 mt-2">
                   <div className="form-group">
                     <label className="po-fontBold">Event Status</label>
                   </div>
@@ -1052,7 +1396,7 @@ export default function CreateEvent() {
                     onChange={handleStatusChange}
                     defaultValue={eventStatus}
                   />
-                </div>
+                </div> */}
                 {/* <div className="col-md-4 col-sm-6 mt-2">
                   <div className="form-group">
                     <label className="po-fontBold">
@@ -1503,27 +1847,59 @@ export default function CreateEvent() {
               children={
                 <>
                   <div className="d-flex justify-content-between align-items-center">
-                    <div className="input-group w-50 position-relative">
-                      <input
-                        type="search"
-                        id="searchInput"
-                        className="tbl-search form-control"
-                        placeholder="Search Vendors"
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                        onFocus={() => setIsSuggestionsVisible(true)}
-                        onBlur={() =>
-                          setTimeout(() => setIsSuggestionsVisible(false), 200)
-                        }
-                      />
-                      <div className="input-group-append">
-                        <button
-                          type="button"
-                          className="btn btn-md btn-default"
-                          onClick={handleSearchClick}
-                        >
-                          <SearchIcon />
-                        </button>
+                    <div className="w-75 h-[40px] position-relative">
+                      <div className="input-group d-flex w-100 align-items-end">
+                        <input
+                          type="search"
+                          id="searchInput"
+                          className="tbl-search form-control w-50"
+                          style={{ height: "38.2px" }}
+                          placeholder="Search Vendors"
+                          value={searchTerm}
+                          onChange={handleInputChange}
+                          onFocus={() => setIsSuggestionsVisible(true)}
+                          onBlur={() =>
+                            setTimeout(
+                              () => setIsSuggestionsVisible(false),
+                              200
+                            )
+                          }
+                        />
+                        <div className="input-group-append">
+                          <button
+                            type="button"
+                            className="btn btn-md btn-default"
+                            onClick={handleSearchSubmit}
+                          >
+                            <SearchIcon />
+                          </button>
+                        </div>
+                        
+                        <div className="w-25 ms-3">
+                          <MultiSelector
+                            options={materialSelectList}
+                            value={multiSelectorValue}
+                            onChange={async (selectedOptions) => {
+                              setMultiSelectorValue(selectedOptions);
+                              try {
+                                let selectedValues;
+                                if (selectedOptions && selectedOptions.length > 0) {
+                                  selectedValues = selectedOptions.map((option) => option.value);
+                                } else {
+                                  // Use materialFormData inventory_id for default
+                                  selectedValues = eventDetails?.event_materials?.[0]?.inventory_id
+                                    ? [eventDetails.event_materials[0].inventory_id]
+                                    : [];
+                                }
+                                
+                                // Call the enhanced function
+                                await fetchVendorsWithMaterialFilter(1, searchTerm, selectedValues);
+                              } catch (error) {
+                                console.error("Error fetching vendor data:", error);
+                              }
+                            }}
+                          />
+                        </div>
                       </div>
                       {isSuggestionsVisible && suggestions.length > 0 && (
                         <ul
@@ -1534,9 +1910,10 @@ export default function CreateEvent() {
                             <li
                               key={suggestion.id}
                               onClick={() => handleSuggestionClick(suggestion)}
-                              className="p-2 cursor-pointer"
+                              style={{ cursor: "pointer" }}
+                              className="p-2 w-100"
                             >
-                              {suggestion.name}
+                              {suggestion.full_name}
                             </li>
                           ))}
                         </ul>
@@ -1623,9 +2000,9 @@ export default function CreateEvent() {
                         columns={participantsTabColumns}
                         showCheckbox={true}
                         data={filteredTableData.map((vendor, index) => ({
-                          ...vendor,
-                          srNo: (currentPage - 1) * pageSize + index + 1,
-                        }))}
+                            ...vendor,
+                            srNo: (currentPage - 1) * pageSize + index + 1,
+                          }))}
                         handleCheckboxChange={handleCheckboxChange}
                         isRowSelected={isVendorSelected}
                         resetSelectedRows={resetSelectedRows}
@@ -1634,7 +2011,9 @@ export default function CreateEvent() {
                         cellClass="text-start"
                         currentPage={currentPage}
                         pageSize={pageSize}
+                        style={{ width: "100%" }}
                         scrollable={true}
+                        fullWidth={true}
                       />
                     ) : (
                       <p>No vendors found</p>
@@ -1691,13 +2070,13 @@ export default function CreateEvent() {
                       {/* Next Button */}
                       <li
                         className={`page-item ${
-                          currentPage === totalPages ? "disabled" : ""
+                          currentPage === apiTotalPages ? "disabled" : ""
                         }`}
                       >
                         <button
                           className="page-link"
                           onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === totalPages}
+                          disabled={currentPage === apiTotalPages}
                         >
                           Next
                         </button>
@@ -1706,35 +2085,30 @@ export default function CreateEvent() {
                       {/* Last Button */}
                       <li
                         className={`page-item ${
-                          currentPage === totalPages ? "disabled" : ""
+                          currentPage === apiTotalPages ? "disabled" : ""
                         }`}
                       >
                         <button
                           className="page-link"
-                          onClick={() => handlePageChange(totalPages)}
-                          disabled={currentPage === totalPages}
+                          onClick={() => handlePageChange(apiTotalPages)}
+                          disabled={currentPage === apiTotalPages}
                         >
                           Last
                         </button>
                       </li>
                     </ul>
-                    {/* Display Data */}
 
-                    {/* Showing entries count */}
                     <div>
                       <p>
                         Showing{" "}
-                        {filteredTableData.length > 0
-                          ? currentPage * pageSize - (pageSize - 1)
+                        {totalCount > 0
+                          ? (currentPage - 1) * pageSize + 1
                           : 0}{" "}
                         to{" "}
-                        {filteredTableData.length > 0
-                          ? Math.min(
-                              currentPage * pageSize,
-                              filteredTableData.length
-                            )
+                        {totalCount > 0
+                          ? Math.min(currentPage * pageSize, totalCount)
                           : 0}{" "}
-                        of {filteredTableData.length} entries
+                        of {totalCount} entries
                       </p>
                     </div>
                   </div>
@@ -1744,136 +2118,267 @@ export default function CreateEvent() {
             <DynamicModalBox
               show={inviteModal}
               onHide={handleInviteModalClose}
-              modalType={true}
+              // modalType={true}
               title="Invite New Vendor"
-              // footerButtons={[
-              //   {
-              //     label: "Close",
-              //     onClick: handleInviteModalClose,
-              //     props: {
-              //       className: "purple-btn1",
-              //     },
-              //   },
-              //   {
-              //     label: "Save Changes",
-              //     onClick: handleInviteVendor,
-              //     props: {
-              //       className: "purple-btn2",
-              //     },
-              //   },
-              // ]}
               children={
                 <>
                   <form className="p-2">
-                    <div className="form-group mb-3">
-                      <label className="po-fontBold">
-                        POC - Full Name
-                      </label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        name="name"
-                        placeholder="Enter POC Name"
-                        value={inviteVendorData.name}
-                        onChange={handleInviteVendorChange}
-                      />
+                    <div className="row">
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">
+                            First Name <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            className="form-control"
+                            type="text"
+                            name="firstName"
+                            placeholder="Enter First Name"
+                            value={inviteVendorData.firstName}
+                            onChange={handleInviteVendorChange}
+                          />
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">
+                            Last Name <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            className="form-control"
+                            type="text"
+                            name="lastName"
+                            placeholder="Enter Last Name"
+                            value={inviteVendorData.lastName}
+                            onChange={handleInviteVendorChange}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="form-group mb-3">
-                      <label className="po-fontBold">
-                        Email
-                      </label>
-                      <input
-                        className="form-control"
-                        type="email"
-                        name="email"
-                        placeholder="Enter Email Address"
-                        value={inviteVendorData.email}
-                        onChange={handleInviteVendorChange}
-                      />
+                    <div className="row">
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">
+                            Email <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            className="form-control"
+                            type="email"
+                            name="email"
+                            placeholder="Enter Email Address"
+                            value={inviteVendorData.email}
+                            onChange={handleInviteVendorChange}
+                          />
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">
+                            Phone Number <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            className="form-control"
+                            type="text"
+                            name="mobile"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            onKeyDown={(e) => {
+                              const invalidChars = ["e", "E", "+", "-", ".", ","];
+                              if (
+                                invalidChars.includes(e.key) ||
+                                (isNaN(Number(e.key)) &&
+                                  e.key !== "Backspace" &&
+                                  e.key !== "Delete" &&
+                                  e.key !== "ArrowLeft" &&
+                                  e.key !== "ArrowRight" &&
+                                  e.key !== "Tab")
+                              ) {
+                                e.preventDefault();
+                              }
+                            }}
+                            placeholder="Enter Phone Number"
+                            value={inviteVendorData.mobile}
+                            onChange={handleInviteVendorChange}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="form-group mb-3">
-                      <label className="po-fontBold">
-                        Phone Number
-                      </label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        name="mobile"
-                        inputMode="numeric" // mobile-friendly numeric keyboard
-                        pattern="[0-9]*" // restricts to digits only
-                        onKeyDown={(e) => {
-                          // Allow only numbers
-                          const invalidChars = ["e", "E", "+", "-", ".", ","];
-
-                          if (
-                            invalidChars.includes(e.key) ||
-                            (isNaN(Number(e.key)) &&
-                              e.key !== "Backspace" &&
-                              e.key !== "Delete" &&
-                              e.key !== "ArrowLeft" &&
-                              e.key !== "ArrowRight" &&
-                              e.key !== "Tab")
-                          ) {
-                            e.preventDefault();
-                          }
-                        }}
-                        placeholder="Enter Phone Number"
-                        value={inviteVendorData.mobile}
-                        onChange={handleInviteVendorChange}
-                      />
+                    <div className="row">
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">
+                            GSTIN Applicable <span className="text-danger">*</span>
+                          </label>
+                          <SelectBox
+                            options={[
+                              { label: "Yes", value: "yes" },
+                              { label: "No", value: "no" }
+                            ]}
+                            value={
+                              inviteVendorData.gstinApplicable
+                                ? { label: inviteVendorData.gstinApplicable === 'yes' ? 'Yes' : 'No', value: inviteVendorData.gstinApplicable }
+                                : null
+                            }
+                            onChange={(selectedOption) => {
+                              setInviteVendorData((prev) => ({
+                                ...prev,
+                                gstinApplicable: selectedOption?.value || '',
+                                gstNumber: selectedOption?.value === 'no' ? '' : prev.gstNumber
+                              }));
+                            }}
+                            placeholder="Select GSTIN Applicable"
+                          />
+                        </div>
+                      </div>
+                      {inviteVendorData.gstinApplicable === 'yes' && (
+                        <div className="col-md-6">
+                          <div className="form-group mb-3">
+                            <label className="po-fontBold">
+                              GST Number <span className="text-danger">*</span>
+                            </label>
+                            <input
+                              className="form-control"
+                              type="text"
+                              name="gstNumber"
+                              placeholder="Enter GST Number"
+                              value={inviteVendorData.gstNumber || ""}
+                              onChange={handleInviteVendorChange}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="form-group mb-3">
-                      <label className="po-fontBold">GST Number</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        name="gstNumber"
-                        placeholder="Enter GST Number"
-                        value={inviteVendorData.gstNumber || ""}
-                        onChange={handleInviteVendorChange}
-                      />
+                    <div className="row">
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">PAN Number</label>
+                          <input
+                            className="form-control"
+                            type="text"
+                            name="panNumber"
+                            placeholder="Enter PAN Number"
+                            value={inviteVendorData.panNumber || ""}
+                            onChange={handleInviteVendorChange}
+                          />
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">
+                            Vendor Type <span className="text-danger">*</span>
+                          </label>
+                          <SelectBox
+                            options={vendorTypeOptions}
+                            defaultValue={inviteVendorData.vendorType}
+                            onChange={(selectedValue) => {
+                              console.log("Vendor type changed to:", selectedValue);
+                              setInviteVendorData((prev) => ({
+                                ...prev,
+                                vendorType: selectedValue || ''
+                              }));
+                            }}
+                            placeholder="Select Vendor Type"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="form-group mb-3">
-                      <label className="po-fontBold">PAN Number</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        name="panNumber"
-                        placeholder="Enter PAN Number"
-                        value={inviteVendorData.panNumber || ""}
-                        onChange={handleInviteVendorChange}
-                      />
+                    <div className="row">
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">
+                            Organization Type <span className="text-danger">*</span>
+                          </label>
+                          <SelectBox
+                            options={organizationTypeOptions}
+                            defaultValue={inviteVendorData.organizationType}
+                            onChange={(selectedValue) => {
+                              console.log("Organization type changed to:", selectedValue);
+                              setInviteVendorData((prev) => ({
+                                ...prev,
+                                organizationType: selectedValue || ''
+                              }));
+                            }}
+                            placeholder="Select Organization Type"
+                          />
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">
+                            Department <span className="text-danger">*</span>
+                          </label>
+                          <SelectBox
+                            options={departmentOptions}
+                            defaultValue={inviteVendorData.department}
+                            onChange={(selectedValue) => {
+                              console.log("Department changed to:", selectedValue);
+                              setInviteVendorData((prev) => ({
+                                ...prev,
+                                department: selectedValue || ''
+                              }));
+                            }}
+                            placeholder="Select Department"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="form-group mb-3">
-                      <label className="po-fontBold">
-                        Company
-                      </label>
-                      <SelectBox
-                        options={companyList}
-                        value={companyList.find(
-                          (option) => option.value === inviteVendorData.company
-                        )} // Ensure the selected value is displayed
-                        onChange={(selectedOption) => {
-                          const updatedCompany = selectedOption || null; // Get the numeric value or null
-                          setInviteVendorData((prev) => ({
-                            ...prev,
-                            company: updatedCompany, // Update the company field
-                          }));
-                        }}
-                      />
+                    <div className="row">
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">
+                            Nature of Business <span className="text-danger">*</span>
+                          </label>
+                          <SelectBox
+                            options={natureOfBusinessOptions}
+                            defaultValue={inviteVendorData.natureOfBusiness}
+                            onChange={(selectedValue) => {
+                              console.log("Nature of business changed to:", selectedValue);
+                              setInviteVendorData((prev) => ({
+                                ...prev,
+                                natureOfBusiness: selectedValue || ''
+                              }));
+                            }}
+                            placeholder="Select Nature of Business"
+                          />
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">
+                            Company
+                          </label>
+                          <SelectBox
+                            options={companyList}
+                            value={companyList.find(
+                              (option) => option.value === inviteVendorData.company
+                            )}
+                            onChange={(selectedOption) => {
+                              setInviteVendorData((prev) => ({
+                                ...prev,
+                                company: selectedOption?.value || ''
+                              }));
+                            }}
+                            placeholder="Select Company"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="form-group mb-3">
-                      <label className="po-fontBold">
-                        Organization
-                      </label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        name="organization"
-                        placeholder="Enter Organization Name"
-                        value={inviteVendorData.organization || ""}
-                        onChange={handleInviteVendorChange}
-                      />
+                    <div className="row">
+                      <div className="col-md-12">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">
+                            Organization Name
+                          </label>
+                          <input
+                            className="form-control"
+                            type="text"
+                            name="organizationName"
+                            placeholder="Enter Organization Name"
+                            value={inviteVendorData.organizationName || ""}
+                            onChange={handleInviteVendorChange}
+                          />
+                        </div>
+                      </div>
                     </div>
                     <div className="d-flex justify-content-center mt-2">
                       <button

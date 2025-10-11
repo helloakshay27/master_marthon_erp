@@ -67,6 +67,8 @@ export default function Table({
   accordionRender = null,
   isRowSelected = null, // Add new prop to determine if a row is selected externally
   fullWidth = false, // NEW PROP
+  style = {}, // Add style prop
+  cellStyle = {}, // Add cellStyle prop
   ...rest
 }) {
   const [selectAll, setSelectAll] = useState(false);
@@ -416,13 +418,14 @@ export default function Table({
       >
         <table
           className="tbl-container mx-0"
-          style={
-            fullWidth
+          style={{
+            ...style,
+            ...(fullWidth
               ? { minWidth: "100%", tableLayout: "auto" }
               : isMinWidth
               ? { minWidth: "1200px", tableLayout: "auto" }
-              : {}
-          }
+              : {})
+          }}
         >
           <thead>
             <tr>
@@ -535,6 +538,7 @@ export default function Table({
                       <td
                         key={cellIndex}
                         style={{
+                          ...cellStyle,
                           textAlign: "left",
                           whiteSpace: enableOverflowScroll ? "nowrap" : "normal",
                           overflow: enableOverflowScroll ? "hidden" : "visible",

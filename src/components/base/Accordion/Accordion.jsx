@@ -231,6 +231,19 @@ export default function Accordion({
                 onColumnClick={handleColumnClick} // Pass the updated function
                 enableHoverEffect={enableHoverEffect}
                 onSelectAll={onSelectAll} // Pass to Table
+                style={{
+                  wordWrap: "break-word",
+                  wordBreak: "break-word",
+                  whiteSpace: "normal",
+                  tableLayout: "auto"
+                }}
+                cellStyle={{
+                  wordWrap: "break-word",
+                  wordBreak: "break-word",
+                  whiteSpace: "normal",
+                  maxWidth: "300px",
+                  padding: "8px"
+                }}
                 customRender={{
                   taxRate: (value, rowIndex, rowData) => (
                     <button

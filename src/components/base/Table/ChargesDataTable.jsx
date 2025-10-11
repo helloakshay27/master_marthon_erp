@@ -317,11 +317,34 @@ export default function ChargesDataTable({
   const handleInputChange = (index, e) => {
     const updated = [...data];
 
-    if (!updated[index]?.amount) {
-      updated[index] = { ...updated[index], value: {} };
+    if (!updated[index]) {
+      updated[index] = {};
     }
 
     updated[index].amount = e.target.value;
+    
+    // Set realised_amount to the same as amount if no tax calculations have been done
+    if (!updated[index].realised_amount || !chargesTaxRate[index]?.taxes_and_charges?.length) {
+      updated[index].realised_amount = e.target.value;
+    }
+
+    // Update chargesTaxRate to maintain consistency
+    setChargesTaxRate((prev) => {
+      const updatedTaxRate = { ...prev };
+      if (!updatedTaxRate[index]) {
+        updatedTaxRate[index] = {
+          afterDiscountValue: parseFloat(e.target.value) || 0,
+          taxes_and_charges: [],
+          netCost: e.target.value || 0,
+        };
+      } else {
+        updatedTaxRate[index].afterDiscountValue = parseFloat(e.target.value) || 0;
+        if (!updatedTaxRate[index].taxes_and_charges?.length) {
+          updatedTaxRate[index].netCost = e.target.value || 0;
+        }
+      }
+      return updatedTaxRate;
+    });
 
     onValueChange(updated); // Let parent know
   };
@@ -378,6 +401,25 @@ export default function ChargesDataTable({
 
             const calcGrossTotal = parseFloat(calculateGrossTotal()) || 0;
             
+            // Construct payload for charges that have amounts but no tax modal opened
+            const accumulatedPayload = data.map((row, index) => {
+              const chargeId = chargesData[index]?.id || null;
+              const amount = row.amount || "0";
+              const realisedAmount = row?.realised_amount || row?.amount || "0";
+              
+              // Get existing tax charges or create empty array
+              const existingTaxCharges = chargesTaxRate[index]?.taxes_and_charges || [];
+              
+              return {
+                charge_id: chargeId,
+                amount: amount, // User input
+                realised_amount: realisedAmount, // Calculated amount
+                taxes_and_charges: existingTaxCharges,
+              };
+            });
+
+            // Call onValueChange with the payload
+            onValueChange(accumulatedPayload);
             
             // Update the gross total in the parent component
             setGrossTotal(calcGrossTotal + updatedGrossTotal);

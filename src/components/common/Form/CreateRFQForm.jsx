@@ -746,6 +746,63 @@ console.log("uomOptions",uomOptions);
     setSections(updatedSections);
   };
 
+  // Fetch brands by material type
+  const fetchBrandsByType = async (inventoryTypeId, token) => {
+    try {
+      const url = `${baseURL}rfq/events/pms_brands?token=${token}&material_id=${inventoryTypeId}`;
+      const response = await axios.get(url);
+      if (response.data && Array.isArray(response.data.brands)) {
+        const options = response.data.brands.map((brand) => ({
+          label: brand.name,
+          value: brand.value,
+        }));
+        setBrandOptions(options);
+      } else {
+        setBrandOptions([]);
+      }
+    } catch (error) {
+      setBrandOptions([]);
+    }
+  };
+
+  // Fetch colours by material type
+  const fetchColoursByType = async (inventoryTypeId, token) => {
+    try {
+      const url = `${baseURL}rfq/events/pms_colours?token=${token}&material_id=${inventoryTypeId}`;
+      const response = await axios.get(url);
+      if (response.data && Array.isArray(response.data.pms_colours)) {
+        const options = response.data.pms_colours.map((colour) => ({
+          label: colour.name,
+          value: colour.value,
+        }));
+        setPmsColours(options);
+      } else {
+        setPmsColours([]);
+      }
+    } catch (error) {
+      setPmsColours([]);
+    }
+  };
+
+  // Fetch generic info by material type
+  const fetchGenericInfoByType = async (inventoryTypeId, token) => {
+    try {
+      const url = `${baseURL}rfq/events/generic_infos?token=${token}&material_id=${inventoryTypeId}`;
+      const response = await axios.get(url);
+      if (response.data && Array.isArray(response.data.generic_info)) {
+        const options = response.data.generic_info.map((info) => ({
+          label: info.name,
+          value: info.value,
+        }));
+        setGenericInfoOptions(options);
+      } else {
+        setGenericInfoOptions([]);
+      }
+    } catch (error) {
+      setGenericInfoOptions([]);
+    }
+  };
+
   const handleSectionChange = (selected, sectionIndex) => {
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData.forEach((row) => {
@@ -753,6 +810,17 @@ console.log("uomOptions",uomOptions);
       row.inventory_type_id = selected; // Update inventory_type_id
     });
     setSections(updatedSections);
+    fetchMaterials(selected);
+
+    // Fetch brands, colours, and generic info for all materials of this type
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+    // Brands
+    fetchBrandsByType(selected, token);
+    // Colours
+    fetchColoursByType(selected, token);
+    // Generic Info
+    fetchGenericInfoByType(selected, token);
   };
 
   const handleSubSectionChange = (selected, sectionIndex) => {
@@ -1549,6 +1617,7 @@ console.log("uomOptions",uomOptions);
                             }
                           />
                         </div>
+                        {/*
                         <div className="flex-grow-1">
                           <SelectBox
                             label={"Sub Material Type"}
@@ -1563,6 +1632,7 @@ console.log("uomOptions",uomOptions);
                             }
                           />
                         </div>
+                        */}
                         {/* Location SelectBox always visible to the right */}
                         <div className="flex-grow-1">
                           <SelectBox

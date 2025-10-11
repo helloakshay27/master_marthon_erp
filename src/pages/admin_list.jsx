@@ -1438,7 +1438,7 @@ const getTransformedRows = () => {
       {dataGridRows.length > 0 ? (
         <DataGrid
           rows={getTransformedRows()}
-          columns={fixedColumns.map(col => ({ ...col, flex: 1, minWidth: 80, width: undefined, maxWidth: undefined }))}
+          columns={fixedColumns.map(col => ({ ...col, flex: undefined, minWidth: 150, width: 200, maxWidth: undefined }))}
           pageSize={pageSize}
           rowCount={Number.isInteger(pagination?.total_count) ? pagination.total_count : 0}
           paginationMode="server"
@@ -1459,11 +1459,11 @@ const getTransformedRows = () => {
             margin: 0,
             border: 'none',
             boxShadow: 'none',
-            overflowX: 'hidden',
+            overflowX: 'auto',
             "& .MuiDataGrid-main": {
               minHeight: 0,
               maxHeight: 'none',
-              overflowX: 'hidden',
+              overflowX: 'auto',
             },
             "& .MuiDataGrid-columnHeaders": {
               backgroundColor: "#f8f9fa",
@@ -1483,14 +1483,14 @@ const getTransformedRows = () => {
               borderColor: "#dee2e6",
             },
             "& .MuiDataGrid-virtualScroller": {
-              overflowX: 'hidden',
+              overflowX: 'auto',
               minHeight: 0,
               maxHeight: 'none',
             },
             "& .MuiDataGrid-virtualScrollerContent": {
-              minWidth: 0,
-              width: '100%',
-              maxWidth: '100%',
+              minWidth: 'max-content',
+              width: 'auto',
+              maxWidth: 'none',
             },
             "& .MuiDataGrid-footerContainer": {
               borderTop: "1px solid #dee2e6",
