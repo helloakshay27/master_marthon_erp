@@ -39,6 +39,17 @@ export default function VendorDetails() {
   const [showModal, setShowModal] = useState(false);
   const [showModal1, setShowModal1] = useState(false);
   const [taxRateData, setTaxRateData] = useState([]);
+  
+  // Debug: Track taxRateData changes  
+  useEffect(() => {
+    if (taxRateData.length > 0 && taxRateData[tableId]?.addition_bid_material_tax_details) {
+      taxRateData[tableId].addition_bid_material_tax_details.forEach((item, index) => {
+        if (["Handling Charges", "Other charges", "Freight"].includes(item.taxChargeType)) {
+        }
+      });
+    }
+  }, [taxRateData, tableId]);
+
   const [taxPercentageOptions, setTaxPercentageOptions] = useState([]);
   const [originalTaxRateData, setOriginalTaxRateData] = useState([]);
   const [taxOptions, setTaxOptions] = useState([]);
@@ -207,7 +218,6 @@ export default function VendorDetails() {
 
         // setAdditionalColumns(columns);
         // setBidTemplate(formattedData);
-        // console.log("response", response.data);
       } catch (error) {
         console.error("Error fetching additional columns:", error);
       }
@@ -281,7 +291,6 @@ export default function VendorDetails() {
       html2pdf().set(options).from(element).save();
     }, 100);
   };
-  // console.log(" vednor idddddddddddddddddd", vendorId);
 
   const [remark, setRemark] = useState("");
 
@@ -438,9 +447,6 @@ export default function VendorDetails() {
     const totalWithFreightAndGst =
       Math.round((dataSum + freightTotal + realisedGstTotal) * 100) / 100;
 
-    // console.log("Total before Freight:", totalBeforeFreight);
-    // console.log("Total with Freight and GST:", totalWithFreightAndGst);
-
     return totalWithFreightAndGst;
   };
 
@@ -476,8 +482,6 @@ export default function VendorDetails() {
   //   return realisedFreight || freightCharge;
   // };
 
-  // console.log("hjedhde", calculateFreightTotal());
-
   const calculateDataSumTotal = () => {
     if (!Array.isArray(data)) {
       return 0;
@@ -493,8 +497,7 @@ export default function VendorDetails() {
   // const calculateSumTotal = () => {
   //   const dataSum = parseFloat(calculateDataSumTotal()) || 0; // Total from data
   //   const freightTotal = parseFloat(calculateFreightTotal()) || 0; // Total from freight data
-  //   // console.log(dataSum, "dataSum");
-  //   // console.log(freightTotal, "freightTotal");
+
   //   // Combine and return the sum
   //   return Math.round((dataSum + freightTotal) * 100) / 100;
   // };
@@ -538,8 +541,6 @@ export default function VendorDetails() {
   const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);
   const [isBidCreated, setIsBidCreated] = useState(false); // Track bid creation status
   const [bidIds, setBidIds] = useState([]);
-
-  // console.log("grossssssssss total", grossTotal);
 
   const validateMandatoryFields = () => {
     const mandatoryFields = [
@@ -604,6 +605,16 @@ export default function VendorDetails() {
   // Add new function for handling all tax changes
   const [parentTaxRateData, setParentTaxRateData] = useState([]);
   const fromAllUpdateRef = useRef(false); // Track if change came from bulk update
+
+  // Debug: Track parentTaxRateData changes
+  useEffect(() => {
+    if (parentTaxRateData.length > 0 && parentTaxRateData[0]?.addition_bid_material_tax_details) {
+      parentTaxRateData[0].addition_bid_material_tax_details.forEach((item, index) => {
+        if (["Handling Charges", "Other charges", "Freight"].includes(item.taxChargeType)) {
+        }
+      });
+    }
+  }, [parentTaxRateData]);
 
   // Utility: Calculate Tax Amount
 
@@ -736,6 +747,23 @@ export default function VendorDetails() {
       }
     }
 
+    if (field === "amount") {      
+      // Handle direct amount entry for handling charges, freight, and other charges
+      taxEntry.amount = value;
+      
+      // For amount-based charges, don't calculate percentage
+      if (["Handling Charges", "Other charges", "Freight"].includes(taxEntry.taxChargeType)) {
+        // Keep the amount as entered by user, no percentage calculation needed
+        taxEntry.taxChargePerUom = ""; // Clear percentage for amount-based charges
+      } else {
+        // For percentage-based taxes, calculate the percentage from amount
+        if (!taxEntry.inclusive && firstRow.afterDiscountValue && parseFloat(firstRow.afterDiscountValue) > 0) {
+          const percentage = (parseFloat(value) / parseFloat(firstRow.afterDiscountValue)) * 100;
+          taxEntry.taxChargePerUom = percentage.toFixed(2) + "%";
+        }
+      }
+    }
+
     if (field === "inclusive") {
       taxEntry.inclusive = value;
     }
@@ -751,19 +779,28 @@ export default function VendorDetails() {
 
       if (rowTaxEntryIndex !== -1) {
         // Update the existing tax entry
-        row[taxKey][rowTaxEntryIndex] = { ...taxEntry };
+        const updatedTaxEntry = { ...taxEntry };
+        row[taxKey][rowTaxEntryIndex] = updatedTaxEntry;
+        
+        // Debug amount-based charges specifically
+        if (["Handling Charges", "Other charges", "Freight"].includes(taxEntry.taxChargeType)) {
+        }
       } else {
         // Add the tax entry if it doesn't exist
-        row[taxKey].push({ ...taxEntry });
+        const clonedTaxEntry = { ...taxEntry };
+        row[taxKey].push(clonedTaxEntry);
+        
+        // Debug amount-based charges specifically
+        if (["Handling Charges", "Other charges", "Freight"].includes(taxEntry.taxChargeType)) {
+        }
       }
 
-      // Recalculate the net cost for the row
-      row.netCost = calculateNetCost(updatedData.indexOf(row), updatedData);
+      // Recalculate the net cost for the row using Apply All data
+      row.netCost = calculateNetCost(updatedData.indexOf(row), updatedData, 'applyAll');
     });
 
-    // Update the state with the modified data
-    setTaxRateData(updatedData);
-    setParentTaxRateData(updatedData); // If you are maintaining a parent state
+    // Update only parentTaxRateData for Apply All operations
+    setParentTaxRateData(updatedData);
     originalTaxRateDataRef.current = structuredClone(updatedData);
   };
 
@@ -789,14 +826,22 @@ export default function VendorDetails() {
 
     const charge = { ...taxCharges[chargeIndex] };
 
-    if (field === "amount") {
+    if (field === "amount") {      
       charge.amount = value;
-      if (!charge.inclusive && targetRow.afterDiscountValue) {
-        const perUOM = (
-          (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
-          100
-        ).toFixed(2);
-        charge.taxChargePerUom = perUOM;
+      
+      // Handle amount-based charges differently from percentage-based taxes
+      if (["Handling Charges", "Other charges", "Freight"].includes(charge.taxChargeType)) {
+        // For amount-based charges, keep the amount as entered, no percentage calculation
+        charge.taxChargePerUom = ""; // Clear percentage for amount-based charges
+      } else {
+        // For percentage-based taxes, calculate percentage from amount
+        if (!charge.inclusive && targetRow.afterDiscountValue && parseFloat(targetRow.afterDiscountValue) > 0) {
+          const perUOM = (
+            (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
+            100
+          ).toFixed(2);
+          charge.taxChargePerUom = perUOM + "%";
+        }
       }
     } else {
       charge[field] = value;
@@ -844,12 +889,15 @@ export default function VendorDetails() {
     }
 
     if (!charge.inclusive && field === "taxChargePerUom") {
-      const taxAmount = calculateTaxAmount(
-        charge.taxChargePerUom,
-        targetRow.afterDiscountValue,
-        charge.inclusive
-      );
-      charge.amount = taxAmount.toFixed(2);
+      // Only calculate amount for percentage-based taxes, not amount-based charges
+      if (!["Handling Charges", "Other charges", "Freight"].includes(charge.taxChargeType)) {
+        const taxAmount = calculateTaxAmount(
+          charge.taxChargePerUom,
+          targetRow.afterDiscountValue,
+          charge.inclusive
+        );
+        charge.amount = taxAmount.toFixed(2);
+      }
     }
 
     taxCharges[chargeIndex] = charge;
@@ -858,7 +906,7 @@ export default function VendorDetails() {
 
     const recalculated = updatedData.map((row, idx) => ({
       ...row,
-      netCost: calculateNetCost(idx, updatedData),
+      netCost: calculateNetCost(idx, updatedData, 'individual'),
     }));
 
     // Update matched tax names dynamically
@@ -870,6 +918,8 @@ export default function VendorDetails() {
     }
 
     setTaxRateData(recalculated);
+    // DO NOT update parentTaxRateData here - it contains Apply All data
+    // Individual changes should not overwrite Apply All data
     originalTaxRateDataRef.current = structuredClone(recalculated);
   };
 
@@ -950,7 +1000,6 @@ export default function VendorDetails() {
             {}
           );
           const bidMaterial = item.bid_materials?.[0];
-          console.log("item", item);
 
           // Map the row data
           const rowData = {
@@ -1071,7 +1120,6 @@ export default function VendorDetails() {
         setBidTemplate(formattedData);
 
         setData(processedData);
-        console.log("Processed Data:", processedData);
       } else {
         // Step 2: Fetch the bid data if `revised_bid` is true
         const bidResponse = await axios.get(
@@ -1083,7 +1131,6 @@ export default function VendorDetails() {
         setCounterId(
           bidResponse.data?.bids[currentIndex]?.counter_bids[0]?.id
         );
-        console.log("bidResponse.data.bids", bidResponse.data.bids[currentIndex].id);
         if (bidResponse.data?.bids[currentIndex]?.counter_bids.length > 0) {
           setBidIdForCounter(bidResponse.data.bids[currentIndex].id);
         }
@@ -1097,15 +1144,11 @@ export default function VendorDetails() {
 
         setGrossTotal(bidResponse.data.bids[currentIndex].gross_total);
 
-        // console.log("bids", bids);
-
         // Process only the first element of the bids array
         if (bids.length > 0) {
           setCounterData(bids[0]?.counter_bids?.length || 0);
           setCounterId(bids[0]?.counter_bids?.[0]?.id || "");
           setBidIds(bids.map((b) => b.id));
-        } else {
-          // console.log("No bids available");
         }
       }
     } catch (error) {
@@ -1128,9 +1171,7 @@ export default function VendorDetails() {
     setCounterData(bid.counter_bids?.length || 0);
     setCounterId(counterBid?.id || "");
     if (bid?.counter_bids.length > 0) {
-      // console.log("njnj", bid)
       setBidIdForCounter(bid?.id);
-      // console.log("bidIdForCounter", bidIdForCounter);
     }
     setGrossTotal(bid.gross_total || "");
 
@@ -1284,29 +1325,15 @@ export default function VendorDetails() {
     setData(updatedData.length > 0 ? updatedData : previousData);
   }, [currentIndex, allBids, bidDataReady]); // ✅ Reacts only to index change, uses local data
 
-  // // Effect to update data when currentIndex changes
-  // useEffect(() => {
-  // if (bids.length > 0) {
-  //     updateDataForCurrentIndex(bids, currentIndex);
-  //   }
-  // }, [currentIndex, bids]);
-
   // Get the freight charge value as a string (if available, otherwise default to "0")
   const freightChargeRaw = String(
     freightData.find((item) => item.label === "Freight Charge")?.value || "0"
   );
 
-  // Ensure freightChargeRaw is a string before replacing ₹ and commas
-  // console.log("Type of freightChargeRaw:", typeof freightChargeRaw);
-
   // Remove ₹ and commas, then parse it to a float (if not a valid number, default to 0)
   const freightCharge21 = parseFloat(freightChargeRaw.replace(/₹|,/g, "")) || 0;
 
-  // Log the parsed value
-  // console.log("Parsed freight charge:", freightCharge21);
-
   const preparePayload = () => {
-    // console.log("taxRateData", taxRateData);
 
     const bidMaterialsAttributes = data.map((row, index) => {
       const rowTotal =
@@ -1316,7 +1343,6 @@ export default function VendorDetails() {
       const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
       const finalTotal = landedAmount + gstAmount;
       const totalAmt = row.total || 0;
-      console.log(taxRateData, "taxRateData");
 
       const taxDetails = [
         ...(taxRateData[index]?.addition_bid_material_tax_details || []).map(
@@ -1465,8 +1491,6 @@ export default function VendorDetails() {
       }
     });
 
-    console.log(chargesData, "chargesData");
-
     const extractChargeTableData = Array.isArray(chargesData)
       ? chargesData?.slice(0, 3)?.map((charge) => ({
         // Limit to first 3 elements
@@ -1484,29 +1508,6 @@ export default function VendorDetails() {
       }))
       : [];
 
-    // const mappedBidMaterials = bid.bid_materials_attributes.map((material) => {
-    //   const mappedTaxDetails = material.addition_tax_charges.map((charge) => {
-    //     const matchedTax = dropdownData.find(
-    //       (tax) => tax.name === charge.taxChargeType
-    //     );
-
-    //     return {
-    //       resource_id: matchedTax?.id || charge.id,
-    //       inclusive: charge.inclusive,
-    //       resource_type: matchedTax?.type || "TaxCharge",
-    //       amount: charge.amount,
-    //       addition: true,
-    //     };
-    //   });
-
-    //   return {
-    //     ...material,
-    //     bid_material_tax_details: mappedTaxDetails,
-    //   };
-    // });
-
-    // console.log("mappedBidMaterials", mappedBidMaterials);
-
     const payload = {
       bid: {
         event_vendor_id: vendorId,
@@ -1521,9 +1522,7 @@ export default function VendorDetails() {
         ...extractShortTableData,
       },
     };
-    console.log("extractChargeTableData:---", extractChargeTableData);
 
-    // console.log("Prepared Payload:", payload);
     return payload;
   };
 
@@ -1531,18 +1530,10 @@ export default function VendorDetails() {
     setLoading(true);
     setSubmitted(true);
     const payload = preparePayload();
-    console.log("payload:---", payload);
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
     try {
-      // Send POST request
-      // Validate mandatory fields
-      // if (!validateMandatoryFields() || !validateTableData()) {
-      //   setLoading(false);
-      //   return; // Stop further execution if validation fails
-      // }
       const payload = preparePayload();
-      // console.log("payload:---", payload);
       const response = await axios.post(
         `${baseURL}rfq/events/${eventId}/bids?token=${token}&event_vendor_id=${vendorId}`, // Replace with your API endpoint
         payload,
@@ -1557,11 +1548,7 @@ export default function VendorDetails() {
         autoClose: 1000, // Close after 3 seconds
       });
       setIsBidCreated(true);
-      setRevisedBid(true); // Update `revisedBid` to true
-      // console.log("Updated revisedBid to true"); // Update state
-      // console.log("Updated isBidCreated to true.");
-      // console.log("vendor ID2", vendorId);
-      // setData(response.data.bid_materials_attributes || []);
+      setRevisedBid(true); 
       setTimeout(() => {
         navigate(
           `/vendor-list?token=${token}`
@@ -1582,8 +1569,6 @@ export default function VendorDetails() {
       setSubmitted(false);
     }
   };
-
-  // console.log("Bid Created:", isBidCreated); // Debugging state
 
   const handleReviseBid = async () => {
     setLoading(true);
@@ -1613,7 +1598,6 @@ export default function VendorDetails() {
 
     try {
       const revisedBidMaterials = data.map((row, index) => {
-        // console.log("data of map on bid attributes", row);
 
         const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
         const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
@@ -1740,12 +1724,6 @@ export default function VendorDetails() {
         },
       };
 
-      console.log(
-        "Prepared Payload for Revision:",
-        payload,
-        extractChargeTableData
-      );
-
       const response = await axios.post(
         `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=${token}&event_vendor_id=${vendorId}`,
         payload
@@ -1815,7 +1793,6 @@ export default function VendorDetails() {
 
   useEffect(() => {
     if (showModal && taxRateData[tableId]) {
-      // console.log("Modal Data Updated:", taxRateData[tableId]);
     }
   }, [showModal, taxRateData, tableId]);
 
@@ -1836,8 +1813,6 @@ export default function VendorDetails() {
   const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
   const [orderDetails, setOrderDetails] = useState(true);
   const [deliveryDate, setDelivaryDate] = useState(null);
-
-  // console.log("Event ID:", eventId);
 
   const handlepublishedStages = () => {
     setPublishedStages(!publishedStages);
@@ -1888,7 +1863,6 @@ export default function VendorDetails() {
 
   // Call the function and log the result
   const formattedDate = formatDate(isoDate);
-  // // console.log("Formatted Date:", formattedDate);
 
   //end date
   const calculateEndDate = (date) => {
@@ -1940,16 +1914,9 @@ export default function VendorDetails() {
     return `${day}-${month}-${year} ${hours}:${minutes} ${ampm}`;
   };
   const Delivarydate = calculateDelivarydDate(deliveryDate);
-  // console.log("Formatted Delivery Date:", Delivarydate);
-
-  // console.log(formattedEndDate);
-  // console.log("end d", endDate);
-
-  // // console.log("data1:", data1);
 
   // Function to handle button click and navigate
   const handleNavigate = () => {
-    // // console.log("vendor list ");
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
     navigate(
@@ -1975,8 +1942,6 @@ export default function VendorDetails() {
       );
 
       if (response.ok) {
-        // console.log("Counter offer declined");
-
         // Retrieve the first bid data again (to restore it)
         const bidResponse = await axios.get(
           `${baseURL}/rfq/events/${eventId}/bids?token=${token}&q[event_vendor_pms_supplier_id_in]=${vendorId}`
@@ -1985,7 +1950,6 @@ export default function VendorDetails() {
 
         if (bids.length > 0) {
           const firstBid = bids[currentIndex];
-          // console.log("First bid data:", firstBid);
 
           // Process Freight Data (Optional)
           const processFreightData = (bid) => [
@@ -2039,13 +2003,11 @@ export default function VendorDetails() {
             landedAmount: material.landed_amount,
           }));
 
-          // console.log("Previous data:", previousData);
           setPreviousData(previousData);
 
           // Assuming updatedData comes from the response or API
           const responseData = await response.json();
           const updatedData = responseData.updatedData || [];
-          // console.log("Updated data:", updatedData);
 
           // Set data based on the presence of updatedData
           setData(updatedData.length > 0 ? updatedData : previousData);
@@ -2068,8 +2030,6 @@ export default function VendorDetails() {
     setLoading(true);
     const payload = { status: "accepted" };
 
-    // console.log("Payload being sent:", payload);
-    console.log("Event ID:", eventId, "Bid IDs:", bidIds, "Counter ID:", counterId);
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
     try {
@@ -2083,10 +2043,7 @@ export default function VendorDetails() {
         }
       );
 
-      // console.log("Response from API:", response);
-
       if (response.ok) {
-        // console.log("Counter offer accepted");
 
         // Fetch bids
         const bidResponse = await axios.get(
@@ -2094,11 +2051,9 @@ export default function VendorDetails() {
         );
 
         const bids = bidResponse.data.bids;
-        // console.log("Bids array:", bids);
 
         if (bids.length > 0) {
           const firstBid = bids[currentIndex];
-          // console.log("First bid data:", firstBid);
 
           // Process Freight Data (Optional)
           const processFreightData = (bid) => [
@@ -2152,13 +2107,11 @@ export default function VendorDetails() {
             landedAmount: material.landed_amount,
           }));
 
-          // console.log("Previous data:", previousData);
           setPreviousData(previousData);
 
           // Assuming updatedData comes from the response or API
           const responseData = await response.json();
           const updatedData = responseData.updatedData || [];
-          // console.log("Updated data:", updatedData);
 
           // Set data based on the presence of updatedData
           setData(updatedData.length > 0 ? updatedData : previousData);
@@ -2190,7 +2143,6 @@ export default function VendorDetails() {
   //         `${baseURL}/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
   //       );
   //       const data = response.data;
-  //       console.log("my data", data.state);
 
   //       // Handle bidding state
   //       if (data.state === "expired") {
@@ -2219,7 +2171,6 @@ export default function VendorDetails() {
   // useEffect(() => {
   //   const fetchEventMaterials = async () => {
   //     // const eventId = 8
-  //     // // console.log("Event ID:", eventId);
   //     try {
   //       // Fetch data directly without headers
   //       const response = await axios.get(
@@ -2229,12 +2180,10 @@ export default function VendorDetails() {
   //       // Transform the API response into the required table data format
 
   //       setData1(response.data);
-  //       // // console.log("response:", response.data);
   //       const isoDate = response.data.event_schedule.start_time;
   //       setDate(response.data.event_schedule.start_time);
   //       setEndDate(response.data.event_schedule.end_time_duration);
   //       setDelivaryDate(response.data.delivery_date);
-  //       // console.log("date:", isoDate);
 
   //       if (response.data.linked_event_id) {
   //         fetchLinkedEventData(response.data.linked_event_id);
@@ -2674,11 +2623,24 @@ export default function VendorDetails() {
       // Store the original tax rate data for reference
       originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
     }
-  }, [data, taxRateData]);
+  }, [data]); // Remove taxRateData from dependencies to prevent infinite loop
 
   const handleOpenModal = (rowIndex) => {
-    if (taxRateData.length === 0) {
-      const updatedTaxRateData = data.map((selectedRow) => ({
+    
+    // INDIVIDUAL MODAL: Only show data specific to this material (NOT Apply All data)
+    // This ensures each material modal shows only its individual tax settings
+    const updatedTaxRateData = data.map((selectedRow, index) => {
+      
+      // Calculate the ORIGINAL base amount (before any tax calculations)
+      const quantityAvail = parseFloat(selectedRow.quantityAvail || selectedRow.quantity || 0);
+      const price = parseFloat(selectedRow.price || 0);
+      const discount = parseFloat(selectedRow.discount || 0);
+      const originalTotal = price * quantityAvail;
+      const discountAmount = (originalTotal * discount) / 100;
+      const originalAfterDiscountValue = originalTotal - discountAmount;
+            
+      // Always use saved individual data or empty arrays - never Apply All data
+      return {
         material: selectedRow.section || "",
         hsnCode: selectedRow.hsnCode || "",
         ratePerNos: selectedRow.price || "",
@@ -2686,46 +2648,74 @@ export default function VendorDetails() {
         discount: selectedRow.discount || "",
         materialCost: selectedRow.price || "",
         discountRate: selectedRow.realisedDiscount || "",
-        afterDiscountValue: selectedRow.total || "",
+        afterDiscountValue: originalAfterDiscountValue.toFixed(2), // Use ORIGINAL amount, not current total
         remark: selectedRow.vendorRemark || "",
-        addition_bid_material_tax_details:
-          selectedRow?.addition_bid_material_tax_details || [],
-        deduction_bid_material_tax_details:
-          selectedRow?.deduction_bid_material_tax_details || [],
+        // Only use individual saved data, not Apply All data
+        addition_bid_material_tax_details: selectedRow.addition_bid_material_tax_details || [],
+        deduction_bid_material_tax_details: selectedRow.deduction_bid_material_tax_details || [],
         netCost: selectedRow.total || "",
-      }));
+      };
+    });
 
-      originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
-      setTaxRateData(updatedTaxRateData);
-    } else {
-      // console.log("Updated Tax Rate Data:", originalTaxRateDataRef.current);
-      setTaxRateData(structuredClone(originalTaxRateDataRef.current));
-    }
 
+    originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
+    setTaxRateData(updatedTaxRateData);
+    
     setTableId(rowIndex);
     setShowModal(true);
-  };
-
-  const handleSaveAllTaxChanges = () => {
+  };  const handleSaveAllTaxChanges = () => {
+    
     const updatedData = [...data];
 
     // Apply tax changes to all items
     data.forEach((_, index) => {
-      const updatedNetCost = calculateNetCost(index, taxRateData);
+      
+      // OVERRIDE: Replace with Apply All data only
+      updatedData[index].addition_bid_material_tax_details = 
+        [...(parentTaxRateData[index]?.addition_bid_material_tax_details || [])];
+      updatedData[index].deduction_bid_material_tax_details = 
+        [...(parentTaxRateData[index]?.deduction_bid_material_tax_details || [])];
+      
+      
+      // CRITICAL: calculateNetCost expects afterDiscountValue, but updatedData (main data) 
+      // uses different field structure. We need to calculate the base amount manually.
+      const quantityAvail = parseFloat(updatedData[index].quantityAvail || updatedData[index].quantity || 0);
+      const price = parseFloat(updatedData[index].price || 0);
+      const discount = parseFloat(updatedData[index].discount || 0);
+      const originalTotal = price * quantityAvail;
+      const discountAmount = (originalTotal * discount) / 100;
+      const calculatedAfterDiscountValue = originalTotal - discountAmount;
+            
+      // Create a temporary object with the structure calculateNetCost expects
+      const tempCalculationData = [{
+        ...updatedData[index],
+        afterDiscountValue: calculatedAfterDiscountValue.toFixed(2),
+        addition_bid_material_tax_details: updatedData[index].addition_bid_material_tax_details || [],
+        deduction_bid_material_tax_details: updatedData[index].deduction_bid_material_tax_details || []
+      }];
+      
+      // Calculate net cost using the properly structured data
+      const updatedNetCost = calculateNetCost(0, tempCalculationData, 'applyAll');
+      
       updatedData[index].total = updatedNetCost;
+      
     });
-    // console.log("Updated Data:", updatedData);
+    
 
     setData(updatedData);
-    const updatedGrossTotal = calculateGrossTotal();
-    setGrossTotal(parseFloat(updatedGrossTotal));
-    handleCloseModal1();
-  };
-
-  const handleAllTaxModal = () => {
-    // Initialize tax data for all items if not already done
-    if (parentTaxRateData?.length === 0) {
-      const updatedTaxRateData = data.map((selectedRow) => ({
+    
+    
+    // Update taxRateData to reflect the Apply All override results for individual modals
+    const syncedTaxRateData = updatedData.map((selectedRow, index) => {
+      // Calculate the base amount for taxRateData
+      const quantityAvail = parseFloat(selectedRow.quantityAvail || selectedRow.quantity || 0);
+      const price = parseFloat(selectedRow.price || 0);
+      const discount = parseFloat(selectedRow.discount || 0);
+      const originalTotal = price * quantityAvail;
+      const discountAmount = (originalTotal * discount) / 100;
+      const originalAfterDiscountValue = originalTotal - discountAmount;
+      
+      return {
         material: selectedRow.section || "",
         hsnCode: selectedRow.hsnCode || "",
         ratePerNos: selectedRow.price || "",
@@ -2733,23 +2723,92 @@ export default function VendorDetails() {
         discount: selectedRow.discount || "",
         materialCost: selectedRow.price || "",
         discountRate: selectedRow.realisedDiscount || "",
-        afterDiscountValue: selectedRow.total || "",
+        afterDiscountValue: originalAfterDiscountValue.toFixed(2),
         remark: selectedRow.vendorRemark || "",
-        addition_bid_material_tax_details:
-          selectedRow?.addition_bid_material_tax_details || [],
-        deduction_bid_material_tax_details:
-          selectedRow?.deduction_bid_material_tax_details || [],
+        // Use the updated tax details from Apply All override
+        addition_bid_material_tax_details: selectedRow.addition_bid_material_tax_details || [],
+        deduction_bid_material_tax_details: selectedRow.deduction_bid_material_tax_details || [],
         netCost: selectedRow.total || "",
-      }));
+      };
+    });
+    
+    setTaxRateData(syncedTaxRateData);
+    
+    // Update the original tax rate reference to reflect the merged state
+    originalTaxRateDataRef.current = structuredClone(syncedTaxRateData);
+    const updatedGrossTotal = calculateGrossTotal();
+    setGrossTotal(parseFloat(updatedGrossTotal));
+    
+    handleCloseModal1();
+  };
+
+  const handleAllTaxModal = () => {
+    
+    // Initialize tax data for all items if not already done
+    if (parentTaxRateData?.length === 0) {
+      const updatedTaxRateData = data.map((selectedRow, index) => {
+        // Calculate the ORIGINAL base amount (before any tax calculations) for Apply All
+        const quantityAvail = parseFloat(selectedRow.quantityAvail || selectedRow.quantity || 0);
+        const price = parseFloat(selectedRow.price || 0);
+        const discount = parseFloat(selectedRow.discount || 0);
+        const originalTotal = price * quantityAvail;
+        const discountAmount = (originalTotal * discount) / 100;
+        const originalAfterDiscountValue = originalTotal - discountAmount;
+                
+        return {
+          material: selectedRow.section || "",
+          hsnCode: selectedRow.hsnCode || "",
+          ratePerNos: selectedRow.price || "",
+          totalPoQty: selectedRow.quantityAvail || "",
+          discount: selectedRow.discount || "",
+          materialCost: selectedRow.price || "",
+          discountRate: selectedRow.realisedDiscount || "",
+          afterDiscountValue: originalAfterDiscountValue.toFixed(2), // Use ORIGINAL amount
+          remark: selectedRow.vendorRemark || "",
+          addition_bid_material_tax_details: selectedRow?.addition_bid_material_tax_details || [],
+          deduction_bid_material_tax_details: selectedRow?.deduction_bid_material_tax_details || [],
+          netCost: selectedRow.total || "",
+        };
+      });
 
       originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
       setTaxRateData(updatedTaxRateData);
       setParentTaxRateData(updatedTaxRateData);
     } else {
-      setTaxRateData(structuredClone(parentTaxRateData));
-      setParentTaxRateData(structuredClone(parentTaxRateData));
+      // Use existing parentTaxRateData but recalculate base amounts in case material data changed
+      const restoredTaxRateData = parentTaxRateData.map((savedRow, index) => {
+        const currentMaterialData = data[index];
+        
+        // Recalculate original base amount in case material data changed
+        const quantityAvail = parseFloat(currentMaterialData.quantityAvail || currentMaterialData.quantity || 0);
+        const price = parseFloat(currentMaterialData.price || 0);
+        const discount = parseFloat(currentMaterialData.discount || 0);
+        const originalTotal = price * quantityAvail;
+        const discountAmount = (originalTotal * discount) / 100;
+        const originalAfterDiscountValue = originalTotal - discountAmount;
+                
+        return {
+          ...savedRow, // Keep all saved tax data
+          // Update material info that might have changed
+          material: currentMaterialData.section || "",
+          ratePerNos: currentMaterialData.price || "",
+          totalPoQty: currentMaterialData.quantityAvail || "",
+          discount: currentMaterialData.discount || "",
+          materialCost: currentMaterialData.price || "",
+          discountRate: currentMaterialData.realisedDiscount || "",
+          afterDiscountValue: originalAfterDiscountValue.toFixed(2), // Update base amount
+          remark: currentMaterialData.vendorRemark || "",
+          netCost: currentMaterialData.total || "",
+        };
+      });
+
+      setTaxRateData(structuredClone(restoredTaxRateData));
+      setParentTaxRateData(structuredClone(restoredTaxRateData));
+      originalTaxRateDataRef.current = structuredClone(restoredTaxRateData);
     }
 
+    // Set tableId to 0 for Apply All modal (uses first row as template)
+    setTableId(0);
     setShowModal1(true);
     setIsTaxRateDataChanged(true);
   };
@@ -2764,6 +2823,7 @@ export default function VendorDetails() {
   // Function to add a new addition tax charge row
 
   const addAdditionTaxCharge = (rowIndex) => {
+    
     const newItem = {
       id: Date.now().toString(),
       taxChargeType: "",
@@ -2772,13 +2832,18 @@ export default function VendorDetails() {
       amount: "",
     };
 
-    const updatedTaxRateData = [...taxRateData];
-    updatedTaxRateData[rowIndex]?.addition_bid_material_tax_details?.push(
-      newItem
-    );
-    setTaxRateData(updatedTaxRateData);
-    setParentTaxRateData(updatedTaxRateData);
-    console.log("Updated Tax Rate Data:", updatedTaxRateData);
+    // Determine if we're in Apply All context or Individual context
+    const isApplyAllContext = showModal1; // Apply All modal is open
+    
+    if (isApplyAllContext) {
+      const updatedParentData = [...parentTaxRateData];
+      updatedParentData[rowIndex]?.addition_bid_material_tax_details?.push(newItem);
+      setParentTaxRateData(updatedParentData);
+    } else {
+      const updatedTaxData = [...taxRateData];
+      updatedTaxData[rowIndex]?.addition_bid_material_tax_details?.push(newItem);
+      setTaxRateData(updatedTaxData);
+    }
   };
 
   const addDeductionTaxCharge = (rowIndex) => {
@@ -2790,33 +2855,83 @@ export default function VendorDetails() {
       amount: "",
     };
 
-    const updatedTaxRateData = [...taxRateData];
-    updatedTaxRateData[rowIndex].deduction_bid_material_tax_details.push(
-      newItem
-    );
-    setTaxRateData(updatedTaxRateData);
-    setParentTaxRateData(updatedTaxRateData);
+    // Determine if we're in Apply All context or Individual context
+    const isApplyAllContext = showModal1; // Apply All modal is open
+    
+    if (isApplyAllContext) {
+      const updatedParentData = [...parentTaxRateData];
+      updatedParentData[rowIndex].deduction_bid_material_tax_details.push(newItem);
+      setParentTaxRateData(updatedParentData);
+    } else {
+      const updatedTaxData = [...taxRateData];
+      updatedTaxData[rowIndex].deduction_bid_material_tax_details.push(newItem);
+      setTaxRateData(updatedTaxData);
+    }
   };
 
   // Function to remove a tax charge item
   const removeTaxChargeItem = (rowIndex, id, type) => {
-    const updatedTaxRateData = [...taxRateData];
-    if (type === "addition") {
-      updatedTaxRateData[rowIndex].addition_bid_material_tax_details =
-        updatedTaxRateData[rowIndex].addition_bid_material_tax_details.filter(
-          (item) => item.id !== id
-        );
+    
+    // Determine if we're in Apply All context or Individual context
+    const isApplyAllContext = showModal1; // Apply All modal is open
+    
+    if (isApplyAllContext) {
+      const updatedParentData = [...parentTaxRateData];
+      
+      if (type === "addition") {
+        updatedParentData[rowIndex].addition_bid_material_tax_details =
+          updatedParentData[rowIndex].addition_bid_material_tax_details.filter(
+            (item) => item.id !== id
+          );
+      } else {
+        updatedParentData[rowIndex].deduction_bid_material_tax_details =
+          updatedParentData[rowIndex].deduction_bid_material_tax_details.filter(
+            (item) => item.id !== id
+          );
+      }
+      
+      setParentTaxRateData(updatedParentData);
+      const updatedMainData = [...data];
+      
+      updatedMainData.forEach((_, index) => {
+        if (type === "addition") {
+          updatedMainData[index].addition_bid_material_tax_details =
+            (updatedMainData[index].addition_bid_material_tax_details || []).filter(
+              (item) => item.id !== id
+            );
+        } else {
+          updatedMainData[index].deduction_bid_material_tax_details =
+            (updatedMainData[index].deduction_bid_material_tax_details || []).filter(
+              (item) => item.id !== id
+            );
+        }
+        
+        // Recalculate net cost for each material after removal
+        const updatedNetCost = calculateNetCost(index, updatedParentData, 'applyAll');
+        updatedMainData[index].total = updatedNetCost;
+        
+      });
+      
+      setData(updatedMainData);
+      
     } else {
-      updatedTaxRateData[rowIndex].deduction_bid_material_tax_details =
-        updatedTaxRateData[rowIndex].deduction_bid_material_tax_details.filter(
-          (item) => item.id !== id
-        );
+      const updatedTaxData = [...taxRateData];
+      
+      if (type === "addition") {
+        updatedTaxData[rowIndex].addition_bid_material_tax_details =
+          updatedTaxData[rowIndex].addition_bid_material_tax_details.filter(
+            (item) => item.id !== id
+          );
+      } else {
+        updatedTaxData[rowIndex].deduction_bid_material_tax_details =
+          updatedTaxData[rowIndex].deduction_bid_material_tax_details.filter(
+            (item) => item.id !== id
+          );
+      }
+      
+      setTaxRateData(updatedTaxData);
     }
-    setTaxRateData(updatedTaxRateData);
-    setParentTaxRateData(updatedTaxRateData);
   };
-
-  // console.log("taxRateData :------", taxRateData);
 
   const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
     if (inclusive) return 0;
@@ -2829,41 +2944,65 @@ export default function VendorDetails() {
     return (parsedPercentage / 100) * parsedBaseAmount;
   };
 
-  const calculateNetCost = (rowIndex, updatedData = taxRateData) => {
-    const taxRateRow = updatedData[rowIndex];
+  const calculateNetCost = (rowIndex, updatedData = taxRateData, forceDataSource = null) => {
+    
+    let taxRateRow;
+    
+    if (forceDataSource === 'individual') {
+      // Force use of individual data (for individual material saves)
+      taxRateRow = updatedData[rowIndex];
+    } else if (forceDataSource === 'applyAll') {
+      // Force use of Apply All data (for Apply All saves)
+      taxRateRow = updatedData[rowIndex];
+    } else {
+      // Default behavior: Use provided data
+      taxRateRow = updatedData[rowIndex];
+    }
+    
+    if (!taxRateRow) {
+      return "0.00";
+    }
+    
+    const baseAmount = parseFloat(taxRateRow.afterDiscountValue) || 0;
+    
     let additionTaxTotal = 0;
     let deduction_bid_material_tax_detailsTotal = 0;
     let directChargesTotal = 0;
 
-    taxRateRow.addition_bid_material_tax_details.forEach((item) => {
-      if (item.inclusive) return;
+    taxRateRow.addition_bid_material_tax_details.forEach((item, index) => {
+      if (item.inclusive) {
+        return;
+      }
 
       if (
         ["Handling Charges", "Other charges", "Freight"].includes(
           item.taxChargeType
         )
       ) {
-        directChargesTotal += parseFloat(item.amount) || 0;
+        const amount = parseFloat(item.amount) || 0;
+        directChargesTotal += amount;
       } else {
         const taxAmount = calculateTaxAmount(
           item.taxChargePerUom,
-          taxRateRow.afterDiscountValue
+          baseAmount
         );
         additionTaxTotal += taxAmount;
       }
     });
 
-    taxRateRow.deduction_bid_material_tax_details.forEach((item) => {
-      if (item.inclusive) return;
+    taxRateRow.deduction_bid_material_tax_details.forEach((item, index) => {
+      if (item.inclusive) {
+        return;
+      }
       const taxAmount = calculateTaxAmount(
         item.taxChargePerUom,
-        taxRateRow.afterDiscountValue
+        baseAmount
       );
       deduction_bid_material_tax_detailsTotal += taxAmount;
     });
 
     const netCost =
-      parseFloat(taxRateRow.afterDiscountValue || "0") +
+      baseAmount +
       additionTaxTotal +
       directChargesTotal -
       deduction_bid_material_tax_detailsTotal;
@@ -2884,37 +3023,55 @@ export default function VendorDetails() {
     return total.toFixed(2); // Return the total as a string with two decimal places
   };
   const handleSaveTaxChanges = () => {
+    
     const updatedData = [...data];
 
-    // Update the net cost for the specific tableId (row index)
-    const updatedNetCost = calculateNetCost(tableId);
+    // Debug current material's tax details before calculation
+    if (taxRateData[tableId]) {
+      
+      if (taxRateData[tableId].addition_bid_material_tax_details) {
+        taxRateData[tableId].addition_bid_material_tax_details.forEach((item, itemIndex) => {
+        });
+      }
+      
+      if (taxRateData[tableId].deduction_bid_material_tax_details) {
+        taxRateData[tableId].deduction_bid_material_tax_details.forEach((item, itemIndex) => {
+        });
+      }
+    }
+
+    // Update the net cost for the specific tableId (row index) using ONLY individual data
+    const updatedNetCost = calculateNetCost(tableId, taxRateData, 'individual');
+    
     updatedData[tableId].total = updatedNetCost;
+    
+    // Update the tax details for the specific row from taxRateData
+    if (taxRateData[tableId]) {
+      updatedData[tableId].addition_bid_material_tax_details = 
+        taxRateData[tableId].addition_bid_material_tax_details || [];
+      updatedData[tableId].deduction_bid_material_tax_details = 
+        taxRateData[tableId].deduction_bid_material_tax_details || [];
+      
+    }
 
     // Update the data state with the modified row
     setData(updatedData);
+    
+    // Update the original tax rate reference to reflect the current state
+    originalTaxRateDataRef.current = structuredClone(taxRateData);
 
     // Recalculate the gross total after the specific update
     const updatedGrossTotal = calculateGrossTotal();
     setGrossTotal(parseFloat(updatedGrossTotal));
 
+    
     handleCloseModal();
     setIsTaxRateDataChanged(true);
 
-    // console.log(
-    //   "Tax Rate Data:",
-    //   taxRateData,
-    //   "Table ID:",
-    //   tableId,
-    //   updatedGrossTotal
-    // );
   };
 
   const handleSaveALlTaxChanges = () => {
     const updatedGrossTotal = calculateGrossTotal();
-    // setTaxRateData((prevState) => ({
-    //   ...prevState,
-    //   netCost: updatedNetCost,
-    // }));
 
     setGrossTotal(parseFloat(updatedGrossTotal));
     handleCloseModal();
@@ -2994,21 +3151,12 @@ export default function VendorDetails() {
     fetchTaxes();
   }, []);
 
-  // useEffect(() => {
-  //   console.log(
-  //     "parent",
-  //     parentTaxRateData[tableId]?.addition_bid_material_tax_details.resource_id,
-  //     taxRateData[tableId]?.addition_bid_material_tax_details.resource_id
-  //   );
-  // }, [parentTaxRateData, taxRateData]);
-
   const additionBidMaterialTaxDetails =
     parentTaxRateData[tableId]?.addition_bid_material_tax_details || [];
 
   const matchedTaxNames = additionBidMaterialTaxDetails
     .map((item) => {
       const matchedTax = taxOptions.find((tax) => tax.id === item.resource_id);
-      // console.log("matchedTax", matchedTax, taxOptions, item.resource_id);
       if (
         matchedTax &&
         !matchedParentTaxNamesArray.includes(matchedTax.value) &&
@@ -3028,7 +3176,6 @@ export default function VendorDetails() {
   const singleMatchedTaxNames = singleAdditionBidMaterialTaxDetails
     .map((item) => {
       const matchedTax = taxOptions.find((tax) => tax.id === item.resource_id);
-      // console.log("matchedTax", matchedTax, taxOptions, item.resource_id);
 
       // Push the matched tax name into the external array if it exists
       if (
@@ -3282,7 +3429,6 @@ export default function VendorDetails() {
                     )} */}
 
                     <div className="card-body">
-                      {/* {console.log("Linked Event Data:", linkedEventData)} */}
                       {linkedEventData.length > 0 ? (
                         <div>
                           <Table
@@ -3769,7 +3915,6 @@ export default function VendorDetails() {
                                         </tr>
                                       </thead>
                                       <tbody>
-                                        {/* {console.log(data1.event_schedule)} */}
                                         <tr>
                                           <td
                                             className="text-start"
@@ -4521,7 +4666,6 @@ export default function VendorDetails() {
                                   {/* Document Details Table */}
                                   {data1.attachments?.length > 0 ? (
                                     <div className="tbl-container mt-3">
-                                      {console.log("data1:-- attchment", data1.attachments)}
                                       <table className="w-100 table">
                                         <thead>
                                           <tr>
@@ -4749,7 +4893,6 @@ export default function VendorDetails() {
                                           whiteSpace: "normal",
                                         }}
                                       >
-                                        {/* {console.log("dta1", data1)} */}
                                         {data1.event_no} {data1.event_title}
                                       </p>
                                     </div>
@@ -5029,8 +5172,6 @@ export default function VendorDetails() {
                       onClick={() => handleAllTaxModal()}
                     >
                       <span className="align-text-top">All Taxes</span>
-                      {/* {console.log("data:---", data)
-                          } */}
                     </button>
                   </div>
                 </div>
@@ -5073,7 +5214,6 @@ export default function VendorDetails() {
                     </div>
                   </div>
                 )}
-                {console.log("paginatedData:---", paginatedData)}
   
                 {/* <div className="card-body"> */}
                 <div style={tableContainerStyle}>
@@ -5132,17 +5272,6 @@ export default function VendorDetails() {
                           realisedPriceValue = price - (price * discount / 100);
                         }
 
-                        // Debug logging
-                        console.log("RealizedPrice Debug:", {
-                          cell,
-                          rowIndex,
-                          currentRowData: currentRowData,
-                          realisedPriceFromData: currentRowData?.realisedPrice,
-                          calculatedValue: realisedPriceValue,
-                          price,
-                          discount
-                        });
-
                         return (
                           <input
                             value={realisedPriceValue || "-"}
@@ -5158,8 +5287,6 @@ export default function VendorDetails() {
                           onClick={() => handleOpenModal(rowIndex)}
                         >
                           <span className="align-text-top">Select</span>
-                          {/* {console.log("data:---", data)
-                                } */}
                         </button>
                       ),
                       pmsBrand: (cell, rowIndex) => (
@@ -5991,7 +6118,6 @@ export default function VendorDetails() {
                       //         value: "",
                       //         readonly: false,
                       //       }; // Ensure extra_data is initialized
-                      //     console.log("row", row, "extraData", extraData);
                       //     return (
                       //       <input
                       //         value={extraData.value || ""
@@ -6080,7 +6206,6 @@ export default function VendorDetails() {
 
                           const revisedBid = row?.revised_bid;
                           const extraData = row?.extra_data?.[currentKey];
-                          // console.log("row", row, "extraData", extraData);
 
                           // Determine value and readonly safely
                           const inputValue =
@@ -6486,7 +6611,6 @@ export default function VendorDetails() {
         </div>
       </div>
       <ToastContainer />
-      {/* {console.log("revisedBid", revisedBid)} */}
 
       <DynamicModalBox
         show={showModal1}
@@ -6520,7 +6644,7 @@ export default function VendorDetails() {
                   <thead className="tax-table-header">
                     <tr>
                       <th>Tax / Charge Type</th>
-                      <th>Tax / Charges per UOM (INR)</th>
+                      <th>Tax/Charges per UOM</th>
                       <th>Inclusive</th>
                       {/* <th>Amount</th> */}
                       <th>Action</th>
@@ -6544,7 +6668,7 @@ export default function VendorDetails() {
                         </button>
                       </td>
                     </tr>
-                    {/* {console.log("parent", matchedTaxNames)} */}
+                    
                     {parentTaxRateData[
                       tableId
                     ]?.addition_bid_material_tax_details.map(
@@ -6616,41 +6740,63 @@ export default function VendorDetails() {
                           </td>
 
                           <td>
-                            <SelectBox
-                              options={
-                                (() => {
-                                  // Find the selected tax type (by name or resource_id)
-                                  const selectedTaxType =
-                                    item.taxChargeType ||
-                                    taxOptions.find((option) => option.id === item.resource_id)?.name ||
-                                    taxOptions.find((option) => option.id === item.resource_id)?.value;
+                            {(() => {
+                              // Check if this is a handling charge, freight, or other charge
+                              const selectedTaxType =
+                                item.taxChargeType ||
+                                taxOptions.find((option) => option.id === item.resource_id)?.name ||
+                                taxOptions.find((option) => option.id === item.resource_id)?.value;
 
-                                  // Find the matching percentage array from taxPercentageOptions
-                                  const match = taxPercentageOptions.find(
-                                    (tax) => tax.tax_name === selectedTaxType
-                                  );
+                              const isAmountBasedCharge = ["Handling Charges", "Other charges", "Freight"].includes(selectedTaxType);
 
-                                  // If found, return as [{label, value}]
-                                  if (match && Array.isArray(match.percentage)) {
-                                    return match.percentage.map((percent) => ({
+                              if (isAmountBasedCharge) {
+                                
+                                return (
+                                  <input
+                                    key={`apply-all-amount-${item.id}`}
+                                    type="number"
+                                    className="form-control"
+                                    placeholder="Enter amount (INR)"
+                                    value={item.amount || ""}
+                                    onChange={(e) => {
+                                      handleAllTaxChargeChange(
+                                        "amount",
+                                        e.target.value,
+                                        "addition",
+                                        item.id
+                                      );
+                                    }}
+                                  />
+                                );
+                              } else {
+                                // Show percentage dropdown for GST taxes
+                                const match = taxPercentageOptions.find(
+                                  (tax) => tax.tax_name === selectedTaxType
+                                );
+
+                                const options = match && Array.isArray(match.percentage)
+                                  ? match.percentage.map((percent) => ({
                                       label: `${percent}%`,
                                       value: `${percent}%`,
-                                    }));
-                                  }
-                                  // If not found, return empty array (no static options)
-                                  return []
-                                })()
+                                    }))
+                                  : [];
+                                    
+                                return (
+                                  <SelectBox
+                                    options={options}
+                                    defaultValue={item?.taxChargePerUom || ""}
+                                    onChange={(e) =>
+                                      handleAllTaxChargeChange(
+                                        "taxChargePerUom",
+                                        e,
+                                        "addition",
+                                        item.id
+                                      )
+                                    }
+                                  />
+                                );
                               }
-                              defaultValue={item?.taxChargePerUom || ""}
-                              onChange={(e) =>
-                                handleAllTaxChargeChange(
-                                  "taxChargePerUom",
-                                  e,
-                                  "addition",
-                                  item.id
-                                )
-                              }
-                            />
+                            })()}
                           </td>
                           <td className="text-center">
                             <input
@@ -6985,7 +7131,7 @@ export default function VendorDetails() {
                   <thead className="tax-table-header">
                     <tr>
                       <th>Tax / Charge Type</th>
-                      <th>Tax / Charges per UOM (INR)</th>
+                      <th>Tax/Charges per UOM</th>
                       <th>Inclusive</th>
                       <th>Amount</th>
                       <th>Action</th>
@@ -7038,7 +7184,6 @@ export default function VendorDetails() {
                         </button>
                       </td>
                     </tr>
-                    {/* {console.log("matched:--",matchedTaxNamesArray)} */}
                     {taxRateData[
                       tableId
                     ]?.addition_bid_material_tax_details?.map(
@@ -7113,47 +7258,69 @@ export default function VendorDetails() {
                           </td>
 
                           <td>
-                            <SelectBox
-                              options={
-                                (() => {
-                                  // Find the selected tax type (by name or resource_id)
-                                  const selectedTaxType =
-                                    item.taxChargeType ||
-                                    taxOptions.find((option) => option.id === item.resource_id)?.name ||
-                                    taxOptions.find((option) => option.id === item.resource_id)?.value;
+                            {(() => {
+                              // Check if this is a handling charge, freight, or other charge
+                              const selectedTaxType =
+                                item.taxChargeType ||
+                                taxOptions.find((option) => option.id === item.resource_id)?.name ||
+                                taxOptions.find((option) => option.id === item.resource_id)?.value;
 
-                                  // Find the matching percentage array from taxPercentageOptions
-                                  const match = taxPercentageOptions.find(
-                                    (tax) => tax.tax_name === selectedTaxType
-                                  );
+                              const isAmountBasedCharge = ["Handling Charges", "Other charges", "Freight"].includes(selectedTaxType);
 
-                                  // If found, return as [{label, value}]
-                                  if (match && Array.isArray(match.percentage)) {
-                                    return match.percentage.map((percent) => ({
+                              if (isAmountBasedCharge) {
+                                return (
+                                  <input
+                                    key={`individual-amount-${item.id}`}
+                                    type="number"
+                                    className="form-control"
+                                    placeholder="Enter amount (INR)"
+                                    value={item.amount || ""}
+                                    onChange={(e) => {
+                                      handleTaxChargeChange(
+                                        tableId,
+                                        item.id,
+                                        "amount",
+                                        e.target.value,
+                                        "addition"
+                                      );
+                                    }}
+                                  />
+                                );
+                              } else {
+                                // Show percentage dropdown for GST taxes
+                                const match = taxPercentageOptions.find(
+                                  (tax) => tax.tax_name === selectedTaxType
+                                );
+
+                                const options = match && Array.isArray(match.percentage)
+                                  ? match.percentage.map((percent) => ({
                                       label: `${percent}%`,
                                       value: `${percent}%`,
-                                    }));
-                                  }
-                                  // If not found, return empty array (no static options)
-                                  return [
-                                    { label: "5%", value: "5%" },
-                                    { label: "12%", value: "12%" },
-                                    { label: "18%", value: "18%" },
-                                    { label: "28%", value: "28%" },
-                                  ]
-                                })()
+                                    }))
+                                  : [
+                                      { label: "5%", value: "5%" },
+                                      { label: "12%", value: "12%" },
+                                      { label: "18%", value: "18%" },
+                                      { label: "28%", value: "28%" },
+                                    ];
+
+                                return (
+                                  <SelectBox
+                                    options={options}
+                                    defaultValue={item?.taxChargePerUom || ""}
+                                    onChange={(e) =>
+                                      handleTaxChargeChange(
+                                        tableId,
+                                        item.id,
+                                        "taxChargePerUom",
+                                        e,
+                                        "addition"
+                                      )
+                                    }
+                                  />
+                                );
                               }
-                              defaultValue={item?.taxChargePerUom || ""}
-                              onChange={(e) =>
-                                handleTaxChargeChange(
-                                  tableId,
-                                  item.id,
-                                  "taxChargePerUom",
-                                  e,
-                                  "addition"
-                                )
-                              }
-                            />
+                            })()}
                           </td>
 
                           <td className="text-center">
@@ -7173,24 +7340,51 @@ export default function VendorDetails() {
                             />
                           </td>
 
-                          <td>
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={item.amount}
-                              onChange={(e) =>
-                                handleTaxChargeChange(
-                                  tableId,
-                                  item.id,
-                                  "amount",
-                                  e.target.value,
-                                  "addition"
-                                )
-                              }
-                            />
-                          </td>
+                        <td>
+                          {(() => {
+                            // Check if this is an amount-based charge
+                            const selectedTaxType =
+                              item.taxChargeType ||
+                              taxOptions.find((option) => option.id === item.resource_id)?.name ||
+                              taxOptions.find((option) => option.id === item.resource_id)?.value;
 
-                          <td className="text-center">
+                            const isAmountBasedCharge = ["Handling Charges", "Other charges", "Freight"].includes(selectedTaxType);
+
+                            if (isAmountBasedCharge) {
+                              // For amount-based charges, show editable input
+                              return (
+                                <input
+                                  key={`amount-column-${item.id}`}
+                                  type="number"
+                                  className="form-control"
+                                  placeholder="Enter amount (INR)"
+                                  value={item.amount || ""}
+                                  onChange={(e) =>
+                                    handleTaxChargeChange(
+                                      tableId,
+                                      item.id,
+                                      "amount",
+                                      e.target.value,
+                                      "addition"
+                                    )
+                                  }
+                                />
+                              );
+                            } else {
+                              // For percentage-based taxes, show calculated amount as read-only
+                              return (
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={item.amount || "0.00"}
+                                  readOnly
+                                  disabled={true}
+                                  title="Calculated from percentage"
+                                />
+                              );
+                            }
+                          })()}
+                        </td>                          <td className="text-center">
                             <button
                               className="btn btn-outline-danger btn-sm"
                               onClick={() =>
@@ -7314,16 +7508,10 @@ export default function VendorDetails() {
                           <input
                             type="text"
                             className="form-control"
-                            value={item.amount}
-                            onChange={(e) =>
-                              handleTaxChargeChange(
-                                tableId,
-                                item.id,
-                                "amount",
-                                e.target.value,
-                                "deduction"
-                              )
-                            }
+                            value={item.amount || "0.00"}
+                            readOnly
+                            disabled={true}
+                            title="Calculated from percentage"
                           />
                         </td>
                         <td className="text-center">

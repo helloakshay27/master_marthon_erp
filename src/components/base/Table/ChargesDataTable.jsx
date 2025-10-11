@@ -29,15 +29,13 @@ export default function ChargesDataTable({
   const token = urlParams.get("token");
 
   useEffect(() => {
-    console.log("chargesData:-----", data, onValueChange, grossTotal, calculateGrossTotal);
     // Initialize chargesTaxRate with data from props
     const initialChargesTaxRate = data.reduce((acc, item, index) => {
       acc[index] = {
         afterDiscountValue: parseFloat(item.amount) || 0,
         taxes_and_charges: item.taxes_and_charges || [],
         netCost: item.realised_amount || 0,
-      };
-      console.log("initialChargesTaxRate item:-----", item, acc[index]);
+      }
       
       return acc;
     }, {});
@@ -228,7 +226,6 @@ export default function ChargesDataTable({
       };
       return updated;
     });
-    console.log("handleSaveTaxChanges:-----", updatedData[selectedTableId], chargesTaxRate);
     
 
     // Sync charges data (optional)
@@ -369,28 +366,18 @@ export default function ChargesDataTable({
           label: "Save",
           onClick: () => {
             
-            console.log("=== DEBUGGING GROSS TOTAL CALCULATION ===");
-            console.log("chargesData (API data):", chargesData);
-            console.log("data prop (user inputs):", data);
-            console.log("chargesTaxRate:", chargesTaxRate);
             
             // Calculate the gross total using the data prop instead of chargesData
             const updatedGrossTotal = data.reduce((total, charge, index) => {
-              console.log(`Processing charge ${index}:`, charge);
               
               // Use realised_amount if available, otherwise fall back to amount
               const realisedAmount = parseFloat(charge?.realised_amount || charge?.amount || 0);
-              console.log(`Charge ${index} - realised_amount: ${realisedAmount}`);
               
               return total + realisedAmount;
             }, 0);
 
             const calcGrossTotal = parseFloat(calculateGrossTotal()) || 0;
             
-            console.log("=== CALCULATION RESULTS ===");
-            console.log("updatedGrossTotal from charges:", updatedGrossTotal);
-            console.log("calcGrossTotal from parent:", calcGrossTotal);
-            console.log("Final total:", calcGrossTotal + updatedGrossTotal);
             
             // Update the gross total in the parent component
             setGrossTotal(calcGrossTotal + updatedGrossTotal);
