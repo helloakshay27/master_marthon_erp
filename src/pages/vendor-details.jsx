@@ -542,62 +542,103 @@ export default function VendorDetails() {
   const [isBidCreated, setIsBidCreated] = useState(false); // Track bid creation status
   const [bidIds, setBidIds] = useState([]);
 
-  const validateMandatoryFields = () => {
-    const mandatoryFields = [
-      { label: "Warranty Clause *", key: "Warranty Clause" },
-      { label: "Payment Terms *", key: "Payment Terms" },
-      { label: "Loading / Unloading *", key: "Loading / Unloading" },
-    ];
+  // const validateMandatoryFields = () => {
+  //   const mandatoryFields = [
+  //     { label: "Warranty Clause *", key: "Warranty Clause" },
+  //     { label: "Payment Terms *", key: "Payment Terms" },
+  //     { label: "Loading / Unloading *", key: "Loading / Unloading" },
+  //   ];
 
-    for (const field of mandatoryFields) {
-      const fieldData = freightData.find(
-        (item) => item.label === field.label
-      )?.value;
+  //   for (const field of mandatoryFields) {
+  //     const fieldData = freightData.find(
+  //       (item) => item.label === field.label
+  //     )?.value;
 
-      // Check if fieldData exists and extract the firstBid or counterBid
-      const fieldValue = fieldData
-        ? fieldData.counterBid || fieldData.firstBid || "" // Prioritize counterBid if present
-        : "";
+  //     // Check if fieldData exists and extract the firstBid or counterBid
+  //     const fieldValue = fieldData
+  //       ? fieldData.counterBid || fieldData.firstBid || "" // Prioritize counterBid if present
+  //       : "";
 
-      if (!fieldValue.trim()) {
-        // alert(`Please fill the mandatory field: ${field.key}`);
-        // return false; // Exit immediately after the first invalid field
+  //     if (!fieldValue.trim()) {
+  //       // alert(`Please fill the mandatory field: ${field.key}`);
+  //       // return false; // Exit immediately after the first invalid field
 
-        toast.error(`Please fill the mandatory field: ${field.key}`, {
-          // position: toast.POSITION.TOP_CENTER, // Customize the position
-          autoClose: 1000, // Duration for the toast to disappear (in ms)
-        });
-        return false; // Exit immediately after the first invalid field
-      }
-    }
+  //       toast.error(`Please fill the mandatory field: ${field.key}`, {
+  //         // position: toast.POSITION.TOP_CENTER, // Customize the position
+  //         autoClose: 1000, // Duration for the toast to disappear (in ms)
+  //       });
+  //       return false; // Exit immediately after the first invalid field
+  //     }
+  //   }
 
-    return true;
-  };
+  //   return true;
+  // };
 
   const validateTableData = () => {
-    for (const row of data) {
+    let hasErrors = false;
+
+    for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+      const row = data[rowIndex];
       const fieldsToValidate = [
-        { key: "quantityAvail", value: row.quantityAvail },
-        { key: "price", value: row.price },
-        { key: "gst", value: row.gst },
-        { key: "discount", value: row.discount },
+        { 
+          key: "quantityAvail", 
+          value: row.quantityAvail, 
+          label: "Quantity Available",
+          rowNumber: rowIndex + 1 
+        },
+        { 
+          key: "price", 
+          value: row.price, 
+          label: "Price",
+          rowNumber: rowIndex + 1 
+        },
+        { 
+          key: "discount", 
+          value: row.discount, 
+          label: "Discount %",
+          rowNumber: rowIndex + 1 
+        },
+        { 
+          key: "realisedPrice", 
+          value: row.realisedPrice, 
+          label: "Realised Price",
+          rowNumber: rowIndex + 1 
+        },
       ];
 
       for (const field of fieldsToValidate) {
-        if (
-          field.value === undefined ||
-          field.value === null ||
-          field.value <= 0
-        ) {
-          toast.error("Please fill the All mandatory fields in the table", {
-            autoClose: 1000, // Duration for the toast to disappear (in ms)
+        // Check if field is empty, null, undefined
+        let isEmpty = false;
+        
+        if (field.value === undefined || field.value === null) {
+          isEmpty = true;
+        } else if (typeof field.value === 'string') {
+          // For string values, check if empty or just whitespace
+          isEmpty = field.value.trim() === "";
+        } else if (typeof field.value === 'number') {
+          // For number values, check if less than or equal to 0
+          // But for quantityAvail, 0 might be valid in some cases
+          if (field.key === 'quantityAvail') {
+            isEmpty = field.value < 0; // Only invalid if negative
+          } else {
+            isEmpty = field.value <= 0; // Invalid if zero or negative for other fields
+          }
+        } else {
+          // For any other type, consider it empty
+          isEmpty = true;
+        }
+
+        if (isEmpty) {
+          toast.error(`Row ${field.rowNumber}: Please fill the mandatory nkkmklm field ${field.label}`, {
+            autoClose: 3000, // Duration for the toast to disappear (in ms)
+            position: "top-right",
           });
-          return false; // Exit immediately after the first invalid field
+          hasErrors = true;
         }
       }
     }
 
-    return true;
+    return !hasErrors;
   };
 
   const [previousData, setPreviousData] = useState([]); // Holds the data from bid_materials
@@ -1524,6 +1565,11 @@ export default function VendorDetails() {
   };
 
   const handleSubmit = async () => {
+    // Validate table data before submission
+    if (!validateTableData()) {
+      return; // Stop submission if validation fails
+    }
+
     setLoading(true);
     setSubmitted(true);
     const payload = preparePayload();
@@ -1567,130 +1613,174 @@ export default function VendorDetails() {
     }
   };
 
-  const handleReviseBid = async () => {
-    setLoading(true);
-    setSubmitted(true);
 
-    // Check for vendorId before proceeding
-    if (!vendorId || vendorId === "" || vendorId === "null" || vendorId === "undefined") {
-      toast.error("No vendor has been selected.", {
-        autoClose: 1000,
-      });
-      setLoading(false);
-      setSubmitted(false);
-      return;
+const handleReviseBid = async () => {
+  // Validate table data before submission
+  if (!validateTableData()) {
+    return; // Stop submission if validation fails
+  }
+
+  setLoading(true);
+  setSubmitted(true);
+
+  // Check for vendorId before proceeding
+  if (!vendorId || vendorId === "" || vendorId === "null" || vendorId === "undefined") {
+    toast.error("No vendor has been selected.", {
+      autoClose: 1000,
+    });
+    setLoading(false);
+    setSubmitted(false);
+    return;
+  }
+
+  // Replace window.confirm with toast confirmation
+  toast.info(
+    <div>
+      <p>Are you sure you want to revise this bid?</p>
+      <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+        <button
+          onClick={confirmReviseBid}
+          style={{
+            backgroundColor: '#8b0203',
+            color: 'white',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Yes, Revise
+        </button>
+        <button
+          onClick={() => {
+            toast.dismiss();
+            setLoading(false);
+            setSubmitted(false);
+          }}
+          style={{
+            backgroundColor: '#6c757d',
+            color: 'white',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>,
+    {
+      position: "top-center",
+      autoClose: false,
+      hideProgressBar: true,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: false,
+      closeButton: false,
     }
+  );
+};
 
-    const userConfirmed = window.confirm(
-      "Are you sure you want to revise this bid?"
-    );
+// Add this new function to handle the actual revision
+const confirmReviseBid = async () => {
+  toast.dismiss(); // Close the confirmation toast
+  
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
 
-    if (!userConfirmed) {
-      setLoading(false);
-      setSubmitted(false);
-      return;
-    }
-    const urlParams = new URLSearchParams(location.search);
-    const token = urlParams.get("token");
+  try {
+    const revisedBidMaterials = data.map((row, index) => {
+      const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
+      const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
+      const landedAmount = rowTotal - discountAmount;
+      const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
+      const finalTotal = landedAmount + gstAmount;
 
-    try {
-      const revisedBidMaterials = data.map((row, index) => {
+      const fullTaxRow = originalTaxRateDataRef.current[index];
+      const taxDetails = [
+        ...(fullTaxRow?.addition_bid_material_tax_details || []).map(
+          (charge) => {
+            const matchedTax = taxOptions.find(
+              (tax) => tax.id === charge.resource_id
+            );
+            return {
+              resource_id: matchedTax?.id || null,
+              resource_type: matchedTax?.taxChargeType || "",
+              amount: parseFloat(charge.amount || 0),
+              inclusive: charge.inclusive,
+              addition: true,
+              tax_percentage: charge.taxChargePerUom,
+            };
+          }
+        ),
 
-        const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
-        const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
-        const landedAmount = rowTotal - discountAmount;
-        const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
-        const finalTotal = landedAmount + gstAmount;
+        ...(fullTaxRow?.deduction_bid_material_tax_details || []).map(
+          (charge) => {
+            const matchedTax = deductionTaxOptions.find(
+              (tax) => tax.id === charge.resource_id
+            );
 
-        const fullTaxRow = originalTaxRateDataRef.current[index];
-        const taxDetails = [
-          ...(fullTaxRow?.addition_bid_material_tax_details || []).map(
-            (charge) => {
-              const matchedTax = taxOptions.find(
-                (tax) => tax.id === charge.resource_id
-              );
-              return {
-                resource_id: matchedTax?.id || null,
-                resource_type: matchedTax?.taxChargeType || "",
-                amount: parseFloat(charge.amount || 0), // ensure clean amount
-                inclusive: charge.inclusive,
-                addition: true,
-                tax_percentage: charge.taxChargePerUom,
-              };
-            }
-          ),
+            return {
+              resource_id: matchedTax?.id || null,
+              resource_type: matchedTax?.taxChargeType || "TaxCategory",
+              amount: parseFloat(charge.amount || 0),
+              inclusive: charge.inclusive,
+              addition: false,
+              tax_percentage: charge.taxChargePerUom,
+            };
+          }
+        ),
+      ];
 
-          ...(fullTaxRow?.deduction_bid_material_tax_details || []).map(
-            (charge) => {
-              const matchedTax = deductionTaxOptions.find(
-                (tax) =>
-                  // tax.value?.trim().toLowerCase() ===
-                  // charge.taxChargeType?.trim().toLowerCase()
-                  tax.id === charge.resource_id
-              );
+      const extraFields = Object.keys(row.extra_data || {}).reduce(
+        (acc, key) => {
+          acc[key] = row.extra_data[key]?.value || "";
+          return acc;
+        },
+        {}
+      );
 
-              return {
-                resource_id: matchedTax?.id || null,
-                resource_type: matchedTax?.taxChargeType || "TaxCategory",
-                amount: parseFloat(charge.amount || 0),
-                inclusive: charge.inclusive,
-                addition: false,
-                tax_percentage: charge.taxChargePerUom,
-              };
-            }
-          ),
-        ];
+      return {
+        event_material_id: row.eventMaterialId,
+        quantity_available: row.quantityAvail || 0,
+        price: Number(row.price || 0),
+        discount: Number(row.discount || 0),
+        vendor_remark: row.vendorRemark || "",
+        gst: row.gst || 0,
+        realised_discount: discountAmount.toFixed(2),
+        realised_gst: gstAmount.toFixed(2),
+        landed_amount: landedAmount.toFixed(2),
+        total_amount: finalTotal.toFixed(2),
+        bid_material_tax_details: taxDetails,
+        ...extraFields,
+      };
+    });
 
-        const extraFields = Object.keys(row.extra_data || {}).reduce(
-          (acc, key) => {
-            acc[key] = row.extra_data[key]?.value || "";
-            return acc;
-          },
-          {}
-        );
-
-        return {
-          event_material_id: row.eventMaterialId,
-          quantity_available: row.quantityAvail || 0,
-          price: Number(row.price || 0),
-          discount: Number(row.discount || 0),
-          vendor_remark: row.vendorRemark || "",
-          gst: row.gst || 0,
-          realised_discount: discountAmount.toFixed(2),
-          realised_gst: gstAmount.toFixed(2),
-          landed_amount: landedAmount.toFixed(2),
-          total_amount: finalTotal.toFixed(2),
-          bid_material_tax_details: taxDetails, // ✅ all charges, whether edited or not
-          ...extraFields,
-        };
-      });
-
-      const extractShortTableData = Array.isArray(shortTableData)
-        ? shortTableData.reduce((acc, curr) => {
+    const extractShortTableData = Array.isArray(shortTableData)
+      ? shortTableData.reduce((acc, curr) => {
           const { firstBid, counterBid } = curr.value || {};
           acc[curr.label] = counterBid || firstBid || "_";
           return acc;
         }, {})
-        : {};
+      : {};
 
-      // Ensure required keys exist with "_" as default
-      const requiredKeys = [
-        "Warranty Clause",
-        "Payment Terms",
-        "Loading/Unloading",
-      ];
+    const requiredKeys = [
+      "Warranty Clause",
+      "Payment Terms",
+      "Loading/Unloading",
+    ];
 
-      requiredKeys.forEach((key) => {
-        if (!(key in extractShortTableData) || !extractShortTableData[key]) {
-          extractShortTableData[key] =
-            bidTemplate?.find((item) => item.label === key)?.value?.firstBid ||
-            "_";
-        }
-      });
+    requiredKeys.forEach((key) => {
+      if (!(key in extractShortTableData) || !extractShortTableData[key]) {
+        extractShortTableData[key] =
+          bidTemplate?.find((item) => item.label === key)?.value?.firstBid ||
+          "_";
+      }
+    });
 
-      const extractChargeTableData = Array.isArray(chargesData)
-        ? chargesData.slice(0, 3).map((charge) => ({
-          // Limit to first 3 elements
+    const extractChargeTableData = Array.isArray(chargesData)
+      ? chargesData.slice(0, 3).map((charge) => ({
           charge_id: charge.charge_id,
           amount: charge.amount,
           realised_amount: charge.realised_amount,
@@ -1703,48 +1793,49 @@ export default function VendorDetails() {
             percentage: tax.percentage,
           })),
         }))
-        : [];
+      : [];
 
-      const payload = {
-        revised_bid: {
-          event_vendor_id: vendorId,
-          price: 500.0,
-          discount: 10.0,
-          freight_charge_amount: 0,
-          gst_on_freight: 0,
-          realised_freight_charge_amount: 0,
-          gross_total: grossTotal,
-          remark: remark,
-          revised_bid_materials_attributes: revisedBidMaterials,
-          charges: extractChargeTableData,
-          ...extractShortTableData,
-        },
-      };
+    const payload = {
+      revised_bid: {
+        event_vendor_id: vendorId,
+        price: 500.0,
+        discount: 10.0,
+        freight_charge_amount: 0,
+        gst_on_freight: 0,
+        realised_freight_charge_amount: 0,
+        gross_total: grossTotal,
+        remark: remark,
+        revised_bid_materials_attributes: revisedBidMaterials,
+        charges: extractChargeTableData,
+        ...extractShortTableData,
+      },
+    };
 
-      const response = await axios.post(
-        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=${token}&event_vendor_id=${vendorId}`,
-        payload
+    const response = await axios.post(
+      `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=${token}&event_vendor_id=${vendorId}`,
+      payload
+    );
+
+    toast.success("Bid revised successfully!", {
+      autoClose: 1000,
+    });
+
+    setTimeout(() => {
+      navigate(
+        `/vendor-list?token=${token}`
       );
+    }, 1500);
+  } catch (error) {
+    console.error("Error revising bid:", error);
+    toast.error("Failed to revise bid. Please try again.", {
+      autoClose: 3000,
+    });
+  } finally {
+    setLoading(false);
+    setSubmitted(false);
+  }
+};
 
-      toast.success("Bid revised successfully!", {
-        autoClose: 1000,
-      });
-
-      setTimeout(() => {
-        navigate(
-          `/vendor-list?token=${token}` // Redirect to vendor list after successful revision
-        );
-      }, 1500);
-    } catch (error) {
-      console.error("Error revising bid:", error);
-      toast.error("Failed to revise bid. Please try again.", {
-        autoClose: 3000,
-      });
-    } finally {
-      setLoading(false);
-      setSubmitted(false);
-    }
-  };
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -5208,7 +5299,7 @@ export default function VendorDetails() {
                     columns={[
                       { label: "Sr No", key: "srNo" },
                       {
-                        label: "Material Namenkjnjk",
+                        label: "Material Name",
                         key: "descriptionOfItem",
                       },
                       { label: "Material Type", key: "section" },

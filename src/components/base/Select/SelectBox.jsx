@@ -50,18 +50,22 @@ export default function SelectBox({
       backgroundColor: state.isDisabled
         ? "#e9ecef" // Grey background for disabled options
         : state.isSelected
-        ? "#ccc"
+        ? "#8b0203" // Red background for selected option
         : state.isFocused
-        ? "#8b0203"
-        : base.backgroundColor,
+        ? "#f0f0f0" // Light grey background for hovered option
+        : "#fff", // White background for normal options
       color: state.isDisabled
         ? "#6c757d" // Grey text for disabled options
         : state.isSelected
-        ? "#000"
+        ? "#fff" // White text for selected option
         : state.isFocused
-        ? "#fff"
-        : "#000", // Set text color to black
-      cursor: state.isDisabled ? "not-allowed" : "default", // Show not-allowed cursor for disabled options
+        ? "#333" // Dark text for hovered option
+        : "#333", // Dark text for normal options
+      cursor: state.isDisabled ? "not-allowed" : "pointer", // Show pointer cursor for enabled options
+      "&:hover": !state.isDisabled ? {
+        backgroundColor: state.isSelected ? "#8b0203" : "#f0f0f0",
+        color: state.isSelected ? "#fff" : "#333",
+      } : {},
     }),
     multiValueRemove: (base, state) => ({
       ...base,
@@ -86,8 +90,8 @@ export default function SelectBox({
     ...option,
     isDisabled:
       (isDisableFirstOption && index === 0) || // Disable the first option if required
-      disabledOptions.includes(option.value) || // Disable options based on the disabledOptions array
-      selectedOption?.value === option.value, // Disable the currently selected option
+      disabledOptions.includes(option.value), // Disable options based on the disabledOptions array
+      // Removed: selectedOption?.value === option.value, // Don't disable currently selected option
   }));
 
   const handleChange = (selectedOption) => {

@@ -669,6 +669,8 @@ export default function CreateEvent() {
       inputElement.value = ""; // Clear input value
     }
   };
+      // {"documentRows:---",documentRows}
+
   const appendFormData = (formData, data, parentKey = "") => {
     if (data && typeof data === "object" && !(data instanceof File)) {
       Object.keys(data).forEach((key) => {
@@ -1591,31 +1593,46 @@ export default function CreateEvent() {
                 type="file"
                 className="form-control"
                 required
-                onChange={e => {
-                  const file = e.target.files[0];
-                  if (!file) return;
-                  const reader = new FileReader();
-                  reader.onloadend = () => {
-                    const base64String = reader.result.split(",")[1];
-                    setDocumentRows(prev => {
-                      const updated = [...prev];
-                      updated[index] = {
-                        ...updated[index],
-                        upload: {
-                          filename: file.name,
-                          content: base64String,
-                          content_type: file.type,
-                        },
-                        fileName: file.name,
-                        fileType: file.type,
-                        isExisting: false,
-                        uploadDate: new Date().toISOString().slice(0, 19),
-                      };
-                      return updated;
-                    });
-                  };
-                  reader.readAsDataURL(file);
-                }}
+
+onChange={e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const base64String = reader.result.split(",")[1];
+    
+    // Get current time in IST
+    const now = new Date();
+    const istTime = new Intl.DateTimeFormat('sv-SE', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).format(now).replace(' ', 'T');
+    
+    setDocumentRows(prev => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        upload: {
+          filename: file.name,
+          content: base64String,
+          content_type: file.type,
+        },
+        fileName: file.name,
+        fileType: file.type,
+        isExisting: false,
+        uploadDate: istTime, // Set current IST time
+      };
+      return updated;
+    });
+  };
+  reader.readAsDataURL(file);
+}}
               />
             )}
           </td>
