@@ -1194,7 +1194,7 @@ export default function EditEvent() {
 
 
           return {
-            id: material.id || null,
+            // id: material.id || null,
             inventory_id: Number(material.inventory_id) || null,
             quantity: Number(material.quantity),
             uom: material.unit,
