@@ -40,3 +40,9 @@
 .read-the-docs {
   color: #888;
 } */
+
+/* Hide MUI DataGrid footer globally */
+.css-1xmrf3d .MuiDataGrid-footerContainer,
+.MuiDataGrid-footerContainer {
+  display: none !important;
+}
