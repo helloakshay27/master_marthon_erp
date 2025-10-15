@@ -533,7 +533,7 @@ export default function VendorDetails() {
 
   const handleOpenOtherChargesModal = () => {
     // if (isTaxRateDataChanged) {
-      setShowOtherChargesModal(true);
+    setShowOtherChargesModal(true);
     // } else {
     //   toast.error("Please fill the tax details to fill other charges");
     // }
@@ -580,36 +580,36 @@ export default function VendorDetails() {
     for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
       const row = data[rowIndex];
       const fieldsToValidate = [
-        { 
-          key: "quantityAvail", 
-          value: row.quantityAvail, 
+        {
+          key: "quantityAvail",
+          value: row.quantityAvail,
           label: "Quantity Available",
-          rowNumber: rowIndex + 1 
+          rowNumber: rowIndex + 1
         },
-        { 
-          key: "price", 
-          value: row.price, 
+        {
+          key: "price",
+          value: row.price,
           label: "Price",
-          rowNumber: rowIndex + 1 
+          rowNumber: rowIndex + 1
         },
-        { 
-          key: "discount", 
-          value: row.discount, 
+        {
+          key: "discount",
+          value: row.discount,
           label: "Discount %",
-          rowNumber: rowIndex + 1 
+          rowNumber: rowIndex + 1
         },
-        { 
-          key: "realisedPrice", 
-          value: row.realisedPrice, 
+        {
+          key: "realisedPrice",
+          value: row.realisedPrice,
           label: "Realised Price",
-          rowNumber: rowIndex + 1 
+          rowNumber: rowIndex + 1
         },
       ];
 
       for (const field of fieldsToValidate) {
         // Check if field is empty, null, undefined
         let isEmpty = false;
-        
+
         if (field.value === undefined || field.value === null) {
           isEmpty = true;
         } else if (typeof field.value === 'string') {
@@ -1044,34 +1044,34 @@ export default function VendorDetails() {
 
           // Map the row data
           const rowData = {
-          pmsBrand: item.pms_brand_name || "-",
-          pmsColour: item.pms_colour_name || "-",
-          genericInfo: item.generic_info_name || "-",
-          eventMaterialId: item.id || "-",
-          descriptionOfItem: item.inventory_name || "-",
-          quantity: item.quantity || "-",
-          quantityAvail: "", // EMPTY for new bids
-          price: "", // EMPTY for new bids
-          discount: "", // EMPTY for new bids
-          gst: "", // EMPTY for new bids
-          realisedPrice: "", // EMPTY for new bids
-          realisedDiscount: "", // EMPTY for new bids
-          realisedGst: "", // EMPTY for new bids
-          landedAmount: "", // EMPTY for new bids
-          vendorRemark: "", // EMPTY for new bids
-          unit: item.uom_name || item.uom_short_name || item.uom || "-",
-          location: item.location || "-",
-          rate: "", // EMPTY for new bids
-          section: item.material_type || "-",
-          subSection: item.inventory_sub_type || "-",
-          amount: item.amount || "-",
-          totalAmt: "", // EMPTY for new bids
-          total: "", // EMPTY for new bids
-          attachment: null || "-",
-          varient: item.material_type || "-",
-          extra_data: flatExtraData,
-          revised_bid: initialResponse.data?.revised_bid,
-        };
+            pmsBrand: item.pms_brand_name || "-",
+            pmsColour: item.pms_colour_name || "-",
+            genericInfo: item.generic_info_name || "-",
+            eventMaterialId: item.id || "-",
+            descriptionOfItem: item.inventory_name || "-",
+            quantity: item.quantity || "-",
+            quantityAvail: "", // EMPTY for new bids
+            price: "", // EMPTY for new bids
+            discount: "", // EMPTY for new bids
+            gst: "", // EMPTY for new bids
+            realisedPrice: "", // EMPTY for new bids
+            realisedDiscount: "", // EMPTY for new bids
+            realisedGst: "", // EMPTY for new bids
+            landedAmount: "", // EMPTY for new bids
+            vendorRemark: "", // EMPTY for new bids
+            unit: item.uom_name || item.uom_short_name || item.uom || "-",
+            location: item.location || "-",
+            rate: "", // EMPTY for new bids
+            section: item.material_type || "-",
+            subSection: item.inventory_sub_type || "-",
+            amount: item.amount || "-",
+            totalAmt: "", // EMPTY for new bids
+            total: "", // EMPTY for new bids
+            attachment: null || "-",
+            varient: item.material_type || "-",
+            extra_data: flatExtraData,
+            revised_bid: initialResponse.data?.revised_bid,
+          };
 
           // Add extra data dynamically to the row
           additionalColumns.forEach((col) => {
@@ -1614,173 +1614,173 @@ export default function VendorDetails() {
   };
 
 
-const handleReviseBid = async () => {
-  // Validate table data before submission
-  if (!validateTableData()) {
-    return; // Stop submission if validation fails
-  }
-
-  setLoading(true);
-  setSubmitted(true);
-
-  // Check for vendorId before proceeding
-  if (!vendorId || vendorId === "" || vendorId === "null" || vendorId === "undefined") {
-    toast.error("No vendor has been selected.", {
-      autoClose: 1000,
-    });
-    setLoading(false);
-    setSubmitted(false);
-    return;
-  }
-
-  // Replace window.confirm with toast confirmation
-  toast.info(
-    <div>
-      <p>Are you sure you want to revise this bid?</p>
-      <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-        <button
-          onClick={confirmReviseBid}
-          style={{
-            backgroundColor: '#8b0203',
-            color: 'white',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Yes, Revise
-        </button>
-        <button
-          onClick={() => {
-            toast.dismiss();
-            setLoading(false);
-            setSubmitted(false);
-          }}
-          style={{
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>,
-    {
-      position: "top-center",
-      autoClose: false,
-      hideProgressBar: true,
-      closeOnClick: false,
-      pauseOnHover: true,
-      draggable: false,
-      closeButton: false,
+  const handleReviseBid = async () => {
+    // Validate table data before submission
+    if (!validateTableData()) {
+      return; // Stop submission if validation fails
     }
-  );
-};
 
-// Add this new function to handle the actual revision
-const confirmReviseBid = async () => {
-  toast.dismiss(); // Close the confirmation toast
-  
-  const urlParams = new URLSearchParams(location.search);
-  const token = urlParams.get("token");
+    setLoading(true);
+    setSubmitted(true);
 
-  try {
-    const revisedBidMaterials = data.map((row, index) => {
-      const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
-      const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
-      const landedAmount = rowTotal - discountAmount;
-      const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
-      const finalTotal = landedAmount + gstAmount;
+    // Check for vendorId before proceeding
+    if (!vendorId || vendorId === "" || vendorId === "null" || vendorId === "undefined") {
+      toast.error("No vendor has been selected.", {
+        autoClose: 1000,
+      });
+      setLoading(false);
+      setSubmitted(false);
+      return;
+    }
 
-      const fullTaxRow = originalTaxRateDataRef.current[index];
-      const taxDetails = [
-        ...(fullTaxRow?.addition_bid_material_tax_details || []).map(
-          (charge) => {
-            const matchedTax = taxOptions.find(
-              (tax) => tax.id === charge.resource_id
-            );
-            return {
-              resource_id: matchedTax?.id || null,
-              resource_type: matchedTax?.taxChargeType || "",
-              amount: parseFloat(charge.amount || 0),
-              inclusive: charge.inclusive,
-              addition: true,
-              tax_percentage: charge.taxChargePerUom,
-            };
-          }
-        ),
+    // Replace window.confirm with toast confirmation
+    toast.info(
+      <div>
+        <p>Are you sure you want to revise this bid?</p>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+          <button
+            onClick={confirmReviseBid}
+            style={{
+              backgroundColor: '#8b0203',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Yes, Revise
+          </button>
+          <button
+            onClick={() => {
+              toast.dismiss();
+              setLoading(false);
+              setSubmitted(false);
+            }}
+            style={{
+              backgroundColor: '#6c757d',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>,
+      {
+        position: "top-center",
+        autoClose: false,
+        hideProgressBar: true,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: false,
+        closeButton: false,
+      }
+    );
+  };
 
-        ...(fullTaxRow?.deduction_bid_material_tax_details || []).map(
-          (charge) => {
-            const matchedTax = deductionTaxOptions.find(
-              (tax) => tax.id === charge.resource_id
-            );
+  // Add this new function to handle the actual revision
+  const confirmReviseBid = async () => {
+    toast.dismiss(); // Close the confirmation toast
 
-            return {
-              resource_id: matchedTax?.id || null,
-              resource_type: matchedTax?.taxChargeType || "TaxCategory",
-              amount: parseFloat(charge.amount || 0),
-              inclusive: charge.inclusive,
-              addition: false,
-              tax_percentage: charge.taxChargePerUom,
-            };
-          }
-        ),
-      ];
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
 
-      const extraFields = Object.keys(row.extra_data || {}).reduce(
-        (acc, key) => {
-          acc[key] = row.extra_data[key]?.value || "";
-          return acc;
-        },
-        {}
-      );
+    try {
+      const revisedBidMaterials = data.map((row, index) => {
+        const rowTotal = parseFloat(row.price || 0) * (row.quantityAvail || 0);
+        const discountAmount = rowTotal * (parseFloat(row.discount || 0) / 100);
+        const landedAmount = rowTotal - discountAmount;
+        const gstAmount = landedAmount * (parseFloat(row.gst || 0) / 100);
+        const finalTotal = landedAmount + gstAmount;
 
-      return {
-        event_material_id: row.eventMaterialId,
-        quantity_available: row.quantityAvail || 0,
-        price: Number(row.price || 0),
-        discount: Number(row.discount || 0),
-        vendor_remark: row.vendorRemark || "",
-        gst: row.gst || 0,
-        realised_discount: discountAmount.toFixed(2),
-        realised_gst: gstAmount.toFixed(2),
-        landed_amount: landedAmount.toFixed(2),
-        total_amount: finalTotal.toFixed(2),
-        bid_material_tax_details: taxDetails,
-        ...extraFields,
-      };
-    });
+        const fullTaxRow = originalTaxRateDataRef.current[index];
+        const taxDetails = [
+          ...(fullTaxRow?.addition_bid_material_tax_details || []).map(
+            (charge) => {
+              const matchedTax = taxOptions.find(
+                (tax) => tax.id === charge.resource_id
+              );
+              return {
+                resource_id: matchedTax?.id || null,
+                resource_type: matchedTax?.taxChargeType || "",
+                amount: parseFloat(charge.amount || 0),
+                inclusive: charge.inclusive,
+                addition: true,
+                tax_percentage: charge.taxChargePerUom,
+              };
+            }
+          ),
 
-    const extractShortTableData = Array.isArray(shortTableData)
-      ? shortTableData.reduce((acc, curr) => {
+          ...(fullTaxRow?.deduction_bid_material_tax_details || []).map(
+            (charge) => {
+              const matchedTax = deductionTaxOptions.find(
+                (tax) => tax.id === charge.resource_id
+              );
+
+              return {
+                resource_id: matchedTax?.id || null,
+                resource_type: matchedTax?.taxChargeType || "TaxCategory",
+                amount: parseFloat(charge.amount || 0),
+                inclusive: charge.inclusive,
+                addition: false,
+                tax_percentage: charge.taxChargePerUom,
+              };
+            }
+          ),
+        ];
+
+        const extraFields = Object.keys(row.extra_data || {}).reduce(
+          (acc, key) => {
+            acc[key] = row.extra_data[key]?.value || "";
+            return acc;
+          },
+          {}
+        );
+
+        return {
+          event_material_id: row.eventMaterialId,
+          quantity_available: row.quantityAvail || 0,
+          price: Number(row.price || 0),
+          discount: Number(row.discount || 0),
+          vendor_remark: row.vendorRemark || "",
+          gst: row.gst || 0,
+          realised_discount: discountAmount.toFixed(2),
+          realised_gst: gstAmount.toFixed(2),
+          landed_amount: landedAmount.toFixed(2),
+          total_amount: finalTotal.toFixed(2),
+          bid_material_tax_details: taxDetails,
+          ...extraFields,
+        };
+      });
+
+      const extractShortTableData = Array.isArray(shortTableData)
+        ? shortTableData.reduce((acc, curr) => {
           const { firstBid, counterBid } = curr.value || {};
           acc[curr.label] = counterBid || firstBid || "_";
           return acc;
         }, {})
-      : {};
+        : {};
 
-    const requiredKeys = [
-      "Warranty Clause",
-      "Payment Terms",
-      "Loading/Unloading",
-    ];
+      const requiredKeys = [
+        "Warranty Clause",
+        "Payment Terms",
+        "Loading/Unloading",
+      ];
 
-    requiredKeys.forEach((key) => {
-      if (!(key in extractShortTableData) || !extractShortTableData[key]) {
-        extractShortTableData[key] =
-          bidTemplate?.find((item) => item.label === key)?.value?.firstBid ||
-          "_";
-      }
-    });
+      requiredKeys.forEach((key) => {
+        if (!(key in extractShortTableData) || !extractShortTableData[key]) {
+          extractShortTableData[key] =
+            bidTemplate?.find((item) => item.label === key)?.value?.firstBid ||
+            "_";
+        }
+      });
 
-    const extractChargeTableData = Array.isArray(chargesData)
-      ? chargesData.slice(0, 3).map((charge) => ({
+      const extractChargeTableData = Array.isArray(chargesData)
+        ? chargesData.slice(0, 3).map((charge) => ({
           charge_id: charge.charge_id,
           amount: charge.amount,
           realised_amount: charge.realised_amount,
@@ -1793,48 +1793,48 @@ const confirmReviseBid = async () => {
             percentage: tax.percentage,
           })),
         }))
-      : [];
+        : [];
 
-    const payload = {
-      revised_bid: {
-        event_vendor_id: vendorId,
-        price: 500.0,
-        discount: 10.0,
-        freight_charge_amount: 0,
-        gst_on_freight: 0,
-        realised_freight_charge_amount: 0,
-        gross_total: grossTotal,
-        remark: remark,
-        revised_bid_materials_attributes: revisedBidMaterials,
-        charges: extractChargeTableData,
-        ...extractShortTableData,
-      },
-    };
+      const payload = {
+        revised_bid: {
+          event_vendor_id: vendorId,
+          price: 500.0,
+          discount: 10.0,
+          freight_charge_amount: 0,
+          gst_on_freight: 0,
+          realised_freight_charge_amount: 0,
+          gross_total: grossTotal,
+          remark: remark,
+          revised_bid_materials_attributes: revisedBidMaterials,
+          charges: extractChargeTableData,
+          ...extractShortTableData,
+        },
+      };
 
-    const response = await axios.post(
-      `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=${token}&event_vendor_id=${vendorId}`,
-      payload
-    );
-
-    toast.success("Bid revised successfully!", {
-      autoClose: 1000,
-    });
-
-    setTimeout(() => {
-      navigate(
-        `/vendor-list?token=${token}`
+      const response = await axios.post(
+        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=${token}&event_vendor_id=${vendorId}`,
+        payload
       );
-    }, 1500);
-  } catch (error) {
-    console.error("Error revising bid:", error);
-    toast.error("Failed to revise bid. Please try again.", {
-      autoClose: 3000,
-    });
-  } finally {
-    setLoading(false);
-    setSubmitted(false);
-  }
-};
+
+      toast.success("Bid revised successfully!", {
+        autoClose: 1000,
+      });
+
+      setTimeout(() => {
+        navigate(
+          `/vendor-list?token=${token}`
+        );
+      }, 1500);
+    } catch (error) {
+      console.error("Error revising bid:", error);
+      toast.error("Failed to revise bid. Please try again.", {
+        autoClose: 3000,
+      });
+    } finally {
+      setLoading(false);
+      setSubmitted(false);
+    }
+  };
 
 
   useEffect(() => {
@@ -4342,7 +4342,7 @@ const confirmReviseBid = async () => {
                                                   // { key: "inventory_sub_type", label: "Material Sub Type" },
                                                   { key: "inventory_name", label: "Material Name" },
                                                   { key: "quantity", label: "Quantity" },
-                                                  { key: "uom", label: "UOM" },
+                                                  { key: "unit", label: "UOM" },
                                                   { key: "location", label: "Location" },
                                                   { key: "rate", label: "Rate" },
                                                   { key: "amount", label: "Amount" },
@@ -5337,32 +5337,32 @@ const confirmReviseBid = async () => {
                     }))}
                     customRender={{
                       realisedPrice: (cell, rowIndex) => {
-    const currentRowData = data[rowIndex];
-    const price = parseFloat(currentRowData?.price) || 0;
-    const discount = parseFloat(currentRowData?.discount) || 0;
-    
-    // Get realised price value
-    let realisedPriceValue;
-    if (currentRowData?.realisedPrice !== undefined && currentRowData?.realisedPrice !== null && currentRowData?.realisedPrice !== "") {
-      realisedPriceValue = parseFloat(currentRowData.realisedPrice) || 0;
-    } else {
-      // Fallback calculation only if not revisedBid or if user has entered values
-      if (!revisedBid || (price > 0 && discount >= 0)) {
-        realisedPriceValue = price - (price * discount / 100);
-      } else {
-        realisedPriceValue = "";
-      }
-    }
+                        const currentRowData = data[rowIndex];
+                        const price = parseFloat(currentRowData?.price) || 0;
+                        const discount = parseFloat(currentRowData?.discount) || 0;
 
-    return (
-      <input
-        value={realisedPriceValue || "-"}
-        disabled={true}
-        className="form-control"
-        readOnly
-      />
-    );
-  },
+                        // Get realised price value
+                        let realisedPriceValue;
+                        if (currentRowData?.realisedPrice !== undefined && currentRowData?.realisedPrice !== null && currentRowData?.realisedPrice !== "") {
+                          realisedPriceValue = parseFloat(currentRowData.realisedPrice) || 0;
+                        } else {
+                          // Fallback calculation only if not revisedBid or if user has entered values
+                          if (!revisedBid || (price > 0 && discount >= 0)) {
+                            realisedPriceValue = price - (price * discount / 100);
+                          } else {
+                            realisedPriceValue = "";
+                          }
+                        }
+
+                        return (
+                          <input
+                            value={realisedPriceValue || "-"}
+                            disabled={true}
+                            className="form-control"
+                            readOnly
+                          />
+                        );
+                      },
                       taxRate: (cell, rowIndex) => (
                         <button
                           className="purple-btn2"
@@ -5467,7 +5467,6 @@ const confirmReviseBid = async () => {
                           {/* <p>{cell}</p> */}
                         </>
                       ),
-
                       location: (cell, rowIndex) => (
                         <input
                           className="form-control"
@@ -5496,173 +5495,202 @@ const confirmReviseBid = async () => {
                           style={otherColumnsStyle}
                         />
                       ),
-
                       price: (cell, rowIndex) => {
-    const previousPrice = previousData[rowIndex]?.price || cell;
-    const updatedPrice = updatedData[rowIndex]?.price || previousPrice;
-    const showArrow = counterData && previousPrice !== updatedPrice;
+  const previousPrice = previousData[rowIndex]?.price || cell;
+  const updatedPrice = updatedData[rowIndex]?.price || previousPrice;
+  const showArrow = counterData && previousPrice !== updatedPrice;
 
-    // For revised bid, start with empty value unless user has entered something
-    const displayValue = revisedBid && !counterData 
-      ? (data[rowIndex]?.price || "") 
-      : previousPrice;
+  // For revised bid, start with empty value unless user has entered something
+  const displayValue = revisedBid && !counterData
+    ? (data[rowIndex]?.price || "")
+    : previousPrice;
 
-    return showArrow ? (
-      <div
+  const handlePriceChange = (value) => {
+    // Allow empty value
+    if (value === "") {
+      handleInputChange(value, rowIndex, "price");
+      return;
+    }
+
+    // Check if the value has more than 2 decimal places
+    const decimalMatch = value.match(/^\d*\.?\d{0,2}$/);
+    if (decimalMatch) {
+      handleInputChange(value, rowIndex, "price");
+    }
+  };
+
+  return showArrow ? (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      <span
         style={{
-          display: "flex",
-          alignItems: "center",
+          textDecoration: "line-through",
+          marginRight: "5px",
+          color: "gray",
         }}
       >
-        <span
-          style={{
-            textDecoration: "line-through",
-            marginRight: "5px",
-            color: "gray",
-          }}
+        ₹{previousPrice}
+      </span>
+      <span className="me-2">
+        <svg
+          className="me-2"
+          viewBox="64 64 896 896"
+          focusable="false"
+          data-icon="arrow-right"
+          width="1em"
+          height="1em"
+          fill="currentColor"
+          aria-hidden="true"
         >
-          ₹{previousPrice}
-        </span>
-        <span className="me-2">
-          <svg
-            className="me-2"
-            viewBox="64 64 896 896"
-            focusable="false"
-            data-icon="arrow-right"
-            width="1em"
-            height="1em"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-          </svg>
-        </span>
-        <span
-          style={{
-            backgroundColor: "#b45253",
-            padding: "4px 10px",
-            borderRadius: "5px",
-            marginEnd: "",
-            lineHeight: "1",
-            color: "white",
-          }}
-        >
-          ₹{updatedPrice}
-        </span>
-      </div>
-    ) : counterData ? (
-      <span>{updatedPrice}</span>
-    ) : (
-      <input
-        className="form-control"
-        type="number"
-        min="0"
-        value={displayValue}
-        onChange={(e) =>
-          handleInputChange(
-            e.target.value,
-            rowIndex,
-            "price"
-          )
-        }
-        style={otherColumnsStyle}
-        disabled={isBid}
-        placeholder={revisedBid ? "Enter price" : ""}
-      />
-    );
-  },
-                      discount: (cell, rowIndex) => {
-    const previousDiscount = previousData[rowIndex]?.discount || cell;
-    const updatedDiscount = updatedData[rowIndex]?.discount || previousDiscount;
-    const showArrow = counterData && previousDiscount !== updatedDiscount;
-
-    // For revised bid, start with empty value unless user has entered something
-    const displayValue = revisedBid && !counterData 
-      ? (data[rowIndex]?.discount || "") 
-      : previousDiscount;
-
-    return showArrow ? (
-      <div
+          <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+        </svg>
+      </span>
+      <span
         style={{
-          display: "flex",
-          alignItems: "center",
+          backgroundColor: "#b45253",
+          padding: "4px 10px",
+          borderRadius: "5px",
+          marginEnd: "",
+          lineHeight: "1",
+          color: "white",
         }}
       >
-        <span
-          style={{
-            textDecoration: "line-through",
-            marginRight: "5px",
-            color: "gray",
-          }}
+        ₹{updatedPrice}
+      </span>
+    </div>
+  ) : counterData ? (
+    <span>{updatedPrice}</span>
+  ) : (
+    <input
+      className="form-control"
+      type="number"
+      min="0"
+      step="0.01"
+      value={displayValue}
+      onChange={(e) => handlePriceChange(e.target.value)}
+      style={otherColumnsStyle}
+      disabled={isBid}
+      placeholder={revisedBid ? "Enter price" : ""}
+    />
+  );
+},
+discount: (cell, rowIndex) => {
+  const previousDiscount = previousData[rowIndex]?.discount || cell;
+  const updatedDiscount = updatedData[rowIndex]?.discount || previousDiscount;
+  const showArrow = counterData && previousDiscount !== updatedDiscount;
+
+  // For revised bid, start with empty value unless user has entered something
+  const displayValue = revisedBid && !counterData
+    ? (data[rowIndex]?.discount || "")
+    : previousDiscount;
+
+  const handleDiscountChange = (value) => {
+    // Allow empty value
+    if (value === "") {
+      handleInputChange(value, rowIndex, "discount");
+      return;
+    }
+
+    // Check if the value has more than 2 decimal places
+    const decimalMatch = value.match(/^\d*\.?\d{0,2}$/);
+    if (decimalMatch) {
+      handleInputChange(value, rowIndex, "discount");
+    }
+  };
+
+  return showArrow ? (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      <span
+        style={{
+          textDecoration: "line-through",
+          marginRight: "5px",
+          color: "gray",
+        }}
+      >
+        {previousDiscount}%
+      </span>
+      <span className="me-2">
+        <svg
+          className="me-2"
+          viewBox="64 64 896 896"
+          focusable="false"
+          data-icon="arrow-right"
+          width="1em"
+          height="1em"
+          fill="currentColor"
+          aria-hidden="true"
         >
-          {previousDiscount}%
-        </span>
-        <span className="me-2">
-          <svg
-            className="me-2"
-            viewBox="64 64 896 896"
-            focusable="false"
-            data-icon="arrow-right"
-            width="1em"
-            height="1em"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-          </svg>
-        </span>
-        <span
-          style={{
-            backgroundColor: "#b45253",
-            padding: "4px 10px",
-            borderRadius: "5px",
-            marginEnd: "",
-            lineHeight: "1",
-            color: "white",
-          }}
-        >
-          {updatedDiscount}%
-        </span>
-      </div>
-    ) : counterData ? (
-      <span>{updatedDiscount}</span>
-    ) : (
-      <input
-        className="form-control"
-        type="number"
-        min="0"
-        value={displayValue}
-        onChange={(e) =>
-          handleInputChange(
-            e.target.value,
-            rowIndex,
-            "discount"
-          )
-        }
-        style={otherColumnsStyle}
-        disabled={isBid}
-        placeholder={revisedBid ? "Enter discount %" : ""}
-      />
-    );
-  },
-                      rate: (cell, rowIndex) => (
-                        <input
-                          className="form-control"
-                          type="number"
-                          min="0"
-                          value={cell}
-                          onChange={(e) =>
-                            handleInputChange(
-                              e.target.value,
-                              rowIndex,
-                              "rate"
-                            )
-                          }
-                          placeholder="Enter Discount"
-                          style={otherColumnsStyle}
-                          disabled={isBid}
-                        />
-                      ),
+          <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+        </svg>
+      </span>
+      <span
+        style={{
+          backgroundColor: "#b45253",
+          padding: "4px 10px",
+          borderRadius: "5px",
+          marginEnd: "",
+          lineHeight: "1",
+          color: "white",
+        }}
+      >
+        {updatedDiscount}%
+      </span>
+    </div>
+  ) : counterData ? (
+    <span>{updatedDiscount}</span>
+  ) : (
+    <input
+      className="form-control"
+      type="number"
+      min="0"
+      max="100"
+      step="0.01"
+      value={displayValue}
+      onChange={(e) => handleDiscountChange(e.target.value)}
+      style={otherColumnsStyle}
+      disabled={isBid}
+      placeholder={revisedBid ? "Enter discount %" : ""}
+    />
+  );
+},
+rate: (cell, rowIndex) => {
+  const handleRateChange = (value) => {
+    // Allow empty value
+    if (value === "") {
+      handleInputChange(value, rowIndex, "rate");
+      return;
+    }
+
+    // Check if the value has more than 2 decimal places
+    const decimalMatch = value.match(/^\d*\.?\d{0,2}$/);
+    if (decimalMatch) {
+      handleInputChange(value, rowIndex, "rate");
+    }
+  };
+
+  return (
+    <input
+      className="form-control"
+      type="number"
+      min="0"
+      step="0.01"
+      value={cell}
+      onChange={(e) => handleRateChange(e.target.value)}
+      placeholder="Enter Rate"
+      style={otherColumnsStyle}
+      disabled={isBid}
+    />
+  );
+},
                       gst: (cell, rowIndex) => {
                         const previousGst =
                           previousData[rowIndex]?.gst || cell;
@@ -5741,151 +5769,151 @@ const confirmReviseBid = async () => {
                         );
                       },
                       quantityAvail: (cell, rowIndex) => {
-    const row = data[rowIndex];
-    const quantityRequested = parseFloat(row.quantity) || 0;
-    const quantityAvail = row.quantityAvail ?? "";
-    
-    const handleQuantityChange = (e) => {
-      const value = parseFloat(e.target.value) || 0;
+                        const row = data[rowIndex];
+                        const quantityRequested = parseFloat(row.quantity) || 0;
+                        const quantityAvail = row.quantityAvail ?? "";
 
-      if (value > quantityRequested) {
-        toast.error(
-          "The quantity available value cannot be greater than the quantity requested."
-        );
-        return;
-      }
+                        const handleQuantityChange = (e) => {
+                          const value = parseFloat(e.target.value) || 0;
 
-      handleInputChange(
-        value,
-        rowIndex,
-        "quantityAvail"
-      );
-    };
+                          if (value > quantityRequested) {
+                            toast.error(
+                              "The quantity available value cannot be greater than the quantity requested."
+                            );
+                            return;
+                          }
 
-    const showArrow = counterData &&
-      (previousData[rowIndex]?.quantityAvail ?? "") !==
-      (updatedData[rowIndex]?.quantityAvail ?? "");
+                          handleInputChange(
+                            value,
+                            rowIndex,
+                            "quantityAvail"
+                          );
+                        };
 
-    // For revised bid, start with empty value unless user has entered something
-    const displayValue = revisedBid && !counterData
-      ? (quantityAvail !== "" && quantityAvail !== undefined ? quantityAvail : "")
-      : (quantityAvail !== "" && quantityAvail !== undefined ? quantityAvail : quantityRequested);
+                        const showArrow = counterData &&
+                          (previousData[rowIndex]?.quantityAvail ?? "") !==
+                          (updatedData[rowIndex]?.quantityAvail ?? "");
 
-    return showArrow ? (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <span
-          style={{
-            textDecoration: "line-through",
-            marginRight: "5px",
-            color: "gray",
-          }}
-        >
-          {previousData[rowIndex]?.quantityAvail || quantityRequested}
-        </span>
-        <span className="me-2">
-          <svg
-            viewBox="64 64 896 896"
-            width="1em"
-            height="1em"
-            fill="currentColor"
-          >
-            <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z" />
-          </svg>
-        </span>
-        <span
-          style={{
-            backgroundColor: "#b45253",
-            padding: "4px 10px",
-            borderRadius: "5px",
-            color: "white",
-            lineHeight: "1",
-          }}
-        >
-          {updatedData[rowIndex]?.quantityAvail || quantityAvail}
-        </span>
-      </div>
-    ) : counterData ? (
-      <span>{quantityAvail}</span>
-    ) : (
-      <input
-        className="form-control"
-        type="number"
-        value={displayValue}
-        onChange={handleQuantityChange}
-        style={otherColumnsStyle}
-        disabled={isBid}
-        placeholder={revisedBid ? "Enter quantity available" : ""}
-      />
-    );
-  },
+                        // For revised bid, start with empty value unless user has entered something
+                        const displayValue = revisedBid && !counterData
+                          ? (quantityAvail !== "" && quantityAvail !== undefined ? quantityAvail : "")
+                          : (quantityAvail !== "" && quantityAvail !== undefined ? quantityAvail : quantityRequested);
+
+                        return showArrow ? (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <span
+                              style={{
+                                textDecoration: "line-through",
+                                marginRight: "5px",
+                                color: "gray",
+                              }}
+                            >
+                              {previousData[rowIndex]?.quantityAvail || quantityRequested}
+                            </span>
+                            <span className="me-2">
+                              <svg
+                                viewBox="64 64 896 896"
+                                width="1em"
+                                height="1em"
+                                fill="currentColor"
+                              >
+                                <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z" />
+                              </svg>
+                            </span>
+                            <span
+                              style={{
+                                backgroundColor: "#b45253",
+                                padding: "4px 10px",
+                                borderRadius: "5px",
+                                color: "white",
+                                lineHeight: "1",
+                              }}
+                            >
+                              {updatedData[rowIndex]?.quantityAvail || quantityAvail}
+                            </span>
+                          </div>
+                        ) : counterData ? (
+                          <span>{quantityAvail}</span>
+                        ) : (
+                          <input
+                            className="form-control"
+                            type="number"
+                            value={displayValue}
+                            onChange={handleQuantityChange}
+                            style={otherColumnsStyle}
+                            disabled={isBid}
+                            placeholder={revisedBid ? "Enter quantity available" : ""}
+                          />
+                        );
+                      },
                       landedAmount: (cell, rowIndex) => {
-    const previousLandedAmount = previousData[rowIndex]?.landedAmount || cell;
-    const updatedLandedAmount = updatedData[rowIndex]?.landedAmount || previousLandedAmount;
-    const showArrow = counterData && previousLandedAmount !== updatedLandedAmount;
+                        const previousLandedAmount = previousData[rowIndex]?.landedAmount || cell;
+                        const updatedLandedAmount = updatedData[rowIndex]?.landedAmount || previousLandedAmount;
+                        const showArrow = counterData && previousLandedAmount !== updatedLandedAmount;
 
-    // For revised bid, show calculated value or empty if no user input
-    const currentRowData = data[rowIndex];
-    const price = parseFloat(currentRowData?.price) || 0;
-    const quantityAvail = parseFloat(currentRowData?.quantityAvail) || 0;
-    const discount = parseFloat(currentRowData?.discount) || 0;
-    
-    let displayValue;
-    if (revisedBid && !counterData) {
-      if (price > 0 && quantityAvail > 0) {
-        const total = price * quantityAvail;
-        const discountAmount = (total * discount) / 100;
-        displayValue = (total - discountAmount).toFixed(2);
-      } else {
-        displayValue = "";
-      }
-    } else {
-      displayValue = previousLandedAmount;
-    }
+                        // For revised bid, show calculated value or empty if no user input
+                        const currentRowData = data[rowIndex];
+                        const price = parseFloat(currentRowData?.price) || 0;
+                        const quantityAvail = parseFloat(currentRowData?.quantityAvail) || 0;
+                        const discount = parseFloat(currentRowData?.discount) || 0;
 
-    return showArrow ? (
-      <div
-        className="form-control"
-        style={{
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <span
-          style={{
-            textDecoration: "line-through",
-            marginRight: "5px",
-          }}
-        >
-          {previousLandedAmount}
-        </span>
-        <span style={{ marginRight: "5px" }}>→</span>
-        <span>{updatedLandedAmount}</span>
-      </div>
-    ) : counterData ? (
-      <span>{updatedLandedAmount}</span>
-    ) : (
-      <input
-        className="form-control"
-        type="number"
-        value={displayValue}
-        onChange={(e) =>
-          handleInputChange(
-            e.target.value,
-            rowIndex,
-            "landedAmount"
-          )
-        }
-        style={otherColumnsStyle}
-        disabled={true} // Keep disabled as it's calculated
-        placeholder={revisedBid ? "Calculated amount" : ""}
-      />
-    );
-  },
+                        let displayValue;
+                        if (revisedBid && !counterData) {
+                          if (price > 0 && quantityAvail > 0) {
+                            const total = price * quantityAvail;
+                            const discountAmount = (total * discount) / 100;
+                            displayValue = (total - discountAmount).toFixed(2);
+                          } else {
+                            displayValue = "";
+                          }
+                        } else {
+                          displayValue = previousLandedAmount;
+                        }
+
+                        return showArrow ? (
+                          <div
+                            className="form-control"
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <span
+                              style={{
+                                textDecoration: "line-through",
+                                marginRight: "5px",
+                              }}
+                            >
+                              {previousLandedAmount}
+                            </span>
+                            <span style={{ marginRight: "5px" }}>→</span>
+                            <span>{updatedLandedAmount}</span>
+                          </div>
+                        ) : counterData ? (
+                          <span>{updatedLandedAmount}</span>
+                        ) : (
+                          <input
+                            className="form-control"
+                            type="number"
+                            value={displayValue}
+                            onChange={(e) =>
+                              handleInputChange(
+                                e.target.value,
+                                rowIndex,
+                                "landedAmount"
+                              )
+                            }
+                            style={otherColumnsStyle}
+                            disabled={true} // Keep disabled as it's calculated
+                            placeholder={revisedBid ? "Calculated amount" : ""}
+                          />
+                        );
+                      },
                       realisedDiscount: (cell, rowIndex) => {
                         const previousRealisedDiscount =
                           previousData[rowIndex]?.realisedDiscount ||
@@ -6043,82 +6071,82 @@ const confirmReviseBid = async () => {
                         );
                       },
                       total: (cell, rowIndex) => {
-    const previousTotal = previousData[rowIndex]?.total || cell;
-    const updatedTotal = updatedData[rowIndex]?.total || previousTotal;
-    const showArrow = counterData && previousTotal !== updatedTotal;
+                        const previousTotal = previousData[rowIndex]?.total || cell;
+                        const updatedTotal = updatedData[rowIndex]?.total || previousTotal;
+                        const showArrow = counterData && previousTotal !== updatedTotal;
 
-    // For revised bid, show calculated value or empty if no user input
-    const currentRowData = data[rowIndex];
-    let displayValue;
-    if (revisedBid && !counterData) {
-      displayValue = currentRowData?.total || "";
-    } else {
-      displayValue = previousTotal;
-    }
+                        // For revised bid, show calculated value or empty if no user input
+                        const currentRowData = data[rowIndex];
+                        let displayValue;
+                        if (revisedBid && !counterData) {
+                          displayValue = currentRowData?.total || "";
+                        } else {
+                          displayValue = previousTotal;
+                        }
 
-    return showArrow ? (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          maxWidth: "120%",
-        }}
-      >
-        <span
-          style={{
-            textDecoration: "line-through",
-            marginRight: "5px",
-            color: "gray",
-          }}
-        >
-          ₹{previousTotal}
-        </span>
-        <span className="me-2">
-          <svg
-            className="me-2"
-            viewBox="64 64 896 896"
-            focusable="false"
-            data-icon="arrow-right"
-            width="1em"
-            height="1em"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-          </svg>
-        </span>
-        <span
-          style={{
-            backgroundColor: "#b45253",
-            padding: "4px 10px",
-            borderRadius: "5px",
-            lineHeight: "1",
-            color: "white",
-          }}
-        >
-          ₹{updatedTotal}
-        </span>
-      </div>
-    ) : counterData ? (
-      <span>{updatedTotal}</span>
-    ) : (
-      <input
-        className="form-control"
-        type="number"
-        value={displayValue}
-        onChange={(e) =>
-          handleInputChange(
-            e.target.value,
-            rowIndex,
-            "total"
-          )
-        }
-        style={otherColumnsStyle}
-        disabled={true} // Keep disabled as it's calculated
-        placeholder={revisedBid ? "Calculated total" : ""}
-      />
-    );
-  },
+                        return showArrow ? (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              maxWidth: "120%",
+                            }}
+                          >
+                            <span
+                              style={{
+                                textDecoration: "line-through",
+                                marginRight: "5px",
+                                color: "gray",
+                              }}
+                            >
+                              ₹{previousTotal}
+                            </span>
+                            <span className="me-2">
+                              <svg
+                                className="me-2"
+                                viewBox="64 64 896 896"
+                                focusable="false"
+                                data-icon="arrow-right"
+                                width="1em"
+                                height="1em"
+                                fill="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                              </svg>
+                            </span>
+                            <span
+                              style={{
+                                backgroundColor: "#b45253",
+                                padding: "4px 10px",
+                                borderRadius: "5px",
+                                lineHeight: "1",
+                                color: "white",
+                              }}
+                            >
+                              ₹{updatedTotal}
+                            </span>
+                          </div>
+                        ) : counterData ? (
+                          <span>{updatedTotal}</span>
+                        ) : (
+                          <input
+                            className="form-control"
+                            type="number"
+                            value={displayValue}
+                            onChange={(e) =>
+                              handleInputChange(
+                                e.target.value,
+                                rowIndex,
+                                "total"
+                              )
+                            }
+                            style={otherColumnsStyle}
+                            disabled={true} // Keep disabled as it's calculated
+                            placeholder={revisedBid ? "Calculated total" : ""}
+                          />
+                        );
+                      },
                       vendorRemark: (cell, rowIndex) => (
                         <textarea
                           className="form-control"

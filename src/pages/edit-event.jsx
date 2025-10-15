@@ -23,6 +23,7 @@ import { set } from "lodash";
 import { specificationColumns } from "../constant/data";
 import SingleSelector from '../components/base/Select/SingleSelector';
 import axios from 'axios';
+import { da } from "date-fns/locale";
 
 export default function EditEvent() {
   const { id } = useParams(); // Get the id from the URL
@@ -192,33 +193,39 @@ export default function EditEvent() {
   };
 
   const handleSaveSchedule = (data) => {
-    setScheduleData(data);
-    handleEventScheduleModalClose();
+  setScheduleData(data);
+  handleEventScheduleModalClose();
 
-    const timeZone = "Asia/Kolkata";
-
-    const formatDateTime = (dateTime) => {
-      const date = new Date(dateTime);
-      return new Intl.DateTimeFormat("en-GB", {
-        timeZone,
-        day: "2-digit",
-        month: "2-digit",
-        year: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }).format(date);
-    };
-
-    // Since data is already in UTC format, format it directly for display
-    const startDateTime = formatDateTime(data.start_time);
-    const endDateTime = formatDateTime(data.end_time_duration);
-
-    const scheduleText = `${startDateTime} to ${endDateTime}`;
-    // console.log("startDateTime", startDateTime, endDateTime);
-
-    setEventScheduleText(scheduleText);
+  const formatDateTime = (dateTime) => {
+    if (!dateTime) return "";
+    
+    // Parse the UTC date string and format it directly without timezone conversion
+    const utcDate = new Date(dateTime);
+    
+    // Extract UTC components directly
+    const day = String(utcDate.getUTCDate()).padStart(2, '0');
+    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
+    const year = String(utcDate.getUTCFullYear()).slice(-2);
+    let hours = utcDate.getUTCHours();
+    const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0');
+    
+    // Convert to 12-hour format
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    const formattedHours = String(hours).padStart(2, '0');
+    
+    return `${day}/${month}/${year}, ${formattedHours}:${minutes} ${ampm}`;
   };
+
+  // Format the dates for display
+  const startDateTime = formatDateTime(data.start_time);
+  const endDateTime = formatDateTime(data.end_time_duration);
+
+  const scheduleText = `${startDateTime} to ${endDateTime}`;
+
+  setEventScheduleText(scheduleText);
+};
 
 
   const handleVendorTypeModalShow = async () => {
@@ -372,12 +379,12 @@ export default function EditEvent() {
       // Construct API URL with proper parameters
       const apiUrl = `${baseURL}rfq/events/vendor_list?token=${token}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${encodeURIComponent(searchTerm)}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(materialIdsForFilter)}`;
       
-      console.log("Fetching vendors with URL:", apiUrl);
+      // console.log("Fetching vendors with URL:", apiUrl);
       
       const response = await fetch(apiUrl);
       const data = await response.json();
       
-      console.log("Vendor API response:", data);
+      // console.log("Vendor API response:", data);
 
       const vendors = Array.isArray(data.vendors) ? data.vendors : [];
       
@@ -466,7 +473,7 @@ export default function EditEvent() {
             setInventoryTypeId(firstVendor.pms_inventory_type_id || [75, 78, 65, 66, 67, 68, 64, 63]);
           }
 
-          console.log("data from fetch with inventoryTypeId:", data);
+          // console.log("data from fetch with inventoryTypeId:", data);
 
           const vendors = Array.isArray(data.vendors)
             ? data.vendors
@@ -520,7 +527,6 @@ export default function EditEvent() {
           );
           const data = await response.json();
           const vendors = Array.isArray(data.vendors) ? data.vendors : [];
-          console.log("vendors2 :-----------", vendors);
 
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
@@ -556,7 +562,6 @@ export default function EditEvent() {
   // Ensure filteredTableData includes pms_inventory_type_id for each vendor
   useEffect(() => {
     if (tableData && Array.isArray(tableData)) {
-      console.log("tableData in filteredTableData useEffect", tableData);
 
       const fallbackInventoryTypeId = [75, 78, 65, 66, 67, 68, 64, 63];
       setFilteredTableData(
@@ -615,7 +620,6 @@ export default function EditEvent() {
       setEvaluation_time(eventDetails?.event_schedule?.evaluation_time);
       setStatusLogData(eventDetails?.status_logs);
       setEditableStatusLogData(eventDetails?.status_logs || []);
-      setDocumentRows(eventDetails?.attachments || []);
       setGroupedData(eventDetails?.grouped_event_materials);
 
       const materials = eventDetails?.event_materials || [];
@@ -682,17 +686,24 @@ export default function EditEvent() {
       // Format the schedule text with proper timezone handling
       if (eventDetails?.event_schedule?.start_time && eventDetails?.event_schedule?.end_time) {
         const formatDateTime = (dateTime) => {
-          const date = new Date(dateTime);
-          return new Intl.DateTimeFormat("en-GB", {
-            timeZone: "Asia/Kolkata",
-            day: "2-digit",
-            month: "2-digit",
-            year: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          }).format(date);
-        };
+        // Parse the UTC date string and format it directly without timezone conversion
+        const utcDate = new Date(dateTime);
+        
+        // Extract UTC components directly
+        const day = String(utcDate.getUTCDate()).padStart(2, '0');
+        const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
+        const year = String(utcDate.getUTCFullYear()).slice(-2);
+        let hours = utcDate.getUTCHours();
+        const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0');
+        
+        // Convert to 12-hour format
+        const ampm = hours >= 12 ? 'pm' : 'am';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        const formattedHours = String(hours).padStart(2, '0');
+        
+        return `${day}/${month}/${year}, ${formattedHours}:${minutes} ${ampm}`;
+      };
 
         const startDateTime = formatDateTime(eventDetails.event_schedule.start_time);
         const endDateTime = formatDateTime(eventDetails.event_schedule.end_time);
@@ -708,7 +719,34 @@ export default function EditEvent() {
       setEnd_time(eventDetails?.event_schedule?.end_time);
       setEvaluation_time(eventDetails?.event_schedule?.evaluation_time);
       setStatusLogData(eventDetails?.status_logs);
-      setDocumentRows(eventDetails?.attachments || []);
+      
+      // Properly initialize documentRows with existing attachments
+      const existingAttachments = eventDetails?.attachments?.map((attachment, index) => ({
+        id: attachment.id,
+        srNo: index + 1,
+        fileName: attachment.document_name || attachment.filename,
+        fileType: attachment.content_type,
+        uploadDate: attachment.created_at ? new Date(attachment.created_at).toISOString().slice(0, 19) : "",
+        fileUrl: attachment.file_url || attachment.url,
+        isExisting: true,
+        blob_id: attachment.blob_id,
+        created_at: attachment.created_at,
+        updated_at: attachment.updated_at,
+        // Keep original attachment data for payload
+        originalAttachment: attachment
+      })) || [];
+
+      // If no existing attachments, add one empty row for new uploads
+      if (existingAttachments.length === 0) {
+        setDocumentRows([{ srNo: 1, upload: null, isExisting: false }]);
+      } else {
+        // Set existing attachments and add one empty row for new uploads
+        setDocumentRows([
+          ...existingAttachments,
+          { srNo: existingAttachments.length + 1, upload: null, isExisting: false }
+        ]);
+      }
+      
       setDocumentRowsInitialized(true);
       setGroupedData(
         eventDetails?.grouped_event_materials
@@ -1091,21 +1129,103 @@ export default function EditEvent() {
 
     setSubmitted(true);
 
+    // Build attachments from current documentRows - include ALL rows unless they're empty new rows
     const attachments = documentRows
-      .filter(row =>
-        (row.upload && row.upload.filename) ||
-        (row.id && row.filename && row.content_type)
-      )
-      .map(row => row.upload ? row.upload : {
-        id: row.id,
-        filename: row.filename,
-        content_type: row.content_type,
-        ...(row.blob_id ? { blob_id: row.blob_id } : {}),
-      });
-    // console.log("attachments:--", attachments);
+      .filter(row => {
+        // Include existing attachments that haven't been removed
+        if (row.isExisting && row.id) {
+          return true;
+        }
+        // Include existing attachments that may not have isExisting flag but have id/blob_id
+        if (row.id && (row.blob_id || row.document_name || row.content_type)) {
+          return true;
+        }
+        // Include new uploads that have content
+        if (row.upload && row.upload.filename) {
+          return true;
+        }
+        // Exclude empty rows without upload or id
+        return false;
+      })
+      .map(row => {
+        // Handle existing attachments with new uploads (replacements)
+        if (row.isExisting && row.upload && row.upload.filename) {
+          return {
+            // For replacement, send as new upload but include original id for reference
+            id: row.originalAttachment?.id || row.id,
+            filename: row.upload.filename,
+            content: row.upload.content,
+            content_type: row.upload.content_type,
+            document_name: row.upload.filename,
+            _replace: true, // Flag to indicate this is a replacement
+          };
+        }
+        // Handle properly initialized existing attachments (no replacement)
+        else if (row.isExisting && row.originalAttachment && !row.upload) {
+          return {
+            id: row.originalAttachment.id,
+            document_name: row.fileName || row.originalAttachment.document_name,
+            content_type: row.originalAttachment.content_type,
+            blob_id: row.originalAttachment.blob_id,
+            created_at: row.originalAttachment.created_at,
+            updated_at: row.originalAttachment.updated_at,
+            url: row.originalAttachment.url,
+            doc_path: row.originalAttachment.doc_path,
+            blob_created_at: row.originalAttachment.blob_created_at,
+            active: row.originalAttachment.active,
+            relation: row.originalAttachment.relation,
+            relation_id: row.originalAttachment.relation_id,
+            created_by: row.originalAttachment.created_by,
+            filename: row.originalAttachment.filename,
+          };
+        }
+        // Handle existing attachments that came directly from API (no replacement)
+        else if (row.id && (row.blob_id || row.document_name || row.content_type) && !row.upload) {
+          return {
+            id: row.id,
+            document_name: row.document_name || row.fileName,
+            content_type: row.content_type || row.fileType,
+            blob_id: row.blob_id,
+            created_at: row.created_at,
+            updated_at: row.updated_at,
+            url: row.url,
+            doc_path: row.doc_path,
+            blob_created_at: row.blob_created_at,
+            active: row.active,
+            relation: row.relation,
+            relation_id: row.relation_id,
+            created_by: row.created_by,
+            filename: row.filename,
+          };
+        }
+        // Handle existing attachments with new uploads (direct API structure)
+        else if (row.id && row.upload && row.upload.filename) {
+          return {
+            id: row.id,
+            filename: row.upload.filename,
+            content: row.upload.content,
+            content_type: row.upload.content_type,
+            document_name: row.upload.filename,
+            _replace: true, // Flag to indicate this is a replacement
+          };
+        }
+        // Handle new uploads - pass in the same format structure
+        else if (row.upload && row.upload.filename) {
+          return {
+            filename: row.upload.filename,
+            content: row.upload.content,
+            content_type: row.upload.content_type,
+            document_name: row.upload.filename,
+          };
+        }
+        return null;
+      })
+      .filter(Boolean); // Remove any null entries
 
+    console.log("Processed attachments for payload:", attachments);
+    console.log("Current documentRows:", documentRows);
 
-    // Build attachments ONLY from current documentRows (UI state)
+    // Build the complete eventData object
     const eventData = {
       event: {
         event_title: eventName || eventDetails?.event_title || "",
@@ -1190,11 +1310,8 @@ export default function EditEvent() {
             }
             return acc;
           }, {});
-          // console.log("material", material.unit);
-
 
           return {
-            // id: material.id || null,
             inventory_id: Number(material.inventory_id) || null,
             quantity: Number(material.quantity),
             uom: material.unit,
@@ -1229,8 +1346,6 @@ export default function EditEvent() {
           comments: log.comment || log.comments || "",
         })),
         resource_term_conditions_attributes: textareas.map((textarea) => {
-          // Only include id if it's a string and length < 10 (likely a real DB id)
-          // or if it's a number and less than 1e9 (to avoid Date.now() values)
           const isValidId =
             (typeof textarea.id === "string" && textarea.id.length < 10) ||
             (typeof textarea.id === "number" && String(textarea.id).length < 10);
@@ -1241,7 +1356,6 @@ export default function EditEvent() {
             condition: textarea.value,
           };
 
-          // If marked for destruction, add the _destroy flag
           if (textarea._destroy) {
             return {
               id: textarea.id,
@@ -1259,6 +1373,7 @@ export default function EditEvent() {
               ...baseAttributes,
             };
         }),
+        // Include ALL attachments (existing + new)
         attachments,
         applied_event_template: {
           event_template_id:
@@ -1290,11 +1405,13 @@ export default function EditEvent() {
       },
     };
 
-    // console.log("eventData:--", JSON.stringify(eventData, null, 2));
+    console.log("eventData with all attachments:--", JSON.stringify(eventData.attachments, null, 2));
 
     try {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
+      console.log("payload :----",JSON.stringify(eventData));
+      
       const response = await fetch(
         `${baseURL}rfq/events/${id}?token=${token}`,
         {
@@ -1305,7 +1422,6 @@ export default function EditEvent() {
           body: JSON.stringify(eventData),
         }
       );
-      // console.log("eventData:--", eventData, attachments);
 
       if (response.ok) {
         const data = await response.json();
@@ -2119,43 +2235,56 @@ export default function EditEvent() {
                         </td>
 
                         <td>
-                          {!att.isExisting && (
-                            <input
-                              type="file"
-                              className="form-control"
-                              required
-                              onChange={e => {
-                                // Update file in documentRows
-                                const file = e.target.files[0];
-                                if (!file) return;
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                  const base64String = reader.result.split(",")[1];
-                                  setDocumentRows(prev => {
-                                    const updated = [...prev];
-                                    updated[index] = {
-                                      ...updated[index],
-                                      upload: {
-                                        filename: file.name,
-                                        content: base64String,
-                                        content_type: file.type,
-                                      },
-                                      fileName: file.name,
-                                      fileType: file.type,
-                                      isExisting: false,
-                                      uploadDate: new Date().toISOString().slice(0, 19),
-                                    };
-                                    return updated;
-                                  });
-                                };
-                                reader.readAsDataURL(file);
-                              }}
-                            />
-                          )}
-                        </td>
+  <input
+    type="file"
+    className="form-control"
+    required={!att.isExisting} // Only required for new attachments
+    onChange={e => {
+      // Update file in documentRows
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result.split(",")[1];
+        
+        // Get current time in IST (same as create event)
+        const now = new Date();
+        const istTime = new Intl.DateTimeFormat('sv-SE', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).format(now).replace(' ', 'T');
+        
+        setDocumentRows(prev => {
+          const updated = [...prev];
+          updated[index] = {
+            ...updated[index],
+            upload: {
+              filename: file.name,
+              content: base64String,
+              content_type: file.type,
+            },
+            fileName: file.name,
+            fileType: file.type,
+            uploadDate: istTime, // Use IST time instead of UTC
+            // If it was existing, it now has new content
+            hasNewUpload: att.isExisting ? true : false,
+          };
+          return updated;
+        });
+      };
+      reader.readAsDataURL(file);
+    }}
+  />
+</td>
                         <td className="document">
                           <div style={{ display: "flex", alignItems: "center" }}>
-                            <div className="attachment-placeholder">
+                            {/* <div className="attachment-placeholder">
                               {att.isExisting && att.fileUrl && (
                                 <div className="file-box">
                                   <div className="image">
@@ -2177,7 +2306,7 @@ export default function EditEvent() {
                                   </div>
                                 </div>
                               )}
-                            </div>
+                            </div> */}
                             <button
                               type="button"
                               className="btn btn-sm btn-link text-danger"
@@ -2547,8 +2676,8 @@ export default function EditEvent() {
                       <p>No vendors found</p>
                     )}
                   </div>
-                  {console.log("filteredTableData", filteredTableData, filteredTableData.length)
-                  }
+                  {/* {console.log("filteredTableData", filteredTableData, filteredTableData.length)
+                  } */}
                   <div className="d-flex justify-content-between align-items-center px-1 mt-2">
                     <ul className="pagination justify-content-center d-flex ">
                       <li

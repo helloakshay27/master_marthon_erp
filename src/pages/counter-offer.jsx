@@ -732,7 +732,7 @@ export default function CounterOffer() {
 const productTableColumns = [
   { label: "Material Name", key: "product" },
   { label: "Material Type", key: "materialType" },
-  { label: "Material Sub Type", key: "materialSubType" },
+  // { label: "Material Sub Type", key: "materialSubType" },
   { label: "Delivery Location", key: "deliveryLocation" },
   { label: "Quantity Requested", key: "quantityRequested" },
   { label: "UOM", key: "uom" }, // <-- Add UOM column here
@@ -1067,9 +1067,7 @@ const productTableColumns = [
     }) || [];
 
   return (
-    <div className="website-content overflow-auto">
-      <div className="module-data-section">
-        <div className="event-order-page">
+        <div className="event-order-page h-[100vh] overflow-auto">
           <div className="d-flex align-items-center">
             <button
               type="button"
@@ -1111,7 +1109,7 @@ const productTableColumns = [
             </>
           ) : (
             <>
-              <Table columns={productTableColumns} data={productTableData} style={{width:'100%', overflowX:'auto'}} />
+              <Table columns={productTableColumns} data={productTableData} isMinWidth={true} />
               <div className="d-flex justify-content-end">
                 <ShortDataTable
                   data={tableData}
@@ -1540,7 +1538,5 @@ const productTableColumns = [
           </DynamicModalBox>
           <ToastContainer />
         </div>
-      </div>
-    </div>
   );
 }

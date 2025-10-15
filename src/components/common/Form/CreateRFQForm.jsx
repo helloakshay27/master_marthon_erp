@@ -356,7 +356,6 @@ export default function CreateRFQForm({
       console.error("Error fetching generic info:", error);
     }
   };
-console.log("uomOptions",uomOptions);
 
   useEffect(() => {
     if (existingData) {

@@ -36,7 +36,7 @@ export default function ChargesDataTable({
         taxes_and_charges: item.taxes_and_charges || [],
         netCost: item.realised_amount || 0,
       }
-      
+
       return acc;
     }, {});
     setChargesTaxRate(initialChargesTaxRate);
@@ -226,7 +226,7 @@ export default function ChargesDataTable({
       };
       return updated;
     });
-    
+
 
     // Sync charges data (optional)
     setChargesData((prev) => {
@@ -322,7 +322,7 @@ export default function ChargesDataTable({
     }
 
     updated[index].amount = e.target.value;
-    
+
     // Set realised_amount to the same as amount if no tax calculations have been done
     if (!updated[index].realised_amount || !chargesTaxRate[index]?.taxes_and_charges?.length) {
       updated[index].realised_amount = e.target.value;
@@ -388,39 +388,39 @@ export default function ChargesDataTable({
         {
           label: "Save",
           onClick: () => {
-            
-            
+
+
             // Calculate the gross total using the data prop instead of chargesData
             const updatedGrossTotal = data.reduce((total, charge, index) => {
-              
+
               // Use realised_amount if available, otherwise fall back to amount
               const realisedAmount = parseFloat(charge?.realised_amount || charge?.amount || 0);
-              
+
               return total + realisedAmount;
             }, 0);
 
             const calcGrossTotal = parseFloat(calculateGrossTotal()) || 0;
-            
+
             // Construct payload for charges that have amounts but no tax modal opened
             const accumulatedPayload = data.map((row, index) => {
               const chargeId = chargesData[index]?.id || null;
               const amount = row.amount || "0";
               const realisedAmount = row?.realised_amount || row?.amount || "0";
-              
+
               // Get existing tax charges or create empty array
               const existingTaxCharges = chargesTaxRate[index]?.taxes_and_charges || [];
-              
+
               return {
                 charge_id: chargeId,
                 amount: amount, // User input
-                realised_amount: realisedAmount, // Calculated amount
+                realised_amount: realisedAmount, // Calculated amountamount
                 taxes_and_charges: existingTaxCharges,
               };
             });
 
             // Call onValueChange with the payload
             onValueChange(accumulatedPayload);
-            
+
             // Update the gross total in the parent component
             setGrossTotal(calcGrossTotal + updatedGrossTotal);
             handleCloseOtherChargesModal();
@@ -468,7 +468,25 @@ export default function ChargesDataTable({
                         min="0"
                         className="form-control"
                         value={data[index]?.amount || ""}
-                        onChange={(e) => handleInputChange(index, e)}
+                        onChange={(e) => {
+                          let value = e.target.value;
+
+                          // If there's a decimal point, limit to 2 decimal places
+                          const decimalIndex = value.indexOf('.');
+                          if (decimalIndex !== -1) {
+                            value = value.substring(0, decimalIndex + 3); // Keep 2 digits after decimal
+                          }
+
+                          // Update the event target value
+                          const modifiedEvent = {
+                            ...e,
+                            target: {
+                              ...e.target,
+                              value: value
+                            }
+                          };
+                          handleInputChange(index, modifiedEvent)
+                        }}
                         style={{
                           backgroundColor: "#fff",
                           color: "#000",

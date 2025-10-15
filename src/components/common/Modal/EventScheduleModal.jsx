@@ -219,20 +219,31 @@ const EventScheduleModal = ({
     // Properly format start time in UTC format with Z
     let startTime;
     if (isLater) {
-      // Create a date object from the selected date and time, then convert to UTC
-      const startDate = new Date(`${laterDate}T${laterTime}:00`);
-      startTime = startDate.toISOString();
+      // Treat the selected time as the desired UTC time (no timezone conversion)
+      const istDateTime = `${laterDate}T${laterTime}:00.000Z`;
+      startTime = istDateTime;
     } else {
+      // For "Start Now", get current time in IST and format as UTC
       const now = new Date();
-      startTime = now.toISOString();
+      const istTime = new Intl.DateTimeFormat('sv-SE', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }).format(now).replace(' ', 'T') + '.000Z';
+      startTime = istTime;
     }
     
     console.log("startTime", startTime);
 
-    // Create end time in UTC format with Z
+    // Create end time in UTC format with Z (treat selected time as desired UTC time)
     const endTimeFormatted =
       endDate && endTime
-        ? new Date(`${endDate}T${endTime}:00`).toISOString()
+        ? `${endDate}T${endTime}:00.000Z`
         : "";
 
     const evaluationTimeFormatted = isCustomEvaluationDuration
