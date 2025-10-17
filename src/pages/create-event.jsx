@@ -185,31 +185,35 @@ export default function CreateEvent() {
   };
 
   const handleSaveSchedule = (data) => {
-    setScheduleData(data);
-    handleEventScheduleModalClose();
+  setScheduleData(data);
+  handleEventScheduleModalClose();
 
-    const timeZone = "Asia/Kolkata";
+  const formatDateTime = (dateTime) => {
+    if (!dateTime) return "";
 
-    const formatDateTime = (dateTime) => {
-      const date = new Date(dateTime);
-      return new Intl.DateTimeFormat("en-GB", {
-        timeZone,
-        day: "2-digit",
-        month: "2-digit",
-        year: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }).format(date);
-    };
+    // Parse as UTC and extract UTC components so there's no browser timezone shift
+    const utcDate = new Date(dateTime);
+    const day = String(utcDate.getUTCDate()).padStart(2, "0");
+    const month = String(utcDate.getUTCMonth() + 1).padStart(2, "0");
+    const year = String(utcDate.getUTCFullYear()).slice(-2);
+    let hours = utcDate.getUTCHours();
+    const minutes = String(utcDate.getUTCMinutes()).padStart(2, "0");
 
-    // Since data is already in UTC format, format it directly for display
-    const startDateTime = formatDateTime(data.start_time);
-    const endDateTime = formatDateTime(data.end_time_duration);
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const formattedHours = String(hours).padStart(2, "0");
 
-    const scheduleText = `${startDateTime} to ${endDateTime}`;
-    setEventScheduleText(scheduleText);
+    return `${day}/${month}/${year}, ${formattedHours}:${minutes} ${ampm}`;
   };
+
+  // Format the dates for display without applying local timezone offset
+  const startDateTime = formatDateTime(data.start_time);
+  const endDateTime = formatDateTime(data.end_time_duration);
+
+  const scheduleText = `${startDateTime} to ${endDateTime}`;
+  setEventScheduleText(scheduleText);
+};
 
   const handleVendorTypeModalShow = async () => {
     setVendorModal(true);
