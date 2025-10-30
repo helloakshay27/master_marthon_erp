@@ -16,6 +16,151 @@ function Members() {
             style={{ marginBottom: "200px" }}
           >
             <div className="m-3">
+              <h1>RFQ Module</h1>
+              <ul>
+                <li>
+                  <Link to="/invite-vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Invite Vendor
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/create-event?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    create_event
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/create-event-service?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    create_event_service
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    event_list
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/edit-event?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    edit_event
+                  </Link>
+                </li>
+
+                <li>
+                  <Link to="/create-template?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    create_template
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/edit-template?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    edit_template
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/event-template-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    event_template_list
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/erp-rfq-detail-price-trends4h?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    event_details_price
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/contract-invitation?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    contract_invitation
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/section-tab">section_tab</Link>
+                </li>
+                <li>
+                  <Link to="/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    vendor_list
+                  </Link>
+                </li>
+
+                <li>
+                  <Link to="/work-list">work list</Link>
+                </li>
+
+                <li>
+                  <Link to="/material-list">Material List</Link>
+                </li>
+
+                <li>
+                  <Link to="/service-list">Service List</Link>
+                </li>
+
+                <li>
+                  <Link to="/Po">Po lists</Link>
+                </li>
+                <li>
+                  <Link to="/Wo">Wo list</Link>
+                </li>
+                <li>
+                  <Link to="/user-lists?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    user_list
+                  </Link>
+                </li>
+
+                <li>
+                  <Link to="/user-overview?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    user_overview
+                  </Link>
+                </li>
+
+                <li>
+                  <Link to="good_receive_notes/:id">grn_detaisl</Link>
+                </li>
+
+                <li>
+                  <Link to="/stock_register_detail/47">
+                    stock_register detail
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/erp-stock-register-creation13c">
+                    erp_stock_register_creation13c
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/stock_register_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    {" "}
+                    stock register list
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/approvals-list">approvals_list</Link>
+                </li>
+                <li>
+                  <Link to="/rekyc/:id">Section Re KYC Details</Link>
+                </li>
+              </ul>
+            </div>
+
+            <div className="m-3">
+              <h1>RFQ OLD</h1>
+              <ul>
+                <li>
+                  <Link to="/create-rfq">create_rfq</Link>
+                </li>
+                <li>
+                  <Link to="/erp-rfq-auction-events-4f">
+                    erp_rfq_auction_events_4f
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/erp-rfq-auction-events-4h">
+                    erp_rfq_auction_events_4h
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/erp-rfq-detail-price-trends4h">
+                    erp_rfq_detail_price_trends4h
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div className="m-3">
               <h1>Material QC</h1>
               <ul>
                 <li>
@@ -506,146 +651,7 @@ function Members() {
                 ____________________________
               </ul>
             </div>
-            <div className="m-3">
-              <h1>RFQ Module</h1>
-              <ul>
-                <li>
-                  <Link to="/invite-vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
-                    Invite Vendor
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/create-event?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
-                    create_event
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
-                    event_list
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/edit-event?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
-                    edit_event
-                  </Link>
-                </li>
-
-                <li>
-                  <Link to="/create-template?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
-                    create_template
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/edit-template?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
-                    edit_template
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/event-template-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
-                    event_template_list
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/erp-rfq-detail-price-trends4h?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
-                    event_details_price
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/contract-invitation?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
-                    contract_invitation
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/section-tab">section_tab</Link>
-                </li>
-                <li>
-                  <Link to="/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
-                    vendor_list
-                  </Link>
-                </li>
-
-                <li>
-                  <Link to="/work-list">work list</Link>
-                </li>
-
-                <li>
-                  <Link to="/material-list">Material List</Link>
-                </li>
-
-                <li>
-                  <Link to="/service-list">Service List</Link>
-                </li>
-
-                <li>
-                  <Link to="/Po">Po lists</Link>
-                </li>
-                <li>
-                  <Link to="/Wo">Wo list</Link>
-                </li>
-                <li>
-                  <Link to="/user-lists?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
-                    user_list
-                  </Link>
-                </li>
-
-                <li>
-                  <Link to="/user-overview?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
-                    user_overview
-                  </Link>
-                </li>
-
-                <li>
-                  <Link to="good_receive_notes/:id">grn_detaisl</Link>
-                </li>
-
-                <li>
-                  <Link to="/stock_register_detail/47">
-                    stock_register detail
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/erp-stock-register-creation13c">
-                    erp_stock_register_creation13c
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/stock_register_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
-                    {" "}
-                    stock register list
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/approvals-list">approvals_list</Link>
-                </li>
-                <li>
-                  <Link to="/rekyc/:id">Section Re KYC Details</Link>
-                </li>
-              </ul>
-            </div>
-
-            <div className="m-3">
-              <h1>RFQ OLD</h1>
-              <ul>
-                <li>
-                  <Link to="/create-rfq">create_rfq</Link>
-                </li>
-                <li>
-                  <Link to="/erp-rfq-auction-events-4f">
-                    erp_rfq_auction_events_4f
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/erp-rfq-auction-events-4h">
-                    erp_rfq_auction_events_4h
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/erp-rfq-detail-price-trends4h">
-                    erp_rfq_detail_price_trends4h
-                  </Link>
-                </li>
-              </ul>
-            </div>
+            
           </div>
         </div>
         <Footer />

@@ -56,14 +56,17 @@ import ContractInvitation from "./pages/contract-invitation";
 import SectionTab from "./pages/section-tab";
 import EventListPage from "./pages/admin_list";
 import VendorDetails from "./pages/vendor-details";
+import VendorDetailsService from "./pages/vendor-details-service";
 import VendorListPage from "./pages/vendor-list";
 import UserOverview from "./pages/user-overview";
 import CreateEvent from "./pages/create-event";
+import CreateEventService from "./pages/create-event-service";
 import CreateBid from "./pages/create-bid";
 import Dashboard from "./pages/dashboard";
 import AuthData from "./confi/authData";
 import EoiDeatailPage from "./pages/eoi-detail";
 import EditEvent from "./pages/edit-event";
+import EditEventService from "./pages/edit-event-service";
 import ApprovalMatrics from "./pages/approvalMatrics";
 import InvoiceApproval from "./pages/invoice-approval";
 import ApprovalEdit from "./pages/approval-edit";
@@ -390,13 +393,16 @@ function App() {
           <Route path="/section-tab" element={<SectionTab />} />
           {/* <Route path="/event-list" element={<EventList />} /> */}
           <Route path="/user-list/:eventId" element={<VendorDetails />} />
+          <Route path="/user-list-service/:eventId" element={<VendorDetailsService />} />
           <Route path="/eoi-details/:eventId" element={<EoiDeatailPage />} />
           <Route path="/vendor-list" element={<VendorListPage />} />
           <Route path="/user-overview/:eventId" element={<UserOverview />} />
           <Route path="/create-event" element={<CreateEvent />} />
+          <Route path="/create-event-service" element={<CreateEventService />} />
           {/* <Route path='/create-bid' element={<CreateBid />} /> */}
           <Route path="/create-bid/:eventId" element={<CreateBid />} />
           <Route path="/edit-event/:id" element={<EditEvent />} />
+          <Route path="/edit-event-service/:id" element={<EditEventService />} />
           <Route path="/counter-offer/:id" element={<CounterOffer />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/" element={<RootLayout />}>

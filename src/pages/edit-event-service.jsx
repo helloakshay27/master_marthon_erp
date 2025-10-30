@@ -1,0 +1,3850 @@
+import React, { useState, useEffect, useRef } from "react";
+import { Modal, Button } from 'react-bootstrap';
+
+import {
+  CreateRFQForm,
+  DynamicModalBox,
+  EventScheduleModal,
+  EventTypeModal,
+  SearchIcon,
+  MultiSelector,
+  SelectBox,
+  Table,
+} from "../components";
+import { useParams, useNavigation, useNavigate, useLocation } from "react-router-dom";
+import { citiesList, participantsTabColumns } from "../constant/data";
+import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
+import PopupBox from "../components/base/Popup/Popup";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { baseURL } from "../confi/apiDomain";
+import { set } from "lodash";
+import { specificationColumns } from "../constant/data";
+import SingleSelector from '../components/base/Select/SingleSelector';
+import axios from 'axios';
+import { da } from "date-fns/locale";
+import ServiceRFQForm from "../components/common/Form/ServiceRfqForm";
+
+export default function EditEventService() {
+  const { id } = useParams(); // Get the id from the URL
+  const fileInputRef = useRef(null);
+  const myRef = useRef(null);
+  const [eventTypeModal, setEventTypeModal] = useState(false);
+  const [isService, setIsService] = useState(false);
+  const [inviteModal, setInviteModal] = useState(false);
+  const [publishEventModal, setPublishEventModal] = useState(false);
+  const [eventScheduleModal, setEventScheduleModal] = useState(false);
+  const [eventScheduleText, setEventScheduleText] = useState("");
+  const [eventScheduleInputText, setEventScheduleInputText] = useState("");
+  const [vendorModal, setVendorModal] = useState(false);
+  const [eventType, setEventType] = useState("");
+  const [awardType, setAwardType] = useState("");
+  const [dynamicExtension, setDynamicExtension] = useState(false);
+  const [resetSelectedRows, setResetSelectedRows] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [bidTemplateFields, setBidTemplateFields] = useState([]);
+  const [additionalFields, setAdditionalFields] = useState([]);
+  const [isTextId, setIsTextId] = useState(false);
+  const [end_time, setEnd_time] = useState("");
+  const [start_time, setStart_time] = useState("");
+  const [evaluation_time, setEvaluation_time] = useState("");
+  const [inventoryTypeId, setInventoryTypeId] = useState([]);
+  const [groupedData, setGroupedData] = useState([]);
+  const [isInvite, setIsInvite] = useState(false);
+  const [termsOptions, setTermsOptions] = useState([]);
+  const [checklistOption, setChecklistOption] = useState("create");
+  const [checklistsOptions, setChecklistsOptions] = useState([]);
+  const [selectedChecklist, setSelectedChecklist] = useState(null);
+  const [fetchedChecklistData, setFetchedChecklistData] = useState(null);
+  const [checklistName, setChecklistName] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [subCategories, setSubCategories] = useState([]);
+  const [selectedSubCategory, setSelectedSubCategory] = useState(null);
+  const [passingScore, setPassingScore] = useState("");
+  const [answerType, setAnswerType] = useState("");
+
+  // Add at the top of your component:
+
+  const [questions, setQuestions] = useState([
+    {
+      id: Date.now(),
+      text: "",
+      answerType: "",
+      answerOptions: [{ text: "", type: "P" }],
+      isMandatory: false,
+      isAttachmentMandatory: false,
+      weightage: "",
+      tooltip: "",
+      subCategoryId: null,
+      subCategoryName: "",
+    },
+  ]);
+  const [dynamicExtensionConfigurations, setDynamicExtensionConfigurations] =
+    useState({
+      time_extension_type: "",
+      triggered_time_extension_on_last: "",
+      extend_event_time_by: "",
+      time_extension_on_change_in: "",
+      delivery_date: "",
+    });
+
+  const [materialFormData, setMaterialFormData] = useState([
+    {
+      descriptionOfItem: [],
+      inventory_id: "",
+      quantity: "",
+      unit: [],
+      location: [],
+      rate: 0,
+      amount: 0,
+      attachments: [],
+    },
+  ]);
+  const [selectedStrategy, setSelectedStrategy] = useState(false);
+  const [selectedVendorDetails, setSelectedVendorDetails] = useState(false);
+  const [selectedVendorProfile, setSelectedVendorProfile] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedCity, setSelectedCity] = useState([]);
+  const [isTrafficSelected, setIsTrafficSelected] = useState("");
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [eventNo, setEventNo] = useState("");
+  const [eventName, seteventName] = useState("");
+  const [eventNumber, seteventNumber] = useState("");
+  const [textareaId, setTextareaId] = useState(0);
+  const [textareas, setTextareas] = useState([{ id: Date.now(), value: "" }]);
+  const documentRowsRef = useRef([{ srNo: 1, upload: null }]);
+  const [documentRows, setDocumentRows] = useState([{ srNo: 1, upload: null }]);
+  const [eventDescription, setEventDescription] = useState("");
+  const [eventDetails, setEventDetails] = useState([]);
+  const [onLoadScheduleData, setOnLoadScheduleData] = useState({});
+  const [matchedTerm, setMatchedTerm] = useState({});
+  const [materialSelectList, setMaterialSelectList] = useState([]);
+  // MultiSelector value, default to selected material type
+  const selectedMaterialType = materialFormData?.[0]?.inventory_id;
+  const defaultMaterialOption = materialSelectList.find(opt => opt.value === selectedMaterialType);
+  const [multiSelectorValue, setMultiSelectorValue] = useState(defaultMaterialOption ? [defaultMaterialOption] : []);
+  const [createdOn] = useState(new Date().toISOString().split("T")[0]);
+  const [selectedVendors, setSelectedVendors] = useState([]);
+  const [eventSchedule, setEventSchedule] = useState("");
+  const [scheduleData, setScheduleData] = useState({});
+  const [addTerm, setAddTerm] = useState(false);
+  const [showSelectBox, setShowSelectBox] = useState(false);
+  const [data, setData] = useState([
+    { user: "", date: "", status: "", remark: "" },
+  ]);
+  const [statusLogData, setStatusLogData] = useState([]);
+  const [editableStatusLogData, setEditableStatusLogData] = useState([]);
+  const [specificationData, setSpecificationData] = useState([]);
+  const [eventTypeText, setEventTypeText] = useState("");
+  const [tableData, setTableData] = useState([]); // State to hold dynamic data
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0); // Total count from API
+  const [apiTotalPages, setApiTotalPages] = useState(1); // Total pages from API
+  const [eventStatus, setEventStatus] = useState("pending");
+  const pageSize = 100; // Number of items per page
+  const pageRange = 6; // Number of pages to display in the pagination
+  const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+
+  const answerTypeOptions = [
+    { label: "Textarea", value: "textarea" },
+    { label: "Multiple Choice", value: "multiple_choice" },
+    { label: "Input", value: "input" },
+    { label: "Numeric", value: "numeric" },
+  ];
+
+  // Helper function to map API qtype to UI answerType
+  const mapQTypeToAnswerType = (qtype) => {
+    if (qtype === "multiple") return "multiple_choice";
+    if (qtype === "inputbox") return "input";
+    if (qtype === "numeric") return "numeric";
+    if (qtype === "description") return "textarea";
+    return "input"; // default fallback
+  };
+
+  const Loader = () => (
+    <div className="loader-container">
+      <div className="lds-ring">
+        <div></div>
+      </div>
+      <p>fetching existing Data</p>
+    </div>
+  );
+  const options = [
+    { value: "BUILDING MATERIAL", label: "BUILDING MATERIAL" },
+    { value: "MIVAN MA", label: "MIVAN MA" },
+    { value: "MIVAN MATERIAL", label: "MIVAN MATERIAL" },
+  ];
+  const handleDynamicExtensionBid = (key, value) => {
+    setDynamicExtensionConfigurations((prevState) => ({
+      ...prevState,
+      [key]: value,
+    }));
+  };
+  const handleChange = (selectedOption) => {
+    setSelectedTags(selectedOption);
+  };
+  const handleCityChange = (selectedOption) => {
+    setSelectedCity(selectedOption);
+    fetchData(1, searchTerm, selectedOption);
+  };
+
+  const handleStatusLogChange = (index, field, value) => {
+    setEditableStatusLogData(prev =>
+      prev.map((item, idx) =>
+        idx === index ? { ...item, [field]: value } : item
+      )
+    );
+  };
+
+  const navigate = useNavigate();
+
+  const handleApply = () => {
+    setShowPopup(false);
+  };
+
+  const handleEventTypeModalShow = () => {
+    setEventTypeModal(true);
+  };
+  const handleEventTypeModalClose = () => {
+    setEventTypeModal(false);
+  };
+  const handleInviteModalShow = () => {
+    setVendorModal(false);
+    setInviteModal(true);
+  };
+  const handleInviteModalClose = () => {
+    setInviteModal(false);
+  };
+  const handlePublishEventModalShow = () => {
+    setPublishEventModal(true);
+  };
+  const handlePublishEventModalClose = () => {
+    setPublishEventModal(false);
+  };
+  const handleEventScheduleModalShow = () => {
+    setEventScheduleModal(true);
+  };
+  const handleEventScheduleModalClose = () => {
+    setEventScheduleModal(false);
+  };
+
+  const handleSaveSchedule = (data) => {
+    setScheduleData(data);
+    handleEventScheduleModalClose();
+
+    const formatDateTime = (dateTime) => {
+      if (!dateTime) return "";
+
+      // Parse the UTC date string and format it directly without timezone conversion
+      const utcDate = new Date(dateTime);
+
+      // Extract UTC components directly
+      const day = String(utcDate.getUTCDate()).padStart(2, '0');
+      const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
+      const year = String(utcDate.getUTCFullYear()).slice(-2);
+      let hours = utcDate.getUTCHours();
+      const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0');
+
+      // Convert to 12-hour format
+      const ampm = hours >= 12 ? 'pm' : 'am';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // the hour '0' should be '12'
+      const formattedHours = String(hours).padStart(2, '0');
+
+      return `${day}/${month}/${year}, ${formattedHours}:${minutes} ${ampm}`;
+    };
+
+    // Format the dates for display
+    const startDateTime = formatDateTime(data.start_time);
+    const endDateTime = formatDateTime(data.end_time_duration);
+
+    const scheduleText = `${startDateTime} to ${endDateTime}`;
+
+    setEventScheduleText(scheduleText);
+  };
+
+
+  const handleVendorTypeModalShow = async () => {
+    setVendorModal(true);
+
+    // Load initial vendor data with material filter
+    const selectedMaterialIds = multiSelectorValue?.map(opt => opt.value) ||
+      eventDetails?.event_materials?.map(mat => mat.inventory_id) ||
+      inventoryTypeId || [];
+
+    await fetchVendorsWithMaterialFilter(1, "", selectedMaterialIds);
+  };
+  const handleVendorTypeModalClose = () => {
+    setVendorModal(false);
+    setSelectedRows([]);
+    setResetSelectedRows(true);
+  };
+
+  const handleEventTypeChange = (e) => {
+    const value = e.target.value;
+    if (["rfq", "contract", "auction"].includes(value)) {
+      setEventType(value);
+    } else {
+      alert("Please select a valid event type.");
+    }
+  };
+
+  const handleTrafficChange = (value) => {
+    setIsTrafficSelected(value);
+  };
+
+  const handleAwardTypeChange = (e) => {
+    const value = e;
+    if (["single_vendor", "multiple_vendors"].includes(value)) {
+      setAwardType(value);
+    } else {
+      alert("Please select a valid award scheme.");
+    }
+  };
+
+  const handleDynamicExtensionChange = (id, isChecked) => {
+    setDynamicExtension((prevState) => ({
+      ...prevState,
+      [id]: isChecked,
+    }));
+  };
+
+  const handleRadioChange = (strategy) => {
+    setSelectedStrategy(strategy);
+  };
+  const handleVendorDetailChange = (vendor) => {
+    setSelectedVendorDetails(vendor);
+  };
+  const handleVendorProfileChange = (profile) => {
+    setSelectedVendorProfile(profile);
+  };
+
+
+  // Handler functions:
+  const handleQuestionChange = (qIdx, field, value) => {
+    setQuestions(prev =>
+      prev.map((q, idx) =>
+        idx === qIdx ? {
+          ...q,
+          [field]: field === "answerType"
+            ? (value && value.value ? value.value : value)
+            : value
+        } : q
+      )
+    );
+  };
+
+  const handleAnswerOptionChange = (qIdx, optIdx, value) => {
+    setQuestions(prev =>
+      prev.map((q, idx) =>
+        idx === qIdx
+          ? {
+            ...q,
+            answerOptions: q.answerOptions.map((opt, i) =>
+              i === optIdx ? { ...opt, text: value } : opt
+            ),
+          }
+          : q
+      )
+    );
+  };
+
+  const handleAnswerOptionTypeChange = (qIdx, optIdx, value) => {
+    setQuestions(prev =>
+      prev.map((q, idx) =>
+        idx === qIdx
+          ? {
+            ...q,
+            answerOptions: q.answerOptions.map((opt, i) =>
+              i === optIdx ? { ...opt, type: value } : opt
+            ),
+          }
+          : q
+      )
+    );
+  };
+
+  const handleAddAnswerOption = (qIdx) => {
+    setQuestions(prev =>
+      prev.map((q, idx) =>
+        idx === qIdx
+          ? { ...q, answerOptions: [...q.answerOptions, { text: "", type: "P" }] }
+          : q
+      )
+    );
+  };
+
+  const handleRemoveAnswerOption = (qIdx, optIdx) => {
+    setQuestions(prev =>
+      prev.map((q, idx) =>
+        idx === qIdx
+          ? { ...q, answerOptions: q.answerOptions.filter((_, i) => i !== optIdx) }
+          : q
+      )
+    );
+  };
+
+  const handleAddQuestion = () => {
+    setQuestions(prev => [
+      ...prev,
+      {
+        id: Date.now() + Math.random(),
+        text: "",
+        answerType: "",
+        answerOptions: [{ text: "", type: "P" }],
+        isMandatory: false,
+        isAttachmentMandatory: false,
+        weightage: "",
+        tooltip: "",
+        subCategoryId: null,
+        subCategoryName: "",
+      },
+    ]);
+  };
+
+  const handleRemoveQuestion = (qIdx) => {
+    setQuestions(prev => prev.filter((_, idx) => idx !== qIdx));
+  };
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const urlParams = new URLSearchParams(location.search);
+        const token = urlParams.get("token");
+        const res = await fetch(`${baseURL}rfq/events/categories_list?token=${token}`);
+        const json = await res.json();
+        setCategories((json.categories_list || []).map(c => ({
+          label: c.name,
+          value: c.value,
+        })));
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+      }
+    };
+    fetchCategories();
+  }, [location.search]);
+
+  useEffect(() => {
+    if (!selectedCategory) {
+      setSubCategories([]);
+      setSelectedSubCategory(null);
+      return;
+    }
+
+    const fetchSubCategories = async () => {
+      try {
+        const urlParams = new URLSearchParams(location.search);
+        const token = urlParams.get("token");
+        const res = await fetch(
+          `${baseURL}rfq/events/subcategories_list?token=${token}&q[snag_audit_category_id_eq]=${selectedCategory}`
+        );
+        const json = await res.json();
+        setSubCategories((json.subcategories_list || []).map(sc => ({
+          label: sc.name,
+          value: sc.value,
+        })));
+      } catch (err) {
+        console.error("Failed to load subcategories:", err);
+      }
+    };
+
+    fetchSubCategories();
+
+  }, [selectedCategory, location.search]);
+  console.log("questions:------", questions);
+
+  useEffect(() => {
+    // Fetch checklists when user selects "existing"
+    const fetchChecklists = async () => {
+      try {
+        const urlParams = new URLSearchParams(location.search);
+        const token = urlParams.get("token");
+        const res = await fetch(`${baseURL}rfq/events/checklists_list?token=${token}`);
+        const json = await res.json();
+        const opts = (json.checklists_list || []).map((c) => ({
+          label: c.name,
+          value: c.value,
+        }));
+        setChecklistsOptions(opts);
+      } catch (err) {
+        console.error("Failed to load checklists:", err);
+      }
+    };
+
+    if (checklistOption === "existing") {
+      fetchChecklists();
+      // Reset questions when switching to existing mode but no checklist is selected yet
+      if (selectedChecklist === null) {
+        setQuestions([]);
+      }
+    } else if (checklistOption === "create") {
+      // Clear all fetched data and reset to empty state when switching to "create new"
+      setQuestions([
+        {
+          id: Date.now(),
+          text: "",
+          answerType: "",
+          answerOptions: [{ text: "", type: "P" }],
+          isMandatory: false,
+          isAttachmentMandatory: false,
+          weightage: "",
+          tooltip: "",
+          subCategoryId: null,
+          subCategoryName: "",
+        },
+      ]); // <-- Set questions to empty array for create new
+      setSelectedChecklist(null);
+      setFetchedChecklistData(null);
+      // Also reset category and subcategory selections
+      setSelectedCategory(null);
+      setSelectedSubCategory(null);
+    }
+  }, [checklistOption, location.search]);
+
+  useEffect(() => {
+    if (selectedChecklist) {
+      fetch(
+        `${baseURL}rfq/events/snag_checklist_details?token=${token}&checklist_id=${selectedChecklist}`
+      )
+        .then(res => res.json())
+        .then(data => {
+          console.log("Checklist details:", data);
+          setFetchedChecklistData(data);
+          // Set category and subcategory based on fetched data
+          if (data && data.category_id) {
+            // Find the correct category value from categories options
+            const categoryOption = categories.find(cat => cat.value == data.category_id);
+            if (categoryOption) {
+              setSelectedCategory(categoryOption.value);
+              console.log("Setting selectedCategory to:", categoryOption.value, "from data.category_id:", data.category_id);
+            } else {
+              // If not found in options, set directly but this might not show in dropdown
+              setSelectedCategory(data.category_id);
+              console.log("Category option not found, setting directly:", data.category_id);
+            }
+          }
+          // Set the first subcategory as selected (or you can modify this logic as needed)
+          if (data && data.sub_categories && data.sub_categories.length > 0) {
+            // Wait a bit for subcategories to load, then set the subcategory
+            setTimeout(() => {
+              const subCategoryOption = subCategories.find(subCat => subCat.value == data.sub_categories[0].id);
+              if (subCategoryOption) {
+                setSelectedSubCategory(subCategoryOption.value);
+                console.log("Setting selectedSubCategory to:", subCategoryOption.value, "from data.sub_categories[0].id:", data.sub_categories[0].id);
+              } else {
+                // If not found in options, set directly but this might not show in dropdown
+                setSelectedSubCategory(data.sub_categories[0].id);
+                console.log("SubCategory option not found, setting directly:", data.sub_categories[0].id);
+              }
+            }, 500); // Give time for subcategories to load
+          }
+          // Process the checklist data and populate questions
+          if (data && data.sub_categories && data.sub_categories.length > 0) {
+            const allQuestions = [];
+
+            data.sub_categories.forEach(subCategory => {
+              if (subCategory.questions && subCategory.questions.length > 0) {
+                subCategory.questions.forEach(q => {
+                  const questionObj = {
+                    id: Date.now() + Math.random(),
+                    text: q.descr || "",
+                    answerType: "",
+                    answerOptions: [],
+                    isMandatory: q.quest_mandatory || false,
+                    isAttachmentMandatory: q.img_mandatory || false,
+                    weightage: q.weightage || "",
+                    tooltip: q.information || "",
+                    originalId: q.id,
+                    passingScore: q.passing_score || 0,
+                    subCategoryId: subCategory.id,
+                    subCategoryName: subCategory.name,
+                    qtype: q.qtype, // Store original qtype
+                  };
+                  // Map qtype to answerType for UI display
+                  if (q.qtype === "multiple" && q.options && q.options.length > 0) {
+                    questionObj.answerType = "multiple_choice";
+                    questionObj.answerOptions = q.options.map(option => ({
+                      text: option.option_name || option.name || "",
+                      type: option.option_type === "positive" ? "P" : "N"
+                    }));
+                  } else if (q.qtype === "inputbox") {
+                    questionObj.answerType = "input";
+                  } else if (q.qtype === "numeric") {
+                    questionObj.answerType = "numeric";
+                  } else if (q.qtype === "description") {
+                    questionObj.answerType = "textarea";
+                  } else {
+                    // Handle any unmapped qtypes or null qtypes
+                    questionObj.answerType = q.qtype || "input"; // Default to input if qtype is null
+                  }
+
+                  allQuestions.push(questionObj);
+                });
+              }
+            });
+            if (allQuestions.length > 0) {
+              setQuestions(allQuestions);
+            }
+          }
+        })
+        .catch(err => {
+          console.error("Failed to fetch checklist details:", err);
+        });
+    } else if (checklistOption === "existing") {
+      // Clear questions when no checklist is selected in existing mode
+      setQuestions([]);
+      setFetchedChecklistData(null);
+    }
+  }, [selectedChecklist, checklistOption, location.search, categories, subCategories]);
+
+  const fetchTermsAndConditions = async () => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+    try {
+      const response = await fetch(
+        `${baseURL}rfq/events/terms_and_conditions?token=${token}&page=1`
+      );
+      const data = await response.json();
+      const termsList = data.list.map((term) => ({
+        label: term.condition_category,
+        value: term.id,
+        condition: term.condition,
+      }));
+      setTermsOptions(termsList);
+    } catch (error) {
+      console.error("Error fetching terms and conditions:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTermsAndConditions();
+  }, []);
+
+  const handleEventConfigurationSubmit = (config) => {
+    setEventType(config.event_type);
+    setAwardType(config.award_scheme);
+    setSelectedStrategy(config.event_configuration);
+    setDynamicExtension(config.dynamic_time_extension);
+    setDynamicExtensionConfigurations({
+      time_extension_type: config.time_extension_type,
+      triggered_time_extension_on_last: config.triggered_time_extension_on_last,
+      extend_event_time_by: config.extend_event_time_by,
+      time_extension_change: config.time_extension_change,
+      delivery_date: config.delivery_date,
+    });
+    handleEventTypeModalClose();
+
+    let eventTypeText = "";
+    if (config.event_type === "rfq") {
+      eventTypeText = "RFQ";
+      setIsService(false);
+    } else if (config.event_type === "auction") {
+      eventTypeText = "Auction";
+      setIsService(false);
+    } else if (config.event_type === "contract") {
+      eventTypeText = "Contract";
+      setIsService(true);
+    } else {
+      alert("Please select a valid event type.");
+      return;
+    }
+    setEventTypeText(eventTypeText);
+  };
+
+  const fetchEventData = async () => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+    try {
+      const response = await fetch(
+        `${baseURL}rfq/events/${id}?token=${token}`
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setEventDetails(data);
+      }
+    } catch (error) {
+      console.error("Error fetching event details:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchEventData();
+  }, [setEventDetails]);
+
+  // Enhanced vendor fetching function with MultiSelector support
+  const fetchVendorsWithMaterialFilter = async (page = 1, searchTerm = "", selectedMaterialIds = [], selectedCity = "") => {
+    setLoading(true);
+    try {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+
+      // Determine which material IDs to use for filtering
+      let materialIdsForFilter;
+      if (selectedMaterialIds && selectedMaterialIds.length > 0) {
+        materialIdsForFilter = selectedMaterialIds;
+      } else {
+        // Use eventDetails material IDs or inventoryTypeId as fallback
+        materialIdsForFilter = eventDetails?.event_materials?.map(mat => mat.inventory_id) || inventoryTypeId || [];
+      }
+
+      // Construct API URL with proper parameters
+      const apiUrl = `${baseURL}rfq/events/vendor_list?token=${token}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${encodeURIComponent(searchTerm)}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(materialIdsForFilter)}`;
+
+      // console.log("Fetching vendors with URL:", apiUrl);
+
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+
+      // console.log("Vendor API response:", data);
+
+      const vendors = Array.isArray(data.vendors) ? data.vendors : [];
+
+      const formattedData = vendors.map((vendor) => ({
+        id: vendor.id,
+        name: vendor.full_name || "-",
+        email: vendor.email || "-",
+        organisation: vendor.organization_name || "-",
+        phone: vendor.contact_number || vendor.mobile || "-",
+        city: vendor.city_id || "-",
+        tags: vendor.tags || "-",
+        pms_supplier_id: vendor.id,
+        pms_inventory_type_id: vendor.pms_inventory_type_id || [],
+        selected: vendor.selected || false, // Include selected status from API
+      }));
+
+      // Automatically add pre-selected vendors to selectedVendors and selectedRows
+      const preSelectedVendors = vendors.filter(vendor => vendor.selected === true);
+      if (preSelectedVendors.length > 0) {
+        const preSelectedFormatted = preSelectedVendors.map((vendor) => ({
+          id: vendor.id,
+          name: vendor.full_name || "-",
+          email: vendor.email || "-",
+          organisation: vendor.organization_name || "-",
+          phone: vendor.contact_number || vendor.mobile || "-",
+          city: vendor.city_id || "-",
+          tags: vendor.tags || "-",
+          pms_supplier_id: vendor.id,
+          pms_inventory_type_id: vendor.pms_inventory_type_id || [],
+        }));
+
+        // Update selectedVendors (avoiding duplicates)
+        setSelectedVendors((prev) => {
+          const existingIds = prev.map(v => v.pms_supplier_id);
+          const newVendors = preSelectedFormatted.filter(v => !existingIds.includes(v.pms_supplier_id));
+          return [...prev, ...newVendors];
+        });
+
+        // Update selectedRows for checkbox state (avoiding duplicates)
+        setSelectedRows((prev) => {
+          const existingIds = prev.map(v => v.id);
+          const newRows = preSelectedFormatted.filter(v => !existingIds.includes(v.id));
+          return [...prev, ...newRows];
+        });
+      }
+
+      const apiPages = data?.pagination?.total_pages || 1;
+      const apiCount = data?.pagination?.total_count || 0;
+
+      setFilteredTableData(formattedData);
+      setCurrentPage(page);
+      setTotalCount(apiCount);
+      setApiTotalPages(apiPages);
+
+      return { formattedData, totalPages: apiPages, totalCount: apiCount };
+    } catch (error) {
+      console.error("Error fetching vendor data:", error);
+      setFilteredTableData([]);
+      return { formattedData: [], totalPages: 1, totalCount: 0 };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
+    setLoading(true);
+    try {
+      let formattedData = [];
+      let totalPages = 1;
+      let totalCount = 0; // Add this variable
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+      // Wait for the inventoryTypeId to settle (with a timeout)
+      setTimeout(async () => {
+        if (inventoryTypeId.length > 0) {
+          const response = await fetch(
+            `${baseURL}rfq/events/vendor_list?token=${token}&event_id=${id}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
+              inventoryTypeId
+            )}`
+          );
+          const data = await response.json();
+
+          // Store pms_inventory_type_id from the first vendor (or all vendors if needed)
+          if (Array.isArray(data.vendors) && data.vendors.length > 0) {
+            const firstVendor = data.vendors[0];
+            setInventoryTypeId(firstVendor.pms_inventory_type_id || [75, 78, 65, 66, 67, 68, 64, 63]);
+          }
+
+          // console.log("data from fetch with inventoryTypeId:", data);
+
+          const vendors = Array.isArray(data.vendors)
+            ? data.vendors
+            : Array.isArray(data.data?.vendors)
+              ? data.data.vendors
+              : [];
+
+          formattedData = vendors.map((vendor) => ({
+            id: vendor.id,
+            name: vendor.full_name || "-",
+            email: vendor.email || "-",
+            organisation: vendor.organization_name || "-",
+            phone: vendor.contact_number || vendor.mobile || "-",
+            city: vendor.city_id || "-",
+            tags: vendor.tags || "-",
+            pms_inventory_type_id: vendor.pms_inventory_type_id || [75, 78, 65, 66, 67, 68, 64, 63],
+          }));
+
+          totalPages =
+            data?.pagination?.total_pages ||
+            data?.data?.pagination?.total_pages ||
+            1;
+          totalCount =
+            data?.pagination?.total_count ||
+            data?.data?.pagination?.total_count ||
+            0; // Get total count from API
+
+          setTableData(formattedData);
+
+          setSelectedVendors((prev) => {
+            const newVendors = formattedData.filter(
+              (vendor) =>
+                !prev.some(
+                  (existingVendor) => existingVendor.phone === vendor.phone
+                )
+            );
+            return [
+              ...prev,
+              ...newVendors.map((vendor) => ({
+                ...vendor,
+                id: null,
+                pms_supplier_id: vendor.id, // Assuming pms_supplier_id is the same as id
+              })),
+            ];
+          });
+          setCurrentPage(page);
+          setTotalCount(totalCount); // Set the total count
+        } else {
+          const response = await fetch(
+            `${baseURL}rfq/events/vendor_list?token=${token}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
+          );
+          const data = await response.json();
+          const vendors = Array.isArray(data.vendors) ? data.vendors : [];
+
+          formattedData = vendors.map((vendor) => ({
+            id: vendor.id,
+            name: vendor.full_name || "-",
+            email: vendor.email || "-",
+            organisation: vendor.organization_name || "-",
+            phone: vendor.contact_number || vendor.mobile || "-",
+            city: vendor.city_id || "-",
+            tags: vendor.tags || "-",
+            pms_inventory_type_id: vendor.pms_inventory_type_id
+          }));
+
+          totalPages = data?.pagination?.total_pages || 1;
+          totalCount = data?.pagination?.total_count || 0; // Get total count from API
+
+          setTableData(formattedData);
+          setCurrentPage(page);
+          setTotalCount(totalCount); // Set the total count
+        }
+      }, 2000); // Delay API call by 2 seconds
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEventData();
+    fetchData();
+  }, []);
+
+  // Ensure filteredTableData includes pms_inventory_type_id for each vendor
+  useEffect(() => {
+    if (tableData && Array.isArray(tableData)) {
+
+      const fallbackInventoryTypeId = [75, 78, 65, 66, 67, 68, 64, 63];
+      setFilteredTableData(
+        tableData.map(vendor => ({
+          ...vendor,
+          pms_inventory_type_id: vendor.pms_inventory_type_id || fallbackInventoryTypeId,
+        }))
+      );
+    }
+  }, [tableData]);
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+    fetch(`${baseURL}rfq/events/material_types?token=${token}`)
+      .then(res => res.json())
+      .then(data => {
+        setMaterialSelectList(
+          (data.inventory_types || []).map(item => ({
+            value: item.value, // or item.value, depending on API
+            label: item.name // or item.label
+          }))
+        );
+
+        // console.log("Fetched material types:", data, materialSelectList);
+
+      });
+  }, [eventDetails?.event_materials]);
+
+  useEffect(() => {
+    if (eventDetails?.event_materials?.[0]?.inventory_type_id && materialSelectList?.length > 0) {
+      const defaultOption = materialSelectList.find(
+        (opt) => String(opt.value) === String(eventDetails.event_materials[0].inventory_type_id)
+      );
+      if (defaultOption) {
+        setMultiSelectorValue([defaultOption]);
+      }
+    }
+  }, [eventDetails?.event_materials, materialSelectList]);
+
+
+  useEffect(() => {
+    if (eventDetails) {
+      seteventName(eventDetails?.event_title);
+      seteventNumber(eventDetails?.event_no);
+      setSelectedTemplate(eventDetails?.applied_event_template?.event_template_id);
+      setEventStatus(eventDetails?.status);
+      setEventTypeText(eventDetails?.event_type_detail?.event_type);
+      setEventDescription(eventDetails?.event_description);
+
+      // Determine if this is a service event based on content_type in event materials
+      if (eventDetails?.event_materials?.length > 0) {
+        const hasServiceMaterial = eventDetails.event_materials.some(material =>
+          material.content_type === "service"
+        );
+        setIsService(hasServiceMaterial);
+      }
+
+      setScheduleData({
+        start_time: eventDetails?.event_schedule?.start_time,
+        end_time_duration: eventDetails?.event_schedule?.end_time,
+        evaluation_time: eventDetails?.event_schedule?.evaluation_time,
+      });
+      setStart_time(eventDetails?.event_schedule?.start_time);
+      setEnd_time(eventDetails?.event_schedule?.end_time);
+      setEvaluation_time(eventDetails?.event_schedule?.evaluation_time);
+      setStatusLogData(eventDetails?.status_logs);
+      setEditableStatusLogData(eventDetails?.status_logs || []);
+      setGroupedData(eventDetails?.grouped_event_materials);
+
+      const materials = eventDetails?.event_materials || [];
+      const parsedMaterials = materials.map((material) => {
+        const dynamicFields = Object.keys(material).reduce((acc, key) => {
+          if (
+            ![
+              "id", "inventory_id", "quantity", "uom", "location", "rate",
+              "amount", "section_name", "inventory_type_id", "inventory_sub_type_id", "_destroy"
+            ].includes(key)
+          ) {
+            acc[key] = material[key] || "";
+          }
+          return acc;
+        }, {});
+
+        return {
+          id: material.id,
+          descriptionOfItem: material.descriptionOfItem || material.inventory_name || material.service_name || "",
+          inventory_id: material.inventory_id,
+          service_id: material.service_id,
+          content_type: material.content_type || "material",
+          quantity: material.quantity,
+          unit: material.unit,
+          location: material.location,
+          rate: material.rate,
+          amount: material.amount,
+          section_id: material.section_name || material.section_id,
+          inventory_type_id: material.inventory_type_id,
+          inventory_sub_type_id: material.inventory_sub_type_id,
+          // Service-specific fields
+          service_type_name: material.service_type_name,
+          service_sub_type_name: material.service_sub_type_name,
+          service_name: material.service_name,
+          ...dynamicFields,
+        };
+      });
+
+      setMaterialFormData(parsedMaterials);
+
+      // Bind checklist data if available
+      if (eventDetails?.checklist_details && eventDetails.checklist_details.length > 0) {
+        const checklist = eventDetails.checklist_details[0];
+        setChecklistName(checklist.name || "");
+        setSelectedCategory(checklist.category_id);
+
+        // Flatten subcategories/questions into questions state
+        const flattenedQuestions = [];
+        if (checklist.sub_categories && checklist.sub_categories.length > 0) {
+          checklist.sub_categories.forEach(subCat => {
+            if (subCat.questions && subCat.questions.length > 0) {
+              subCat.questions.forEach(q => {
+                flattenedQuestions.push({
+                  id: q.id || Date.now() + Math.random(),
+                  text: q.descr || "",
+                  answerType: mapQTypeToAnswerType(q.qtype),
+                  answerOptions: q.options ? q.options.map(option => ({
+                    text: option.option_name || option.name || "",
+                    type: option.option_type === "positive" ? "P" : "N"
+                  })) : [{ text: "", type: "P" }],
+                  isMandatory: q.quest_mandatory || false,
+                  isAttachmentMandatory: q.img_mandatory || false,
+                  weightage: q.weightage || "",
+                  tooltip: q.information || "",
+                  passingScore: q.passing_score || "",
+                  subCategoryId: subCat.id,
+                  subCategoryName: subCat.name,
+                  originalId: q.id,
+                  qtype: q.qtype, // Store original qtype for reference
+                });
+              });
+            }
+          });
+        }
+
+        if (flattenedQuestions.length > 0) {
+          setQuestions(flattenedQuestions);
+          setChecklistOption("create"); // Set to create mode to show the bound data
+        }
+      }
+
+      setSelectedVendors(
+        eventDetails?.event_vendors?.map((vendor) => ({
+          id: vendor.id,
+          name: vendor.full_name,
+          organisation: vendor.organization_name,
+          phone: vendor.phone,
+          pms_supplier_id: vendor.pms_supplier_id,
+        }))
+      );
+
+      setSpecificationData(eventDetails?.mor_inventory_specifications);
+    }
+  }, [eventDetails, termsOptions]);
+
+  const [documentRowsInitialized, setDocumentRowsInitialized] = useState(false);
+
+  // console.log("event", eventDetails?.start_time, eventDetails?.end_time, eventDetails?.event_schedule?.start_time, eventDetails?.event_schedule?.end_time);
+
+  useEffect(() => {
+    if (eventDetails?.start_time && !documentRowsInitialized) {
+      seteventName(eventDetails?.event_title);
+      setSelectedTemplate(
+        eventDetails?.applied_event_template?.event_template_id
+      );
+      setEventStatus(eventDetails?.status);
+      setEventTypeText(eventDetails?.event_type_detail?.event_type);
+      setEventDescription(eventDetails?.event_description);
+      // console.log("eventSchedule", eventDetails);
+
+      // Format the schedule text with proper timezone handling
+      if (eventDetails?.event_schedule?.start_time && eventDetails?.event_schedule?.end_time) {
+        const formatDateTime = (dateTime) => {
+          // Parse the UTC date string and format it directly without timezone conversion
+          const utcDate = new Date(dateTime);
+
+          // Extract UTC components directly
+          const day = String(utcDate.getUTCDate()).padStart(2, '0');
+          const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
+          const year = String(utcDate.getUTCFullYear()).slice(-2);
+          let hours = utcDate.getUTCHours();
+          const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0');
+
+          // Convert to 12-hour format
+          const ampm = hours >= 12 ? 'pm' : 'am';
+          hours = hours % 12;
+          hours = hours ? hours : 12; // the hour '0' should be '12'
+          const formattedHours = String(hours).padStart(2, '0');
+
+          return `${day}/${month}/${year}, ${formattedHours}:${minutes} ${ampm}`;
+        };
+
+        const startDateTime = formatDateTime(eventDetails.event_schedule.start_time);
+        const endDateTime = formatDateTime(eventDetails.event_schedule.end_time);
+        setEventScheduleText(`${startDateTime} to ${endDateTime}`);
+      }
+
+      // Fix: Update // console.log to use the correct properties
+      // console.log("eventScheduleText:-", eventScheduleText, `${new Date(eventDetails?.event_schedule?.start_time).toLocaleString()} ~ ${new Date(
+      //   eventDetails?.event_schedule?.end_time
+      // ).toLocaleString()}`);
+
+      setStart_time(eventDetails?.event_schedule?.start_time);
+      setEnd_time(eventDetails?.event_schedule?.end_time);
+      setEvaluation_time(eventDetails?.event_schedule?.evaluation_time);
+      setStatusLogData(eventDetails?.status_logs);
+
+      // Properly initialize documentRows with existing attachments
+      const existingAttachments = eventDetails?.attachments?.map((attachment, index) => ({
+        id: attachment.id,
+        srNo: index + 1,
+        fileName: attachment.document_name || attachment.filename,
+        fileType: attachment.content_type,
+        uploadDate: attachment.created_at ? new Date(attachment.created_at).toISOString().slice(0, 19) : "",
+        fileUrl: attachment.file_url || attachment.url,
+        isExisting: true,
+        blob_id: attachment.blob_id,
+        created_at: attachment.created_at,
+        updated_at: attachment.updated_at,
+        // Keep original attachment data for payload
+        originalAttachment: attachment
+      })) || [];
+
+      // If no existing attachments, add one empty row for new uploads
+      if (existingAttachments.length === 0) {
+        setDocumentRows([{ srNo: 1, upload: null, isExisting: false }]);
+      } else {
+        // Set existing attachments and add one empty row for new uploads
+        setDocumentRows([
+          ...existingAttachments,
+          { srNo: existingAttachments.length + 1, upload: null, isExisting: false }
+        ]);
+      }
+
+      setDocumentRowsInitialized(true);
+      setGroupedData(
+        eventDetails?.grouped_event_materials
+      )
+      setMaterialFormData(
+        eventDetails?.event_materials?.map((material) => {
+          const dynamicFields = Object.keys(material).reduce((acc, key) => {
+            if (
+              ![
+                "id",
+                "inventory_id",
+                "quantity",
+                "uom",
+                "location",
+                "rate",
+                "amount",
+                "section_name",
+                "inventory_type_id",
+                "inventory_sub_type_id",
+                "_destroy",
+              ].includes(key)
+            ) {
+              acc[key] = material[key] || ""; // Default to an empty string if null
+            }
+            return acc;
+          }, {});
+
+          return {
+            id: material.id,
+            descriptionOfItem:
+              material.descriptionOfItem || material.inventory_name || "",
+            inventory_id: material.inventory_id,
+            quantity: material.quantity,
+            unit: material.unit,
+            location: material.location,
+            rate: material.rate,
+            amount: material.amount,
+            section_id: material.section_name || material.section_id,
+            inventory_type_id: material.inventory_type_id,
+            inventory_sub_type_id: material.inventory_sub_type_id,
+            ...dynamicFields, // Include all dynamic fields
+          };
+        })
+      );
+      // setInventoryTypeId(
+      //   ...new Set(
+      //     materialFormData
+      //       ?.filter((item) => item?.inventory_type_id)
+      //       .map((item) => item?.inventory_type_id)
+      //   )
+      // );
+      // // console.log("materialFormData", materialFormData, inventoryTypeId); // Debug line
+
+      setSelectedVendors(
+        eventDetails?.event_vendors?.map((vendor) => ({
+          id: vendor.id,
+          name: vendor.full_name,
+          organisation: vendor.organization_name,
+          phone: vendor.phone,
+          pms_supplier_id: vendor.pms_supplier_id,
+        }))
+      );
+      // // console.log("eventDetails:---",eventDetails);
+
+      setSpecificationData(eventDetails?.mor_inventory_specifications);
+    }
+  }, [eventDetails, termsOptions, documentRowsInitialized]);
+
+  useEffect(() => {
+    if (eventDetails?.resource_term_conditions?.length > 0) {
+      setIsTextId(true);
+    }
+
+    setTextareas(
+      eventDetails?.resource_term_conditions?.map((term) => {
+        return {
+          textareaId: term.term_condition_id,
+          id: term.id || null,
+          value: term.term_condition.condition,
+          defaultOption: matchedTerm
+            ? { label: matchedTerm?.label, value: matchedTerm?.value }
+            : { label: "Select Condition", value: "" },
+        };
+      })
+    );
+    eventDetails?.resource_term_conditions?.forEach((term) => {
+      setMatchedTerm(
+        termsOptions.find((option) => option.value === term.term_condition_id)
+      );
+    });
+  }, [eventDetails, matchedTerm]);
+
+  const handleCheckboxChange = (vendor, isChecked) => {
+    if (isChecked) {
+      setSelectedRows((prev) => [...prev, vendor]);
+    } else {
+      setSelectedRows((prev) => prev.filter((item) => item.id !== vendor.id));
+      // Also remove from selectedVendors when unchecked
+      setSelectedVendors((prev) => prev.filter((item) => item.pms_supplier_id !== vendor.id));
+    }
+  };
+
+  const isVendorSelected = (vendorId) => {
+    return (
+      selectedRows.some((vendor) => vendor.id === vendorId) ||
+      selectedVendors.some((vendor) => vendor.pms_supplier_id === vendorId) ||
+      filteredTableData.some((vendor) => vendor.id === vendorId && vendor.selected === true)
+    );
+  };
+
+  const handleAddTextarea = () => {
+    setTextareas([...textareas, { id: Date.now(), value: "", textareaId: 0 }]);
+    setShowSelectBox(false);
+    setAddTerm(true);
+  };
+
+  const handleRemoveTextarea = (index) => {
+    const updatedTextareas = textareas.map((textarea) => {
+      if (textarea.id === index) {
+        // If it's an existing item (has a valid database ID), mark it for destruction
+        const isValidId =
+          (typeof textarea.id === "string" && textarea.id.length < 10) ||
+          (typeof textarea.id === "number" && String(textarea.id).length < 10);
+
+        if (isValidId) {
+          return { ...textarea, _destroy: true };
+        } else {
+          // If it's a new item (Date.now() id), return null to filter it out
+          return null;
+        }
+      }
+      return textarea;
+    }).filter(Boolean); // Remove null items (new items that were deleted)
+
+    setTextareas(updatedTextareas);
+  };
+
+  const handleConditionChange = (id, selectedOption) => {
+    const selectedCondition = termsOptions.find(
+      (option) => String(option.value) === String(selectedOption)
+    );
+
+    if (selectedCondition) {
+      setTextareas(
+        textareas.map((textarea) =>
+          textarea.id === id
+            ? {
+              id: textarea.id,
+              value: selectedCondition.condition,
+              textareaId: selectedCondition.value,
+            }
+            : textarea
+        )
+      );
+      setShowSelectBox(true);
+    }
+  };
+
+  const handleAddDocumentRow = () => {
+    setDocumentRows(prevRows => [
+      ...prevRows,
+      { srNo: prevRows.length + 1, upload: null }
+    ]);
+  };
+
+  const handleRemoveDocumentRow = (index) => {
+    setDocumentRows((prevRows) => {
+      if (prevRows.length === 1) return prevRows;
+      const updatedRows = [...prevRows];
+      updatedRows.splice(index, 1);
+      updatedRows.forEach((row, i) => (row.srNo = i + 1));
+      documentRowsRef.current = updatedRows;
+      return updatedRows;
+    });
+  };
+
+  const handleFileChange = (index, file) => {
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result.split(",")[1];
+      setDocumentRows((prevRows) => {
+        const updatedRows = [...prevRows];
+        if (updatedRows[index]) {
+          const { id, blob_id, created_at, updated_at, ...rest } =
+            updatedRows[index];
+          updatedRows[index] = {
+            ...rest,
+            upload: {
+              filename: file.name,
+              content: base64String,
+              content_type: file.type,
+            },
+          };
+        }
+        documentRowsRef.current = updatedRows;
+        return updatedRows;
+      });
+    };
+
+    reader.readAsDataURL(file);
+
+    const inputElement = document.getElementById(`file-input-${index}`);
+    if (inputElement) {
+      inputElement.value = "";
+    }
+  };
+
+
+  const fetcher = (url, options) =>
+    fetch(url, options).then((res) => res.json());
+
+  const updateEvent = async (id, eventData) => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+    const url = `${baseURL}rfq/events/${id}?token=${token}`;
+    const options = {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(eventData),
+    };
+
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update event.");
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleOnLoadScheduleData = (startTime, endTime, evaluationTime) => {
+    setOnLoadScheduleData({
+      start_time: startTime,
+      end_time_duration: endTime,
+      evaluation_time: evaluationTime,
+    });
+  };
+
+  const scrollToTop = () => {
+    if (myRef.current) {
+      myRef.current.scrollIntoView({ behavior: "smooth", top: 0 });
+    }
+  };
+
+  const validateForm = () => {
+    if (!eventName) {
+      toast.error("Event name is required");
+      scrollToTop();
+      return false;
+    }
+    if (!createdOn) {
+      toast.error("Created on date is required");
+      scrollToTop();
+      return false;
+    }
+    if (!onLoadScheduleData?.start_time && !scheduleData?.start_time) {
+      toast.error("Start time is required");
+      scrollToTop();
+      return false;
+    }
+    if (
+      !onLoadScheduleData?.end_time_duration ||
+      !scheduleData?.end_time_duration
+    ) {
+      toast.error("End time duration is required");
+      scrollToTop();
+      return false;
+    }
+    if (
+      !onLoadScheduleData?.evaluation_time &&
+      !scheduleData?.evaluation_time
+    ) {
+      toast.error("Evaluation time is required");
+      scrollToTop();
+      return false;
+    }
+    if (selectedVendors.length === 0) {
+      toast.error("At least one vendor must be selected");
+      return false;
+    }
+    return true;
+  };
+
+  const eventData2 = {
+    event: {
+      event_vendors_attributes:
+        selectedVendors ||
+        [].map((vendor) => ({
+          status: 1,
+          pms_supplier_id: vendor.pms_supplier_id,
+          id: vendor.id,
+        })),
+      status_logs_attributes: [
+        {
+          status: "pending",
+          created_by_id: 2,
+          remarks: "Initial status",
+          comments: "No comments",
+        },
+      ],
+    },
+  };
+
+  const [eventData1, setEventData1] = useState(eventData2);
+
+  // Convert datetime to UTC ISO string format with Z
+  const toUTCISOString = (dateTime) => {
+    if (!dateTime) return "";
+
+    // If dateTime is already in correct ISO string format with Z, just return it
+    if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
+      return dateTime;
+    }
+
+    // If it's a Date object or timestamp, convert it to UTC
+    const date = new Date(dateTime);
+    if (isNaN(date.getTime())) return "";
+
+    // Return ISO string in UTC format with Z
+    return date.toISOString();
+  };
+
+  // Convert datetime to UTC ISO string format with Z for end time
+  const toUTCEndTimeString = (dateTime) => {
+    if (!dateTime) return "";
+
+    // If dateTime is already in correct ISO string format with Z, just return it
+    if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
+      return dateTime;
+    }
+
+    // If it's a Date object or timestamp, convert it to UTC
+    const date = new Date(dateTime);
+    if (isNaN(date.getTime())) return "";
+
+    // Return ISO string in UTC format with Z
+    return date.toISOString();
+  };
+
+  // Convert datetime to UTC ISO string format with Z for start time
+  const toUTCStartTimeString = (dateTime) => {
+    if (!dateTime) return "";
+
+    // If dateTime is already in correct ISO string format with Z, just return it
+    if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
+      return dateTime;
+    }
+
+    // If it's a Date object or timestamp, convert it to UTC
+    const date = new Date(dateTime);
+    if (isNaN(date.getTime())) return "";
+
+    // Return ISO string in UTC format with Z
+    return date.toISOString();
+  };
+
+
+  const handleSubmit = async (event) => {
+    setLoading(true);
+    event.preventDefault();
+
+    if (!eventName || !createdOn || selectedVendors.length === 0) {
+      scrollToTop();
+      toast.error("Please fill all the required fields.", {
+        autoClose: 1000,
+      });
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
+
+      return;
+    }
+
+    // Validate checklist fields if creating a new checklist
+    if (checklistOption === "create" && questions.length > 0) {
+      if (!checklistName.trim()) {
+        scrollToTop();
+        toast.error("Please enter a checklist title.", {
+          autoClose: 1000,
+        });
+        setTimeout(() => {
+          setLoading(false);
+        }, 500);
+        return;
+      }
+
+      // Check if all questions have subcategories selected
+      const questionsWithoutSubCategory = questions.filter(q => !q.subCategoryId);
+      if (questionsWithoutSubCategory.length > 0) {
+        scrollToTop();
+        toast.error("Please select a sub-category for all questions.", {
+          autoClose: 1000,
+        });
+        setTimeout(() => {
+          setLoading(false);
+        }, 500);
+        return;
+      }
+    }
+
+    setSubmitted(true);
+
+    // Build attachments from current documentRows - include ALL rows unless they're empty new rows
+    const attachments = documentRows
+      .filter(row => {
+        // Include existing attachments that haven't been removed
+        if (row.isExisting && row.id) {
+          return true;
+        }
+        // Include existing attachments that may not have isExisting flag but have id/blob_id
+        if (row.id && (row.blob_id || row.document_name || row.content_type)) {
+          return true;
+        }
+        // Include new uploads that have content
+        if (row.upload && row.upload.filename) {
+          return true;
+        }
+        // Exclude empty rows without upload or id
+        return false;
+      })
+      .map(row => {
+        // Handle existing attachments with new uploads (replacements)
+        if (row.isExisting && row.upload && row.upload.filename) {
+          return {
+            // For replacement, send as new upload but include original id for reference
+            id: row.originalAttachment?.id || row.id,
+            filename: row.upload.filename,
+            content: row.upload.content,
+            content_type: row.upload.content_type,
+            document_name: row.upload.filename,
+            _replace: true, // Flag to indicate this is a replacement
+          };
+        }
+        // Handle properly initialized existing attachments (no replacement)
+        else if (row.isExisting && row.originalAttachment && !row.upload) {
+          return {
+            id: row.originalAttachment.id,
+            document_name: row.fileName || row.originalAttachment.document_name,
+            content_type: row.originalAttachment.content_type,
+            blob_id: row.originalAttachment.blob_id,
+            created_at: row.originalAttachment.created_at,
+            updated_at: row.originalAttachment.updated_at,
+            url: row.originalAttachment.url,
+            doc_path: row.originalAttachment.doc_path,
+            blob_created_at: row.originalAttachment.blob_created_at,
+            active: row.originalAttachment.active,
+            relation: row.originalAttachment.relation,
+            relation_id: row.originalAttachment.relation_id,
+            created_by: row.originalAttachment.created_by,
+            filename: row.originalAttachment.filename,
+          };
+        }
+        // Handle existing attachments that came directly from API (no replacement)
+        else if (row.id && (row.blob_id || row.document_name || row.content_type) && !row.upload) {
+          return {
+            id: row.id,
+            document_name: row.document_name || row.fileName,
+            content_type: row.content_type || row.fileType,
+            blob_id: row.blob_id,
+            created_at: row.created_at,
+            updated_at: row.updated_at,
+            url: row.url,
+            doc_path: row.doc_path,
+            blob_created_at: row.blob_created_at,
+            active: row.active,
+            relation: row.relation,
+            relation_id: row.relation_id,
+            created_by: row.created_by,
+            filename: row.filename,
+          };
+        }
+        // Handle existing attachments with new uploads (direct API structure)
+        else if (row.id && row.upload && row.upload.filename) {
+          return {
+            id: row.id,
+            filename: row.upload.filename,
+            content: row.upload.content,
+            content_type: row.upload.content_type,
+            document_name: row.upload.filename,
+            _replace: true, // Flag to indicate this is a replacement
+          };
+        }
+        // Handle new uploads - pass in the same format structure
+        else if (row.upload && row.upload.filename) {
+          return {
+            filename: row.upload.filename,
+            content: row.upload.content,
+            content_type: row.upload.content_type,
+            document_name: row.upload.filename,
+          };
+        }
+        return null;
+      })
+      .filter(Boolean); // Remove any null entries
+
+    console.log("Processed attachments for payload:", attachments);
+    console.log("Current documentRows:", documentRows);
+
+    // Function to generate checklist payload
+    const generateChecklistPayload = () => {
+      if (checklistOption === "existing" && fetchedChecklistData) {
+        // If using existing checklist, send the fetched checklist data in correct format
+        return {
+          id: fetchedChecklistData.id,
+          name: fetchedChecklistData.name,
+          check_type: fetchedChecklistData.check_type,
+          category_id: fetchedChecklistData.category_id,
+          sub_categories: fetchedChecklistData.sub_categories?.map(subCat => ({
+            id: subCat.id,
+            name: subCat.name,
+            questions: subCat.questions?.map(q => ({
+              id: q.id,
+              descr: q.descr,
+              qtype: q.qtype,
+              quest_mandatory: q.quest_mandatory,
+              img_mandatory: q.img_mandatory,
+              passing_score: q.passing_score,
+              weightage: q.weightage,
+              information: q.information,
+              options: q.options || []
+            })) || []
+          })) || []
+        };
+      } else if (checklistOption === "create" && questions.length > 0) {
+        // Group questions by sub category for new checklist
+        const subCategoriesMap = {};
+
+        questions.forEach(q => {
+          console.log("selectedCategory:---", selectedCategory, q);
+
+          const subCatId = q.subCategoryId || selectedSubCategory;
+          const subCatName = q.subCategoryName || subCategories.find(subCat => subCat.value === subCatId)?.label || "";
+
+          if (!subCategoriesMap[subCatId]) {
+            subCategoriesMap[subCatId] = {
+              id: subCatId,
+              name: subCatName,
+              questions: []
+            };
+          }
+
+          const questionObj = {
+            descr: q.text,
+            quest_mandatory: q.isMandatory,
+            img_mandatory: q.isAttachmentMandatory,
+            weightage: q.weightage || 0,
+            information: q.tooltip,
+            passing_score: q.passingScore || 10
+          };
+
+          // Map answer types to API format
+          if (q.answerType === "multiple_choice") {
+            questionObj.qtype = "multiple";
+            questionObj.options = q.answerOptions.map(option => ({
+              option_name: option.text,
+              option_type: option.type === "P" ? "positive" : "negative"
+            }));
+          } else if (q.answerType === "input") {
+            questionObj.qtype = "inputbox";
+            questionObj.options = [];
+          } else if (q.answerType === "numeric") {
+            questionObj.qtype = "numeric";
+            questionObj.options = [];
+          } else if (q.answerType === "textarea") {
+            questionObj.qtype = "description";
+            questionObj.options = [];
+          }
+
+          subCategoriesMap[subCatId].questions.push(questionObj);
+        });
+
+        return {
+          name: checklistName || "Custom Event Checklist",
+          check_type: "event",
+          category_id: selectedCategory,
+          sub_categories: Object.values(subCategoriesMap)
+        };
+      }
+      return null;
+    };
+
+    // Build the complete eventData object
+    const eventData = {
+      event: {
+        event_title: eventName || eventDetails?.event_title || "",
+        created_on: createdOn || eventDetails?.created_on || "",
+        status: eventStatus || eventDetails?.status || "",
+        event_description: eventDescription || eventDetails?.event_description || "",
+        event_schedule_attributes: {
+          start_time:
+            toUTCStartTimeString(scheduleData.start_time) ||
+            toUTCISOString(start_time) ||
+            (eventDetails?.event_schedule?.start_time) ||
+            "",
+          end_time:
+            toUTCEndTimeString(scheduleData.end_time_duration) ||
+            toUTCISOString(end_time) ||
+            (eventDetails?.event_schedule?.end_time) ||
+            "",
+          evaluation_time:
+            scheduleData.evaluation_time ||
+            evaluation_time ||
+            eventDetails?.event_schedule?.evaluation_time ||
+            "",
+        },
+        event_type_detail_attributes: {
+          event_type: eventType || eventDetails?.event_type_detail?.event_type || "",
+          award_scheme: awardType || eventDetails?.event_type_detail?.award_scheme || "",
+          event_configuration: selectedStrategy || eventDetails?.event_type_detail?.event_configuration || "",
+          time_extension_type:
+            dynamicExtensionConfigurations.time_extension_type ||
+            eventDetails?.event_type_detail?.time_extension_type ||
+            "",
+          triggered_time_extension_on_last:
+            dynamicExtensionConfigurations.triggered_time_extension_on_last ||
+            eventDetails?.event_type_detail?.triggered_time_extension_on_last ||
+            "",
+          extend_event_time_by:
+            Number(dynamicExtensionConfigurations.extend_event_time_by) ||
+            eventDetails?.event_type_detail?.extend_event_time_by ||
+            0,
+          enable_english_auction:
+            typeof eventDetails?.event_type_detail?.enable_english_auction === "boolean"
+              ? eventDetails?.event_type_detail?.enable_english_auction
+              : true,
+          extension_time_min: eventDetails?.event_type_detail?.extension_time_min || 5,
+          extend_time_min: eventDetails?.event_type_detail?.extend_time_min || 10,
+          time_extension_change:
+            dynamicExtensionConfigurations.time_extension_on_change_in ||
+            eventDetails?.event_type_detail?.time_extension_change ||
+            "",
+          delivery_date:
+            dynamicExtensionConfigurations.delivery_date ||
+            eventDetails?.event_type_detail?.delivery_date ||
+            "",
+        },
+        event_materials_attributes: (materialFormData.length > 0
+          ? materialFormData
+          : eventDetails?.event_materials || []
+        ).map((material) => {
+          const dynamicFields = Object.keys(material).reduce((acc, key) => {
+            if (
+              ![
+                "id",
+                "inventory_id",
+                "service_id",
+                "content_type",
+                "quantity",
+                "unit",
+                "location",
+                "rate",
+                "amount",
+                "section_id",
+                "sub_section_id",
+                "inventory_type_id",
+                "inventory_sub_type_id",
+                "_destroy",
+                "descriptionOfItem",
+                "serviceDescription",
+                "subMaterialType",
+                "pms_brand_id",
+                "generic_info_id",
+                "pms_colour_id",
+                "attachments",
+                "type",
+              ].includes(key)
+            ) {
+              acc[key] = material[key] || null;
+            }
+            return acc;
+          }, {});
+
+          return {
+            inventory_id: material.content_type === "service" ? null : (Number(material.inventory_id) || null),
+            service_id: material.content_type === "service" ? (Number(material.service_id) || null) : null,
+            content_type: material.content_type || "material",
+            quantity: Number(material.quantity),
+            uom: material.unit,
+            location: material.location,
+            rate: Number(material.rate),
+            amount: material.amount,
+            sub_section_name: material.sub_section_id,
+            section_name: material.section_id,
+            inventory_type_id: material.inventory_type_id,
+            inventory_sub_type_id: material.inventory_sub_type_id,
+            pms_brand: material.pms_brand_id || null,
+            pms_colour: material.pms_colour_id || null,
+            generic_info_id: material.generic_info_id || null,
+            pms_brand_id: material.pms_brand_id || null,
+            pms_colour_id: material.pms_colour_id || null,
+            type: material.type || null,
+            attachments: material.attachments || [],
+            _destroy: material._destroy || false,
+            ...dynamicFields,
+          };
+        }),
+        event_vendors_attributes: (selectedVendors.length > 0
+          ? selectedVendors
+          : eventDetails?.event_vendors || []
+        ).map((vendor) => ({
+          status: 1,
+          pms_supplier_id: vendor.pms_supplier_id,
+          id: vendor.id,
+        })),
+        status_logs_attributes: editableStatusLogData.map((log) => ({
+          id: log.id || null,
+          status: log.status || "pending",
+          created_by_id: log.created_by_id || 2,
+          remarks: log.remark || log.remarks || "",
+          comments: log.comment || log.comments || "",
+        })),
+        resource_term_conditions_attributes: textareas.map((textarea) => {
+          const isValidId =
+            (typeof textarea.id === "string" && textarea.id.length < 10) ||
+            (typeof textarea.id === "number" && String(textarea.id).length < 10);
+
+          const baseAttributes = {
+            term_condition_id: textarea.textareaId,
+            condition_type: "general",
+            condition: textarea.value,
+          };
+
+          if (textarea._destroy) {
+            return {
+              id: textarea.id,
+              _destroy: true,
+              ...baseAttributes,
+            };
+          }
+
+          return isValidId
+            ? {
+              id: textarea.id,
+              ...baseAttributes,
+            }
+            : {
+              ...baseAttributes,
+            };
+        }),
+        // Include ALL attachments (existing + new)
+        attachments,
+        applied_event_template: {
+          event_template_id:
+            selectedTemplate || eventDetails?.applied_event_template?.event_template_id,
+          applied_bid_template_fields_attributes: (bidTemplateFields.length > 0
+            ? bidTemplateFields
+            : eventDetails?.applied_event_template?.applied_bid_template_fields || []
+          ).map((field) => ({
+            field_name: field.field_name,
+            is_required: field.is_required,
+            is_read_only: field.is_read_only,
+            field_owner: field.field_owner,
+            extra_fields: field.extra_fields || null,
+          })),
+          applied_bid_material_template_fields_attributes: (additionalFields.length > 0
+            ? additionalFields
+            : eventDetails?.applied_event_template?.applied_bid_material_template_fields || []
+          )
+            .filter((field) => field.field_name !== "Sr no.")
+            .map((field) => ({
+              field_name: field.field_name,
+              is_required: field.is_required || false,
+              is_read_only: field.is_read_only || false,
+              field_owner: field.field_owner || "user",
+              field_type: field.field_type || "string",
+              extra_fields: field.extra_fields || null,
+            })),
+        },
+        checklist: generateChecklistPayload(),
+      },
+    };
+
+    console.log("eventData with all attachments:--", JSON.stringify(eventData.attachments, null, 2));
+
+    try {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+      console.log("payload :----", JSON.stringify(eventData));
+
+      const response = await fetch(
+        `${baseURL}rfq/events/${id}?token=${token}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(eventData),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success("Event updated successfully!", { autoClose: 1000 });
+        setTimeout(() => {
+          navigate(
+            `/event-list?token=${token}`
+          );
+        }, 1500);
+      } else {
+        const errorData = await response.json();
+        toast.error(
+          errorData.message || "Failed to update event. Please try again.",
+          { autoClose: 1000 }
+        );
+      }
+    } catch (error) {
+      console.error("Error updating event:", error);
+      toast.error("An unexpected error occurred. Please try again.", {
+        autoClose: 1000,
+      });
+    } finally {
+      setSubmitted(false);
+      setLoading(false);
+    }
+  };
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredTableData, setFilteredTableData] = useState([]);
+
+
+  useEffect(() => {
+    setFilteredTableData(tableData);
+  }, [tableData]);
+
+  // filteredTableData now comes directly from API with proper filtering and pagination
+
+  // Use apiTotalPages for pagination instead of calculating from filteredTableData
+  const totalPages = apiTotalPages;
+
+  const handlePageChange = async (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      // Get current material filter values
+      const selectedMaterialIds = multiSelectorValue?.map(opt => opt.value) || [];
+
+      // Call API with new page
+      await fetchVendorsWithMaterialFilter(newPage, searchTerm, selectedMaterialIds);
+    }
+  };
+
+  const getPageRange = () => {
+    let startPage = Math.max(currentPage - Math.floor(pageRange / 2), 1);
+    let endPage = startPage + pageRange - 1;
+
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = Math.max(endPage - pageRange + 1, 1);
+    }
+
+    const pages = [];
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+  const handleInputChange = (e) => {
+    const query = e.target.value;
+    setSearchTerm(query);
+
+    if (query.trim() === "") {
+      // Reset to show all data when search is empty
+      setFilteredTableData(tableData);
+      setSuggestions([]);
+      setIsSuggestionsVisible(false);
+    } else {
+      // Filter table data based on search query across all columns
+      const filtered = tableData.filter((vendor) => {
+        const searchFields = [
+          vendor.name,
+          vendor.email,
+          vendor.organisation,
+          vendor.phone,
+          vendor.city,
+          vendor.tags,
+          vendor.id?.toString()
+        ];
+
+        return searchFields.some(field =>
+          field && field.toString().toLowerCase().includes(query.toLowerCase())
+        );
+      });
+
+      setFilteredTableData(filtered);
+
+      // Still fetch suggestions for the dropdown
+      if (query) {
+        fetchSuggestions(query);
+      } else {
+        setSuggestions([]);
+        setIsSuggestionsVisible(false);
+      }
+    }
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setSearchTerm(suggestion.name);
+    setIsSuggestionsVisible(false);
+    fetchData(1, suggestion.first_name, "");
+  };
+
+  const handleSearchSubmit = async (e) => {
+    e.preventDefault();
+    setIsSuggestionsVisible(false);
+
+    // Get current material filter values
+    const selectedMaterialIds = multiSelectorValue?.map(opt => opt.value) || [];
+
+    // Use the enhanced function for search
+    await fetchVendorsWithMaterialFilter(1, searchTerm, selectedMaterialIds, selectedCity);
+
+  };
+
+  const handleResetSearch = async () => {
+    if (!searchTerm || searchTerm.trim() === "") {
+      setFilteredTableData(tableData);
+    } else {
+      setSearchTerm("");
+      setFilteredTableData(tableData);
+    }
+  };
+
+  useEffect(() => {
+    if (!searchTerm || searchTerm.trim() === "") {
+      setFilteredTableData(tableData);
+    }
+  }, [searchTerm, tableData]);
+
+  const fetchSuggestions = async (query) => {
+    try {
+      // Extract inventory_id values from existingData
+      const inventoryIds = Object.values(existingData)
+        .flatMap((subType) => Object.values(subType))
+        .map((item) => item.inventory_id);
+
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+
+      const response = await fetch(
+        `${baseURL}rfq/events/vendor_list?token=${token}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${query}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
+          inventoryIds
+        )}`
+      );
+      const data = await response.json();
+      setSuggestions(data.vendors || []);
+
+      setIsSuggestionsVisible(true);
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+    }
+  };
+
+  useEffect(() => { }, [eventType, awardType]);
+
+  const handleStatusChange = (selectedOption) => {
+    setEventStatus(selectedOption);
+  };
+
+  const handleSaveButtonClick = () => {
+    setSelectedVendors((prev) => {
+      const newVendors = selectedRows.filter(
+        (vendor) =>
+          !prev.some((existingVendor) => existingVendor.id === vendor.id)
+      );
+
+      return [
+        ...prev,
+        ...newVendors.map((vendor) => ({
+          ...vendor,
+          id: null,
+          pms_supplier_id: vendor.id,
+        })),
+      ];
+    });
+
+    setVendorModal(false);
+    setSelectedRows([]);
+    setResetSelectedRows(true);
+  };
+
+  useEffect(() => {
+    setFilteredTableData(tableData);
+  }, [tableData]);
+
+  // Ensure filteredTableData is always initialized before use
+  // (Remove duplicate declaration of selectedInventoryTypeIds and filteredVendorsForTable)
+
+  const handleRemoveVendor = (id) => {
+    const updatedSelected = selectedVendors.filter(
+      (vendor) => vendor.pms_supplier_id !== id
+    );
+
+    setSelectedVendors(updatedSelected);
+
+    // Also remove from selectedRows to update checkbox state
+    setSelectedRows((prev) => prev.filter((vendor) => vendor.id !== id));
+  };
+
+  useEffect(() => { }, [filteredTableData]);
+
+  const validateInviteVendorForm = () => {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const mobileRegex = /^[6-9]\d{9}$/; // Indian mobile number validation
+    // const gstRegex =
+    //   /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
+    if (!inviteVendorData.name) {
+      errors.name = "Name is required";
+      toast.error(errors.name);
+    }
+    if (!inviteVendorData.email || !emailRegex.test(inviteVendorData.email)) {
+      errors.email = "Valid email is required";
+      toast.error(errors.email);
+    }
+    if (
+      !inviteVendorData.mobile ||
+      !mobileRegex.test(inviteVendorData.mobile)
+    ) {
+      errors.mobile = "Valid mobile number is required";
+      toast.error(errors.mobile);
+    }
+    if (
+      inviteVendorData.gstNumber
+      // !gstRegex.test(inviteVendorData.gstNumber)
+    ) {
+      errors.gstNumber = "Invalid GST number format";
+      toast.error(errors.gstNumber);
+    }
+    if (
+      inviteVendorData.panNumber &&
+      !panRegex.test(inviteVendorData.panNumber)
+    ) {
+      errors.panNumber = "Invalid PAN number format";
+      toast.error(errors.panNumber);
+    }
+    if (!inviteVendorData.company) {
+      errors.company = "Company is required";
+      toast.error(errors.company);
+    }
+    if (!inviteVendorData.organization) {
+      errors.organization = "Organization Name is required";
+      toast.error(errors.organization);
+    }
+    return errors;
+  };
+
+  const [inviteVendorData, setInviteVendorData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    mobile: '',
+    gstinApplicable: '',
+    gstNumber: '',
+    vendorType: '',
+    organizationType: '',
+    natureOfBusiness: '',
+    panNumber: '',
+    department: '',
+    organizationName: '',
+  });
+  const [organizationTypeOptions, setOrganizationTypeOptions] = useState([]);
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [vendorTypeOptions, setVendorTypeOptions] = useState([]);
+  const [natureOfBusinessOptions, setNatureOfBusinessOptions] = useState([]);
+
+  useEffect(() => {
+    // Fetch organization type list from API
+    fetch(`${baseURL}rfq/events/type_of_organizations_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.type_of_organizations)) {
+          setOrganizationTypeOptions(
+            data.type_of_organizations.map((org) => ({
+              value: org.value,
+              label: org.name,
+            }))
+          );
+        }
+      });
+    // Fetch department list from API
+    fetch(`${baseURL}rfq/events/department_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.list)) {
+          setDepartmentOptions(
+            data.list.map((dept) => ({
+              value: dept.value,
+              label: dept.name,
+            }))
+          );
+        }
+      });
+    // Fetch vendor type list from API
+    fetch(`${baseURL}rfq/events/supplier_type_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.supplier_type)) {
+          setVendorTypeOptions(
+            data.supplier_type.map((type) => ({
+              value: type.value,
+              label: type.name,
+            }))
+          );
+        }
+      });
+    // Fetch nature of business list from API
+    fetch(`${baseURL}rfq/events/nature_of_business_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.list)) {
+          setNatureOfBusinessOptions(
+            data.list.map((item) => ({
+              value: item.value,
+              label: item.name,
+            }))
+          );
+        }
+      });
+  }, []);
+
+  const handleInviteVendorChange = (e) => {
+    const { name, value } = e.target;
+    setInviteVendorData((prev) => ({ ...prev, [name]: value }));
+  };
+  const handleOrganizationTypeChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ ...prev, organizationType: selectedOption ? selectedOption.value : '' }));
+  };
+  const handleDepartmentChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ ...prev, department: selectedOption ? selectedOption.value : '' }));
+  };
+  const handleVendorTypeChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ ...prev, vendorType: selectedOption ? selectedOption.value : '' }));
+  };
+  const handleNatureOfBusinessChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ ...prev, natureOfBusiness: selectedOption ? selectedOption.value : '' }));
+  };
+
+  const [isInviteLoading, setIsInviteLoading] = useState(false);
+
+  const handleInviteVendor = async (event) => {
+    event.preventDefault();
+    setIsInviteLoading(true);
+    // Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const mobileRegex = /^[6-9]\d{9}$/;
+    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
+    if (!inviteVendorData.firstName) {
+      toast.error('First Name is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.lastName) {
+      toast.error('Last Name is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.email || !emailRegex.test(inviteVendorData.email)) {
+      toast.error('Valid Email is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.mobile || !mobileRegex.test(inviteVendorData.mobile)) {
+      toast.error('Valid Mobile Number is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (inviteVendorData.gstinApplicable === 'yes' && (!inviteVendorData.gstNumber)) {
+      toast.error('Valid GSTIN is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.panNumber || !panRegex.test(inviteVendorData.panNumber)) {
+      toast.error('Valid PAN Number is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.vendorType) {
+      toast.error('Vendor Type is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.organizationType) {
+      toast.error('Organization Type is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.natureOfBusiness) {
+      toast.error('Nature of Business is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.department) {
+      toast.error('Department is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    const payload = {
+      supplier_type_id: inviteVendorData.vendorType,
+      department_id: inviteVendorData.department,
+      nature_of_business_id: inviteVendorData.natureOfBusiness,
+      type_of_organization_id: inviteVendorData.organizationType,
+      first_name: inviteVendorData.firstName,
+      last_name: inviteVendorData.lastName,
+      gstin_applicable: inviteVendorData.gstinApplicable,
+      gstin: inviteVendorData.gstNumber,
+      name: inviteVendorData.lastName, // as per user instruction
+      email: inviteVendorData.email,
+      mobile: inviteVendorData.mobile,
+      pan_number: inviteVendorData.panNumber,
+      organization_name: inviteVendorData.organizationName,
+    };
+    try {
+      const response = await axios.post(
+        `${baseURL}rfq/events/3/invite_vendor?token=${token}&add_vendor=true`,
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      if (response.status === 200 || response.status === 201) {
+        toast.success('Vendor invited successfully!');
+        // Add the new vendor to the selectedVendors table
+        const newVendor = response.data;
+        if (newVendor) {
+          setSelectedVendors((prev) => [
+            ...prev,
+            {
+              id: null,
+              pms_supplier_id: newVendor?.id,
+              name: newVendor?.full_name || `${inviteVendorData.firstName} ${inviteVendorData.lastName}`,
+              phone: newVendor?.mobile || inviteVendorData.mobile,
+              organisation: newVendor?.organization_name || inviteVendorData.organizationName || '',
+              email: newVendor?.email || inviteVendorData.email,
+            },
+          ]);
+        }
+        // Refresh the vendor list to show the newly invited vendor
+        await fetchData();
+        // Optionally reset form here
+        handleInviteModalClose();
+      } else {
+        toast.error('Failed to invite vendor: ' + (response.data?.message || 'Unknown error'));
+      }
+    } catch (err) {
+      toast.error('Failed to invite vendor: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setIsInviteLoading(false);
+    }
+  };
+
+  // const handleInviteModalClose = () => {
+  //   setInviteModal(false);
+  // };
+
+  useEffect(() => {
+    if (eventDetails?.event_vendors?.length > 0) {
+      const existingVendors = eventDetails.event_vendors.map((vendor) => ({
+        id: vendor.id,
+        name: vendor.full_name || "-",
+        email: vendor.email || "-",
+        organisation: vendor.organization_name || "-",
+        phone: vendor.contact_number || vendor.mobile || "-",
+        city: vendor.city_id || "-",
+        tags: vendor.tags || "-",
+        pms_supplier_id: vendor.pms_supplier_id,
+      }));
+    }
+  }, [eventDetails, tableData]);
+  // // console.log("inventoryTypeId", inventoryTypeId);
+
+  useEffect(() => {
+    // // console.log("inventoryTypeId changed:", inventoryTypeId); // Debugging line
+
+    const fetchMaterialTypes = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+      try {
+        const response = await fetch(
+          `${baseURL}rfq/events/material_types?token=${token}`
+        );
+        // You may want to handle the response here
+      } catch (error) {
+        console.error("Error fetching material types:", error);
+      }
+    };
+
+    // if (inventoryTypeId.length > 0) {
+    fetchMaterialTypes();
+    // }
+  }, [inventoryTypeId]); // Trigger when inventoryTypeId changes
+
+
+  // ...existing code...
+
+  return (
+    <>
+      <div className="website-content overflowY-auto">
+        <div className="d-flex justify-content-between align-items-center px-4 py-2 bg-light border-bottom thead">
+          <nav aria-label="breadcrumb">
+            <ol className="breadcrumb mb-0">
+              <li className="breadcrumb-item">
+                <a
+                  href={`/event-list?token=${token}`}
+                  className="text-decoration-none text-primary"
+                >
+                  Event List
+                </a>
+              </li>
+              <li className="breadcrumb-item active" aria-current="page">
+                Edit Event
+              </li>
+            </ol>
+          </nav>
+          <h5 className="mt-3 ms-3">Edit Event</h5>
+          <div style={{ width: "15%" }}></div>
+        </div>
+        <div className="pt-3" ref={myRef}>
+          <div className="module-data-section mx-3">
+            {/* <div className="card p-3 mt-3"> */}
+            <div className="row align-items-end justify-items-end mb-5 mt-3">
+              <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Name
+                  </label>
+                </div>
+                <input
+                  className="form-control"
+                  placeholder="Enter Event Name"
+                  value={eventName}
+                  onChange={(e) => seteventName(e.target.value)}
+                />
+              </div>
+              <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Number
+                  </label>
+                </div>
+                <input
+                  className="form-control"
+                  placeholder="Enter Event Name"
+                  value={eventNumber}
+                  onChange={(e) => seteventName(e.target.value)}
+                  disabled
+                />
+              </div>
+              <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                <div className="form-group">
+                  <label className="po-fontBold">Created On</label>
+                  <input
+                    className="form-control"
+                    type="date"
+                    defaultValue={createdOn}
+                    readOnly
+                    disabled
+                  />
+                </div>
+              </div>
+              <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Type <span style={{ color: "red" }}>*</span>
+                  </label>
+                </div>
+                <input
+                  className="form-control"
+                  style={{ textTransform: "uppercase" }}
+                  onClick={handleEventTypeModalShow}
+                  placeholder="Configure The Event"
+                  value={eventTypeText}
+                  readOnly
+                />
+              </div>
+
+              <div className="col-md-4 col-sm-6 mt-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Schedule <span style={{ color: "red" }}>*</span>
+                  </label>
+                </div>
+                <input
+                  className="form-control"
+                  onClick={handleEventScheduleModalShow}
+                  placeholder="Select Event Schedule"
+                  value={eventScheduleText}
+                  readOnly
+                />
+              </div>
+              <div className="col-md-4 col-sm-6 mt-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Description <span style={{ color: "red" }}>*</span>
+                  </label>
+                </div>
+                <textarea
+                  className="form-control"
+                  placeholder="Enter Event Description"
+                  value={eventDescription}
+                  onChange={(e) => setEventDescription(e.target.value)}
+                />
+              </div>
+              <div className="col-md-4 col-sm-6 mt-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Type <span style={{ color: "red" }}>*</span>
+                  </label>
+                </div>
+                <div className="ant-col ant-form-item-control-wrapper" style={{ width: "100%", marginTop: 8 }}>
+                  <div className="pro-radio-tabs" style={{ gridTemplateColumns: "1fr 1fr" }}>
+                    <div
+                      className={`pro-radio-tabs__tab ${!isService ? "pro-radio-tabs__tab__selected" : ""}`}
+                      role="radio"
+                      aria-checked={!isService}
+                      onClick={() => setIsService(false)}
+                      tabIndex={0}
+                    >
+                      <div className="pro-radio-tabs__check-icon">
+                        <label className={`ant-radio-wrapper ${!isService ? "ant-radio-wrapper-checked" : ""}`}>
+                          <span className={`ant-radio ${!isService ? "ant-radio-checked" : ""}`}>
+                            <input
+                              type="radio"
+                              className="ant-radio-input"
+                              value="material"
+                              checked={!isService}
+                              onChange={() => setIsService(false)}
+                              tabIndex={-1}
+                            />
+                            <div className="ant-radio-inner"></div>
+                          </span>
+                        </label>
+                      </div>
+                      <p className="pro-text pro-body pro-text--normal">Material</p>
+                    </div>
+
+                    <div
+                      className={`pro-radio-tabs__tab ${isService ? "pro-radio-tabs__tab__selected" : ""}`}
+                      role="radio"
+                      aria-checked={isService}
+                      onClick={() => setIsService(true)}
+                      tabIndex={0}
+                    >
+                      <div className="pro-radio-tabs__check-icon">
+                        <label className={`ant-radio-wrapper ${isService ? "ant-radio-wrapper-checked" : ""}`}>
+                          <span className={`ant-radio ${isService ? "ant-radio-checked" : ""}`}>
+                            <input
+                              type="radio"
+                              className="ant-radio-input"
+                              value="service"
+                              checked={isService}
+                              onChange={() => setIsService(true)}
+                              tabIndex={-1}
+                            />
+                            <div className="ant-radio-inner"></div>
+                          </span>
+                        </label>
+                      </div>
+                      <p className="pro-text pro-body pro-text--normal">Service</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="col-md-4 col-sm-6 mt-2">
+                <div className="form-group">
+                  <label className="po-fontBold">Event Status</label>
+                </div>
+                <SelectBox
+                  options={[
+                    { label: "Submitted", value: "submitted" },
+                    { label: "Approved", value: "approved" },
+                    { label: "Published", value: "published" },
+                    { label: "Expired", value: "expired" },
+                    { label: "Closed", value: "closed" },
+                    { label: "Pending", value: "pending" },
+                    { label: "Draft", value: "draft" },
+                  ]}
+                  onChange={handleStatusChange}
+                  defaultValue={eventStatus || "draft"}
+                />
+              </div>
+            </div>
+
+            <ServiceRFQForm
+              data={materialFormData}
+              setData={setMaterialFormData}
+              eventId={eventDetails?.id}
+              isService={isService}
+              templateData={eventDetails?.applied_event_template}
+              existingData={eventDetails?.grouped_event_materials}
+              deliveryData={eventDetails?.delivery_schedules}
+              isMorSelected={eventDetails?.from_mor}
+              updateSelectedTemplate={setSelectedTemplate}
+              updateBidTemplateFields={setBidTemplateFields}
+              updateAdditionalFields={setAdditionalFields}
+              isMor={false}
+              morNumber={eventDetails?.event_title}
+            />
+
+            <div className=" mx-1 mt-5">
+              <h5 className=" ">Checklists{" "}</h5>
+
+              <div className="ant-col ant-form-item-control-wrapper" style={{ width: "100%", marginTop: 8 }}>
+                <div className="pro-radio-tabs" style={{ gridTemplateColumns: "1fr 1fr" }}>
+                  <div
+                    className={`pro-radio-tabs__tab ${checklistOption === "create" ? "pro-radio-tabs__tab__selected" : ""}`}
+                    role="radio"
+                    aria-checked={checklistOption === "create"}
+                    onClick={() => {
+                      setChecklistOption("create");
+                      setFetchedChecklistData(null);
+                      setQuestions([
+                        {
+                          id: Date.now(),
+                          text: "",
+                          answerType: "",
+                          answerOptions: [{ text: "", type: "P" }],
+                          isMandatory: false,
+                          isAttachmentMandatory: false,
+                          weightage: "",
+                          tooltip: "",
+                          subCategoryId: null,
+                          subCategoryName: "",
+                        },
+                      ]);
+                      setSelectedCategory(null);
+                      setSelectedSubCategory(null);
+                      setSelectedChecklist(null);
+                      console.log("selected", checklistOption, fetchedChecklistData, questions);
+                    }}
+                    tabIndex={0}
+                  >
+                    <div className="pro-radio-tabs__check-icon">
+                      <label className={`ant-radio-wrapper ${checklistOption === "create" ? "ant-radio-wrapper-checked" : ""}`}>
+                        <span className={`ant-radio ${checklistOption === "create" ? "ant-radio-checked" : ""}`}>
+                          <input
+                            type="radio"
+                            className="ant-radio-input"
+                            value="create"
+                            checked={checklistOption === "create"}
+                            onChange={() => {
+                              setChecklistOption("create");
+                              setFetchedChecklistData(null);
+                              setQuestions([
+                                {
+                                  id: Date.now(),
+                                  text: "",
+                                  answerType: "",
+                                  answerOptions: [{ text: "", type: "P" }],
+                                  isMandatory: false,
+                                  isAttachmentMandatory: false,
+                                  weightage: "",
+                                  tooltip: "",
+                                  subCategoryId: null,
+                                  subCategoryName: "",
+                                },
+                              ]);
+                              setSelectedCategory(null);
+                              setSelectedSubCategory(null);
+                              setSelectedChecklist(null);
+                              console.log("selected", checklistOption, fetchedChecklistData, questions);
+                            }}
+                            tabIndex={-1}
+                          />
+                          <div className="ant-radio-inner"></div>
+                        </span>
+                      </label>
+                    </div>
+                    <p className="pro-text pro-body pro-text--normal">Create New</p>
+                  </div>
+
+                  <div
+                    className={`pro-radio-tabs__tab ${checklistOption === "existing" ? "pro-radio-tabs__tab__selected" : ""}`}
+                    role="radio"
+                    aria-checked={checklistOption === "existing"}
+                    onClick={() => setChecklistOption("existing")}
+                    tabIndex={0}
+                  >
+                    <div className="pro-radio-tabs__check-icon">
+                      <label className={`ant-radio-wrapper ${checklistOption === "existing" ? "ant-radio-wrapper-checked" : ""}`}>
+                        <span className={`ant-radio ${checklistOption === "existing" ? "ant-radio-checked" : ""}`}>
+                          <input
+                            type="radio"
+                            className="ant-radio-input"
+                            value="existing"
+                            checked={checklistOption === "existing"}
+                            onChange={() => setChecklistOption("existing")}
+                            tabIndex={-1}
+                          />
+                          <div className="ant-radio-inner"></div>
+                        </span>
+                      </label>
+                    </div>
+                    <p className="pro-text pro-body pro-text--normal">Existing</p>
+                  </div>
+                </div>
+
+                {/* When 'Existing' selected show dropdown */}
+                {checklistOption === "existing" && (
+                  <div style={{ marginTop: 12 }}>
+                    <SelectBox
+                      label="Choose Checklist"
+                      options={checklistsOptions}
+                      value={checklistsOptions.find((o) => o.value === selectedChecklist) || null}
+                      onChange={(opt) => setSelectedChecklist(opt ? opt : null)}
+                      placeholder="Select Checklist"
+                    />
+                  </div>
+                )}
+
+                {console.log("test category", checklistOption === "create"
+                  ? (selectedCategory ? categories.find(opt => opt.value === selectedCategory) : null)
+                  : checklistOption === "existing" && fetchedChecklistData
+                    ? categories.find(opt => opt.value === fetchedChecklistData.category_id).value || null
+                    : null)}
+
+
+                {/* Show checklist form for both create and existing modes */}
+                {(checklistOption === "create" || (checklistOption === "existing" && questions.length > 0)) && (
+                  <div className="card p-4 mt-3" style={{ maxWidth: 900, background: "#fff", border: "1px solid #eee", borderRadius: 8 }}>
+                    <div className="row mb-3">
+                      <div className="col-md-6">
+                        <label className="form-label">Category<span style={{ color: "red" }}>*</span></label>
+                        {console.log("Category selected:", checklistOption, selectedCategory, categories, categories.find(opt => opt.value === selectedCategory)?.value, categories.find(opt => opt.value === selectedCategory))}
+
+                        <SelectBox
+                          options={categories}
+                          defaultValue={
+                            checklistOption === "create"
+                              ? categories.find(opt => opt.value === selectedCategory)?.value || (selectedCategory ? categories.find(opt => opt.value === selectedCategory) : null)
+                              : checklistOption === "existing" && fetchedChecklistData
+                                ? categories.find(opt => opt.value === selectedCategory)?.value || categories.find(opt => opt.value === fetchedChecklistData.category_id)?.value || null
+                                : null
+                          }
+                          onChange={opt => {
+                            if (checklistOption === "create") {
+                              setSelectedCategory(opt ? opt : opt.value || null);
+                              console.log("onchange", selectedCategory,);
+
+                            }
+                          }}
+                          placeholder="Select Category"
+                          isDisabled={checklistOption === "existing"}
+                        />
+                      </div>
+                      {checklistOption === "create" && (
+                        <div className="col-md-6 mt-3">
+                          <label className="form-label">Checklist Title<span style={{ color: "red" }}>*</span></label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={checklistName}
+                            onChange={(e) => setChecklistName(e.target.value)}
+                            placeholder="Enter checklist title"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div className="row">
+                      {/* Render all question cards */}
+                      {questions.map((question, qIdx) => (
+                        <div className="col-md-6" key={question.id || qIdx}>
+                          <div className="border rounded p-3 mb-3 position-relative" style={{ minHeight: 400 }}>
+                            <div className="d-flex justify-content-between align-items-center mb-2">
+                              <div>
+                                <span className="fw-bold">Question {qIdx + 1}</span>
+                              </div>
+                              {checklistOption === "create" && (
+                                <button className="btn btn-link text-danger p-0" style={{ fontSize: 18, position: "absolute", right: 10, top: 10 }} onClick={() => handleRemoveQuestion(qIdx)}>
+                                  ×
+                                </button>
+                              )}
+                            </div>
+                            {/* Sub Category Field - inside question card */}
+                            <div className="mb-2">
+                              <label className="form-label mb-1">Sub Category</label>
+                              {/* {console.log("subCategories", subCategories, question.subCategoryId, subCategories.find(opt => opt.value === question.subCategoryId).value)} */}
+                              <SelectBox
+                                options={subCategories}
+                                defaultValue={subCategories.find(opt => opt.value === question.subCategoryId)?.value || subCategories.find(opt => opt.value === question.subCategoryId) || null}
+                                onChange={opt => {
+                                  if (checklistOption === "create") {
+                                    setQuestions(prev =>
+                                      prev.map((q, idx) =>
+                                        idx === qIdx
+                                          ? {
+                                            ...q,
+                                            subCategoryId: opt ? opt.value : null,
+                                            subCategoryName: opt ? opt.label : "",
+                                          }
+                                          : q
+                                      )
+                                    );
+                                    console.log("onchange", qIdx, "subCategoryId", opt ? opt.value : null);
+                                    console.log("onchange", qIdx, "subCategoryName", opt ? opt.label : "");
+                                  }
+                                }}
+                                placeholder="Select Sub-Category"
+                                isDisabled={checklistOption === "existing"}
+                              />
+                            </div>
+
+                            {/* Question Text */}
+                            <input
+                              className="form-control mb-2"
+                              placeholder="Enter your Question"
+                              value={question.text || ""}
+                              onChange={e => handleQuestionChange(qIdx, "text", e.target.value)}
+                              readOnly={checklistOption === "existing"}
+                              style={checklistOption === "existing" ? { backgroundColor: "#f8f9fa" } : {}}
+                            />
+
+                            {/* Answer Type */}
+                            {console.log(answerTypeOptions, question.answerType, answerTypeOptions.find(opt => opt.value === question.answerType))}
+
+                            <SelectBox
+                              options={answerTypeOptions}
+                              defaultValue={answerTypeOptions.find(opt => opt.value === question.answerType)?.value || null}
+                              onChange={opt => handleQuestionChange(qIdx, "answerType", opt ? opt : "")}
+                              placeholder="Choose Answer Type"
+                              isDisabled={checklistOption === "existing"}
+                            />
+
+                            {/* Answer Options for Multiple Choice */}
+                            {question.answerType === "multiple_choice" && (
+                              <div className="space-y-2 pt-2">
+                                <label className="form-label mb-1">Answer Options</label>
+                                {(question.answerOptions || []).map((option, index) => (
+                                  <div key={index} className="d-flex align-items-center gap-2 mb-2">
+                                    <input
+                                      className="form-control"
+                                      placeholder={`Option ${index + 1}`}
+                                      value={option.text || ""}
+                                      onChange={e => handleAnswerOptionChange(qIdx, index, e.target.value)}
+                                      style={{ maxWidth: 220, ...(checklistOption === "existing" ? { backgroundColor: "#f8f9fa" } : {}) }}
+                                      readOnly={checklistOption === "existing"}
+                                    />
+                                    <select
+                                      className="form-select"
+                                      value={option.type || "P"}
+                                      onChange={e => handleAnswerOptionTypeChange(qIdx, index, e.target.value)}
+                                      style={{ width: 60 }}
+                                      disabled={checklistOption === "existing"}
+                                    >
+                                      <option value="P">P</option>
+                                      <option value="N">N</option>
+                                    </select>
+                                    {checklistOption === "create" && (
+                                      <button
+                                        type="button"
+                                        className="btn btn-link text-danger p-0"
+                                        onClick={() => handleRemoveAnswerOption(qIdx, index)}
+                                        disabled={question.answerOptions.length === 1}
+                                      >
+                                        ×
+                                      </button>
+                                    )}
+                                  </div>
+                                ))}
+                                {checklistOption === "create" && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-outline-warning btn-sm"
+                                    onClick={() => handleAddAnswerOption(qIdx)}
+                                  >
+                                    + Add Option
+                                  </button>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Passing Score - inside question card */}
+                            <div className="row mt-3">
+                              <div className="col-md-6">
+                                <label className="form-label mb-1">Passing Score</label>
+                                <input
+                                  className="form-control"
+                                  placeholder="Enter passing score"
+                                  type="number"
+                                  value={question.passingScore || ""}
+                                  onChange={e => handleQuestionChange(qIdx, "passingScore", e.target.value)}
+                                  readOnly={checklistOption === "existing"}
+                                  style={checklistOption === "existing" ? { backgroundColor: "#f8f9fa" } : {}}
+                                />
+                              </div>
+                              <div className="col-md-6">
+                                <label className="form-label mb-1">Weightage</label>
+                                <input
+                                  className="form-control"
+                                  placeholder="Enter weightage"
+                                  type="number"
+                                  value={question.weightage || ""}
+                                  onChange={e => handleQuestionChange(qIdx, "weightage", e.target.value)}
+                                  readOnly={checklistOption === "existing"}
+                                  style={checklistOption === "existing" ? { backgroundColor: "#f8f9fa" } : {}}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Mandatory checkboxes */}
+                            <div className="d-flex align-items-center mb-2 mt-3">
+                              <span>Question Mandatory</span>
+                              <label className="mx-2 mb-0">
+                                <input
+                                  type="checkbox"
+                                  style={{ accentColor: "#ff6600" }}
+                                  checked={question.isMandatory || false}
+                                  onChange={e => handleQuestionChange(qIdx, "isMandatory", e.target.checked)}
+                                  disabled={checklistOption === "existing"}
+                                />
+                              </label>
+                              <span className="ms-3">Attachment Mandatory</span>
+                              <label className="mx-2 mb-0">
+                                <input
+                                  type="checkbox"
+                                  style={{ accentColor: "#ff6600" }}
+                                  checked={question.isAttachmentMandatory || false}
+                                  onChange={e => handleQuestionChange(qIdx, "isAttachmentMandatory", e.target.checked)}
+                                  disabled={checklistOption === "existing"}
+                                />
+                              </label>
+                            </div>
+
+                            {/* Information Tooltip */}
+                            <label className="form-label mb-1">Information Tooltip</label>
+                            <input
+                              className="form-control mb-2"
+                              placeholder="Enter tooltip information"
+                              value={question.tooltip || question.information || ""}
+                              onChange={e => handleQuestionChange(qIdx, "tooltip", e.target.value)}
+                              readOnly={checklistOption === "existing"}
+                              style={checklistOption === "existing" ? { backgroundColor: "#f8f9fa" } : {}}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                      {/* Add Question Button - Only show for create mode */}
+                      {checklistOption === "create" && (
+                        <div className="col-md-6 d-flex align-items-center justify-content-center">
+                          <div style={{
+                            width: "100%",
+                            minHeight: 400,
+                            background: "#fafafa",
+                            border: "1px solid #eee",
+                            borderRadius: 8,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center"
+                          }}>
+                            <button className="btn purple-btn" style={{ borderRadius: "50%", width: 48, height: 48, fontSize: 28, color: "#8b0203" }} onClick={handleAddQuestion}>+</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+              <h5 className=" ">
+                Select Vendors{" "}
+                <span style={{ color: "red", fontSize: "16px" }}>*</span>
+              </h5>
+              <div className="card-tools">
+                <button
+                  className="purple-btn2"
+                  data-bs-toggle="modal"
+                  data-bs-target="#venderModal"
+                  onClick={handleVendorTypeModalShow}
+                >
+                  <span className="material-symbols-outlined align-text-top me-2">
+                    add{" "}
+                  </span>
+                  <span>Add</span>
+                </button>
+              </div>
+            </div>
+            <div className="row justify-content-center mx-1">
+              <div
+                className="tbl-container px-0 mx-5 mt-3"
+                style={{ maxHeight: "250px", overflowY: "auto" }}
+              >
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th style={{ width: "100px" }}>Sr No.</th>
+                      <th>Name</th>
+                      <th>Organization</th>
+                      <th>Mob No.</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {isInvite ? (
+                      <>
+                        <div className="loader-container">
+                          <div className="lds-ring">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                          </div>
+                          <p>Loading...</p>
+                        </div>
+                      </>
+                    ) : selectedVendors?.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="text-center">
+                          No vendors selected
+                        </td>
+                      </tr>
+                    ) : (
+                      selectedVendors?.map((vendor, index) => (
+                        <tr key={vendor.id}>
+                          <td style={{ width: "100px" }}>{index + 1}</td>
+                          <td>{vendor.name}</td>
+                          <td>{vendor.organisation}</td>
+                          <td>{vendor.phone}</td>
+                          <td>Invited</td>
+                          <td>
+                            <button
+                              className="btn btn-danger"
+                              onClick={() =>
+                                handleRemoveVendor(vendor.pms_supplier_id)
+                              }
+                            >
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                <h5 className="mt-3">
+                  Document Attachments{" "}
+                  <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                </h5>
+                <button
+                  className="purple-btn2 mt-3"
+                  onClick={handleAddDocumentRow}
+                >
+                  <span className="material-symbols-outlined align-text-top me-2">
+                    add
+                  </span>
+                  <span>Add</span>
+                </button>
+              </div>
+              {/* New Document Attachments Table */}
+              <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
+
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th className="main2-th">File Type</th>
+                      <th className="main2-th">File Name </th>
+                      <th className="main2-th">Upload At</th>
+                      <th className="main2-th">Upload File</th>
+                      <th className="main2-th" style={{ width: 100 }}>
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {documentRows.map((att, index) => (
+                      <tr key={att.id || index}>
+                        <td>
+                          <input
+                            className="form-control document_content_type"
+                            readOnly
+                            disabled
+                            value={att.fileType || att.content_type || ""}
+                            placeholder="File Type"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control file_name"
+                            required
+                            value={att.fileName || att.document_name || "no files selected yet"}
+                            onChange={e => {
+                              // Update fileName in documentRows
+                              setDocumentRows(prev => {
+                                const updated = [...prev];
+                                updated[index] = {
+                                  ...updated[index],
+                                  fileName: e.target.value,
+                                };
+                                return updated;
+                              });
+                            }}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control created_at"
+                            readOnly
+                            disabled
+                            type="datetime-local"
+                            step="1"
+                            value={
+                              att.uploadDate ||
+                              (att.created_at
+                                ? new Date(att.created_at).toISOString().slice(0, 19)
+                                : "")
+                            }
+                          />
+                        </td>
+
+                        <td>
+                          <input
+                            type="file"
+                            className="form-control"
+                            required={!att.isExisting} // Only required for new attachments
+                            onChange={e => {
+                              // Update file in documentRows
+                              const file = e.target.files[0];
+                              if (!file) return;
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                const base64String = reader.result.split(",")[1];
+
+                                // Get current time in IST (same as create event)
+                                const now = new Date();
+                                const istTime = new Intl.DateTimeFormat('sv-SE', {
+                                  timeZone: 'Asia/Kolkata',
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  second: '2-digit',
+                                  hour12: false
+                                }).format(now).replace(' ', 'T');
+
+                                setDocumentRows(prev => {
+                                  const updated = [...prev];
+                                  updated[index] = {
+                                    ...updated[index],
+                                    upload: {
+                                      filename: file.name,
+                                      content: base64String,
+                                      content_type: file.type,
+                                    },
+                                    fileName: file.name,
+                                    fileType: file.type,
+                                    uploadDate: istTime, // Use IST time instead of UTC
+                                    // If it was existing, it now has new content
+                                    hasNewUpload: att.isExisting ? true : false,
+                                  };
+                                  return updated;
+                                });
+                              };
+                              reader.readAsDataURL(file);
+                            }}
+                          />
+                        </td>
+                        <td className="document">
+                          <div style={{ display: "flex", alignItems: "center" }}>
+                            {/* <div className="attachment-placeholder">
+                              {att.isExisting && att.fileUrl && (
+                                <div className="file-box">
+                                  <div className="image">
+                                    <a href={att.fileUrl} target="_blank" rel="noreferrer">
+                                      <img
+                                        alt="preview"
+                                        className="img-responsive"
+                                        height={50}
+                                        width={50}
+                                        src={att.fileUrl}
+                                      />
+                                    </a>
+                                  </div>
+                                  <div className="file-name">
+                                    <a href={att.fileUrl} download>
+                                      <span className="material-symbols-outlined">file_download</span>
+                                    </a>
+                                    <span>{att.fileName || att.document_name}</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div> */}
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-link text-danger"
+                              onClick={() => {
+                                // Remove document row
+                                setDocumentRows(prev => {
+                                  // if (prev.length === 1) return prev;
+                                  const updated = [...prev];
+                                  updated.splice(index, 1);
+                                  return updated;
+                                });
+                              }}
+                            >
+                              <span className="material-symbols-outlined">cancel</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div>
+              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                <h5 className="mt-3">
+                  Terms & Conditions{" "}
+                  <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                </h5>
+                <button
+                  className="purple-btn2 mt-3"
+                  onClick={handleAddTextarea}
+                >
+                  <span className="material-symbols-outlined align-text-top me-2">
+                    add
+                  </span>
+                  <span>Add</span>
+                </button>
+              </div>
+
+              <table className="tbl-container w-100">
+                <thead>
+                  <tr>
+                    <th>Condition Category</th>
+                    <th>Condition</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(!textareas || textareas.filter(t => t.id !== null && !t._destroy).length === 0) ? (
+                    <tr>
+                      <td colSpan={3} className="text-center">No Terms & Conditions available</td>
+                    </tr>
+                  ) : (
+                    textareas.map((textarea, idx) => {
+                      if (textarea.id === null || textarea._destroy) {
+                        return null;
+                      }
+                      return (
+                        <tr key={idx}>
+                          <td>
+                            <SelectBox
+                              options={termsOptions.map((option) => ({
+                                label: option.label,
+                                value: option.value,
+                              }))}
+                              onChange={(option) =>
+                                handleConditionChange(textarea.id, option)
+                              }
+                              defaultValue={
+                                termsOptions.find(
+                                  (option) => option.condition === textarea.value
+                                )?.value
+                              }
+                            />
+                          </td>
+                          <td>
+                            <textarea
+                              className="form-control"
+                              value={textarea.value}
+                              readOnly
+                            />
+                          </td>
+                          <td>
+                            <button
+                              className="btn btn-danger"
+                              onClick={() => handleRemoveTextarea(textarea.id)}
+                            // disabled={textareas.length ===  1}
+                            >
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {statusLogData?.length > 0 && (
+              <>
+                <h5 className="mt-5">Audit Log</h5>
+                <div className="tbl-container mt-1" style={{ maxHeight: "450px" }}>
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th>Sr.No.</th>
+                        <th>Created By</th>
+                        <th>Created At</th>
+                        <th>Status</th>
+                        {/* <th>Remark</th> */}
+                        {/* <th>Comment</th> */}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {editableStatusLogData?.slice(0, 10).map((log, idx) => {
+                        if (log.id === null) return null;
+                        return (
+                          <tr key={log.id || idx}>
+                            <td className="text-start">{idx + 1}</td>
+                            <td className="text-start">{log.created_by_name || "-"}</td>
+                            <td className="text-start">
+                              {log.created_at
+                                ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                }).replaceAll("/", "-")}, ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                }).toUpperCase()}`
+                                : "-"}
+                            </td>
+                            <td className="text-start">
+                              {log.status
+                                ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                : ""}
+                            </td>
+                            {/* <td className="text-start">{log.remarks || ""}</td>
+                              <td className="text-start">{log.comments || ""}</td> */}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  {editableStatusLogData?.length > 10 && (
+                    <div className="mt-2 text-start">
+                      <span
+                        className="boq-id-link"
+                        style={{ fontWeight: "bold", cursor: "pointer" }}
+                        onClick={() => {/* setShowAuditModal(true) or your logic here */ }}
+                      >
+                        Show More
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            <div className="row mt-2 justify-content-end align-items-center mt-4">
+              {/* <div className class="col-md-2">
+                  <button className="purple-btn2 w-100">Preview</button>
+                </div> */}
+              <div className="col-md-2">
+                {loading && (
+                  <div className="loader-container">
+                    <div className="lds-ring">
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                      <div></div>
+                    </div>
+                    <p>Loading ..</p>
+                  </div>
+                )}
+                <button
+                  className={
+                    submitted ? "disabled-btn w-100" : "purple-btn2 w-100"
+                  }
+                  onClick={handleSubmit}
+                  disabled={submitted}
+                >
+                  Update
+                </button>
+              </div>
+              <div className="col-md-2">
+                <button
+                  className="purple-btn1 w-100"
+                  onClick={() => {
+                    navigate(
+                      `/event-list?token=${token}`
+                    );
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+          <DynamicModalBox
+            size="xl"
+            title="All Vendors"
+            show={vendorModal}
+            onHide={handleVendorTypeModalClose}
+            footerButtons={[
+              {
+                label: "Cancel",
+                onClick: handleVendorTypeModalClose,
+                props: { className: "purple-btn1" },
+              },
+              {
+                label: "Save",
+                onClick: handleSaveButtonClick,
+                props: { className: "purple-btn2" },
+              },
+            ]}
+            children={
+              <>
+                <div className="d-flex justify-content-between align-items-center">
+                  <div className="w-75 h-[40px] position-relative">
+                    <div className="input-group d-flex w-100 align-items-end">
+                      <input
+                        type="search"
+                        id="searchInput"
+                        className="tbl-search form-control w-50"
+                        style={{ height: "38.2px" }}
+                        placeholder="Search Vendors"
+                        value={searchTerm}
+                        onChange={handleInputChange}
+                        onFocus={() => setIsSuggestionsVisible(true)}
+                        onBlur={() =>
+                          setTimeout(
+                            () => setIsSuggestionsVisible(false),
+                            200
+                          )
+                        }
+                      />
+                      <div className="input-group-append">
+                        <button
+                          type="button"
+                          className="btn btn-md btn-default"
+                          onClick={handleSearchSubmit}
+                        >
+                          <SearchIcon />
+                        </button>
+                      </div>
+
+                      <div className="w-25 ms-3">
+                        <MultiSelector
+                          options={materialSelectList}
+                          value={multiSelectorValue}
+                          onChange={async (selectedOptions) => {
+                            setMultiSelectorValue(selectedOptions);
+                            try {
+                              let selectedValues;
+                              if (selectedOptions && selectedOptions.length > 0) {
+                                selectedValues = selectedOptions.map((option) => option.value);
+                              } else {
+                                // Use eventDetails?.event_materials?.[0]?.inventory_id for default
+                                selectedValues = eventDetails?.event_materials?.[0]?.inventory_id
+                                  ? [eventDetails.event_materials[0].inventory_id]
+                                  : [];
+                              }
+
+                              // Call the new enhanced function
+                              await fetchVendorsWithMaterialFilter(1, searchTerm, selectedValues);
+                            } catch (error) {
+                              console.error("Error fetching vendor data:", error);
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                    {isSuggestionsVisible && suggestions.length > 0 && (
+                      <ul
+                        className="suggestions-list position-absolute bg-white border rounded w-100"
+                        style={{ zIndex: 1000, top: "100%" }}
+                      >
+                        {suggestions.map((suggestion) => (
+                          <li
+                            key={suggestion.id}
+                            onClick={() => handleSuggestionClick(suggestion)}
+                            style={{ cursor: "pointer" }}
+                            className="p-2 w-100"
+                          >
+                            {suggestion.full_name}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="d-flex">
+                    <button
+                      className="purple-btn2 viewBy-main-child2P mb-0"
+                      onClick={handleInviteModalShow}
+                    >
+                      <i className="bi bi-person-plus"></i>
+                      <span className="ms-2">Invite</span>
+                    </button>
+
+                    <PopupBox
+                      title="Filter by"
+                      show={showPopup}
+                      onClose={() => setShowPopup(false)}
+                      footerButtons={[
+                        {
+                          label: "Cancel",
+                          onClick: () => setShowPopup(false),
+                          props: {
+                            className: "purple-btn1",
+                          },
+                        },
+                        {
+                          label: "Apply",
+                          onClick: handleApply,
+                          props: {
+                            className: "purple-btn2",
+                          },
+                        },
+                      ]}
+                      children={
+                        <div>
+                          <div style={{ marginBottom: "12px" }}>
+                            <SelectBox
+                              label={"City"}
+                              options={citiesList}
+                              defaultValue={""}
+                              onChange={handleCityChange}
+                              isDisableFirstOption={true}
+                            />
+                          </div>
+                        </div>
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="d-flex flex-column justify-content-center align-items-center h-100">
+                  {filteredTableData.length > 0 ? (
+                    <Table
+                      columns={participantsTabColumns}
+                      showCheckbox={true}
+                      data={filteredTableData.map((vendor, index) => ({
+                        ...vendor,
+                        srNo: (currentPage - 1) * pageSize + index + 1,
+                      }))}
+                      handleCheckboxChange={handleCheckboxChange}
+                      isRowSelected={isVendorSelected}
+                      resetSelectedRows={resetSelectedRows}
+                      onResetComplete={() => setResetSelectedRows(false)}
+                      onRowSelect={undefined}
+                      cellClass="text-start"
+                      currentPage={currentPage}
+                      pageSize={pageSize}
+                      style={{ width: "100%" }}
+                      scrollable={true}
+                      fullWidth={true}
+                    />
+                  ) : (
+                    <p>No vendors found</p>
+                  )}
+                </div>
+                {/* {console.log("filteredTableData", filteredTableData, filteredTableData.length)
+                  } */}
+                <div className="d-flex justify-content-between align-items-center px-1 mt-2">
+                  <ul className="pagination justify-content-center d-flex ">
+                    <li
+                      className={`page-item ${currentPage === 1 ? "disabled" : ""
+                        }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(1)}
+                      >
+                        First
+                      </button>
+                    </li>
+
+                    <li
+                      className={`page-item ${currentPage === 1 ? "disabled" : ""
+                        }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        Prev
+                      </button>
+                    </li>
+
+                    {getPageRange().map((pageNumber) => (
+                      <li
+                        key={pageNumber}
+                        className={`page-item ${currentPage === pageNumber ? "active" : ""
+                          }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(pageNumber)}
+                        >
+                          {pageNumber}
+                        </button>
+                      </li>
+                    ))}
+
+                    <li
+                      className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                        }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                      </button>
+                    </li>
+
+                    <li
+
+                      className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                        }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Last
+                      </button>
+                    </li>
+                  </ul>
+
+                  <div>
+                    <p>
+                      Showing{" "}
+                      {totalCount > 0
+                        ? (currentPage - 1) * pageSize + 1
+                        : 0}{" "}
+                      to{" "}
+                      {totalCount > 0
+                        ? Math.min(currentPage * pageSize, totalCount)
+                        : 0}{" "}
+                      of {totalCount} entries
+                    </p>
+                  </div>
+                </div>
+              </>
+            }
+          />
+          <Modal show={inviteModal} onHide={handleInviteModalClose} size="lg" centered>
+            <Modal.Header closeButton>
+              <Modal.Title>Invite New Vendor</Modal.Title>
+            </Modal.Header>
+            <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto', overflowX: 'hidden' }}>
+              <form className="p-2" onSubmit={handleInviteVendor}>
+                <div className="row">
+                  <div className="col-md-6">
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">First Name</label>
+                      <input className="form-control" type="text" name="firstName" placeholder="Enter First Name" value={inviteVendorData.firstName} onChange={handleInviteVendorChange} required />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Last Name</label>
+                      <input className="form-control" type="text" name="lastName" placeholder="Enter Last Name" value={inviteVendorData.lastName} onChange={handleInviteVendorChange} required />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Email</label>
+                      <input className="form-control" type="email" name="email" placeholder="Enter Email Address" value={inviteVendorData.email} onChange={handleInviteVendorChange} required />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Phone Number</label>
+                      <input className="form-control" type="text" name="mobile" inputMode="numeric" pattern="[0-9]*" maxLength={10} onKeyDown={(e) => { const invalidChars = ['e', 'E', '+', '-', '.', ',']; if (invalidChars.includes(e.key) || (isNaN(Number(e.key)) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Tab')) { e.preventDefault(); } }} placeholder="Enter Phone Number" value={inviteVendorData.mobile} onChange={handleInviteVendorChange} required />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">GSTIN Applicable</label>
+                      <select className="form-control" name="gstinApplicable" value={inviteVendorData.gstinApplicable} onChange={handleInviteVendorChange} required>
+                        <option value="">Select</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                      </select>
+                    </div>
+                  </div>
+                  {inviteVendorData.gstinApplicable === 'yes' && (
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">GSTIN</label>
+                        <input className="form-control" type="text" name="gstNumber" placeholder="Enter GSTIN" value={inviteVendorData.gstNumber} onChange={handleInviteVendorChange} required />
+                      </div>
+                    </div>
+                  )}
+                  <div className="col-md-6">
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Vendor Type</label>
+                      <SingleSelector options={vendorTypeOptions} value={vendorTypeOptions.find(opt => opt.value === inviteVendorData.vendorType) || null} onChange={handleVendorTypeChange} placeholder="Select Vendor Type" />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Organization Type</label>
+                      <SingleSelector options={organizationTypeOptions} value={organizationTypeOptions.find(opt => opt.value === inviteVendorData.organizationType) || null} onChange={handleOrganizationTypeChange} placeholder="Select Organization Type" />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Nature of Business</label>
+                      <SingleSelector options={natureOfBusinessOptions} value={natureOfBusinessOptions.find(opt => opt.value === inviteVendorData.natureOfBusiness) || null} onChange={handleNatureOfBusinessChange} placeholder="Select Nature Of Business" />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">PAN No.</label>
+                      <input className="form-control" type="text" name="panNumber" placeholder="Enter PAN Number" value={inviteVendorData.panNumber} onChange={handleInviteVendorChange} required />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Department</label>
+                      <SingleSelector options={departmentOptions} value={departmentOptions.find(opt => opt.value === inviteVendorData.department) || null} onChange={handleDepartmentChange} placeholder="Select Department" />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="form-group mb-3">
+                      <label className="po-fontBold">Organization Name</label>
+                      <input className="form-control" type="text" name="organizationName" placeholder="Enter Organization Name" value={inviteVendorData.organizationName} onChange={handleInviteVendorChange} />
+                    </div>
+                  </div>
+                </div>
+                <div className="d-flex justify-content-center mt-2 gap-2">
+                  <button className="purple-btn2" onClick={handleInviteModalClose} type="button" disabled={isInviteLoading}>Close</button>
+                  <button className="purple-btn2" type="submit" disabled={isInviteLoading}>
+                    {isInviteLoading ? (
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    ) : null}
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </Modal.Body>
+          </Modal>
+          <EventTypeModal
+            existingData={eventDetails?.event_type_detail}
+            show={eventTypeModal}
+            handleDynamicExtensionBid={handleDynamicExtensionBid}
+            onHide={handleEventTypeModalClose}
+            handleEventConfigurationSubmit={handleEventConfigurationSubmit}
+            title={"Configuration for Event"}
+            eventType={eventType}
+            handleEventTypeChange={handleEventTypeChange}
+            eventTypeModal={eventTypeModal}
+            handleEventTypeModalClose={handleEventTypeModalClose}
+            selectedStrategy={selectedStrategy}
+            handleRadioChange={handleRadioChange}
+            awardType={awardType}
+            handleAwardTypeChange={handleAwardTypeChange}
+            dynamicExtension={dynamicExtension}
+            dynamicExtensionConfigurations={dynamicExtensionConfigurations}
+            handleDynamicExtensionChange={handleDynamicExtensionChange}
+            size={"xl"}
+            footerButtons={[
+              {
+                label: "Close",
+                onClick: handleEventTypeModalClose,
+                props: {
+                  className: "purple-btn1",
+                },
+              },
+              {
+                label: "Save Changes",
+                onClick: handleEventTypeModalClose,
+                props: {
+                  className: "purple-btn2",
+                },
+              },
+            ]}
+            trafficType={isTrafficSelected}
+            handleTrafficChange={handleTrafficChange}
+
+          />
+          <EventScheduleModal
+            deliveryDate={dynamicExtensionConfigurations.delivery_date}
+            show={eventScheduleModal}
+            onHide={handleEventScheduleModalClose}
+            handleSaveSchedule={handleSaveSchedule}
+            existingData={eventDetails?.event_schedule}
+            onLoadScheduleData={handleOnLoadScheduleData}
+          />
+        </div>
+      </div>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+    </>
+  );
+}

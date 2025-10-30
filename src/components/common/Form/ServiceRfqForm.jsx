@@ -9,7 +9,7 @@ import { max, set } from "lodash";
 import DropdownCollapseIcon from "../Icon/DropdownCollapseIcon";
 import FormatDate from "../../FormatDate";
 
-export default function CreateRFQForm({
+export default function ServiceRFQForm({
   data,
   setData,
   isService,
@@ -94,6 +94,13 @@ export default function CreateRFQForm({
   const [selectedMor, setSelectedMor] = useState(""); // State for selected MOR
   const [morMaterialData, setMorMaterialData] = useState([]); // State for MOR material data
   const [isMorChecked, setIsMorChecked] = useState(false); // State for checkbox
+  const [serviceTypeOptions, setServiceTypeOptions] = useState([]); // State for service types
+  const [selectedServiceType, setSelectedServiceType] = useState(""); // State for selected service type
+  const [serviceSubTypeOptions, setServiceSubTypeOptions] = useState([]); // State for service sub types
+  const [selectedServiceSubType, setSelectedServiceSubType] = useState(""); // State for selected service sub type
+  const [servicesOptions, setServicesOptions] = useState([]); // State for services list
+  const [selectedService, setSelectedService] = useState(""); // State for selected service
+  const [allServicesOptions, setAllServicesOptions] = useState([]); // State for all services (for table dropdown)
 
   const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
@@ -143,6 +150,105 @@ export default function CreateRFQForm({
     }
   };
 
+  // Fetch service types
+  const fetchServiceTypes = async () => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+    try {
+      const response = await axios.get(
+        `${baseURL}rfq/events/service_types?token=${token}`
+      );
+      if (response.data && Array.isArray(response.data.service_types)) {
+        const options = response.data.service_types.map(service => ({
+          label: service.name,
+          value: service.value,
+        }));
+        setServiceTypeOptions(options);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching service types:", error);
+    }
+  };
+
+  // Fetch service sub types based on selected service type
+  const fetchServiceSubTypes = async (serviceTypeId) => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+    try {
+      const response = await axios.get(
+        `${baseURL}rfq/events/service_sub_types?token=${token}&service_type_id=${serviceTypeId}`
+      );
+      if (response.data && Array.isArray(response.data.service_sub_types)) {
+        const options = response.data.service_sub_types.map(subType => ({
+          label: subType.name,
+          value: subType.value,
+          service_type_id: subType.service_type_id,
+        }));
+        setServiceSubTypeOptions(options);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching service sub types:", error);
+    }
+  };
+
+  // Fetch services based on selected service sub type
+  const fetchServices = async (serviceSubTypeId) => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+    try {
+      const response = await axios.get(
+        `${baseURL}rfq/events/services?token=${token}`
+      );
+      if (response.data && Array.isArray(response.data.services)) {
+        // Filter services based on selected service sub type
+        const filteredServices = response.data.services.filter(service => 
+          service.service_sub_type_id === parseInt(serviceSubTypeId)
+        );
+        const options = filteredServices.map(service => ({
+          label: service.name,
+          value: service.value,
+          service_type_id: service.service_type_id,
+          service_sub_type_id: service.service_sub_type_id,
+          description: service.description,
+        }));
+        setServicesOptions(options);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    }
+  };
+
+  // Fetch all services for table dropdown
+  const fetchAllServices = async () => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+    try {
+      const response = await axios.get(
+        `${baseURL}rfq/events/services?token=${token}`
+      );
+      if (response.data && Array.isArray(response.data.services)) {
+        const options = response.data.services.map(service => ({
+          label: service.name,
+          value: service.value,
+          service_type_id: service.service_type_id,
+          service_sub_type_id: service.service_sub_type_id,
+          description: service.description,
+        }));
+        setAllServicesOptions(options);
+      } else {
+        console.error("Unexpected response structure:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching all services:", error);
+    }
+  };
+
   useEffect(() => {
     if (selectedMor) {
       fetchMorMaterialData(selectedMor);
@@ -154,6 +260,93 @@ export default function CreateRFQForm({
       fetchMorOptions();
     }
   }, [isMor]);
+
+  // Fetch service types on component mount only if isService is true
+  useEffect(() => {
+    if (isService) {
+      fetchServiceTypes();
+      fetchAllServices(); // Fetch all services for table dropdown
+    } else {
+      // Clear service type data when not in service mode
+      setServiceTypeOptions([]);
+      setSelectedServiceType("");
+      setServiceSubTypeOptions([]);
+      setSelectedServiceSubType("");
+      setServicesOptions([]);
+      setSelectedService("");
+      setAllServicesOptions([]);
+    }
+  }, [isService]);
+
+  // Fetch service sub types when service type changes
+  useEffect(() => {
+    if (selectedServiceType) {
+      fetchServiceSubTypes(selectedServiceType);
+    } else {
+      setServiceSubTypeOptions([]); // Clear sub types if no service type selected
+      setSelectedServiceSubType(""); // Clear selected sub type
+      setServicesOptions([]); // Clear services
+      setSelectedService(""); // Clear selected service
+    }
+  }, [selectedServiceType]);
+
+  // Fetch services when service sub type changes
+  useEffect(() => {
+    if (selectedServiceSubType) {
+      fetchServices(selectedServiceSubType);
+    } else {
+      setServicesOptions([]); // Clear services if no service sub type selected
+      setSelectedService(""); // Clear selected service
+    }
+  }, [selectedServiceSubType]);
+
+  // Bind service types and sub-types from existing data when service options are loaded
+  useEffect(() => {
+    if (isService && serviceTypeOptions.length > 0 && sections.length > 0 && existingData) {
+      // Find the first service item in sections to extract service type information
+      for (const section of sections) {
+        const serviceItem = section.sectionData.find(item => item.content_type === "service");
+        if (serviceItem && serviceItem.service_type_name) {
+          // Find matching service type by name
+          const serviceTypeOption = serviceTypeOptions.find(opt => 
+            opt.label === serviceItem.service_type_name
+          );
+          if (serviceTypeOption && selectedServiceType !== serviceTypeOption.value) {
+            console.log(`Setting service type: ${serviceTypeOption.label} (${serviceTypeOption.value})`);
+            setSelectedServiceType(serviceTypeOption.value);
+            
+            // Also fetch sub-types for this service type
+            fetchServiceSubTypes(serviceTypeOption.value);
+            break;
+          }
+        }
+      }
+    }
+  }, [isService, serviceTypeOptions, sections, existingData]);
+
+  // Bind service sub-types from existing data when service sub-type options are loaded
+  useEffect(() => {
+    if (isService && serviceSubTypeOptions.length > 0 && sections.length > 0 && selectedServiceType && existingData) {
+      // Find the first service item in sections to extract service sub-type information
+      for (const section of sections) {
+        const serviceItem = section.sectionData.find(item => item.content_type === "service");
+        if (serviceItem && serviceItem.service_sub_type_name) {
+          // Find matching service sub-type by name
+          const serviceSubTypeOption = serviceSubTypeOptions.find(opt => 
+            opt.label === serviceItem.service_sub_type_name
+          );
+          if (serviceSubTypeOption && selectedServiceSubType !== serviceSubTypeOption.value) {
+            console.log(`Setting service sub-type: ${serviceSubTypeOption.label} (${serviceSubTypeOption.value})`);
+            setSelectedServiceSubType(serviceSubTypeOption.value);
+            
+            // Also fetch services for this sub-type
+            fetchServices(serviceSubTypeOption.value);
+            break;
+          }
+        }
+      }
+    }
+  }, [isService, serviceSubTypeOptions, sections, selectedServiceType, existingData]);
 
   const mapBidTemplateFields = (fields) => {
     return fields.map((field) => ({
@@ -233,6 +426,49 @@ export default function CreateRFQForm({
       }
     } catch (error) {
       console.error("Error fetching template details:", error);
+    }
+  };
+
+  // Handle service type change
+  const handleServiceTypeChange = (value) => {
+    setSelectedServiceType(value);
+    setSelectedServiceSubType(""); // Reset sub-service type when service type changes
+    setServiceSubTypeOptions([]); // Clear sub-service type options
+    
+    if (value) {
+      fetchServiceSubTypes(value);
+    }
+  };
+
+  // Handle service sub-type change
+  const handleServiceSubTypeChange = (value) => {
+    setSelectedServiceSubType(value);
+    setSelectedService(""); // Reset service when sub-service type changes
+    setServicesOptions([]); // Clear services options
+    
+    if (value) {
+      fetchServices(value);
+    }
+  };
+
+  // Handle service change
+  const handleServiceChange = (value) => {
+    setSelectedService(value);
+    
+    // Auto-populate description when service is selected
+    if (value) {
+      const selectedServiceData = servicesOptions.find(service => service.value === value);
+      if (selectedServiceData && selectedServiceData.description) {
+        // Update the description in all sections
+        const updatedSections = sections.map((section) => ({
+          ...section,
+          sectionData: section.sectionData.map((row, rowIndex) => ({
+            ...row,
+            descriptionOfItem: selectedServiceData.description,
+          })),
+        }));
+        setSections(updatedSections);
+      }
     }
   };
 
@@ -359,6 +595,19 @@ export default function CreateRFQForm({
 
   useEffect(() => {
     if (existingData) {
+      console.log("Main existingData useEffect triggered", {
+        isService,
+        serviceTypeOptionsLength: serviceTypeOptions.length,
+        allServicesOptionsLength: allServicesOptions.length,
+        uomOptionsLength: uomOptions.length
+      });
+      
+      // For services, wait for essential options to be loaded before binding
+      if (isService && (allServicesOptions.length === 0 || serviceTypeOptions.length === 0 || uomOptions.length === 0)) {
+        console.log("Waiting for service options to load before binding data");
+        return;
+      }
+      
       const updatedSections = Object.entries(existingData).map(
         ([materialType, subMaterials]) => {
           const materialsArray = Object.values(subMaterials).flat();
@@ -367,37 +616,129 @@ export default function CreateRFQForm({
           const inventorySubTypeId = materialsArray[0]?.inventory_sub_type_id;
           setSubTypeId(inventorySubTypeId);
 
-          if (inventoryTypeId) {
+          // Check if this section contains services
+          const hasServices = materialsArray.some(material => material.content_type === "service");
+          
+          if (!hasServices && inventoryTypeId) {
             fetchMaterials(inventoryTypeId);
           }
-          if (inventorySubTypeId) {
+          if (!hasServices && inventorySubTypeId) {
             fetchSubSections(inventorySubTypeId);
+          }
+
+          // For services, extract and set the service type information from the first service item
+          if (hasServices && isService) {
+            const firstService = materialsArray.find(material => material.content_type === "service");
+            if (firstService) {
+              // Parse service type from service_type_name
+              const serviceTypeOption = serviceTypeOptions.find(opt => 
+                opt.label === firstService.service_type_name
+              );
+              if (serviceTypeOption) {
+                setSelectedServiceType(serviceTypeOption.value);
+                
+                // Parse service sub-type from service_sub_type_name
+                setTimeout(() => {
+                  const serviceSubTypeOption = serviceSubTypeOptions.find(opt => 
+                    opt.label === firstService.service_sub_type_name
+                  );
+                  if (serviceSubTypeOption) {
+                    setSelectedServiceSubType(serviceSubTypeOption.value);
+                  }
+                }, 500); // Wait for sub-types to load
+              }
+            }
           }
 
           return {
             materialType,
-            sectionData: materialsArray.map((material) => ({
-              id: material.id,
-              descriptionOfItem:
-                material.inventory_name || material.descriptionOfItem,
-              inventory_id: material.inventory_id,
-              quantity: material.quantity,
-              unit: material.uom_short_name || material.unit, // Map unit correctly
-              location: material.location, // Map location correctly
-              rate: material.rate,
-              amount: material.amount,
-              type: material.material_type || "-", // Map type correctly
-              sub_section_id: material.sub_section_id,
-              section_id: material.inventory_type_id || material.section_id,
-              inventory_type_id: material.inventory_type_id,
-              inventory_sub_type_id: material.inventory_sub_type_id,
-              subMaterialType: material.inventory_sub_type,
-              pms_brand_id: material.pms_brand_id, // Map pms_brand_id correctly
-              pms_colour_id: material.pms_colour_id,
-              generic_info_id: material.generic_info_id,
-              _destroy: false,
-              attachments: material.attachments || null, // Ensure attachments are included unless explicitly removed
-            })),
+            sectionData: materialsArray.map((material) => {
+              // For services, find the correct value from allServicesOptions
+              let serviceValue = "";
+              let serviceDescription = "";
+              if (material.content_type === "service" && material.service_id) {
+                if (allServicesOptions.length > 0) {
+                  const serviceOption = allServicesOptions.find(option => 
+                    option.value == material.service_id || 
+                    option.label === material.service_name
+                  );
+                  if (serviceOption) {
+                    serviceValue = serviceOption.value;
+                    serviceDescription = serviceOption.description || material.description || "";
+                    console.log(`Service binding - ID: ${material.service_id}, Found: ${serviceOption.label}, Value: ${serviceValue}`);
+                  } else {
+                    // If service not found in options, use service_id as fallback for now
+                    serviceValue = material.service_id;
+                    serviceDescription = material.description || "";
+                    console.log(`Service binding - ID: ${material.service_id}, Not found in options, using ID as fallback: ${serviceValue}`);
+                  }
+                } else {
+                  // If allServicesOptions not loaded yet, use service_id as temporary value
+                  serviceValue = material.service_id;
+                  serviceDescription = material.description || "";
+                  console.log(`Service binding - Options not loaded yet, using service_id: ${serviceValue}`);
+                }
+              }
+
+              // For UOM, find the correct value from uomOptions
+              let uomValue = "";
+              if (material.uom) {
+                if (uomOptions.length > 0) {
+                  // Try to match by ID first (material.uom = "33"), then by name
+                  const uomOption = uomOptions.find(option => 
+                    option.value == material.uom || 
+                    option.label === material.uom_name || 
+                    option.label === material.uom_short_name ||
+                    option.label === material.unit
+                  );
+                  if (uomOption) {
+                    uomValue = uomOption.value;
+                    console.log(`UOM binding - API UOM: ${material.uom}, Found: ${uomOption.label}, Value: ${uomValue}`);
+                  } else {
+                    // If UOM not found in options, use the ID as fallback
+                    uomValue = material.uom;
+                    console.log(`UOM binding - API UOM: ${material.uom}, Not found in options, using ID as fallback: ${uomValue}`);
+                  }
+                } else {
+                  // If uomOptions not loaded yet, use the ID as temporary value
+                  uomValue = material.uom;
+                  console.log(`UOM binding - Options not loaded yet, using UOM ID: ${uomValue}`);
+                }
+              } else {
+                uomValue = material.uom_short_name || material.unit || "";
+              }
+              
+              return {
+                id: material.id,
+                descriptionOfItem: material.content_type === "service" 
+                  ? serviceValue || material.service_name || material.descriptionOfItem
+                  : (material.inventory_name || material.descriptionOfItem),
+                inventory_id: material.inventory_id,
+                service_id: material.service_id,
+                content_type: material.content_type || "material",
+                quantity: material.quantity,
+                unit: uomValue, // Use properly matched UOM value
+                location: material.location, // Map location correctly
+                rate: material.rate,
+                amount: material.amount,
+                type: material.material_type || "-", // Map type correctly
+                sub_section_id: material.sub_section_id,
+                section_id: material.inventory_type_id || material.section_id,
+                inventory_type_id: material.inventory_type_id,
+                inventory_sub_type_id: material.inventory_sub_type_id,
+                subMaterialType: material.inventory_sub_type,
+                pms_brand_id: material.pms_brand_id, // Map pms_brand_id correctly
+                pms_colour_id: material.pms_colour_id,
+                generic_info_id: material.generic_info_id,
+                _destroy: false,
+                attachments: material.attachments || null, // Ensure attachments are included unless explicitly removed
+                // Service-specific fields
+                service_type_name: material.service_type_name,
+                service_sub_type_name: material.service_sub_type_name,
+                service_name: material.service_name,
+                serviceDescription: serviceDescription || material.description || material.serviceDescription || "",
+              };
+            }),
           };
         }
       );
@@ -408,7 +749,7 @@ export default function CreateRFQForm({
       fetchSubSections(); // Fetch sub-sections without inventory_type_id
     }
     fetchBrands();
-  }, [existingData]);
+  }, [existingData, serviceTypeOptions, serviceSubTypeOptions, allServicesOptions, uomOptions, isService]);
 
   useEffect(() => {
     const fetchSections = async () => {
@@ -567,7 +908,9 @@ export default function CreateRFQForm({
       location: [],
       rate: 0,
       amount: 0,
-      inventory_id: "",
+      inventory_id: isService ? null : "",
+      service_id: isService ? null : null,
+      content_type: isService ? "service" : "material",
       sub_section_id:
         sections[sectionIndex].sectionData[0]?.sub_section_id || "",
       section_id: sections[sectionIndex].sectionData[0]?.section_id || "",
@@ -594,8 +937,10 @@ export default function CreateRFQForm({
     updatedSections[sectionIndex].sectionData[rowIndex][key] = value;
 
     if (key === "descriptionOfItem") {
-      updatedSections[sectionIndex].sectionData[rowIndex]["inventory_id"] =
-        value;
+      // For materials, set inventory_id and clear service_id
+      updatedSections[sectionIndex].sectionData[rowIndex]["inventory_id"] = value;
+      updatedSections[sectionIndex].sectionData[rowIndex]["service_id"] = null;
+      updatedSections[sectionIndex].sectionData[rowIndex]["content_type"] = "material";
     }
 
     setSections(updatedSections);
@@ -604,7 +949,9 @@ export default function CreateRFQForm({
     const updatedData = updatedSections.flatMap((section) =>
       section.sectionData.map((row) => ({
         id: row.id || null,
-        inventory_id: Number(row.inventory_id),
+        inventory_id: row.content_type === "service" ? null : Number(row.inventory_id),
+        service_id: row.content_type === "service" ? Number(row.service_id) : null,
+        content_type: row.content_type || "material",
         quantity: Number(row.quantity),
         uom: row.unit,
         location: row.location,
@@ -663,49 +1010,64 @@ export default function CreateRFQForm({
 
   const handleDescriptionOfItemChange = (selected, rowIndex, sectionIndex) => {
     const updatedSections = [...sections];
-    const selectedMaterial = materials.find(
-      (material) => material.value === selected
-    );
+    
+    if (isService) {
+      // Handle service selection
+      const selectedService = allServicesOptions.find(
+        (service) => service.value === selected
+      );
 
-    if (!selectedMaterial) {
-      console.error("Selected material not found in materials list:", selected);
-      return;
-    }
+      if (!selectedService) {
+        console.error("Selected service not found in services list:", selected);
+        return;
+      }
 
-    updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
-      selectedMaterial.label;
-
-    if (selectedMaterial.uom) {
-      updatedSections[sectionIndex].sectionData[rowIndex].unit =
-        selectedMaterial.uom.uom_short_name;
+      updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
+        selectedService.value; // Use value for proper dropdown binding
+      updatedSections[sectionIndex].sectionData[rowIndex].serviceDescription =
+        selectedService.description || "";
+      updatedSections[sectionIndex].sectionData[rowIndex].service_id =
+        selectedService.value;
+      updatedSections[sectionIndex].sectionData[rowIndex].inventory_id = null;
+      updatedSections[sectionIndex].sectionData[rowIndex].content_type = "service";
     } else {
-      updatedSections[sectionIndex].sectionData[rowIndex].unit = "";
+      // Handle material selection (existing logic)
+      const selectedMaterial = materials.find(
+        (material) => material.value === selected
+      );
+
+      if (!selectedMaterial) {
+        console.error("Selected material not found in materials list:", selected);
+        return;
+      }
+
+      updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
+        selectedMaterial.label;
+
+      if (selectedMaterial.uom) {
+        updatedSections[sectionIndex].sectionData[rowIndex].unit =
+          selectedMaterial.uom.uom_short_name;
+      } else {
+        updatedSections[sectionIndex].sectionData[rowIndex].unit = "";
+      }
+
+      updatedSections[sectionIndex].sectionData[rowIndex].type =
+        selectedMaterial.type || "-";
+      updatedSections[sectionIndex].sectionData[rowIndex].inventory_id =
+        selectedMaterial.value;
+      updatedSections[sectionIndex].sectionData[rowIndex].service_id = null;
+      updatedSections[sectionIndex].sectionData[rowIndex].content_type = "material";
+
+      // Update materialId state
+      setMaterialId(selectedMaterial.value);
+
+      // Fetch brands, PMS colors, and generic info based on the selected material ID
+      fetchBrands(selectedMaterial.value);
+      fetchPmsColours(selectedMaterial.value);
+      fetchGenericInfo(selectedMaterial.value);
     }
 
-    updatedSections[sectionIndex].sectionData[rowIndex].type =
-      selectedMaterial.type || "-";
-    updatedSections[sectionIndex].sectionData[rowIndex].inventory_id =
-      selectedMaterial.label;
-
-    // Update materialId state
-    setMaterialId(selectedMaterial.value);
-
-    // Fetch brands, PMS colors, and generic info based on the selected material ID
-    fetchBrands(selectedMaterial.value);
-    fetchPmsColours(selectedMaterial.value);
-    fetchGenericInfo(selectedMaterial.value);
-
-    setSections((prevSections) => {
-      const updatedSections = [...prevSections];
-      const selectedSection = updatedSections[sectionIndex];
-      const selectedRow = selectedSection.sectionData[rowIndex];
-
-      // Update descriptionOfItem and inventory_id
-      selectedRow.descriptionOfItem = selected;
-      selectedRow.inventory_id = selected || ""; // Set inventory_id based on selected value
-
-      return updatedSections;
-    });
+    setSections(updatedSections);
   };
 
   const handleCloseModal = () => {
@@ -973,17 +1335,34 @@ export default function CreateRFQForm({
   const renderTableColumns = () => {
     const defaultColumns = [
       { label: "Sr no.", key: "srNo" },
-      { label: "Material Name", key: "descriptionOfItem" },
+      { label: isService ? "Service Name" : "Material Name", key: "descriptionOfItem" },
+    ];
+
+    // Add description column for services
+    if (isService) {
+      defaultColumns.push({ label: "Description", key: "serviceDescription" });
+    }
+
+    defaultColumns.push(
       { label: "Quantity", key: "quantity" },
       { label: "UOM", key: "unit" },
       // { label: "Type", key: "type" },
-      { label: "Brand", key: "pms_brand_id" }, // Add brand column
-      { label: "Colour", key: "pms_colour_id" }, // Add PMS Colour column
-      { label: "Generic Info", key: "generic_info_id" }, // Add Generic Info column
-      // { label: "Location", key: "location" }, // REMOVE location column
+    );
+
+    // Only add Brand, Colour, and Generic Info columns for materials, not services
+    if (!isService) {
+      defaultColumns.push(
+        { label: "Brand", key: "pms_brand_id" },
+        { label: "Colour", key: "pms_colour_id" },
+        { label: "Generic Info", key: "generic_info_id" }
+      );
+    }
+
+    // Add Rate and Amount columns
+    defaultColumns.push(
       { label: "Rate", key: "rate" },
       { label: "Amount", key: "amount" }
-    ];
+    );
 
     const additionalColumns = additionalFields.map((field) => ({
       label: field.field_name,
@@ -1036,11 +1415,13 @@ export default function CreateRFQForm({
     // Explicitly handle SelectBox for specific fields
     if (field.field_name === "descriptionOfItem") {
       return (
-        <SelectBox
-          options={materials}
-          value={fieldValue}
-          onChange={(value) => handleFieldChange(value)}
-        />
+        <>
+        </>
+        // <SelectBox
+        //   options={materials}
+        //   value={fieldValue}
+        //   onChange={(value) => handleFieldChange(value)}
+        // />
       );
     }
 
@@ -1148,28 +1529,37 @@ export default function CreateRFQForm({
     const disabledClass = isDisabled ? "disabled-btn" : "";
 
     if (fieldName === "descriptionOfItem") {
+      console.log(servicesOptions.find(opt => opt.value === fieldValue)?.value, servicesOptions);
       return (
+        
         <SelectBox
-          options={materials}
+          options={isService ? servicesOptions : materials}
           defaultValue={
-            materials.find((option) => option.label === fieldValue)?.value
+            isService
+              ? servicesOptions.find(opt => opt.value === fieldValue)?.value || servicesOptions.find((option) => option.label === fieldValue)?.value
+              : materials.find((option) => option.label === fieldValue)?.value
           }
           onChange={(value) =>
-            handleInputChange(value, rowIndex, fieldName, sectionIndex)
+            isService 
+              ? handleDescriptionOfItemChange(value, rowIndex, sectionIndex)
+              : handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
           disabled={isDisabled}
           // className={disabledClass}
         />
       );
+
     }
 
     if (fieldName === "unit") {
+      console.log("unit",uomOptions, fieldValue, uomOptions.find((option) => option.value === fieldValue)?.value);
+      
       return (
         <>
         <SelectBox
           options={uomOptions}
           defaultValue={
-            uomOptions.find((option) => option.label === fieldValue)?.value
+            uomOptions.find((option) => option.label === fieldValue)?.value || uomOptions.find((option) => option.value === fieldValue)?.value
           }
           onChange={(value) =>
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
@@ -1403,9 +1793,9 @@ export default function CreateRFQForm({
             {`Select ${isService ? "Services" : "Materials"}`}{" "}
           </h3>
         </div>
-        <div className="d-flex justify-content-between px-3 py-3">
-          <div className="d-flex w-100 gap-3 mt-3">
-            <div className="col-md-3">
+        <div className="d-flex justify-content-between align-items-start px-3 py-3">
+          <div className="d-flex flex-wrap gap-3 mt-3" style={{ flex: 1 }}>
+            <div className="col-md-2 col-sm-6">
               <SelectBox
                 label={"Select Template"}
                 options={templateOptions}
@@ -1415,7 +1805,7 @@ export default function CreateRFQForm({
               />
             </div>
             {isMorChecked && (
-              <div className="col-md-3">
+              <div className="col-md-2 col-sm-6">
                 <SelectBox
                   label={"Select MOR"}
                   options={morOptions}
@@ -1425,7 +1815,7 @@ export default function CreateRFQForm({
               </div>
             )}
             {isMor && (
-              <div className="col-md-2 d-flex align-items-center">
+              <div className="col-md-2 d-flex align-items-center mt-4">
                 <input
                   type="checkbox"
                   className="form-check-input me-2"
@@ -1437,12 +1827,14 @@ export default function CreateRFQForm({
             )}
           </div>
           {!isMorSelected && (
-            <button className="purple-btn2" onClick={handleAddColumn}>
-              <span className="material-symbols-outlined align-text-top">
-                add{" "}
-              </span>
-              <span>Add Columns</span>
-            </button>
+            <div className="d-flex align-items-center mt-3" style={{ minWidth: 'fit-content', marginLeft: '15px' }}>
+              <button className="purple-btn2" onClick={handleAddColumn}>
+                <span className="material-symbols-outlined align-text-top">
+                  add{" "}
+                </span>
+                <span>Add Columns</span>
+              </button>
+            </div>
           )}
         </div>
         <div className="px-3 py-3">
@@ -1511,36 +1903,39 @@ export default function CreateRFQForm({
                       disabled
                     />
                   ),
-                  pms_brand_id: (cell, rowIndex) => (
-                    <SelectBox
-                      options={brandOptions}
-                      onChange={(value) =>
-                        handleInputChange(value, rowIndex, "pms_brand_id", 0)
-                      }
-                      defaultValue={cell}
-                      disabled
-                    />
-                  ),
-                  pms_colour_id: (cell, rowIndex) => (
-                    <SelectBox
-                      options={pmsColours}
-                      defaultValue={cell}
-                      onChange={(value) =>
-                        handleInputChange(value, rowIndex, "pms_colour_id", 0)
-                      }
-                      disabled
-                    />
-                  ),
-                  generic_info_id: (cell, rowIndex) => (
-                    <SelectBox
-                      options={genericInfoOptions}
-                      defaultValue={cell}
-                      onChange={(value) =>
-                        handleInputChange(value, rowIndex, "generic_info_id", 0)
-                      }
-                      disabled
-                    />
-                  ),
+                  // Only include brand, color, and generic info for materials, not services
+                  ...(isService ? {} : {
+                    pms_brand_id: (cell, rowIndex) => (
+                      <SelectBox
+                        options={brandOptions}
+                        onChange={(value) =>
+                          handleInputChange(value, rowIndex, "pms_brand_id", 0)
+                        }
+                        defaultValue={cell}
+                        disabled
+                      />
+                    ),
+                    pms_colour_id: (cell, rowIndex) => (
+                      <SelectBox
+                        options={pmsColours}
+                        defaultValue={cell}
+                        onChange={(value) =>
+                          handleInputChange(value, rowIndex, "pms_colour_id", 0)
+                        }
+                        disabled
+                      />
+                    ),
+                    generic_info_id: (cell, rowIndex) => (
+                      <SelectBox
+                        options={genericInfoOptions}
+                        defaultValue={cell}
+                        onChange={(value) =>
+                          handleInputChange(value, rowIndex, "generic_info_id", 0)
+                        }
+                        disabled
+                      />
+                    ),
+                  }),
                   ...additionalFields.reduce((acc, field) => {
                     acc[field.field_name] = (cell, rowIndex) =>
                       renderAdminFields(field, rowIndex, 0); // Use renderAdminFields for template-selected fields
@@ -1571,7 +1966,7 @@ export default function CreateRFQForm({
               <div key={section.sectionId} className="card pb-3">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="card-header3" style={{ width: "200px" }}>
-                    <h3 className="card-title">{`Material Type (${
+                    <h3 className="card-title">{`${isService ? 'Service' : 'Material'} Type (${
                       sectionIndex + 1
                     } of ${sections.length})`}</h3>
                   </div>
@@ -1602,39 +1997,47 @@ export default function CreateRFQForm({
                   <div className="p-4 mb-4">
                     <div className="row mt-4">
                       <div className="col-md-8 col-sm-12 d-flex gap-3">
-                        <div className="flex-grow-1">
-                          <SelectBox
-                            label={"Material Type"}
-                            options={sectionOptions}
-                            defaultValue={
-                              section?.sectionData?.some((row) => row?._destroy)
-                                ? "Select Material Type"
-                                : sectionOptions?.find(
-                                    (option) =>
-                                      option.label === section?.materialType
-                                  )?.value || "Select Material Type"
-                            }
-                            onChange={(selected) =>
-                              handleSectionChange(selected, sectionIndex)
-                            }
-                          />
-                        </div>
-                        {/*
-                        <div className="flex-grow-1">
-                          <SelectBox
-                            label={"Sub Material Type"}
-                            options={subSectionOptions}
-                            defaultValue={
-                              subSectionOptions?.find(
-                                (option) => option.value === subTypeId
-                              )?.value || ""
-                            }
-                            onChange={(selected) =>
-                              handleSubSectionChange(selected, sectionIndex)
-                            }
-                          />
-                        </div>
-                        */}
+                        {isService ? (
+                          <>
+                            <div className="flex-grow-1">
+                              <SelectBox
+                                label={"Service Type"}
+                                options={serviceTypeOptions}
+                                defaultValue={serviceTypeOptions.find(opt => opt.label === selectedServiceType)?.value || selectedServiceType}
+                                onChange={(selected) => handleServiceTypeChange(selected)}
+                              />
+                            </div>
+                            <div className="flex-grow-1">
+                              <SelectBox
+                                label={"Sub Service Type"}
+                                options={serviceSubTypeOptions}
+                                defaultValue={serviceSubTypeOptions.find(opt => opt.label === selectedServiceSubType)?.value || selectedServiceSubType}
+                                onChange={(selected) => handleServiceSubTypeChange(selected)}
+                                disabled={!selectedServiceType}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex-grow-1">
+                              <SelectBox
+                                label={"Material Type"}
+                                options={sectionOptions}
+                                defaultValue={
+                                  section?.sectionData?.some((row) => row?._destroy)
+                                    ? "Select Material Type"
+                                    : sectionOptions?.find(
+                                        (option) =>
+                                          option.label === section?.materialType
+                                      )?.value || "Select Material Type"
+                                }
+                                onChange={(selected) =>
+                                  handleSectionChange(selected, sectionIndex)
+                                }
+                              />
+                            </div>
+                          </>
+                        )}
                         {/* Location SelectBox always visible to the right */}
                         <div className="flex-grow-1">
                           <SelectBox
@@ -2113,7 +2516,7 @@ export default function CreateRFQForm({
                         descriptionOfItem: (cell, rowIndex) => {
                           return (
                             <SelectBox
-                              options={materials}
+                              options={isService ? allServicesOptions : materials}
                               onChange={(value) =>
                                 handleDescriptionOfItemChange(
                                   value,
@@ -2126,6 +2529,13 @@ export default function CreateRFQForm({
                                   ?.descriptionOfItem || ""
                               }
                             />
+                          );
+                        },
+                        serviceDescription: (cell, rowIndex) => {
+                          return (
+                            <span>
+                              {section?.sectionData[rowIndex]?.serviceDescription || ""}
+                            </span>
                           );
                         },
                         unit: (cell, rowIndex) => {
@@ -2141,25 +2551,28 @@ export default function CreateRFQForm({
                             </>
                           );
                         },
-                        pms_brand_id: (cell, rowIndex) => {
-                          return (
-                            <SelectBox
-                              options={brandOptions}
-                              onChange={(value) =>
-                                handleInputChange(
-                                  value,
-                                  rowIndex,
-                                  "pms_brand_id",
-                                  sectionIndex
-                                )
-                              }
-                              value={
-                                section?.sectionData[rowIndex]?.pms_brand_id ||
-                                "" // Use pms_brand_id from existing data
-                              }
-                            />
-                          );
-                        },
+                        // Only include brand column for materials, not services
+                        ...(isService ? {} : {
+                          pms_brand_id: (cell, rowIndex) => {
+                            return (
+                              <SelectBox
+                                options={brandOptions}
+                                onChange={(value) =>
+                                  handleInputChange(
+                                    value,
+                                    rowIndex,
+                                    "pms_brand_id",
+                                    sectionIndex
+                                  )
+                                }
+                                value={
+                                  section?.sectionData[rowIndex]?.pms_brand_id ||
+                                  "" // Use pms_brand_id from existing data
+                                }
+                              />
+                            );
+                          },
+                        }),
                         type: (cell, rowIndex) => (
                           <input
                             className="form-control"
@@ -2293,41 +2706,44 @@ export default function CreateRFQForm({
                           }
                           return acc;
                         }, {}),
-                        pms_colour_id: (cell, rowIndex) => (
-                          <SelectBox
-                            options={pmsColours}
-                            defaultValue={
-                              section?.sectionData[rowIndex].pms_colour_id
-                            }
-                            onChange={(value) =>
-                              handleInputChange(
-                                value,
-                                rowIndex,
-                                "pms_colour_id",
-                                sectionIndex
-                              )
-                            }
-                            disabled={isMorSelected}
-                          />
-                        ),
-                        generic_info_id: (cell, rowIndex) => (
-                          <SelectBox
-                            options={genericInfoOptions}
-                            defaultValue={
-                              section?.sectionData[rowIndex]?.generic_info_id ||
-                              ""
-                            }
-                            onChange={(value) =>
-                              handleInputChange(
-                                value,
-                                rowIndex,
-                                "generic_info_id",
-                                sectionIndex
-                              )
-                            }
-                            disabled={isMorSelected}
-                          />
-                        ),
+                        // Only include brand, color, and generic info for materials, not services
+                        ...(isService ? {} : {
+                          pms_colour_id: (cell, rowIndex) => (
+                            <SelectBox
+                              options={pmsColours}
+                              defaultValue={
+                                section?.sectionData[rowIndex].pms_colour_id
+                              }
+                              onChange={(value) =>
+                                handleInputChange(
+                                  value,
+                                  rowIndex,
+                                  "pms_colour_id",
+                                  sectionIndex
+                                )
+                              }
+                              disabled={isMorSelected}
+                            />
+                          ),
+                          generic_info_id: (cell, rowIndex) => (
+                            <SelectBox
+                              options={genericInfoOptions}
+                              defaultValue={
+                                section?.sectionData[rowIndex]?.generic_info_id ||
+                                ""
+                              }
+                              onChange={(value) =>
+                                handleInputChange(
+                                  value,
+                                  rowIndex,
+                                  "generic_info_id",
+                                  sectionIndex
+                                )
+                              }
+                              disabled={isMorSelected}
+                            />
+                          ),
+                        }),
                       }}
                       onRowSelect={undefined}
                       handleCheckboxChange={undefined}

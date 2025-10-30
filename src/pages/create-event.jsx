@@ -18,7 +18,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 export default function CreateEvent() {
   const fileInputRef = useRef(null);
-  const myRef = useRef(null); 
+  const myRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredTableData, setFilteredTableData] = useState([]);
   const [eventTypeModal, setEventTypeModal] = useState(false);
@@ -98,13 +98,13 @@ export default function CreateEvent() {
     company: "",
     organization: "",
   });
-  
+
   const [organizationTypeOptions, setOrganizationTypeOptions] = useState([]);
   const [departmentOptions, setDepartmentOptions] = useState([]);
   const [vendorTypeOptions, setVendorTypeOptions] = useState([]);
   const [natureOfBusinessOptions, setNatureOfBusinessOptions] = useState([]);
   const [companyList, setCompanyList] = useState([]);
-  
+
   // Material selection state for vendor filtering
   const [materialSelectList, setMaterialSelectList] = useState([]);
   const [multiSelectorValue, setMultiSelectorValue] = useState([]);
@@ -185,44 +185,44 @@ export default function CreateEvent() {
   };
 
   const handleSaveSchedule = (data) => {
-  setScheduleData(data);
-  handleEventScheduleModalClose();
+    setScheduleData(data);
+    handleEventScheduleModalClose();
 
-  const formatDateTime = (dateTime) => {
-    if (!dateTime) return "";
+    const formatDateTime = (dateTime) => {
+      if (!dateTime) return "";
 
-    // Parse as UTC and extract UTC components so there's no browser timezone shift
-    const utcDate = new Date(dateTime);
-    const day = String(utcDate.getUTCDate()).padStart(2, "0");
-    const month = String(utcDate.getUTCMonth() + 1).padStart(2, "0");
-    const year = String(utcDate.getUTCFullYear()).slice(-2);
-    let hours = utcDate.getUTCHours();
-    const minutes = String(utcDate.getUTCMinutes()).padStart(2, "0");
+      // Parse as UTC and extract UTC components so there's no browser timezone shift
+      const utcDate = new Date(dateTime);
+      const day = String(utcDate.getUTCDate()).padStart(2, "0");
+      const month = String(utcDate.getUTCMonth() + 1).padStart(2, "0");
+      const year = String(utcDate.getUTCFullYear()).slice(-2);
+      let hours = utcDate.getUTCHours();
+      const minutes = String(utcDate.getUTCMinutes()).padStart(2, "0");
 
-    const ampm = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-    const formattedHours = String(hours).padStart(2, "0");
+      const ampm = hours >= 12 ? "PM" : "AM";
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const formattedHours = String(hours).padStart(2, "0");
 
-    return `${day}/${month}/${year}, ${formattedHours}:${minutes} ${ampm}`;
+      return `${day}/${month}/${year}, ${formattedHours}:${minutes} ${ampm}`;
+    };
+
+    // Format the dates for display without applying local timezone offset
+    const startDateTime = formatDateTime(data.start_time);
+    const endDateTime = formatDateTime(data.end_time_duration);
+
+    const scheduleText = `${startDateTime} to ${endDateTime}`;
+    setEventScheduleText(scheduleText);
   };
-
-  // Format the dates for display without applying local timezone offset
-  const startDateTime = formatDateTime(data.start_time);
-  const endDateTime = formatDateTime(data.end_time_duration);
-
-  const scheduleText = `${startDateTime} to ${endDateTime}`;
-  setEventScheduleText(scheduleText);
-};
 
   const handleVendorTypeModalShow = async () => {
     setVendorModal(true);
-    
+
     // Load initial vendor data with material filter - same pattern as edit-event.jsx
-    const selectedMaterialIds = multiSelectorValue?.map(opt => opt.value) || 
-                               eventDetails?.event_materials?.map(mat => mat.inventory_id) || 
-                               inventoryTypeId || [];
-    
+    const selectedMaterialIds = multiSelectorValue?.map(opt => opt.value) ||
+      eventDetails?.event_materials?.map(mat => mat.inventory_id) ||
+      inventoryTypeId || [];
+
     await fetchVendorsWithMaterialFilter(1, "", selectedMaterialIds);
   };
   const handleVendorTypeModalClose = () => {
@@ -305,7 +305,7 @@ export default function CreateEvent() {
     try {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
-      
+
       // Determine which material IDs to use for filtering
       let materialIdsForFilter;
       if (selectedMaterialIds && selectedMaterialIds.length > 0) {
@@ -317,22 +317,22 @@ export default function CreateEvent() {
 
       // Construct API URL with proper parameters - format array as [63,64]
       let apiUrl = `${baseURL}rfq/events/vendor_list?token=${token}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${encodeURIComponent(searchTerm)}`;
-      
+
       if (materialIdsForFilter.length > 0) {
         const formattedIds = `[${materialIdsForFilter.join(',')}]`;
         apiUrl += `&q[supplier_product_and_services_resource_id_in]=${formattedIds}`;
       }
-      
+
       console.log("Fetching vendors with URL:", apiUrl);
       console.log("Material IDs for filtering:", materialIdsForFilter);
-      
+
       const response = await fetch(apiUrl);
       const data = await response.json();
-      
+
       console.log("Vendor API response:", data);
 
       const vendors = Array.isArray(data.vendors) ? data.vendors : [];
-      
+
       const formattedData = vendors.map((vendor) => ({
         id: vendor.id,
         pms_supplier_id: vendor.id,
@@ -361,7 +361,7 @@ export default function CreateEvent() {
 
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
     const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+    const token = urlParams.get("token");
     if (searchTerm == "") {
     }
     setLoading(true);
@@ -397,7 +397,7 @@ export default function CreateEvent() {
 
   useEffect(() => {
     fetchData();
-    
+
     // Fetch material types for MultiSelector
     const fetchMaterialTypes = async () => {
       try {
@@ -405,16 +405,16 @@ export default function CreateEvent() {
         const token = urlParams.get("token");
         const response = await fetch(`${baseURL}rfq/events/material_types?token=${token}`);
         const data = await response.json();
-        
+
         console.log("Raw material types API response:", data);
-        
+
         setMaterialSelectList(
           (data.inventory_types || []).map((material) => ({
             label: material.name,
             value: material.value,
           }))
         );
-        
+
         console.log("Processed material types for MultiSelector:", (data.inventory_types || []).map((material) => ({
           label: material.name,
           value: material.value,
@@ -423,14 +423,14 @@ export default function CreateEvent() {
         console.error("Error fetching material types:", error);
       }
     };
-    
+
     fetchMaterialTypes();
   }, []);
 
   // Set default MultiSelector value when materialFormData changes - same pattern as edit-event.jsx
   useEffect(() => {
-    console.log("materialFormData:-",materialFormData);
-    
+    console.log("materialFormData:-", materialFormData);
+
     if (materialFormData?.[0]?.inventory_type_id && materialSelectList?.length > 0) {
       const defaultOption = materialSelectList.find(
         (opt) => String(opt.value) === String(materialFormData[0].inventory_type_id)
@@ -445,14 +445,14 @@ export default function CreateEvent() {
   useEffect(() => {
     if (vendorModal && filteredTableData.length > 0 && selectedVendors.length > 0) {
       const currentlySelectedVendors = filteredTableData.filter(vendor =>
-        selectedVendors.some(selectedVendor => 
-          selectedVendor.id === vendor.id || 
+        selectedVendors.some(selectedVendor =>
+          selectedVendor.id === vendor.id ||
           selectedVendor.pms_supplier_id === vendor.id ||
           selectedVendor.id === vendor.pms_supplier_id ||
           selectedVendor.pms_supplier_id === vendor.pms_supplier_id
         )
       );
-      
+
       if (currentlySelectedVendors.length > 0) {
         console.log("Setting selectedRows from already selected vendors:", currentlySelectedVendors);
         setSelectedRows(currentlySelectedVendors);
@@ -487,17 +487,17 @@ export default function CreateEvent() {
 
   const handleCheckboxChange = (vendor, isChecked) => {
     console.log("Checkbox change:", vendor, isChecked);
-    
+
     if (isChecked) {
       // Add vendor to selectedRows if not already present
       setSelectedRows((prev) => {
-        const isAlreadySelected = prev.some(item => 
-          item.id === vendor.id || 
+        const isAlreadySelected = prev.some(item =>
+          item.id === vendor.id ||
           item.pms_supplier_id === vendor.id ||
           item.id === vendor.pms_supplier_id ||
           item.pms_supplier_id === vendor.pms_supplier_id
         );
-        
+
         if (!isAlreadySelected) {
           return [...prev, vendor];
         }
@@ -505,16 +505,16 @@ export default function CreateEvent() {
       });
     } else {
       // Remove vendor from selectedRows
-      setSelectedRows((prev) => prev.filter((item) => 
-        item.id !== vendor.id && 
+      setSelectedRows((prev) => prev.filter((item) =>
+        item.id !== vendor.id &&
         item.pms_supplier_id !== vendor.id &&
         item.id !== vendor.pms_supplier_id &&
         item.pms_supplier_id !== vendor.pms_supplier_id
       ));
-      
+
       // Also remove from selectedVendors if it's there (for immediate deselection)
-      setSelectedVendors((prev) => prev.filter((item) => 
-        item.id !== vendor.id && 
+      setSelectedVendors((prev) => prev.filter((item) =>
+        item.id !== vendor.id &&
         item.pms_supplier_id !== vendor.id &&
         item.id !== vendor.pms_supplier_id &&
         item.pms_supplier_id !== vendor.pms_supplier_id
@@ -525,21 +525,21 @@ export default function CreateEvent() {
   const handleSaveButtonClick = () => {
     console.log("Save button clicked. Selected rows:", selectedRows);
     console.log("Current selected vendors:", selectedVendors);
-    
+
     // Update selectedVendors to match current selectedRows state
     const newSelectedVendors = selectedRows.map((vendor) => ({
       ...vendor,
       id: vendor.id || vendor.pms_supplier_id,
       pms_supplier_id: vendor.pms_supplier_id || vendor.id,
     }));
-    
+
     console.log("New selected vendors:", newSelectedVendors);
     setSelectedVendors(newSelectedVendors);
 
     // Remove deselected vendors from filteredTableData and add them back to tableData
     const deselectedVendors = selectedVendors.filter(selectedVendor =>
-      !selectedRows.some(row => 
-        row.id === selectedVendor.id || 
+      !selectedRows.some(row =>
+        row.id === selectedVendor.id ||
         row.pms_supplier_id === selectedVendor.id ||
         row.id === selectedVendor.pms_supplier_id ||
         row.pms_supplier_id === selectedVendor.pms_supplier_id
@@ -579,15 +579,15 @@ export default function CreateEvent() {
   const isVendorSelected = (vendorId) => {
     // Check if vendor is in selectedRows (currently being selected in modal)
     const isInSelectedRows = selectedRows.some((vendor) => vendor.id === vendorId || vendor.pms_supplier_id === vendorId);
-    
+
     // Check if vendor is already in selectedVendors (previously saved selections)
-    const isInSelectedVendors = selectedVendors.some((vendor) => 
-      vendor.id === vendorId || 
+    const isInSelectedVendors = selectedVendors.some((vendor) =>
+      vendor.id === vendorId ||
       vendor.pms_supplier_id === vendorId ||
       (vendor.id && vendor.id === vendorId) ||
       (vendor.pms_supplier_id && vendor.pms_supplier_id === vendorId)
     );
-    
+
     return isInSelectedRows || isInSelectedVendors;
   };
 
@@ -618,10 +618,10 @@ export default function CreateEvent() {
         textareas.map((textarea) =>
           textarea.id === id
             ? {
-                id: textarea.id,
-                value: selectedCondition.condition,
-                textareaId: selectedCondition.value,
-              }
+              id: textarea.id,
+              value: selectedCondition.condition,
+              textareaId: selectedCondition.value,
+            }
             : textarea
         )
       );
@@ -673,7 +673,7 @@ export default function CreateEvent() {
       inputElement.value = ""; // Clear input value
     }
   };
-      // {"documentRows:---",documentRows}
+  // {"documentRows:---",documentRows}
 
   const appendFormData = (formData, data, parentKey = "") => {
     if (data && typeof data === "object" && !(data instanceof File)) {
@@ -704,18 +704,18 @@ export default function CreateEvent() {
   // Utility to get ISO string in UTC format with Z
   const toUTCISOString = (dateTime) => {
     if (!dateTime) return "";
-    
+
     // If dateTime is already in correct ISO format, return as is
     if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
       return dateTime;
     }
-    
+
     const date = new Date(dateTime);
     if (isNaN(date.getTime())) {
       console.warn("Invalid dateTime passed to toUTCISOString:", dateTime);
       return "";
     }
-    
+
     // Return ISO string in UTC format with Z
     return date.toISOString();
   };
@@ -737,7 +737,7 @@ export default function CreateEvent() {
       });
       return;
     }
-    
+
 
     setSubmitted(true);
     const eventData = {
@@ -859,8 +859,9 @@ export default function CreateEvent() {
     };
 
     const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
-
+    const token = urlParams.get("token");
+    
+      console.log('eventData:--', eventData);
     try {
       const response = await fetch(
         `${baseURL}rfq/events?token=${token}`,
@@ -873,10 +874,10 @@ export default function CreateEvent() {
         }
       );
       console.log('scheduleData:--', scheduleData);
-      
+
       console.log('eventData:--', eventData);
-      
-      
+
+
       if (response.ok) {
         const responseData = await response.json(); // Parse the response to get event details
         console.log("Response data:", responseData);
@@ -907,7 +908,7 @@ export default function CreateEvent() {
 
   const handleSuccessModalClose = () => {
     const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+    const token = urlParams.get("token");
     setShowSuccessModal(false);
     navigate(`/event-list?token=${token}`);
   };
@@ -973,7 +974,7 @@ export default function CreateEvent() {
   // Fetch terms and conditions from the API
   const fetchTermsAndConditions = async () => {
     const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+    const token = urlParams.get("token");
     try {
       const response = await fetch(
         `${baseURL}rfq/events/terms_and_conditions?token=${token}&page=1`
@@ -992,11 +993,11 @@ export default function CreateEvent() {
 
   useEffect(() => {
     fetchTermsAndConditions();
-    
+
     // Fetch organization type list from API
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
-    
+
     fetch(`${baseURL}rfq/events/type_of_organizations_list?token=${token}`)
       .then((res) => res.json())
       .then((data) => {
@@ -1009,7 +1010,7 @@ export default function CreateEvent() {
           setOrganizationTypeOptions(options);
         }
       });
-      
+
     // Fetch department list from API
     fetch(`${baseURL}rfq/events/department_list?token=${token}`)
       .then((res) => res.json())
@@ -1023,7 +1024,7 @@ export default function CreateEvent() {
           setDepartmentOptions(options);
         }
       });
-      
+
     // Fetch vendor type list from API
     fetch(`${baseURL}rfq/events/supplier_type_list?token=${token}`)
       .then((res) => res.json())
@@ -1037,7 +1038,7 @@ export default function CreateEvent() {
           setVendorTypeOptions(options);
         }
       });
-      
+
     // Fetch nature of business list from API
     fetch(`${baseURL}rfq/events/nature_of_business_list?token=${token}`)
       .then((res) => res.json())
@@ -1091,7 +1092,7 @@ export default function CreateEvent() {
     setIsInvite(true);
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
-    
+
     try {
       const response = await fetch(
         `${baseURL}rfq/events/invite_vendors?token=${token}&add_vendor=true`,
@@ -1153,7 +1154,7 @@ export default function CreateEvent() {
       } else {
         const errorData = await response.json();
         console.error("Error inviting vendor:", errorData);
-        
+
         // Handle specific status codes
         if (response.status === 402) {
           // Show API error message for 402 status
@@ -1241,7 +1242,7 @@ export default function CreateEvent() {
       errors.department = "Department is required";
       toast.error(errors.department);
     }
-    
+
     console.log("Validation errors:", errors);
     return errors;
   };
@@ -1266,30 +1267,30 @@ export default function CreateEvent() {
   };
 
   const handleOrganizationTypeChange = (selectedOption) => {
-    setInviteVendorData((prev) => ({ 
-      ...prev, 
-      organizationType: selectedOption ? selectedOption.value : '' 
+    setInviteVendorData((prev) => ({
+      ...prev,
+      organizationType: selectedOption ? selectedOption.value : ''
     }));
   };
-  
+
   const handleDepartmentChange = (selectedOption) => {
-    setInviteVendorData((prev) => ({ 
-      ...prev, 
-      department: selectedOption ? selectedOption.value : '' 
+    setInviteVendorData((prev) => ({
+      ...prev,
+      department: selectedOption ? selectedOption.value : ''
     }));
   };
-  
+
   const handleVendorTypeChange = (selectedOption) => {
-    setInviteVendorData((prev) => ({ 
-      ...prev, 
-      vendorType: selectedOption ? selectedOption.value : '' 
+    setInviteVendorData((prev) => ({
+      ...prev,
+      vendorType: selectedOption ? selectedOption.value : ''
     }));
   };
-  
+
   const handleNatureOfBusinessChange = (selectedOption) => {
-    setInviteVendorData((prev) => ({ 
-      ...prev, 
-      natureOfBusiness: selectedOption ? selectedOption.value : '' 
+    setInviteVendorData((prev) => ({
+      ...prev,
+      natureOfBusiness: selectedOption ? selectedOption.value : ''
     }));
   };
 
@@ -1314,79 +1315,79 @@ export default function CreateEvent() {
         </div>
         <div className="pt-3" ref={myRef}>
           <div className="module-data-section mx-3">
-              <div className="row align-items-end justify-items-end mb-5 mt-3">
-                <div className="col-md-4 col-sm-6 mt-0 mb-2">
-                  <div className="form-group">
-                    <label className="po-fontBold">
-                      Event Name
-                    </label>
-                  </div>
+            <div className="row align-items-end justify-items-end mb-5 mt-3">
+              <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Name
+                  </label>
+                </div>
+                <input
+                  className="form-control"
+                  placeholder="Enter Event Name"
+                  value={eventName}
+                  onChange={(e) => seteventName(e.target.value)}
+                />
+              </div>
+              <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Type <span style={{ color: "red" }}>*</span>
+                  </label>
+                </div>
+                <input
+                  className="form-control"
+                  onClick={handleEventTypeModalShow}
+                  placeholder="Configure The Event"
+                  value={eventTypeText} // Display the selected event type
+                  readOnly
+                />
+              </div>
+              <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                <div className="form-group">
+                  <label className="po-fontBold">Created On</label>
                   <input
                     className="form-control"
-                    placeholder="Enter Event Name"
-                    value={eventName}
-                    onChange={(e) => seteventName(e.target.value)}
+                    type="date"
+                    defaultValue={createdOn} // Sets default value to today's date
+                    readOnly // Prevents user from changing the value
+                    style={{
+                      backgroundColor: "#f5f5f5", // Light gray background to show it is readonly
+                      color: "#888", // Light gray text color to indicate it's not editable
+                      cursor: "not-allowed", // Show the cursor as not allowed
+                      borderColor: "#ddd", // Lighter border color
+                    }}
                   />
                 </div>
-                <div className="col-md-4 col-sm-6 mt-0 mb-2">
-                  <div className="form-group">
-                    <label className="po-fontBold">
-                      Event Type <span style={{ color: "red" }}>*</span>
-                    </label>
-                  </div>
-                  <input
-                    className="form-control"
-                    onClick={handleEventTypeModalShow}
-                    placeholder="Configure The Event"
-                    value={eventTypeText} // Display the selected event type
-                    readOnly
-                  />
+              </div>
+              <div className="col-md-4 col-sm-6 mt-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Schedule <span style={{ color: "red" }}>*</span>
+                  </label>
                 </div>
-                <div className="col-md-4 col-sm-6 mt-0 mb-2">
-                  <div className="form-group">
-                    <label className="po-fontBold">Created On</label>
-                    <input
-                      className="form-control"
-                      type="date"
-                      defaultValue={createdOn} // Sets default value to today's date
-                      readOnly // Prevents user from changing the value
-                      style={{
-                        backgroundColor: "#f5f5f5", // Light gray background to show it is readonly
-                        color: "#888", // Light gray text color to indicate it's not editable
-                        cursor: "not-allowed", // Show the cursor as not allowed
-                        borderColor: "#ddd", // Lighter border color
-                      }}
-                    />
-                  </div>
+                <input
+                  className="form-control"
+                  onClick={handleEventScheduleModalShow}
+                  placeholder="Select Event Schedule Details"
+                  value={eventScheduleText}
+                  readOnly
+                />
+              </div>
+              <div className="col-md-4 col-sm-6 mt-2">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Event Description <span style={{ color: "red" }}>*</span>
+                  </label>
                 </div>
-                <div className="col-md-4 col-sm-6 mt-2">
-                  <div className="form-group">
-                    <label className="po-fontBold">
-                      Event Schedule <span style={{ color: "red" }}>*</span>
-                    </label>
-                  </div>
-                  <input
-                    className="form-control"
-                    onClick={handleEventScheduleModalShow}
-                    placeholder="Select Event Schedule Details"
-                    value={eventScheduleText}
-                    readOnly
-                  />
-                </div>
-                <div className="col-md-4 col-sm-6 mt-2">
-                  <div className="form-group">
-                    <label className="po-fontBold">
-                      Event Description <span style={{ color: "red" }}>*</span>
-                    </label>
-                  </div>
-                  <textarea
-                    className="form-control"
-                    placeholder="Enter Event Description"
-                    value={eventDescription}
-                    onChange={(e) => setEventDescription(e.target.value)}
-                  />
-                </div>
-                {/* <div className="col-md-4 col-sm-6 mt-2">
+                <textarea
+                  className="form-control"
+                  placeholder="Enter Event Description"
+                  value={eventDescription}
+                  onChange={(e) => setEventDescription(e.target.value)}
+                />
+              </div>
+              {/* <div className="col-md-4 col-sm-6 mt-2">
                   <div className="form-group">
                     <label className="po-fontBold">Event Status</label>
                   </div>
@@ -1403,7 +1404,7 @@ export default function CreateEvent() {
                     defaultValue={eventStatus}
                   />
                 </div> */}
-                {/* <div className="col-md-4 col-sm-6 mt-2">
+              {/* <div className="col-md-4 col-sm-6 mt-2">
                   <div className="form-group">
                     <label className="po-fontBold">
                       Savings Summary
@@ -1417,345 +1418,346 @@ export default function CreateEvent() {
                     onClick={handleSavingsSummaryModalShow}
                   />
                 </div> */}
-              </div>
-              <CreateRFQForm
-                data={materialFormData}
-                setData={setMaterialFormData}
-                isService={isService}
-                deliveryData={[]}
-                updateSelectedTemplate={setSelectedTemplate}
-                updateBidTemplateFields={setBidTemplateFields}
-                updateAdditionalFields={setAdditionalFields}
-                isMor={true}
-              />
-              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-                <h5 className=" ">
-                  Select Vendors{" "}
-                  <span style={{ color: "red", fontSize: "16px" }}>*</span>
-                </h5>
-                <div className="card-tools">
-                  <button
-                    className="purple-btn2"
-                    data-bs-toggle="modal"
-                    data-bs-target="#venderModal"
-                    onClick={handleVendorTypeModalShow}
-                  >
-                    <span className="material-symbols-outlined align-text-top me-2">
-                      add{" "}
-                    </span>
-                    <span>Add</span>
-                  </button>
-                </div>
-              </div>
-              <div className="row justify-content-center mx-1">
-                <div
-                  className="tbl-container px-0 mx-5 mt-3"
-                  style={{ maxHeight: "250px", overflowY: "auto" }}
-                >
-                  <table className="w-100">
-                    <thead>
-                      <tr>
-                        <th style={{ width: "100px" }}>Sr No.</th>
-                        <th>Vendor Name</th>
-                        <th>Organization</th>
-                        <th>Mob No.</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {isInvite ? (
-                        <tr>
-                          <td colSpan="6">
-                            <div className="loader-container">
-                              <div className="lds-ring">
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                              </div>
-                              <p>Loading...</p>
-                            </div>
-                          </td>
-                        </tr>
-                      ) : selectedVendors.length > 0 ? (
-                        selectedVendors
-                          .filter(
-                            (vendor, index, self) =>
-                              index ===
-                              self.findIndex((v) => v.id === vendor.id)
-                          )
-                          .map((vendor, index) => (
-                            <tr key={vendor.id}>
-                              <td style={{ width: "100px" }}>{index + 1}</td>
-                              <td>{vendor.name}</td>
-                              <td>{vendor.organisation || "-"}</td>
-                              <td>{vendor.phone}</td>
-                              <td>Invited</td>
-                              <td>
-                                <button
-                                  className="btn btn-danger"
-                                  onClick={() => handleRemoveVendor(vendor.id)}
-                                >
-                                  Remove
-                                </button>
-                              </td>
-                            </tr>
-                          ))
-                      ) : (
-                        <tr>
-                          <td colSpan="5" className="text-center">
-                            No vendors selected
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div>
-                <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-                  <h5 className="mt-3">
-                    Document Attachments{" "}
-                    <span style={{ color: "red", fontSize: "16px" }}>*</span>
-                  </h5>
-                  <button
-                    className="purple-btn2 mt-3"
-                    onClick={handleAddDocumentRow}
-                  >
-                    <span className="material-symbols-outlined align-text-top me-2">
-                      add
-                    </span>
-                    <span>Add</span>
-                  </button>
-                </div>
-                {/* Show filename in a separate column, like edit event */}
-                <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
-  <table className="w-100">
-    <thead>
-      <tr>
-        <th className="main2-th">File Type</th>
-        <th className="main2-th">File Name </th>
-        <th className="main2-th">Upload At</th>
-        <th className="main2-th">Upload File</th>
-        <th className="main2-th" style={{ width: 100 }}>
-          Action
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      {documentRows.map((row, index) => (
-        <tr key={row.id || index}>
-          <td>
-            <input
-              className="form-control document_content_type"
-              readOnly
-              disabled
-              value={row.fileType || row.content_type || ""}
-              placeholder="File Type"
-            />
-          </td>
-          <td>
-            <input
-              className="form-control file_name"
-              required
-              value={row.fileName || row.document_name || "no files selected yet"}
-              onChange={e => {
-                setDocumentRows(prev => {
-                  const updated = [...prev];
-                  updated[index] = {
-                    ...updated[index],
-                    fileName: e.target.value,
-                  };
-                  return updated;
-                });
-              }}
-            />
-          </td>
-          <td>
-            <input
-              className="form-control created_at"
-              readOnly
-              disabled
-              type="datetime-local"
-              step="1"
-              value={
-                row.uploadDate ||
-                (row.created_at
-                  ? new Date(row.created_at).toISOString().slice(0, 19)
-                  : "")
-              }
-            />
-          </td>
-          <td>
-            {!row.isExisting && (
-              <input
-                type="file"
-                className="form-control"
-                required
-
-onChange={e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    const base64String = reader.result.split(",")[1];
-    
-    // Get current time in IST
-    const now = new Date();
-    const istTime = new Intl.DateTimeFormat('sv-SE', {
-      timeZone: 'Asia/Kolkata',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    }).format(now).replace(' ', 'T');
-    
-    setDocumentRows(prev => {
-      const updated = [...prev];
-      updated[index] = {
-        ...updated[index],
-        upload: {
-          filename: file.name,
-          content: base64String,
-          content_type: file.type,
-        },
-        fileName: file.name,
-        fileType: file.type,
-        isExisting: false,
-        uploadDate: istTime, // Set current IST time
-      };
-      return updated;
-    });
-  };
-  reader.readAsDataURL(file);
-}}
-              />
-            )}
-          </td>
-          <td className="document">
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <div className="attachment-placeholder">
-                {row.isExisting && row.fileUrl && (
-                  <div className="file-box">
-                    <div className="image">
-                      <a href={row.fileUrl} target="_blank" rel="noreferrer">
-                        <img
-                          alt="preview"
-                          className="img-responsive"
-                          height={50}
-                          width={50}
-                          src={row.fileUrl}
-                        />
-                      </a>
-                    </div>
-                    <div className="file-name">
-                      <a href={row.fileUrl} download>
-                        <span className="material-symbols-outlined">file_download</span>
-                      </a>
-                      <span>{row.fileName || row.filename}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <button
-                type="button"
-                className="btn btn-sm btn-link text-danger"
-                onClick={() => {
-                  setDocumentRows(prev => {
-                    // if (prev.length === 1) return prev;
-                    const updated = [...prev];
-                    updated.splice(index, 1);
-                    return updated;
-                  });
-                }}
-                disabled={documentRows.length === 1}
-              >
-                <span className="material-symbols-outlined">cancel</span>
-              </button>
             </div>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
+            <CreateRFQForm
+              data={materialFormData}
+              setData={setMaterialFormData}
+              isService={isService}
+              deliveryData={[]}
+              updateSelectedTemplate={setSelectedTemplate}
+              updateBidTemplateFields={setBidTemplateFields}
+              updateAdditionalFields={setAdditionalFields}
+              isMor={true}
+            />
+            
+            <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+              <h5 className=" ">
+                Select Vendors{" "}
+                <span style={{ color: "red", fontSize: "16px" }}>*</span>
+              </h5>
+              <div className="card-tools">
+                <button
+                  className="purple-btn2"
+                  data-bs-toggle="modal"
+                  data-bs-target="#venderModal"
+                  onClick={handleVendorTypeModalShow}
+                >
+                  <span className="material-symbols-outlined align-text-top me-2">
+                    add{" "}
+                  </span>
+                  <span>Add</span>
+                </button>
               </div>
-
-              <div>
-                <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-                  <h5 className="mt-3">
-                    Terms & Conditions{" "}
-                    <span style={{ color: "red", fontSize: "16px" }}>*</span>
-                  </h5>
-                  <button
-                    className="purple-btn2 mt-3"
-                    onClick={handleAddTextarea}
-                  >
-                    <span className="material-symbols-outlined align-text-top me-2">
-                      add
-                    </span>
-                    <span>Add</span>
-                  </button>
-                </div>
-
-                <table className="tbl-container w-100">
+            </div>
+            <div className="row justify-content-center mx-1">
+              <div
+                className="tbl-container px-0 mx-5 mt-3"
+                style={{ maxHeight: "250px", overflowY: "auto" }}
+              >
+                <table className="w-100">
                   <thead>
                     <tr>
-                      <th>Condition Category</th>
-                      <th>Condition</th>
+                      <th style={{ width: "100px" }}>Sr No.</th>
+                      <th>Vendor Name</th>
+                      <th>Organization</th>
+                      <th>Mob No.</th>
+                      <th>Status</th>
                       <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {textareas.map((textarea, idx) => (
-                      <tr key={idx}>
-                        <td>
-                          <SelectBox
-                            options={termsOptions.map((option) => ({
-                              label: option.label,
-                              value: option.value,
-                            }))}
-                            onChange={(option) =>
-                              handleConditionChange(textarea.id, option)
-                            }
-                            defaultValue={
-                              termsOptions.find(
-                                (option) => option.condition === textarea.value
-                              )?.value
-                            }
-                          />
+                    {isInvite ? (
+                      <tr>
+                        <td colSpan="6">
+                          <div className="loader-container">
+                            <div className="lds-ring">
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                              <div></div>
+                            </div>
+                            <p>Loading...</p>
+                          </div>
                         </td>
+                      </tr>
+                    ) : selectedVendors.length > 0 ? (
+                      selectedVendors
+                        .filter(
+                          (vendor, index, self) =>
+                            index ===
+                            self.findIndex((v) => v.id === vendor.id)
+                        )
+                        .map((vendor, index) => (
+                          <tr key={vendor.id}>
+                            <td style={{ width: "100px" }}>{index + 1}</td>
+                            <td>{vendor.name}</td>
+                            <td>{vendor.organisation || "-"}</td>
+                            <td>{vendor.phone}</td>
+                            <td>Invited</td>
+                            <td>
+                              <button
+                                className="btn btn-danger"
+                                onClick={() => handleRemoveVendor(vendor.id)}
+                              >
+                                Remove
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" className="text-center">
+                          No vendors selected
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                <h5 className="mt-3">
+                  Document Attachments{" "}
+                  <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                </h5>
+                <button
+                  className="purple-btn2 mt-3"
+                  onClick={handleAddDocumentRow}
+                >
+                  <span className="material-symbols-outlined align-text-top me-2">
+                    add
+                  </span>
+                  <span>Add</span>
+                </button>
+              </div>
+              {/* Show filename in a separate column, like edit event */}
+              <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th className="main2-th">File Type</th>
+                      <th className="main2-th">File Name </th>
+                      <th className="main2-th">Upload At</th>
+                      <th className="main2-th">Upload File</th>
+                      <th className="main2-th" style={{ width: 100 }}>
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {documentRows.map((row, index) => (
+                      <tr key={row.id || index}>
                         <td>
-                          <textarea
-                            className="form-control"
-                            value={textarea.value}
+                          <input
+                            className="form-control document_content_type"
                             readOnly
+                            disabled
+                            value={row.fileType || row.content_type || ""}
+                            placeholder="File Type"
                           />
                         </td>
                         <td>
-                          <button
-                            className="btn btn-danger"
-                            onClick={() => handleRemoveTextarea(textarea.id)}
-                            // disabled={idx === 0}
-                          >
-                            Remove
-                          </button>
+                          <input
+                            className="form-control file_name"
+                            required
+                            value={row.fileName || row.document_name || "no files selected yet"}
+                            onChange={e => {
+                              setDocumentRows(prev => {
+                                const updated = [...prev];
+                                updated[index] = {
+                                  ...updated[index],
+                                  fileName: e.target.value,
+                                };
+                                return updated;
+                              });
+                            }}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control created_at"
+                            readOnly
+                            disabled
+                            type="datetime-local"
+                            step="1"
+                            value={
+                              row.uploadDate ||
+                              (row.created_at
+                                ? new Date(row.created_at).toISOString().slice(0, 19)
+                                : "")
+                            }
+                          />
+                        </td>
+                        <td>
+                          {!row.isExisting && (
+                            <input
+                              type="file"
+                              className="form-control"
+                              required
+
+                              onChange={e => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  const base64String = reader.result.split(",")[1];
+
+                                  // Get current time in IST
+                                  const now = new Date();
+                                  const istTime = new Intl.DateTimeFormat('sv-SE', {
+                                    timeZone: 'Asia/Kolkata',
+                                    year: 'numeric',
+                                    month: '2-digit',
+                                    day: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                    hour12: false
+                                  }).format(now).replace(' ', 'T');
+
+                                  setDocumentRows(prev => {
+                                    const updated = [...prev];
+                                    updated[index] = {
+                                      ...updated[index],
+                                      upload: {
+                                        filename: file.name,
+                                        content: base64String,
+                                        content_type: file.type,
+                                      },
+                                      fileName: file.name,
+                                      fileType: file.type,
+                                      isExisting: false,
+                                      uploadDate: istTime, // Set current IST time
+                                    };
+                                    return updated;
+                                  });
+                                };
+                                reader.readAsDataURL(file);
+                              }}
+                            />
+                          )}
+                        </td>
+                        <td className="document">
+                          <div style={{ display: "flex", alignItems: "center" }}>
+                            <div className="attachment-placeholder">
+                              {row.isExisting && row.fileUrl && (
+                                <div className="file-box">
+                                  <div className="image">
+                                    <a href={row.fileUrl} target="_blank" rel="noreferrer">
+                                      <img
+                                        alt="preview"
+                                        className="img-responsive"
+                                        height={50}
+                                        width={50}
+                                        src={row.fileUrl}
+                                      />
+                                    </a>
+                                  </div>
+                                  <div className="file-name">
+                                    <a href={row.fileUrl} download>
+                                      <span className="material-symbols-outlined">file_download</span>
+                                    </a>
+                                    <span>{row.fileName || row.filename}</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-link text-danger"
+                              onClick={() => {
+                                setDocumentRows(prev => {
+                                  // if (prev.length === 1) return prev;
+                                  const updated = [...prev];
+                                  updated.splice(index, 1);
+                                  return updated;
+                                });
+                              }}
+                              disabled={documentRows.length === 1}
+                            >
+                              <span className="material-symbols-outlined">cancel</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div className="row mt-4 mt-3">
-                {/* <h5>Audit Log</h5>
+            </div>
+
+            <div>
+              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
+                <h5 className="mt-3">
+                  Terms & Conditions{" "}
+                  <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                </h5>
+                <button
+                  className="purple-btn2 mt-3"
+                  onClick={handleAddTextarea}
+                >
+                  <span className="material-symbols-outlined align-text-top me-2">
+                    add
+                  </span>
+                  <span>Add</span>
+                </button>
+              </div>
+
+              <table className="tbl-container w-100">
+                <thead>
+                  <tr>
+                    <th>Condition Category</th>
+                    <th>Condition</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {textareas.map((textarea, idx) => (
+                    <tr key={idx}>
+                      <td>
+                        <SelectBox
+                          options={termsOptions.map((option) => ({
+                            label: option.label,
+                            value: option.value,
+                          }))}
+                          onChange={(option) =>
+                            handleConditionChange(textarea.id, option)
+                          }
+                          defaultValue={
+                            termsOptions.find(
+                              (option) => option.condition === textarea.value
+                            )?.value
+                          }
+                        />
+                      </td>
+                      <td>
+                        <textarea
+                          className="form-control"
+                          value={textarea.value}
+                          readOnly
+                        />
+                      </td>
+                      <td>
+                        <button
+                          className="btn btn-danger"
+                          onClick={() => handleRemoveTextarea(textarea.id)}
+                        // disabled={idx === 0}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="row mt-4 mt-3">
+              {/* <h5>Audit Log</h5>
             <div className="mx-0">
               <div className="tbl-container px-0 mt-3">
                 <table className="w-100">
@@ -1803,50 +1805,47 @@ onChange={e => {
               </div>
             </div> */}
 
-                <EventScheduleModal
-                  deliveryDate={dynamicExtensionConfigurations.delivery_date}
-                  show={eventScheduleModal}
-                  onHide={handleEventScheduleModalClose}
-                  handleSaveSchedule={handleSaveSchedule}
-                />
+              <EventScheduleModal
+                deliveryDate={dynamicExtensionConfigurations.delivery_date}
+                show={eventScheduleModal}
+                onHide={handleEventScheduleModalClose}
+                handleSaveSchedule={handleSaveSchedule}
+              />
+            </div>
+            <div className="row mt-2 justify-content-end align-items-center mt-4">
+              <div className="col-md-2">
+                <button
+                  className={
+                    submitted ? "disabled-btn w-100" : "purple-btn2 w-100"
+                  }
+                  onClick={handleSubmit}
+                  disabled={submitted}
+                >
+                  {submitted ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Creating...
+                    </>
+                  ) : (
+                    "Submit"
+                  )}
+                </button>
               </div>
-              <div className="row mt-2 justify-content-end align-items-center mt-4">
-                <div className="col-md-2">
-                  <button className="purple-btn2 w-100">Preview</button>
-                </div>
-                <div className="col-md-2">
-                  <button
-                    className={
-                      submitted ? "disabled-btn w-100" : "purple-btn2 w-100"
-                    }
-                    onClick={handleSubmit}
-                    disabled={submitted}
-                  >
-                    {submitted ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        Creating...
-                      </>
-                    ) : (
-                      "Submit"
-                    )}
-                  </button>
-                </div>
-                <div className="col-md-2">
-                  <button
-                    className="purple-btn1 w-100"
-                    onClick={() => {
-                      const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
-                      navigate(
-                        `/event-list?token=${token}/event-list`
-                      );
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
+              <div className="col-md-2">
+                <button
+                  className="purple-btn1 w-100"
+                  onClick={() => {
+                    const urlParams = new URLSearchParams(location.search);
+                    const token = urlParams.get("token");
+                    navigate(
+                      `/event-list?token=${token}/event-list`
+                    );
+                  }}
+                >
+                  Cancel
+                </button>
               </div>
+            </div>
             {/* // vendor model with vendor data */}
             <DynamicModalBox
               size="xl"
@@ -1895,7 +1894,7 @@ onChange={e => {
                             <SearchIcon />
                           </button>
                         </div>
-                        
+
                         <div className="w-25 ms-3">
                           <MultiSelector
                             options={materialSelectList}
@@ -1912,7 +1911,7 @@ onChange={e => {
                                     ? [eventDetails.event_materials[0].inventory_id]
                                     : [];
                                 }
-                                
+
                                 // Call the enhanced function
                                 await fetchVendorsWithMaterialFilter(1, searchTerm, selectedValues);
                               } catch (error) {
@@ -2021,9 +2020,9 @@ onChange={e => {
                         columns={participantsTabColumns}
                         showCheckbox={true}
                         data={filteredTableData.map((vendor, index) => ({
-                            ...vendor,
-                            srNo: (currentPage - 1) * pageSize + index + 1,
-                          }))}
+                          ...vendor,
+                          srNo: (currentPage - 1) * pageSize + index + 1,
+                        }))}
                         handleCheckboxChange={handleCheckboxChange}
                         isRowSelected={isVendorSelected}
                         resetSelectedRows={resetSelectedRows}
@@ -2044,9 +2043,8 @@ onChange={e => {
                     <ul className="pagination justify-content-center d-flex ">
                       {/* First Button */}
                       <li
-                        className={`page-item ${
-                          currentPage === 1 ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === 1 ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -2058,9 +2056,8 @@ onChange={e => {
 
                       {/* Previous Button */}
                       <li
-                        className={`page-item ${
-                          currentPage === 1 ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === 1 ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -2075,9 +2072,8 @@ onChange={e => {
                       {getPageRange().map((pageNumber) => (
                         <li
                           key={pageNumber}
-                          className={`page-item ${
-                            currentPage === pageNumber ? "active" : ""
-                          }`}
+                          className={`page-item ${currentPage === pageNumber ? "active" : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -2090,9 +2086,8 @@ onChange={e => {
 
                       {/* Next Button */}
                       <li
-                        className={`page-item ${
-                          currentPage === apiTotalPages ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === apiTotalPages ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -2105,9 +2100,8 @@ onChange={e => {
 
                       {/* Last Button */}
                       <li
-                        className={`page-item ${
-                          currentPage === apiTotalPages ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === apiTotalPages ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -2495,11 +2489,10 @@ onChange={e => {
                             style={{ gridTemplateColumns: "1fr 1fr" }}
                           >
                             <div
-                              className={`pro-radio-tabs__tab ${
-                                localMeasureSavings === "gross_total"
+                              className={`pro-radio-tabs__tab ${localMeasureSavings === "gross_total"
                                   ? "pro-radio-tabs__tab__selected"
                                   : ""
-                              }`}
+                                }`}
                               role="radio"
                               aria-checked={
                                 localMeasureSavings === "gross_total"
@@ -2511,18 +2504,16 @@ onChange={e => {
                             >
                               <div className="pro-radio-tabs__check-icon">
                                 <label
-                                  className={`ant-radio-wrapper ${
-                                    localMeasureSavings === "gross_total"
+                                  className={`ant-radio-wrapper ${localMeasureSavings === "gross_total"
                                       ? "ant-radio-wrapper-checked"
                                       : ""
-                                  }`}
+                                    }`}
                                 >
                                   <span
-                                    className={`ant-radio ${
-                                      localMeasureSavings === "gross_total"
+                                    className={`ant-radio ${localMeasureSavings === "gross_total"
                                         ? "ant-radio-checked"
                                         : ""
-                                    }`}
+                                      }`}
                                   >
                                     <input
                                       type="radio"
@@ -2545,11 +2536,10 @@ onChange={e => {
                               </p>
                             </div>
                             <div
-                              className={`pro-radio-tabs__tab ${
-                                localMeasureSavings === "line_item"
+                              className={`pro-radio-tabs__tab ${localMeasureSavings === "line_item"
                                   ? "pro-radio-tabs__tab__selected"
                                   : ""
-                              }`}
+                                }`}
                               role="radio"
                               aria-checked={localMeasureSavings === "line_item"}
                               onClick={() =>
@@ -2559,18 +2549,16 @@ onChange={e => {
                             >
                               <div className="pro-radio-tabs__check-icon">
                                 <label
-                                  className={`ant-radio-wrapper ${
-                                    localMeasureSavings === "line_item"
+                                  className={`ant-radio-wrapper ${localMeasureSavings === "line_item"
                                       ? "ant-radio-wrapper-checked"
                                       : ""
-                                  }`}
+                                    }`}
                                 >
                                   <span
-                                    className={`ant-radio ${
-                                      localMeasureSavings === "line_item"
+                                    className={`ant-radio ${localMeasureSavings === "line_item"
                                         ? "ant-radio-checked"
                                         : ""
-                                    }`}
+                                      }`}
                                   >
                                     <input
                                       type="radio"

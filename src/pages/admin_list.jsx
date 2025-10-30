@@ -94,38 +94,38 @@ export default function adminList() {
   const token = urlParams.get("token");
 
   console.log("Token from URL params:", token, "location:", location, "urlParams:", urlParams);
-  
+
 
   const InfoTooltip = ({ content, anchorEl }) => {
-  if (!anchorEl) return null;
+    if (!anchorEl) return null;
 
-  const rect = anchorEl.getBoundingClientRect();
-  const style = {
-    position: "fixed",
-    top: rect.top + rect.height / 2,
-    left: rect.right + 10,
-    transform: "translateY(-50%)",
-    background: "linear-gradient(to bottom, white, #f0f0f0)",
-    border: "1px solid #f3f3f3",
-    borderBottom: "4px solid #8b0203",
-    borderRadius: "8px",
-    boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
-    padding: "10px",
-    fontSize: "11px",
-    zIndex: 9999,
-    minWidth: "100px",
-    maxWidth: "200px",
-    color: "#000",
-    whiteSpace: "pre-wrap",
+    const rect = anchorEl.getBoundingClientRect();
+    const style = {
+      position: "fixed",
+      top: rect.top + rect.height / 2,
+      left: rect.right + 10,
+      transform: "translateY(-50%)",
+      background: "linear-gradient(to bottom, white, #f0f0f0)",
+      border: "1px solid #f3f3f3",
+      borderBottom: "4px solid #8b0203",
+      borderRadius: "8px",
+      boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
+      padding: "10px",
+      fontSize: "11px",
+      zIndex: 9999,
+      minWidth: "100px",
+      maxWidth: "200px",
+      color: "#000",
+      whiteSpace: "pre-wrap",
+    };
+
+    return ReactDOM.createPortal(
+      <div style={style}>
+        {content}
+      </div>,
+      document.body
+    );
   };
-
-  return ReactDOM.createPortal(
-    <div style={style}>
-      {content}
-    </div>,
-    document.body
-  );
-};
 
   // 1. Column visibility state and helpers
   const [columnVisibility, setColumnVisibility] = useState({
@@ -163,53 +163,53 @@ export default function adminList() {
       // }
     },
     {
-  field: "event_title",
-  headerName: "Mor no",
-  width: 180,
-  sortable: true,
-  renderCell: (params) => {
-    console.log("Params:", params);
-    
-    const mors = params.row.event_title || [];
-    const morNos =
-      mors.length > 0
-        ? mors.map((mor) => mor || "-").join(", ")
-        : "No MOR Number";
+      field: "event_title",
+      headerName: "Mor no",
+      width: 180,
+      sortable: true,
+      renderCell: (params) => {
+        console.log("Params:", params);
 
-    const [anchorEl, setAnchorEl] = useState(null);
-    const iconRef = useRef();
+        const mors = params.row.event_title || [];
+        const morNos =
+          mors.length > 0
+            ? mors.map((mor) => mor || "-").join(", ")
+            : "No MOR Number";
 
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "4px",
-          position: "relative",
-          marginTop: "15px",
-        }}
-        onMouseEnter={() => setAnchorEl(iconRef.current)}
-        onMouseLeave={() => setAnchorEl(null)}
-      >
-        <svg
-          ref={iconRef}
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          fill="#8b0203"
-          className="bi bi-info-circle"
-          viewBox="0 0 16 16"
-          style={{ cursor: "pointer" }}
-        >
-          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
-        </svg>
+        const [anchorEl, setAnchorEl] = useState(null);
+        const iconRef = useRef();
 
-        <InfoTooltip content={morNos} anchorEl={anchorEl} />
-      </div>
-    );
-  },
-},
+        return (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              position: "relative",
+              marginTop: "15px",
+            }}
+            onMouseEnter={() => setAnchorEl(iconRef.current)}
+            onMouseLeave={() => setAnchorEl(null)}
+          >
+            <svg
+              ref={iconRef}
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              fill="#8b0203"
+              className="bi bi-info-circle"
+              viewBox="0 0 16 16"
+              style={{ cursor: "pointer" }}
+            >
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+              <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+            </svg>
+
+            <InfoTooltip content={morNos} anchorEl={anchorEl} />
+          </div>
+        );
+      },
+    },
     { field: "event_no", headerName: "Event No", width: 120, sortable: true },
     {
       field: "bid_placed",
@@ -217,33 +217,33 @@ export default function adminList() {
       width: 110,
       sortable: true,
       renderCell: (params) =>
-  params.value ? (
-    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: "15px" }}>  
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="none"
-        style={{ verticalAlign: "middle" }}
-      >
-        <circle cx="10" cy="10" r="9" stroke="#28a745" strokeWidth="2" fill="none" />
-        <path d="M6 10.5l3 3 5-5" stroke="#28a745" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </span>
-  ) : (
-    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: "15px" }}>  
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="none"
-        style={{ verticalAlign: "middle" }}
-      >
-        <circle cx="10" cy="10" r="9" stroke="#dc3545" strokeWidth="2" fill="none" />
-        <path d="M7 7l6 6M13 7l-6 6" stroke="#dc3545" strokeWidth="2" fill="none" />
-      </svg>
-    </span>
-  ),
+        params.value ? (
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: "15px" }}>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              style={{ verticalAlign: "middle" }}
+            >
+              <circle cx="10" cy="10" r="9" stroke="#28a745" strokeWidth="2" fill="none" />
+              <path d="M6 10.5l3 3 5-5" stroke="#28a745" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+        ) : (
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: "15px" }}>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              style={{ verticalAlign: "middle" }}
+            >
+              <circle cx="10" cy="10" r="9" stroke="#dc3545" strokeWidth="2" fill="none" />
+              <path d="M7 7l6 6M13 7l-6 6" stroke="#dc3545" strokeWidth="2" fill="none" />
+            </svg>
+          </span>
+        ),
     },
     {
       field: "start_time",
@@ -251,7 +251,7 @@ export default function adminList() {
       width: 160,
       sortable: true,
       renderCell: (params) => (
-        
+
         params.row.event_schedule?.start_time ? (
           <FormatDateTime timestamp={params.row.event_schedule.start_time} />
         ) : (
@@ -307,7 +307,7 @@ export default function adminList() {
       renderCell: (params) =>
         params.row.status
           ? params.row.status.charAt(0).toUpperCase() +
-            params.row.status.slice(1)
+          params.row.status.slice(1)
           : "-",
     },
     {
@@ -350,7 +350,7 @@ export default function adminList() {
         return (
           <button
             className="btn border-0"
-            onClick={() => navigate(`/edit-event/${params.row.id}?token=${token}`)}
+            onClick={() => navigate(`/edit-event-service/${params.row.id}?token=${token}`)}
             title="Edit"
             disabled={isPublished}
             style={isPublished ? { opacity: 0.5, cursor: "not-allowed" } : {}}
@@ -405,12 +405,12 @@ export default function adminList() {
   };
 
 
-//   const fixedColumns = allColumns.filter(col => !col.hide && col.field).map(col => ({
-//   ...col,
-//   width: col.width || 200,  // Set default width if missing
-// }));
+  //   const fixedColumns = allColumns.filter(col => !col.hide && col.field).map(col => ({
+  //   ...col,
+  //   width: col.width || 200,  // Set default width if missing
+  // }));
 
- useEffect(() => {
+  useEffect(() => {
     if (!containerRef.current) return;
 
     const updateWidth = () => {
@@ -478,102 +478,102 @@ export default function adminList() {
   }));
 
   // Add a recursive function to check if any value in the object matches the search term
-function objectContainsValue(obj, searchTerm) {
-  if (obj == null) return false;
-  if (typeof obj === "string" || typeof obj === "number" || typeof obj === "boolean") {
-    return String(obj).toLowerCase().includes(searchTerm);
-  }
-  if (Array.isArray(obj)) {
-    return obj.some((el) => objectContainsValue(el, searchTerm));
-  }
-  if (typeof obj === "object") {
-    return Object.values(obj).some((val) => objectContainsValue(val, searchTerm));
-  }
-  return false;
-}
-
-const getTransformedRows = () => {
-  let rowsToShow = dataGridRows;
-
-  const normalizedSearchTerm = searchQuery.trim().toLowerCase();
-  if (!normalizedSearchTerm) return rowsToShow;
-
-  // Helper to format date/time as shown in the table (e.g., "May 21, 2025 at 3:15 p.m.")
-  const formatDateTime = (dateStr) => {
-    if (!dateStr) return "";
-    try {
-      const date = new Date(dateStr);
-      return date
-        .toLocaleString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "2-digit",
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        })
-        .replace(",", "")
-        .replace("AM", "a.m.")
-        .replace("PM", "p.m.")
-        .toLowerCase();
-    } catch {
-      return "";
+  function objectContainsValue(obj, searchTerm) {
+    if (obj == null) return false;
+    if (typeof obj === "string" || typeof obj === "number" || typeof obj === "boolean") {
+      return String(obj).toLowerCase().includes(searchTerm);
     }
-  };
-
-  // Helper to get all possible date string representations for a date
-  const getAllDateRepresentations = (dateStr) => {
-    if (!dateStr) return [];
-    try {
-      const date = new Date(dateStr);
-      const day = String(date.getDate()).padStart(2, "0");
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const year = date.getFullYear();
-      const shortMonth = date.toLocaleString("en-US", { month: "short" }).toLowerCase();
-      const longMonth = date.toLocaleString("en-US", { month: "long" }).toLowerCase();
-
-      return [
-        formatDateTime(dateStr), // as shown in table
-        `${day}/${month}/${year}`,
-        `${year}-${month}-${day}`,
-        `${month}/${day}/${year}`,
-        `${day}/${month}`,
-        `${month}/${year}`,
-        `${day}`,
-        `${shortMonth} ${day}, ${year}`,
-        `${longMonth} ${day}, ${year}`,
-        `${shortMonth} ${day}`,
-        `${longMonth} ${day}`,
-        `${year}`,
-      ].map((s) => s.toLowerCase());
-    } catch {
-      return [];
+    if (Array.isArray(obj)) {
+      return obj.some((el) => objectContainsValue(el, searchTerm));
     }
-  };
-
-  // Helper to get all formatted values for a row as shown in the table
-  const getFormattedValues = (row) => {
-    let formatted = [];
-    if (row.created_at) formatted.push(...getAllDateRepresentations(row.created_at));
-    if (row.event_schedule?.start_time) formatted.push(...getAllDateRepresentations(row.event_schedule.start_time));
-    if (row.event_schedule?.end_time) formatted.push(...getAllDateRepresentations(row.event_schedule.end_time));
-    return formatted.flatMap(val => val.split(/[\s,]+/));
-  };
-
-  // Enhanced search: check both raw, formatted, and all date representations
-  rowsToShow = rowsToShow.filter((item) => {
-    // Check raw values (deep search)
-    if (objectContainsValue(item, normalizedSearchTerm)) return true;
-
-    // Check all formatted date values and their representations
-    const formattedValues = getFormattedValues(item);
-    if (formattedValues.some((val) => val.includes(normalizedSearchTerm))) return true;
-
+    if (typeof obj === "object") {
+      return Object.values(obj).some((val) => objectContainsValue(val, searchTerm));
+    }
     return false;
-  });
+  }
 
-  return rowsToShow;
-};
+  const getTransformedRows = () => {
+    let rowsToShow = dataGridRows;
+
+    const normalizedSearchTerm = searchQuery.trim().toLowerCase();
+    if (!normalizedSearchTerm) return rowsToShow;
+
+    // Helper to format date/time as shown in the table (e.g., "May 21, 2025 at 3:15 p.m.")
+    const formatDateTime = (dateStr) => {
+      if (!dateStr) return "";
+      try {
+        const date = new Date(dateStr);
+        return date
+          .toLocaleString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "2-digit",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          })
+          .replace(",", "")
+          .replace("AM", "a.m.")
+          .replace("PM", "p.m.")
+          .toLowerCase();
+      } catch {
+        return "";
+      }
+    };
+
+    // Helper to get all possible date string representations for a date
+    const getAllDateRepresentations = (dateStr) => {
+      if (!dateStr) return [];
+      try {
+        const date = new Date(dateStr);
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        const shortMonth = date.toLocaleString("en-US", { month: "short" }).toLowerCase();
+        const longMonth = date.toLocaleString("en-US", { month: "long" }).toLowerCase();
+
+        return [
+          formatDateTime(dateStr), // as shown in table
+          `${day}/${month}/${year}`,
+          `${year}-${month}-${day}`,
+          `${month}/${day}/${year}`,
+          `${day}/${month}`,
+          `${month}/${year}`,
+          `${day}`,
+          `${shortMonth} ${day}, ${year}`,
+          `${longMonth} ${day}, ${year}`,
+          `${shortMonth} ${day}`,
+          `${longMonth} ${day}`,
+          `${year}`,
+        ].map((s) => s.toLowerCase());
+      } catch {
+        return [];
+      }
+    };
+
+    // Helper to get all formatted values for a row as shown in the table
+    const getFormattedValues = (row) => {
+      let formatted = [];
+      if (row.created_at) formatted.push(...getAllDateRepresentations(row.created_at));
+      if (row.event_schedule?.start_time) formatted.push(...getAllDateRepresentations(row.event_schedule.start_time));
+      if (row.event_schedule?.end_time) formatted.push(...getAllDateRepresentations(row.event_schedule.end_time));
+      return formatted.flatMap(val => val.split(/[\s,]+/));
+    };
+
+    // Enhanced search: check both raw, formatted, and all date representations
+    rowsToShow = rowsToShow.filter((item) => {
+      // Check raw values (deep search)
+      if (objectContainsValue(item, normalizedSearchTerm)) return true;
+
+      // Check all formatted date values and their representations
+      const formattedValues = getFormattedValues(item);
+      if (formattedValues.some((val) => val.includes(normalizedSearchTerm))) return true;
+
+      return false;
+    });
+
+    return rowsToShow;
+  };
 
   const navigate = useNavigate();
 
@@ -654,11 +654,11 @@ const getTransformedRows = () => {
         event_numbers: preprocessOptions(response.data.event_numbers),
         creaters: preprocessOptions(response.data.creaters, true),
         statuses: preprocessOptions(
-  response.data.statuses.map((status) => ({
-    name: status.charAt(0).toUpperCase() + status.slice(1).toLowerCase(),
-    value: status,
-  }))
-),
+          response.data.statuses.map((status) => ({
+            name: status.charAt(0).toUpperCase() + status.slice(1).toLowerCase(),
+            value: status,
+          }))
+        ),
         material_name: preprocessOptions(response.data?.material_name || []),
         material_type: preprocessOptions(response.data?.material_type || []),
         locations: preprocessOptions(response.data?.locations || []),
@@ -1184,9 +1184,9 @@ const getTransformedRows = () => {
                               value={
                                 filters.event_no_cont
                                   ? filterOptions.event_numbers.find(
-                                      (opt) =>
-                                        opt.value === filters.event_no_cont
-                                    )
+                                    (opt) =>
+                                      opt.value === filters.event_no_cont
+                                  )
                                   : null
                               }
                               placeholder="Select No"
@@ -1216,8 +1216,8 @@ const getTransformedRows = () => {
                               value={
                                 filters.status_in
                                   ? filterOptions.statuses.find(
-                                      (opt) => opt.value === filters.status_in
-                                    )
+                                    (opt) => opt.value === filters.status_in
+                                  )
                                   : null
                               }
                               placeholder="Select Status"
@@ -1250,9 +1250,9 @@ const getTransformedRows = () => {
                               value={
                                 filters.created_by_id_in
                                   ? filterOptions.creaters.find(
-                                      (opt) =>
-                                        opt.value === filters.created_by_id_in
-                                    )
+                                    (opt) =>
+                                      opt.value === filters.created_by_id_in
+                                  )
                                   : null
                               }
                               placeholder="Select Creator"
@@ -1288,11 +1288,11 @@ const getTransformedRows = () => {
                               value={
                                 filters.event_type_detail_event_type_eq
                                   ? {
-                                      value:
-                                        filters.event_type_detail_event_type_eq,
-                                      label:
-                                        filters.event_type_detail_event_type_eq,
-                                    }
+                                    value:
+                                      filters.event_type_detail_event_type_eq,
+                                    label:
+                                      filters.event_type_detail_event_type_eq,
+                                  }
                                   : null
                               }
                               placeholder="Select Type"
@@ -1419,7 +1419,7 @@ const getTransformedRows = () => {
                           <div className="col-md-4">
                             <button
                               className="purple-btn2"
-                              onClick={() => navigate("/create-event?token=" + token)}
+                              onClick={() => navigate("/create-event-service?token=" + token)}
                             >
                               <span className="material-symbols-outlined align-text-top">
                                 add
@@ -1431,95 +1431,94 @@ const getTransformedRows = () => {
                       </div>
                     </div>
                     <div
-      ref={containerRef}
-      style={{ width: "100%", height: "600px", display: "flex", flexDirection: "column", padding:'20px' }}
-    >
-      {/* Only show DataGrid when not loading */}
-      {dataGridRows.length > 0 ? (
-        <DataGrid
-          rows={getTransformedRows()}
-          columns={fixedColumns.map(col => ({ ...col, flex: undefined, minWidth: 150, width: 200, maxWidth: undefined }))}
-          pageSize={pageSize}
-          rowCount={Number.isInteger(pagination?.total_count) ? pagination.total_count : 0}
-          paginationMode="server"
-          page={Number.isInteger(pagination?.current_page) && pagination.current_page > 0 ? pagination.current_page - 1 : 0}
-          onPageChange={(page) => handlePageChange(page + 1)}
-          loading={loading}
-          columnBuffer={0}
-          getRowId={(row) => row.id}
-          autoHeight
-          disableColumnMenu
-          sx={{
-            width: '100%',
-            minWidth: 0,
-            maxWidth: '100%',
-            minHeight: 0,
-            maxHeight: 'none',
-            padding: 0,
-            margin: 0,
-            border: 'none',
-            boxShadow: 'none',
-            overflowX: 'auto',
-            "& .MuiDataGrid-main": {
-              minHeight: 0,
-              maxHeight: 'none',
-              overflowX: 'auto',
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "#f8f9fa",
-              color: "#000",
-              fontWeight: "bold",
-              position: "static",
-              top: "unset",
-              zIndex: 1,
-            },
-            "& .MuiDataGrid-cell": {
-              borderColor: "#dee2e6",
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            },
-            "& .MuiDataGrid-columnHeader": {
-              borderColor: "#dee2e6",
-            },
-            "& .MuiDataGrid-virtualScroller": {
-              overflowX: 'auto',
-              minHeight: 0,
-              maxHeight: 'none',
-            },
-            "& .MuiDataGrid-virtualScrollerContent": {
-              minWidth: 'max-content',
-              width: 'auto',
-              maxWidth: 'none',
-            },
-            "& .MuiDataGrid-footerContainer": {
-              borderTop: "1px solid #dee2e6",
-            },
-          }}
-          components={{
-            NoRowsOverlay: () => (
-              <div style={{ padding: "2rem", textAlign: "center" }}>
-                No events found.
-              </div>
-            ),
-          }}
-        />
-      ) : (
-        <div className="text-center mt-5">
-          <p>No events found for the selected filters.</p>
-        </div>
-      )}
-    </div>
+                      ref={containerRef}
+                      style={{ width: "100%", height: "600px", display: "flex", flexDirection: "column", padding: '20px' }}
+                    >
+                      {/* Only show DataGrid when not loading */}
+                      {dataGridRows.length > 0 ? (
+                        <DataGrid
+                          rows={getTransformedRows()}
+                          columns={fixedColumns.map(col => ({ ...col, flex: undefined, minWidth: 150, width: 200, maxWidth: undefined }))}
+                          pageSize={pageSize}
+                          rowCount={Number.isInteger(pagination?.total_count) ? pagination.total_count : 0}
+                          paginationMode="server"
+                          page={Number.isInteger(pagination?.current_page) && pagination.current_page > 0 ? pagination.current_page - 1 : 0}
+                          onPageChange={(page) => handlePageChange(page + 1)}
+                          loading={loading}
+                          columnBuffer={0}
+                          getRowId={(row) => row.id}
+                          autoHeight
+                          disableColumnMenu
+                          sx={{
+                            width: '100%',
+                            minWidth: 0,
+                            maxWidth: '100%',
+                            minHeight: 0,
+                            maxHeight: 'none',
+                            padding: 0,
+                            margin: 0,
+                            border: 'none',
+                            boxShadow: 'none',
+                            overflowX: 'auto',
+                            "& .MuiDataGrid-main": {
+                              minHeight: 0,
+                              maxHeight: 'none',
+                              overflowX: 'auto',
+                            },
+                            "& .MuiDataGrid-columnHeaders": {
+                              backgroundColor: "#f8f9fa",
+                              color: "#000",
+                              fontWeight: "bold",
+                              position: "static",
+                              top: "unset",
+                              zIndex: 1,
+                            },
+                            "& .MuiDataGrid-cell": {
+                              borderColor: "#dee2e6",
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            },
+                            "& .MuiDataGrid-columnHeader": {
+                              borderColor: "#dee2e6",
+                            },
+                            "& .MuiDataGrid-virtualScroller": {
+                              overflowX: 'auto',
+                              minHeight: 0,
+                              maxHeight: 'none',
+                            },
+                            "& .MuiDataGrid-virtualScrollerContent": {
+                              minWidth: 'max-content',
+                              width: 'auto',
+                              maxWidth: 'none',
+                            },
+                            "& .MuiDataGrid-footerContainer": {
+                              borderTop: "1px solid #dee2e6",
+                            },
+                          }}
+                          components={{
+                            NoRowsOverlay: () => (
+                              <div style={{ padding: "2rem", textAlign: "center" }}>
+                                No events found.
+                              </div>
+                            ),
+                          }}
+                        />
+                      ) : (
+                        <div className="text-center mt-5">
+                          <p>No events found for the selected filters.</p>
+                        </div>
+                      )}
+                    </div>
                     <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                       <ul className="pagination justify-content-center d-flex">
                         {/* First Button */}
                         <li
-                          className={`page-item ${
-                            Number.isInteger(pagination?.current_page) &&
-                            pagination.current_page === 1
+                          className={`page-item ${Number.isInteger(pagination?.current_page) &&
+                              pagination.current_page === 1
                               ? "disabled"
                               : ""
-                          }`}
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -1531,12 +1530,11 @@ const getTransformedRows = () => {
 
                         {/* Previous Button */}
                         <li
-                          className={`page-item ${
-                            Number.isInteger(pagination?.current_page) &&
-                            pagination.current_page === 1
+                          className={`page-item ${Number.isInteger(pagination?.current_page) &&
+                              pagination.current_page === 1
                               ? "disabled"
                               : ""
-                          }`}
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -1560,12 +1558,11 @@ const getTransformedRows = () => {
                         {pageNumbers.map((pageNumber) => (
                           <li
                             key={pageNumber}
-                            className={`page-item ${
-                              Number.isInteger(pagination?.current_page) &&
-                              pagination.current_page === pageNumber
+                            className={`page-item ${Number.isInteger(pagination?.current_page) &&
+                                pagination.current_page === pageNumber
                                 ? "active"
                                 : ""
-                            }`}
+                              }`}
                           >
                             <button
                               className="page-link"
@@ -1578,13 +1575,12 @@ const getTransformedRows = () => {
 
                         {/* Next Button */}
                         <li
-                          className={`page-item ${
-                            Number.isInteger(pagination?.current_page) &&
-                            Number.isInteger(pagination?.total_pages) &&
-                            pagination.current_page === pagination.total_pages
+                          className={`page-item ${Number.isInteger(pagination?.current_page) &&
+                              Number.isInteger(pagination?.total_pages) &&
+                              pagination.current_page === pagination.total_pages
                               ? "disabled"
                               : ""
-                          }`}
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -1607,13 +1603,12 @@ const getTransformedRows = () => {
 
                         {/* Last Button */}
                         <li
-                          className={`page-item ${
-                            Number.isInteger(pagination?.current_page) &&
-                            Number.isInteger(pagination?.total_pages) &&
-                            pagination.current_page === pagination.total_pages
+                          className={`page-item ${Number.isInteger(pagination?.current_page) &&
+                              Number.isInteger(pagination?.total_pages) &&
+                              pagination.current_page === pagination.total_pages
                               ? "disabled"
                               : ""
-                          }`}
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -1644,8 +1639,8 @@ const getTransformedRows = () => {
                               ? pagination.current_page
                               : 1) -
                               1) *
-                              pageSize +
-                              1 || 1,
+                            pageSize +
+                            1 || 1,
                             Number.isInteger(pagination?.total_count)
                               ? pagination.total_count
                               : 0
