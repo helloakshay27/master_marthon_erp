@@ -1634,28 +1634,8 @@ export default function EditEventService() {
     // Function to generate checklist payload
     const generateChecklistPayload = () => {
       if (checklistOption === "existing" && fetchedChecklistData) {
-        // If using existing checklist, send the fetched checklist data in correct format
-        return {
-          id: fetchedChecklistData.id,
-          name: fetchedChecklistData.name,
-          check_type: fetchedChecklistData.check_type,
-          category_id: fetchedChecklistData.category_id,
-          sub_categories: fetchedChecklistData.sub_categories?.map(subCat => ({
-            id: subCat.id,
-            name: subCat.name,
-            questions: subCat.questions?.map(q => ({
-              id: q.id,
-              descr: q.descr,
-              qtype: q.qtype,
-              quest_mandatory: q.quest_mandatory,
-              img_mandatory: q.img_mandatory,
-              passing_score: q.passing_score,
-              weightage: q.weightage,
-              information: q.information,
-              options: q.options || []
-            })) || []
-          })) || []
-        };
+        // If using existing checklist, return only checklist_id as direct property
+        return { checklist_id: fetchedChecklistData.id };
       } else if (checklistOption === "create" && questions.length > 0) {
         // Group questions by sub category for new checklist
         const subCategoriesMap = {};
@@ -1705,10 +1685,12 @@ export default function EditEventService() {
         });
 
         return {
-          name: checklistName || "Custom Event Checklist",
-          check_type: "event",
-          category_id: selectedCategory,
-          sub_categories: Object.values(subCategoriesMap)
+          // checklist: {
+            name: checklistName || "Custom Event Checklist",
+            check_type: "event",
+            category_id: selectedCategory,
+            sub_categories: Object.values(subCategoriesMap)
+          // }
         };
       }
       return null;
@@ -2898,7 +2880,7 @@ export default function EditEventService() {
                                 {checklistOption === "create" && (
                                   <button
                                     type="button"
-                                    className="btn btn-outline-warning btn-sm"
+                                    className="purple-btn2 btn-sm"
                                     onClick={() => handleAddAnswerOption(qIdx)}
                                   >
                                     + Add Option
@@ -2941,7 +2923,7 @@ export default function EditEventService() {
                               <label className="mx-2 mb-0">
                                 <input
                                   type="checkbox"
-                                  style={{ accentColor: "#ff6600" }}
+                                  style={{ accentColor: "#8b0203" }}
                                   checked={question.isMandatory || false}
                                   onChange={e => handleQuestionChange(qIdx, "isMandatory", e.target.checked)}
                                   disabled={checklistOption === "existing"}
@@ -2951,7 +2933,7 @@ export default function EditEventService() {
                               <label className="mx-2 mb-0">
                                 <input
                                   type="checkbox"
-                                  style={{ accentColor: "#ff6600" }}
+                                  style={{ accentColor: "#8b0203" }}
                                   checked={question.isAttachmentMandatory || false}
                                   onChange={e => handleQuestionChange(qIdx, "isAttachmentMandatory", e.target.checked)}
                                   disabled={checklistOption === "existing"}

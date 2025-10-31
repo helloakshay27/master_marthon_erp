@@ -5,6 +5,7 @@ import FullScreenIcon from "../Icon/FullScreenIcon";
 import ShowIcon from "../Icon/ShowIcon";
 import ParticipantsIcon from "../Icon/ParticipantsIcon";
 import Accordion from "../../base/Accordion/Accordion";
+import SectionAccordion from "../Accordion/SectionAccordion";
 import ResponseVendor from "../ResponseVendor";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import BulkCounterOfferModal from "../Modal/BulkCounterOfferModal";
@@ -976,7 +977,8 @@ export default function ResponseTab({ isCounterOffer }) {
                     const extractedData =
                       eventVendors?.flatMap((vendor) => {
                         const extra = vendor?.bids?.[0]?.extra;
-
+                        console.log("extra",extra);
+                        
                         if (
                           extra &&
                           Object.values(extra).some(
@@ -1006,6 +1008,8 @@ export default function ResponseTab({ isCounterOffer }) {
                     const extractedKeys = Array.from(
                       new Set(extractedData.flatMap((obj) => Object.keys(obj)))
                     );
+                    console.log(extractedData);
+                    
 
                     // ✅ Conditionally render Accordion only if both data and keys exist
                     if (extractedData.length > 0 && extractedKeys.length > 0) {
@@ -1095,6 +1099,56 @@ export default function ResponseTab({ isCounterOffer }) {
                     ].filter(Boolean); // remove nulls
 
                     return accordions.length > 0 ? <>{accordions}</> : null;
+                  })()}
+
+                  {/* Checklist Accordion */}
+                  {(() => {
+                    // Extract checklist data from bids
+                    const checklistData = eventVendors?.flatMap((vendor) => {
+                      return vendor?.bids?.flatMap((bid) => {
+                        return bid?.checklist || [];
+                      }) || [];
+                    }) || [];
+
+                    console.log("Checklist data:", checklistData);
+
+                    // Transform the checklist data to match the expected format
+                    const transformedChecklistData = checklistData.map((checklist) => ({
+                      category: checklist.category,
+                      subcategories: checklist.subcategories?.map((subcategory) => ({
+                        id: subcategory.id,
+                        name: subcategory.name,
+                        questions: subcategory.questions?.map((question) => ({
+                          descr: question.descr,
+                          information: question.information,
+                          passing_score: question.passing_score,
+                          qtype: question.qtype,
+                          weightage: question.weightage,
+                          answers: {
+                            question_id: question.id,
+                            ans_descr: question.answers?.ans_descr || "No answer provided",
+                            comments: question.answers?.comments
+                          }
+                        })) || []
+                      })) || []
+                    }));
+
+                    // Only render if there's checklist data
+                    if (transformedChecklistData.length > 0) {
+                      return (
+                        <div style={{ marginTop: "20px" }}>
+                          {transformedChecklistData.map((category, categoryIndex) => (
+                            <SectionAccordion
+                              key={categoryIndex}
+                              title={`Checklist - ${category.category}`}
+                              categoryData={category}
+                            />
+                          ))}
+                        </div>
+                      );
+                    }
+
+                    return null;
                   })()}
                 </>
               ) : (
@@ -1316,8 +1370,6 @@ export default function ResponseTab({ isCounterOffer }) {
                               disabled={true}
                             />
                           </td>
-                          {console.log("item", item)}
-
                           <td>
                             <select
                               className="form-select"
@@ -1619,7 +1671,6 @@ export default function ResponseTab({ isCounterOffer }) {
                 (bid) => bid.status === "pending"
               );
               if (pendingBid && pendingBid.id) {
-                console.log("pendingBid:---", pendingBid);
 
                 acceptOffer(
                   pendingBid.id,
@@ -1636,9 +1687,6 @@ export default function ResponseTab({ isCounterOffer }) {
               const pendingBid = materialData?.bids_values?.find(
                 (bid) => bid.status === "pending"
               );
-              {
-                console.log("pendingBid:---", pendingBid);
-              }
 
               if (pendingBid && pendingBid.id) {
                 acceptOffer(

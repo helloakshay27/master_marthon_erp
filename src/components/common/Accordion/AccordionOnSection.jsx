@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import DropArrowIcon from "../../common/Icon/DropArrowIcon";
-import Table from "../Table/Table";
+import Table from "../../base/Table/Table"
 import Tooltip from "../../common/Tooltip/Tooltip";
 
-export default function Accordion({
+export default function AccordionOnSection({
   title,
   amount = [],
   serializedData = [],
@@ -225,20 +225,125 @@ export default function Accordion({
                 onColumnClick={handleColumnClick} // Pass the updated function
                 enableHoverEffect={enableHoverEffect}
                 onSelectAll={onSelectAll} // Pass to Table
+                fullWidth={true}
                 style={{
                   wordWrap: "break-word",
                   wordBreak: "break-word",
                   whiteSpace: "normal",
-                  tableLayout: "auto"
+                  tableLayout: "fixed",
+                  width: "100%"
                 }}
                 cellStyle={{
                   wordWrap: "break-word",
                   wordBreak: "break-word",
                   whiteSpace: "normal",
-                  maxWidth: "300px",
-                  padding: "8px"
+                  verticalAlign: "top",
+                  padding: "8px",
+                  border: "1px solid #ddd"
                 }}
                 customRender={{
+                  col_0: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      fontWeight: cell === "Information" || cell === "Passing Score" || cell === "Question Type" || cell === "Weightage" || cell === "Remark" ? "bold" : "normal",
+                      padding: "4px",
+                      backgroundColor: "#f8f9fa",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  col_1: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      fontWeight: cell === "Information" || cell === "Passing Score" || cell === "Question Type" || cell === "Weightage" || cell === "Remark" ? "bold" : "normal",
+                      padding: "4px",
+                      backgroundColor: "#f8f9fa",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  col_2: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      fontWeight: cell === "Information" || cell === "Passing Score" || cell === "Question Type" || cell === "Weightage" || cell === "Remark" ? "bold" : "normal",
+                      padding: "4px",
+                      backgroundColor: "#f8f9fa",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  col_3: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      fontWeight: cell === "Information" || cell === "Passing Score" || cell === "Question Type" || cell === "Weightage" || cell === "Remark" ? "bold" : "normal",
+                      padding: "4px",
+                      backgroundColor: "#f8f9fa",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  col_4: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      fontWeight: cell === "Information" || cell === "Passing Score" || cell === "Question Type" || cell === "Weightage" || cell === "Remark" ? "bold" : "normal",
+                      padding: "4px",
+                      backgroundColor: "#f8f9fa",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  col_5: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      fontWeight: cell === "Information" || cell === "Passing Score" || cell === "Question Type" || cell === "Weightage" || cell === "Remark" ? "bold" : "normal",
+                      padding: "4px",
+                      backgroundColor: "#f8f9fa",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  property: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      fontWeight: cell === "Information" || cell === "Passing Score" || cell === "Question Type" || cell === "Weightage" || cell === "Remark" ? "bold" : "normal",
+                      padding: "4px",
+                      backgroundColor: "#f8f9fa",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  value: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
                   taxRate: (value, rowIndex, rowData) => (
                     <button
                       className="purple-btn2"

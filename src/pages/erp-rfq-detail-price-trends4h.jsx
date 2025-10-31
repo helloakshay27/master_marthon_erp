@@ -255,7 +255,6 @@ export default function ErpRfqDetailPriceTrends4h() {
         }
 
         const data = await response.json();
-        // console.log("Data      attachment", data.attachments);
         
         setOverviewData(data);
         setDocumentData(data.attachments);
@@ -371,9 +370,7 @@ export default function ErpRfqDetailPriceTrends4h() {
     };
 
     fetchParticipants();
-  }, [eventId]);
-      console.log("Token:", token, urlParams);
-      
+  }, [eventId]);      
 
   return (
     <>
