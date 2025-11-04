@@ -100,7 +100,7 @@ export default function AccordionOnSection({
         <div className="accordion-item rounded-0">
           <h2 className="accordion-header">
             <button
-              className="accordion-button viewBy-collapT1 p-0 "
+              className="accordion-button viewBy-collapT1"
               style={{
                 position: "relative",
                 width: "100%",
@@ -118,7 +118,6 @@ export default function AccordionOnSection({
               <Tooltip content={title}>
                 <span
                   style={{
-                    width: "260px",
                     display: "inline-block",
                     paddingRight: "10px",
                   }}
@@ -334,6 +333,186 @@ export default function AccordionOnSection({
                     </div>
                   ),
                   value: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  // Vendor column renderers for unified checklist
+                  vendor_0: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  vendor_1: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  vendor_2: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  vendor_3: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  vendor_4: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  // Property column renderers for transposed unified checklist
+                  vendor: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      fontWeight: "bold",
+                      padding: "4px",
+                      backgroundColor: "#f8f9fa",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  prop_0: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  prop_1: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  prop_2: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  prop_3: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  prop_4: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  prop_5: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  prop_6: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  prop_7: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  prop_8: (cell, rowIndex, row) => (
+                    <div style={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      lineHeight: "1.4",
+                      padding: "4px",
+                      width: "100%"
+                    }}>
+                      {cell}
+                    </div>
+                  ),
+                  prop_9: (cell, rowIndex, row) => (
                     <div style={{
                       whiteSpace: "normal",
                       wordWrap: "break-word",

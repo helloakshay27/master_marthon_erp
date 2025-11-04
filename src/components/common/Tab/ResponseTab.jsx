@@ -612,7 +612,7 @@ export default function ResponseTab({ isCounterOffer }) {
       {isVendor ? (
         <ResponseVendor />
       ) : (
-        <FullScreen handle={handle}>
+        <div className="h-100">
           {loading ? (
             <>
               <div className="loader-container">
@@ -977,8 +977,8 @@ export default function ResponseTab({ isCounterOffer }) {
                     const extractedData =
                       eventVendors?.flatMap((vendor) => {
                         const extra = vendor?.bids?.[0]?.extra;
-                        console.log("extra",extra);
-                        
+                        console.log("extra", extra);
+
                         if (
                           extra &&
                           Object.values(extra).some(
@@ -1006,10 +1006,12 @@ export default function ResponseTab({ isCounterOffer }) {
                       }) || [];
 
                     const extractedKeys = Array.from(
-                      new Set(extractedData.flatMap((obj) => Object.keys(obj)))
-                    );
+                      new Set(
+                        extractedData.flatMap((obj) => Object.keys(obj))
+                      )
+                    ).filter(key => key !== "checklist");
                     console.log(extractedData);
-                    
+
 
                     // ✅ Conditionally render Accordion only if both data and keys exist
                     if (extractedData.length > 0 && extractedKeys.length > 0) {
@@ -1101,49 +1103,83 @@ export default function ResponseTab({ isCounterOffer }) {
                     return accordions.length > 0 ? <>{accordions}</> : null;
                   })()}
 
-                  {/* Checklist Accordion */}
+                  {/* Checklist Accordion - Unified for All Vendors */}
                   {(() => {
-                    // Extract checklist data from bids
-                    const checklistData = eventVendors?.flatMap((vendor) => {
-                      return vendor?.bids?.flatMap((bid) => {
-                        return bid?.checklist || [];
-                      }) || [];
-                    }) || [];
+                    // Collect checklist data from all vendors
+                    const allVendorChecklistData = [];
 
-                    console.log("Checklist data:", checklistData);
+                    eventVendors?.forEach((vendor) => {
+                      const activeIndex = activeIndexes[vendor.id] || 0;
+                      const activeBid = vendor?.bids?.[0];
 
-                    // Transform the checklist data to match the expected format
-                    const transformedChecklistData = checklistData.map((checklist) => ({
-                      category: checklist.category,
-                      subcategories: checklist.subcategories?.map((subcategory) => ({
-                        id: subcategory.id,
-                        name: subcategory.name,
-                        questions: subcategory.questions?.map((question) => ({
-                          descr: question.descr,
-                          information: question.information,
-                          passing_score: question.passing_score,
-                          qtype: question.qtype,
-                          weightage: question.weightage,
-                          answers: {
-                            question_id: question.id,
-                            ans_descr: question.answers?.ans_descr || "No answer provided",
-                            comments: question.answers?.comments
-                          }
-                        })) || []
-                      })) || []
-                    }));
+                      const getBidTypeLabel = (index, currentRevisionNumber) => {
+                        if (index === 0) return `Current Bid (Rev ${currentRevisionNumber || 1})`;
+                        if (index === 1) return "Initial Bid";
+                        return `${index - 1}${getOrdinalSuffix(index - 1)} Revision`;
+                      };
 
-                    // Only render if there's checklist data
-                    if (transformedChecklistData.length > 0) {
+                      // Include ALL vendors, even those without checklist data
+                      allVendorChecklistData.push({
+                        vendorName: vendor.full_name,
+                        vendorId: vendor.id,
+                        bidType: getBidTypeLabel(activeIndex, activeBid?.revision_number),
+                        activeIndex: activeIndex,
+                        currentRevision: activeBid?.revision_number || 1,
+                        checklists: activeBid?.checklist || [] // Empty array if no checklist data
+                      });
+                    });
+
+                    console.log("All vendor checklist data:", allVendorChecklistData);
+
+                    // Only render if there are vendors and at least one has checklist data
+                    if (allVendorChecklistData.length > 0 && allVendorChecklistData.some(vendor => vendor.checklists.length > 0)) {
+                      // Get the first vendor with checklist data for the base accordion structure
+                      const baseVendorData = allVendorChecklistData.find(vendor => vendor.checklists.length > 0);
+
                       return (
-                        <div style={{ marginTop: "20px" }}>
-                          {transformedChecklistData.map((category, categoryIndex) => (
-                            <SectionAccordion
-                              key={categoryIndex}
-                              title={`Checklist - ${category.category}`}
-                              categoryData={category}
-                            />
-                          ))}
+                        <div>
+                          {baseVendorData.checklists.map((checklist, checklistIndex) => {
+                            // Transform the checklist data to include all vendors' data
+                            const transformedChecklistData = {
+                              category: checklist.category,
+                              subcategories: checklist.subcategories?.map((subcategory) => ({
+                                id: subcategory.id,
+                                name: subcategory.name,
+                                questions: subcategory.questions?.map((question) => ({
+                                  descr: question.descr,
+                                  information: question.information,
+                                  passing_score: question.passing_score,
+                                  qtype: question.qtype,
+                                  weightage: question.weightage,
+                                  answers: question.answers,
+                                  // Add all vendors' data for this question
+                                  allVendorAnswers: allVendorChecklistData.map(vendorData => {
+                                    // Find the corresponding question in each vendor's data
+                                    const vendorChecklist = vendorData.checklists.find(c => c.category === checklist.category);
+                                    const vendorSubcategory = vendorChecklist?.subcategories?.find(s => s.name === subcategory.name);
+                                    const vendorQuestion = vendorSubcategory?.questions?.find(q => q.descr === question.descr);
+
+                                    return {
+                                      vendorName: vendorData.vendorName,
+                                      bidType: vendorData.bidType,
+                                      answer: vendorQuestion?.answers?.ans_descr || "-",
+                                      comments: vendorQuestion?.answers?.comments
+                                    };
+                                  })
+                                })) || []
+                              })) || []
+                            };
+
+                            return (
+                              <SectionAccordion
+                                key={`unified-checklist-${checklistIndex}`}
+                                title={`${checklist.category || 'Checklist'} - All Vendors`}
+                                categoryData={transformedChecklistData}
+                                allVendorData={allVendorChecklistData} // Pass all vendor data
+                                isUnified={true} // Flag to indicate this is a unified accordion
+                              />
+                            );
+                          })}
                         </div>
                       );
                     }
@@ -1175,7 +1211,7 @@ export default function ResponseTab({ isCounterOffer }) {
               />
             </div>
           )}
-        </FullScreen>
+        </div>
       )}
 
       <BulkCounterOfferModal
