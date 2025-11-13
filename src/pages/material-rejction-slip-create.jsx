@@ -117,7 +117,7 @@ const MaterialRejctionSlipCreate = () => {
         acceptance_reason: decision === "accepted" ? reason : "",
       };
 
-      const token = "${token}"; // Add token if required
+      // const token = "${token}"; // Add token if required
       const response = await axios.put(
         `${baseURL}/mor_rejection_slips/${id}.json?token=${token}`,
         payload,
@@ -131,7 +131,7 @@ const MaterialRejctionSlipCreate = () => {
       console.log("Update successful:", response.data);
       toast.success("Status updated successfully!", { autoClose: 1200 });
       setReason("");
-      navigate("/material-rejection-slip");
+      navigate(`/material-rejection-slip?token=${token}`);
     } catch (error) {
       console.error("Error updating rejection slip:", error);
       let errorMessage = "Failed to update status. Please try again.";
