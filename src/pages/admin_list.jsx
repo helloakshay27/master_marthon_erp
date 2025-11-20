@@ -250,25 +250,56 @@ export default function adminList() {
       headerName: "Start Date",
       width: 160,
       sortable: true,
-      renderCell: (params) => (
-
-        params.row.event_schedule?.start_time ? (
-          <FormatDateTime timestamp={params.row.event_schedule.start_time} />
-        ) : (
-          "-"
-        ))
+      renderCell: (params) => {
+        if (params.row.event_schedule?.start_time) {
+          console.log("Params for start_time:", params.row.event_schedule.start_time);
+          const dateStr = params.row.event_schedule.start_time;
+          // Parse the UTC date manually to avoid timezone conversion
+          const date = new Date(dateStr);
+          const day = String(date.getUTCDate()).padStart(2, '0');
+          const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+          const year = date.getUTCFullYear();
+          const hours = date.getUTCHours();
+          const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+          
+          // Convert to 12-hour format
+          const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          
+          const formatted = `${day}/${month}/${year} ${hour12}:${minutes} ${ampm}`;
+          console.log("start time formatted", formatted);
+          return formatted;
+        }
+        return "-";
+      }
     },
     {
       field: "end_time",
       headerName: "End Date",
       width: 160,
       sortable: true,
-      renderCell: (params) =>
-        params.row.event_schedule?.end_time ? (
-          <FormatDateTime timestamp={params.row.event_schedule.end_time} />
-        ) : (
-          "-"
-        ),
+      renderCell: (params) => {
+        console.log("Params for end_time:", params.row.event_schedule?.end_time);
+        if (params.row.event_schedule?.end_time) {
+          const dateStr = params.row.event_schedule.end_time;
+          // Parse the UTC date manually to avoid timezone conversion
+          const date = new Date(dateStr);
+          const day = String(date.getUTCDate()).padStart(2, '0');
+          const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+          const year = date.getUTCFullYear();
+          const hours = date.getUTCHours();
+          const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+          
+          // Convert to 12-hour format
+          const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          
+          const formatted = `${day}/${month}/${year} ${hour12}:${minutes} ${ampm}`;
+          console.log("end time formatted", formatted);
+          return formatted;
+        }
+        return "-";
+      }
     },
     {
       field: "created_at",

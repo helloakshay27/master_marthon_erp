@@ -185,35 +185,35 @@ export default function CreateEvent() {
   };
 
   const handleSaveSchedule = (data) => {
-    setScheduleData(data);
-    handleEventScheduleModalClose();
+        setScheduleData(data);
+        handleEventScheduleModalClose();
 
-    const formatDateTime = (dateTime) => {
-      if (!dateTime) return "";
+        const formatDateTime = (dateTime) => {
+            if (!dateTime) return "";
 
-      // Parse as UTC and extract UTC components so there's no browser timezone shift
-      const utcDate = new Date(dateTime);
-      const day = String(utcDate.getUTCDate()).padStart(2, "0");
-      const month = String(utcDate.getUTCMonth() + 1).padStart(2, "0");
-      const year = String(utcDate.getUTCFullYear()).slice(-2);
-      let hours = utcDate.getUTCHours();
-      const minutes = String(utcDate.getUTCMinutes()).padStart(2, "0");
+            // Parse as UTC and extract UTC components so there's no browser timezone shift
+            const utcDate = new Date(dateTime);
+            const day = String(utcDate.getUTCDate()).padStart(2, "0");
+            const month = String(utcDate.getUTCMonth() + 1).padStart(2, "0");
+            const year = String(utcDate.getUTCFullYear()).slice(-2);
+            let hours = utcDate.getUTCHours();
+            const minutes = String(utcDate.getUTCMinutes()).padStart(2, "0");
 
-      const ampm = hours >= 12 ? "PM" : "AM";
-      hours = hours % 12;
-      hours = hours ? hours : 12;
-      const formattedHours = String(hours).padStart(2, "0");
+            const ampm = hours >= 12 ? "PM" : "AM";
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const formattedHours = String(hours).padStart(2, "0");
 
-      return `${day}/${month}/${year}, ${formattedHours}:${minutes} ${ampm}`;
+            return `${day}/${month}/${year}, ${formattedHours}:${minutes} ${ampm}`;
+        };
+
+        // Format the dates for display without applying local timezone offset
+        const startDateTime = formatDateTime(data.start_time);
+        const endDateTime = formatDateTime(data.end_time_duration);
+
+        const scheduleText = `${startDateTime} to ${endDateTime}`;
+        setEventScheduleText(scheduleText);
     };
-
-    // Format the dates for display without applying local timezone offset
-    const startDateTime = formatDateTime(data.start_time);
-    const endDateTime = formatDateTime(data.end_time_duration);
-
-    const scheduleText = `${startDateTime} to ${endDateTime}`;
-    setEventScheduleText(scheduleText);
-  };
 
   const handleVendorTypeModalShow = async () => {
     setVendorModal(true);
@@ -702,23 +702,23 @@ export default function CreateEvent() {
   // console.log("materialFormData:--------",materialFormData);
 
   // Utility to get ISO string in UTC format with Z
-  const toUTCISOString = (dateTime) => {
-    if (!dateTime) return "";
+    const toUTCISOString = (dateTime) => {
+        if (!dateTime) return "";
 
-    // If dateTime is already in correct ISO format, return as is
-    if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
-      return dateTime;
-    }
+        // If dateTime is already in correct ISO format, return as is
+        if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
+            return dateTime;
+        }
 
-    const date = new Date(dateTime);
-    if (isNaN(date.getTime())) {
-      console.warn("Invalid dateTime passed to toUTCISOString:", dateTime);
-      return "";
-    }
+        const date = new Date(dateTime);
+        if (isNaN(date.getTime())) {
+            console.warn("Invalid dateTime passed to toUTCISOString:", dateTime);
+            return "";
+        }
 
-    // Return ISO string in UTC format with Z
-    return date.toISOString();
-  };
+        // Return ISO string in UTC format with Z
+        return date.toISOString();
+    };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -747,10 +747,10 @@ export default function CreateEvent() {
         status: eventStatus,
         event_description: eventDescription,
         event_schedule_attributes: {
-          start_time: toUTCISOString(scheduleData.start_time),
-          end_time: toUTCISOString(scheduleData.end_time_duration),
-          evaluation_time: scheduleData.evaluation_time,
-        },
+                    start_time: toUTCISOString(scheduleData.start_time),
+                    end_time: toUTCISOString(scheduleData.end_time_duration),
+                    evaluation_time: scheduleData.evaluation_time,
+                },
         event_type_detail_attributes: {
           event_type: eventType,
           award_scheme: awardType,

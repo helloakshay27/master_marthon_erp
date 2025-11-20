@@ -124,8 +124,11 @@ export default function Accordion({
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
-                    fontSize: "12px",
-                    color: "#fff"
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    color: "#000",
+                    lineHeight: "1.2",
+                    verticalAlign: "middle"
                   }}
                 >
                   {title}
