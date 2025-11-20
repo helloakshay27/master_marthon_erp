@@ -1017,8 +1017,9 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
                               <h4>{vendorData.vendor_name}</h4>
 
                               <Table
-                                enableOverflowScroll={true}
-                                style={{ width: "100%", overflowX: "auto" }}
+                                // enableOverflowScroll={true}
+                                // style={{ width: "100%", overflowX: "auto" }}
+                                isMinWidth={true}
                                 columns={[
                                   {
                                     label: "Material Name",
