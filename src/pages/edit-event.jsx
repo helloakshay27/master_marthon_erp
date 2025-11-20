@@ -1336,7 +1336,7 @@ export default function EditEvent() {
         ).map((vendor) => ({
           status: 1,
           pms_supplier_id: vendor.pms_supplier_id,
-          id: vendor.id,
+          // id: vendor.id,
         })),
         status_logs_attributes: editableStatusLogData.map((log) => ({
           id: log.id || null,

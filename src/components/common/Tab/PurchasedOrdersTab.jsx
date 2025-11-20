@@ -100,7 +100,7 @@ const PurchasedOrdersTab = forwardRef((props, ref) => {
                                         <td key={col.key}>
                                             {col.key === "po_number" ? (
                                                 <a
-                                                    href={`${baseURL}/purchase_orders/${order.id}?layout=true`}
+                                                    href={`https://procurement.lockated.com/purchase_orders/${order.id}?layout=true`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     style={{ textDecoration: "underline" }}

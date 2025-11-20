@@ -817,7 +817,7 @@ export default function CreateEvent() {
         event_vendors_attributes: selectedVendors.map((vendor) => ({
           status: 1,
           pms_supplier_id: vendor.pms_supplier_id,
-          id: null,
+          // id: null,
         })),
         status_logs_attributes: [
           {
