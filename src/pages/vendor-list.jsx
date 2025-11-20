@@ -265,6 +265,7 @@ export default function VendorListPage() {
           break;
         case "eoi":
           eventsUrl = `${baseURL}/rfq/events/eois`;
+          break;
         default:
           eventsUrl = `${baseURL}/rfq/events`;
       }
@@ -595,23 +596,49 @@ export default function VendorListPage() {
       field: "start_time",
       headerName: "Start Time",
       width: 160,
-      renderCell: (params) =>
-        params.row.event_schedule?.start_time ? (
-          <FormatDateTime timestamp={params.row.event_schedule.start_time} />
-        ) : (
-          <span style={{ color: "#aaa" }}>N/A</span>
-        ),
+      renderCell: (params) => {
+        if (params.row.event_schedule?.start_time) {
+          const dateStr = params.row.event_schedule.start_time;
+          // Parse the UTC date manually to avoid timezone conversion
+          const date = new Date(dateStr);
+          const day = String(date.getUTCDate()).padStart(2, '0');
+          const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+          const year = date.getUTCFullYear();
+          const hours = date.getUTCHours();
+          const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+          
+          // Convert to 12-hour format
+          const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          
+          return `${day}/${month}/${year} ${hour12}:${minutes} ${ampm}`;
+        }
+        return <span style={{ color: "#aaa" }}>N/A</span>;
+      },
     },
     {
       field: "end_time",
       headerName: "End Time",
       width: 160,
-      renderCell: (params) =>
-        params.row.event_schedule?.end_time ? (
-          <FormatDateTime timestamp={params.row.event_schedule.end_time} />
-        ) : (
-          <span style={{ color: "#aaa" }}>N/A</span>
-        ),
+      renderCell: (params) => {
+        if (params.row.event_schedule?.end_time) {
+          const dateStr = params.row.event_schedule.end_time;
+          // Parse the UTC date manually to avoid timezone conversion
+          const date = new Date(dateStr);
+          const day = String(date.getUTCDate()).padStart(2, '0');
+          const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+          const year = date.getUTCFullYear();
+          const hours = date.getUTCHours();
+          const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+          
+          // Convert to 12-hour format
+          const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          
+          return `${day}/${month}/${year} ${hour12}:${minutes} ${ampm}`;
+        }
+        return <span style={{ color: "#aaa" }}>N/A</span>;
+      },
     },
     {
       field: "created_at",
