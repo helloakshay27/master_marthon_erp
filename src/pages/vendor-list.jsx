@@ -671,7 +671,7 @@ export default function VendorListPage() {
         return(
         <button
           className="btn"
-          onClick={() => navigate(`/user-list-service/${params.row.id}?token=${token}`)}
+          onClick={() => navigate(`/user-list/${params.row.id}?token=${token}`)}
           title="View"
         >
           <svg

@@ -1104,7 +1104,7 @@ export default function ResponseTab({ isCounterOffer }) {
                   })()}
 
                   {/* Checklist Accordion - Unified for All Vendors */}
-                  {(() => {
+                  {/* {(() => {
                     // Collect checklist data from all vendors
                     const allVendorChecklistData = [];
 
@@ -1185,7 +1185,7 @@ export default function ResponseTab({ isCounterOffer }) {
                     }
 
                     return null;
-                  })()}
+                  })()} */}
                 </>
               ) : (
                 <h4 className="h-100 w-100 d-flex justify-content-center align-items-center pt-5">

@@ -350,7 +350,7 @@ export default function adminList() {
         return (
           <button
             className="btn border-0"
-            onClick={() => navigate(`/edit-event-service/${params.row.id}?token=${token}`)}
+            onClick={() => navigate(`/edit-event/${params.row.id}?token=${token}`)}
             title="Edit"
             disabled={isPublished}
             style={isPublished ? { opacity: 0.5, cursor: "not-allowed" } : {}}
@@ -1419,7 +1419,7 @@ export default function adminList() {
                           <div className="col-md-4">
                             <button
                               className="purple-btn2"
-                              onClick={() => navigate("/create-event-service?token=" + token)}
+                              onClick={() => navigate("/create-event?token=" + token)}
                             >
                               <span className="material-symbols-outlined align-text-top">
                                 add

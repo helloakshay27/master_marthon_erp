@@ -115,12 +115,17 @@ export default function Accordion({
               <span className="p-2">
                 <DropArrowIcon isOpen={isOpen} />
               </span>
-              <Tooltip content={title}>
+              <Tooltip content={title || ""}>
                 <span
                   style={{
                     width: "260px",
                     display: "inline-block",
                     paddingRight: "10px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    fontSize: "12px",
+                    color: "#fff"
                   }}
                 >
                   {title}
@@ -147,10 +152,8 @@ export default function Accordion({
                     {isAllocation && (
                       <input
                         type="checkbox"
-                        disabled={updatedTableData[index]?.po_exists || false}
+                        disabled={updatedTableData[index]?.po_exists || updatedTableData[index]?.po_exist || false}
                         checked={updatedTableData[index]?.isChecked || false}
-                        // Disable if po_exist is true for this bid/material
-                        disabled={updatedTableData[index]?.po_exist}
                         onChange={(e) => {
                           e.stopPropagation(); // Prevent the event from bubbling up to the button
                           const isChecked = e.target.checked;

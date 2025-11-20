@@ -580,12 +580,12 @@ export default function VendorDetails() {
     for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
       const row = data[rowIndex];
       const fieldsToValidate = [
-        {
-          key: "quantityAvail",
-          value: row.quantityAvail,
-          label: "Quantity Available",
-          rowNumber: rowIndex + 1
-        },
+        // {
+        //   key: "quantityAvail",
+        //   value: row.quantityAvail,
+        //   label: "Quantity Available",
+        //   rowNumber: rowIndex + 1
+        // },
         {
           key: "price",
           value: row.price,
@@ -629,7 +629,7 @@ export default function VendorDetails() {
         }
 
         if (isEmpty) {
-          toast.error(`Row ${field.rowNumber}: Please fill the mandatory nkkmklm field ${field.label}`, {
+          toast.error(`Row ${field.rowNumber}: Please fill the mandatory field ${field.label}`, {
             autoClose: 3000, // Duration for the toast to disappear (in ms)
             position: "top-right",
           });
