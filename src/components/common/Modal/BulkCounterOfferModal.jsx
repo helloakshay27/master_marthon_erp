@@ -829,7 +829,7 @@ export default function BulkCounterOfferModal({
                       style={{
                         padding: "12px",
                         fontWeight: "bold",
-                        background: "#8b0203",
+                        background: "#DA7756",
                       }}
                     >
                       {label}

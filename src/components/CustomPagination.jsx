@@ -31,7 +31,7 @@ const CustomPagination = ({
         boundaryCount={boundaryCount}
         showFirstButton
         showLastButton
-        color="#8B0203"
+        color="#DA7756"
       />
 
       {/* Dynamic Entries Info */}

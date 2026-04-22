@@ -725,7 +725,7 @@ const PoAdvanceNotePayment = () => {
                                     {/* <span className="input-group-addon">
                                       <i
                                         className="fa-solid fa-calendar-days"
-                                        style={{ color: "#8B0203" }}
+                                        style={{ color: "#DA7756" }}
                                       />{" "}
                                     </span> */}
                                   </div>
@@ -869,7 +869,7 @@ const PoAdvanceNotePayment = () => {
                                     {/* <span className="input-group-addon">
                                       <i
                                         className="fa-solid fa-calendar-days"
-                                        style={{ color: "#8B0203" }}
+                                        style={{ color: "#DA7756" }}
                                       />{" "}
                                     </span> */}
                                   </div>

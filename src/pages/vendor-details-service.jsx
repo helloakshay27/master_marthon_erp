@@ -1641,7 +1641,7 @@ export default function VendorDetailsService() {
           <button
             onClick={confirmReviseBid}
             style={{
-              backgroundColor: '#8b0203',
+              backgroundColor: '#DA7756',
               color: 'white',
               border: 'none',
               padding: '8px 16px',
@@ -3361,7 +3361,7 @@ export default function VendorDetailsService() {
               role="tab"
               aria-controls="home"
               aria-selected="true"
-              style={{ color: "#8b0203", fontSize: "16px" }}
+              style={{ color: "#DA7756", fontSize: "16px" }}
             >
               Event Overview
             </a>
@@ -3377,7 +3377,7 @@ export default function VendorDetailsService() {
                 role="tab"
                 aria-controls="profile2"
                 aria-selected="false"
-                style={{ color: "#8b0203", fontSize: "16px" }}
+                style={{ color: "#DA7756", fontSize: "16px" }}
               >
                 {
                   // @ts-ignore
@@ -3396,7 +3396,7 @@ export default function VendorDetailsService() {
               role="tab"
               aria-controls="profile"
               aria-selected="false"
-              style={{ color: "#8b0203", fontSize: "16px" }}
+              style={{ color: "#DA7756", fontSize: "16px" }}
             >
               {data1?.event_title} {data1?.event_no}
             </a>
@@ -3412,7 +3412,7 @@ export default function VendorDetailsService() {
                 role="tab"
                 aria-controls="participant"
                 aria-selected="false"
-                style={{ color: "#8b0203", fontSize: "16px" }}
+                style={{ color: "#DA7756", fontSize: "16px" }}
               >
                 Participant Remark
               </a>
@@ -3451,7 +3451,7 @@ export default function VendorDetailsService() {
                             <span
                               style={{
                                 backgroundColor: "#fff2e8",
-                                color: "#8b0203",
+                                color: "#DA7756",
                                 padding: "5px 10px",
                                 borderRadius: "5px",
                                 marginLeft: "25px",
@@ -3468,7 +3468,7 @@ export default function VendorDetailsService() {
                               <span
                                 style={{
                                   backgroundColor: "#fff2e8",
-                                  color: "#8b0203",
+                                  color: "#DA7756",
                                   padding: "5px 10px",
                                   borderRadius: "5px",
                                   marginLeft: "25px",
@@ -3771,17 +3771,17 @@ export default function VendorDetailsService() {
                                       color:
                                         index === currentIndex
                                           ? "white"
-                                          : "#8b0203",
+                                          : "#DA7756",
                                       textAlign: "center",
                                       padding: "10px",
                                       textDecoration: "none",
                                       backgroundColor:
                                         index === currentIndex
-                                          ? "#8b0203"
+                                          ? "#DA7756"
                                           : "white", // Active button color
                                       borderRadius: "4px",
                                       marginRight: "10px",
-                                      border: `1px solid #8b0203`,
+                                      border: `1px solid #DA7756`,
                                       transition: "background-color 0.3s ease",
                                     }}
                                     className={
@@ -5141,7 +5141,7 @@ export default function VendorDetailsService() {
                       className="purple-btn2"
                       onClick={handleDownloadPDF}
                       style={{
-                        backgroundColor: "#8b0203",
+                        backgroundColor: "#DA7756",
                         color: "#fff",
                         border: "none",
                         padding: "10px 20px",
@@ -5177,7 +5177,7 @@ export default function VendorDetailsService() {
                 <div className="d-flex flex-row-reverse mb-3" >
                   <div className=" d-flex align-items-center gap-1 py-3 mx-1 " style={{
                     backgroundColor: "#fff2e8",
-                    color: "#8b0203",
+                    color: "#DA7756",
                     padding: "5px 10px",
                     borderRadius: "5px",
                     marginLeft: "25px",
@@ -5212,7 +5212,7 @@ export default function VendorDetailsService() {
                         <span
                           style={{
                             backgroundColor: "#fff2e8",
-                            color: "#8b0203",
+                            color: "#DA7756",
                             padding: "5px 10px",
                             borderRadius: "5px",
                             marginLeft: "25px",
@@ -5237,7 +5237,7 @@ export default function VendorDetailsService() {
                           <span
                             style={{
                               backgroundColor: "#fff2e8",
-                              color: "#8b0203",
+                              color: "#DA7756",
                               padding: "5px 10px",
                               borderRadius: "5px",
                               marginLeft: "25px",
@@ -6440,17 +6440,17 @@ export default function VendorDetailsService() {
                                     color:
                                       index === currentIndex
                                         ? "white"
-                                        : "#8b0203",
+                                        : "#DA7756",
                                     textAlign: "center",
                                     padding: "10px",
                                     textDecoration: "none",
                                     backgroundColor:
                                       index === currentIndex
-                                        ? "#8b0203"
+                                        ? "#DA7756"
                                         : "white", // Active button color
                                     borderRadius: "4px",
                                     marginRight: "10px",
-                                    border: `1px solid #8b0203`,
+                                    border: `1px solid #DA7756`,
                                     transition: "background-color 0.3s ease",
                                   }}
                                   className={
@@ -6606,7 +6606,7 @@ export default function VendorDetailsService() {
                             currentIndex !== 0 ||
                             submitted
                             ? "#ccc"
-                            : "#8b0203",
+                            : "#DA7756",
                         color:
                           isBid ||
                             loading ||
@@ -6622,7 +6622,7 @@ export default function VendorDetailsService() {
                             currentIndex !== 0 ||
                             submitted
                             ? "1px solid #aaa"
-                            : "1px solid #8b0203",
+                            : "1px solid #DA7756",
                         cursor:
                           isBid ||
                             loading ||

@@ -1229,7 +1229,7 @@ const openAttachTwoModal = () => setattachTwoModal(true);
                                 <label htmlFor="event-no-select">
                                   Bill Entries
                                 </label>
-                                <span style={{ color: "#8b0203" }}> *</span>
+                                <span style={{ color: "#DA7756" }}> *</span>
                                 <div className="form-group">
                                   <SingleSelector
                                     options={billEntryOptions}
@@ -1242,7 +1242,7 @@ const openAttachTwoModal = () => setattachTwoModal(true);
                               <div className="col-md-4">
                                 <div className="form-group">
                                   <label>Company</label>
-                                  <span style={{ color: "#8b0203" }}> *</span>
+                                  <span style={{ color: "#DA7756" }}> *</span>
                                   <input
                                     className="form-control"
                                     type="text"
@@ -1254,7 +1254,7 @@ const openAttachTwoModal = () => setattachTwoModal(true);
 
                               <div className="col-md-4">
                                 <label htmlFor="event-no-select">Project</label>
-                                <span style={{ color: "#8b0203" }}> *</span>
+                                <span style={{ color: "#DA7756" }}> *</span>
                                 <div className="form-group">
                                   <input
                                     className="form-control"
@@ -1270,7 +1270,7 @@ const openAttachTwoModal = () => setattachTwoModal(true);
                                   {" "}
                                   SubProject
                                 </label>
-                                <span style={{ color: "#8b0203" }}> *</span>
+                                <span style={{ color: "#DA7756" }}> *</span>
                                 <div className="form-group">
                                   <input
                                     className="form-control"

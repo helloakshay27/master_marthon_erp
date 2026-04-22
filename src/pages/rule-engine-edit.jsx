@@ -751,7 +751,7 @@ const RuleEngineEdit = () => {
                                                     <span
                                                         className="badge setRuleCard"
                                                         style={{
-                                                            color: "#8b0203",
+                                                            color: "#DA7756",
                                                             backgroundColor: "#E954202E",
                                                         }}
                                                     >
@@ -807,7 +807,7 @@ const RuleEngineEdit = () => {
                                                     <span
                                                         className="badge setRuleCard"
                                                         style={{
-                                                            color: "#8b0203",
+                                                            color: "#DA7756",
                                                             backgroundColor: "#E954202E",
                                                         }}
                                                     >
@@ -862,7 +862,7 @@ const RuleEngineEdit = () => {
                                                     <span
                                                         className="badge setRuleCard"
                                                         style={{
-                                                            color: "#8b0203",
+                                                            color: "#DA7756",
                                                             backgroundColor: "#E954202E",
                                                         }}
                                                     >
@@ -925,7 +925,7 @@ const RuleEngineEdit = () => {
                                     <span
                                         className="badge setRuleCard"
                                         style={{
-                                            color: "#8b0203",
+                                            color: "#DA7756",
                                             backgroundColor: "#E954202E",
                                         }}
                                     >

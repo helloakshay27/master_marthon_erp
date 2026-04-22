@@ -23,7 +23,7 @@ const InfoTooltip = ({ content, anchorEl }) => {
     transform: "translateY(-50%)",
     background: "linear-gradient(to bottom, white, #f0f0f0)",
     border: "1px solid #f3f3f3",
-    borderBottom: "4px solid #8b0203",
+    borderBottom: "4px solid #DA7756",
     borderRadius: "8px",
     boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
     padding: "10px",
@@ -634,7 +634,7 @@ export default function Table({
                       <button
                         className="p-2 bg-white border"
                         style={{
-                          color: "#8b0203",
+                          color: "#DA7756",
                           backgroundColor: "transparent", // Remove background
                           border: "none", // Remove border
                           padding: "0", // Optional: Adjust padding

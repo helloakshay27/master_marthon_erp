@@ -29,7 +29,7 @@ export default function MultiSelector({
       backgroundColor: state.isSelected
         ? "#D3D3D3" // Gray background for selected option in the dropdown
         : state.isFocused
-        ? "#8b0203" // Custom background color on hover
+        ? "#DA7756" // Custom background color on hover
         : "transparent", // Default background is transparent
       color: state.isSelected
         ? "#333" // Keep selected option text color dark
@@ -47,11 +47,11 @@ export default function MultiSelector({
     }),
     dropdownIndicator: (base) => ({
       ...base,
-      color: "#8b0203", // Change the dropdown arrow color
+      color: "#DA7756", // Change the dropdown arrow color
     }),
     clearIndicator: (base) => ({
       ...base,
-      color: "#8b0203", // Color of the 'clear' X icon when an option is selected
+      color: "#DA7756", // Color of the 'clear' X icon when an option is selected
     }),
   };
   return (

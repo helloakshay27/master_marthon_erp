@@ -204,7 +204,7 @@ export default function ContractInvitation() {
                       activeTab === "all"
                         ? "2px solid orange"
                         : "1px solid #ccc",
-                    backgroundColor: activeTab === "all" ? "#8b0203" : "#fff",
+                    backgroundColor: activeTab === "all" ? "#DA7756" : "#fff",
                     color: activeTab === "all" ? "white" : "black",
                   }}
                 >
@@ -223,7 +223,7 @@ export default function ContractInvitation() {
                       activeTab === "live"
                         ? "2px solid orange"
                         : "1px solid #ccc",
-                    backgroundColor: activeTab === "live" ? "#8b0203" : "#fff",
+                    backgroundColor: activeTab === "live" ? "#DA7756" : "#fff",
                     color: activeTab === "live" ? "white" : "black",
                   }}
                 >
@@ -243,7 +243,7 @@ export default function ContractInvitation() {
                         ? "2px solid #007bff"
                         : "1px solid #ccc",
                     backgroundColor:
-                      activeTab === "history" ? "#8b0203" : "#fff",
+                      activeTab === "history" ? "#DA7756" : "#fff",
                     color: "black",
                   }}
                 >

@@ -446,7 +446,7 @@ export default function ChargesDataTable({
                   style={{
                     padding: "5px",
                     fontWeight: "bold",
-                    background: "#8b0203",
+                    background: "#DA7756",
                     color: "#fff",
                     width: "300px",
                   }}
@@ -546,7 +546,7 @@ export default function ChargesDataTable({
                     className="btn btn-primary"
                     onClick={() => handleOpenTaxModal(index)}
                     style={{
-                      backgroundColor: "#8b0203",
+                      backgroundColor: "#DA7756",
                       color: "#fff",
                       border: "none",
                       padding: "5px 10px",

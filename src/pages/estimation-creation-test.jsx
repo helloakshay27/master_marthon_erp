@@ -6911,9 +6911,9 @@ const EstimationCreationTest = () => {
                                         title="Remove Row"
                                     >
                                         <svg width="24" height="24" viewBox="0 0 24 24">
-                                            <rect x="2" y="2" width="20" height="20" rx="4" fill="#fff" stroke="#8b0203" strokeWidth="2" />
-                                            <line x1="7" y1="7" x2="17" y2="17" stroke="#8b0203" strokeWidth="2" />
-                                            <line x1="17" y1="7" x2="7" y2="17" stroke="#8b0203" strokeWidth="2" />
+                                            <rect x="2" y="2" width="20" height="20" rx="4" fill="#fff" stroke="#DA7756" strokeWidth="2" />
+                                            <line x1="7" y1="7" x2="17" y2="17" stroke="#DA7756" strokeWidth="2" />
+                                            <line x1="17" y1="7" x2="7" y2="17" stroke="#DA7756" strokeWidth="2" />
                                         </svg>
                                     </button>
                                 )}

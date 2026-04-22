@@ -517,11 +517,11 @@ const EstimationApprovolList = () => {
                                           style={{
                                             cursor: project.budget_status ? "pointer" : "default",
                                             // textDecoration: "underline",
-                                            // color: "#8b0203",
+                                            // color: "#DA7756",
                                             position: "relative"
                                           }}
                                         >
-                                          <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                          <span style={{ color: "#DA7756", textDecoration: "underline" }}>
                                             {project.name}
                                             {/* {console.log("token inn:",token)} */}
                                           </span>
@@ -532,13 +532,13 @@ const EstimationApprovolList = () => {
                                           style={{
                                             cursor: project.budget_status ? "pointer" : "default",
                                             // textDecoration: "underline",
-                                            // color: "#8b0203",
+                                            // color: "#DA7756",
                                             position: "relative"
                                           }}
                                         >{project.name}</span>
                                       )}
                                       {/* <a href={`/details-rate/${project.rate_id}`}>
-                                                                            <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                            <span style={{ color: "#DA7756", textDecoration: "underline" }}>
                                                                                 {project.name}
                                                                             </span>
                                                                         </a> */}
@@ -555,11 +555,11 @@ const EstimationApprovolList = () => {
                                           style={{
                                             cursor: site.status ? "pointer" : "default",
                                             // textDecoration: "underline",
-                                            // color: "#8b0203",
+                                            // color: "#DA7756",
                                             position: "relative"
                                           }}
                                         >
-                                          <span style={{ color: "#8b0203", textDecoration: "underline" }}
+                                          <span style={{ color: "#DA7756", textDecoration: "underline" }}
 
                                           >
                                             {site.name}
@@ -571,7 +571,7 @@ const EstimationApprovolList = () => {
                                           style={{
                                             cursor: site.status ? "pointer" : "default",
                                             // textDecoration: "underline",
-                                            // color: "#8b0203",
+                                            // color: "#DA7756",
                                             position: "relative"
                                           }}
                                         >{site.name}</span>
@@ -590,11 +590,11 @@ const EstimationApprovolList = () => {
                                       //     style={{
                                       //         cursor: wing.status ? "pointer" : "default",
                                       //         // textDecoration: "underline",
-                                      //         // color: "#8b0203",
+                                      //         // color: "#DA7756",
                                       //         position: "relative"
                                       //     }}
                                       // >
-                                      <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                      <span style={{ color: "#DA7756", textDecoration: "underline" }}>
                                         {wing.name}
                                       </span>
                                       // </a>
@@ -604,7 +604,7 @@ const EstimationApprovolList = () => {
                                         style={{
                                           cursor: wing.status ? "pointer" : "default",
                                           // textDecoration: "underline",
-                                          // color: "#8b0203",
+                                          // color: "#DA7756",
                                           position: "relative"
                                         }}
                                       >{wing.name}</span>
@@ -637,10 +637,10 @@ const EstimationApprovolList = () => {
                                           style={{
                                             cursor: project.status ? "pointer" : "default",
                                             // textDecoration: "underline",
-                                            // color: "#8b0203",
+                                            // color: "#DA7756",
                                             position: "relative"
                                           }}>
-                                          <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                          <span style={{ color: "#DA7756", textDecoration: "underline" }}>
                                             {project.name}
                                           </span>
                                         </a>
@@ -650,13 +650,13 @@ const EstimationApprovolList = () => {
                                           style={{
                                             cursor: project.budget_status ? "pointer" : "default",
                                             // textDecoration: "underline",
-                                            // color: "#8b0203",
+                                            // color: "#DA7756",
                                             position: "relative"
                                           }}
                                         >{project.name}</span>
                                       )}
                                       {/* <a href={`/details-rate/${project.rate_id}`}>
-                                                                            <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                            <span style={{ color: "#DA7756", textDecoration: "underline" }}>
                                                                                 {project.name}
                                                                             </span>
                                                                         </a> */}
@@ -672,10 +672,10 @@ const EstimationApprovolList = () => {
                                         style={{
                                           cursor: site.status ? "pointer" : "default",
                                           // textDecoration: "underline",
-                                          // color: "#8b0203",
+                                          // color: "#DA7756",
                                           position: "relative"
                                         }}>
-                                        <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                        <span style={{ color: "#DA7756", textDecoration: "underline" }}>
                                           {site.name}
                                         </span>
                                       </a>
@@ -685,7 +685,7 @@ const EstimationApprovolList = () => {
                                         style={{
                                           cursor: site.status ? "pointer" : "default",
                                           // textDecoration: "underline",
-                                          // color: "#8b0203",
+                                          // color: "#DA7756",
                                           position: "relative"
                                         }}>{site.name}</span>
                                     )}

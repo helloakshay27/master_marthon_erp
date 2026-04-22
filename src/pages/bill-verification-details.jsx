@@ -824,7 +824,7 @@ const BillVerificationDetails = () => {
                               <button
                                 className="purple-btn2"
                                 // style={{
-                                //   color: "#8b0203",
+                                //   color: "#DA7756",
                                 //   textDecoration: "underline",
                                 //   cursor: "pointer",
                                 // }}
@@ -878,7 +878,7 @@ const BillVerificationDetails = () => {
                           <td
                             className="text-start"
                             style={{
-                              color: "#8b0203",
+                              color: "#DA7756",
                               textDecoration: "underline",
                               cursor: "pointer",
                             }}
@@ -892,7 +892,7 @@ const BillVerificationDetails = () => {
                             <button
                               className="text-decoration-underline border-0 bg-transparent"
                               style={{
-                                color: "#8b0203",
+                                color: "#DA7756",
                                 textDecoration: "underline",
                                 cursor: "pointer",
                               }}

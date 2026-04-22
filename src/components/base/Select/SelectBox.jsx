@@ -29,13 +29,13 @@ export default function SelectBox({
       ...base,
       maxHeight: "65px",
       overflowY: "auto",
-      borderColor: state.isFocused ? "#8b0203" : base.borderColor,
+      borderColor: state.isFocused ? "#DA7756" : base.borderColor,
       backgroundColor: disabled ? "#e9ecef" : base.backgroundColor, // Grey out when disabled
       pointerEvents: disabled ? "none" : "auto", // Disable pointer events when disabled
       "&:hover": {
-        borderColor: disabled ? base.borderColor : "#8b0203",
+        borderColor: disabled ? base.borderColor : "#DA7756",
       },
-      boxShadow: state.isFocused ? "0 0 0 1px #8b0203" : base.boxShadow,
+      boxShadow: state.isFocused ? "0 0 0 1px #DA7756" : base.boxShadow,
     }),
     menu: (base) => ({
       ...base,
@@ -50,7 +50,7 @@ export default function SelectBox({
       backgroundColor: state.isDisabled
         ? "#e9ecef" // Grey background for disabled options
         : state.isSelected
-        ? "#8b0203" // Red background for selected option
+        ? "#DA7756" // Red background for selected option
         : state.isFocused
         ? "#f0f0f0" // Light grey background for hovered option
         : "#fff", // White background for normal options
@@ -63,15 +63,15 @@ export default function SelectBox({
         : "#333", // Dark text for normal options
       cursor: state.isDisabled ? "not-allowed" : "pointer", // Show pointer cursor for enabled options
       "&:hover": !state.isDisabled ? {
-        backgroundColor: state.isSelected ? "#8b0203" : "#f0f0f0",
+        backgroundColor: state.isSelected ? "#DA7756" : "#f0f0f0",
         color: state.isSelected ? "#fff" : "#333",
       } : {},
     }),
     multiValueRemove: (base, state) => ({
       ...base,
-      color: state.isFocused ? "#8b0203" : base.color,
+      color: state.isFocused ? "#DA7756" : base.color,
       "&:hover": {
-        backgroundColor: "#8b0203",
+        backgroundColor: "#DA7756",
         color: "#fff",
       },
     }),

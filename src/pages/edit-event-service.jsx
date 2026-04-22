@@ -2923,7 +2923,7 @@ export default function EditEventService() {
                               <label className="mx-2 mb-0">
                                 <input
                                   type="checkbox"
-                                  style={{ accentColor: "#8b0203" }}
+                                  style={{ accentColor: "#DA7756" }}
                                   checked={question.isMandatory || false}
                                   onChange={e => handleQuestionChange(qIdx, "isMandatory", e.target.checked)}
                                   disabled={checklistOption === "existing"}
@@ -2933,7 +2933,7 @@ export default function EditEventService() {
                               <label className="mx-2 mb-0">
                                 <input
                                   type="checkbox"
-                                  style={{ accentColor: "#8b0203" }}
+                                  style={{ accentColor: "#DA7756" }}
                                   checked={question.isAttachmentMandatory || false}
                                   onChange={e => handleQuestionChange(qIdx, "isAttachmentMandatory", e.target.checked)}
                                   disabled={checklistOption === "existing"}
@@ -2967,7 +2967,7 @@ export default function EditEventService() {
                             alignItems: "center",
                             justifyContent: "center"
                           }}>
-                            <button className="btn purple-btn" style={{ borderRadius: "50%", width: 48, height: 48, fontSize: 28, color: "#8b0203" }} onClick={handleAddQuestion}>+</button>
+                            <button className="btn purple-btn" style={{ borderRadius: "50%", width: 48, height: 48, fontSize: 28, color: "#DA7756" }} onClick={handleAddQuestion}>+</button>
                           </div>
                         </div>
                       )}

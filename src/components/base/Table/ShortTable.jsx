@@ -78,7 +78,7 @@ export default function ShortTable({
                 style={{
                   padding: "12px",
                   fontWeight: "bold",
-                  background: "#8b0203",
+                  background: "#DA7756",
                 }}
               >
                 {row.label || row.field_name}{" "}

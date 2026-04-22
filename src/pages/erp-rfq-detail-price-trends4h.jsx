@@ -435,10 +435,10 @@ export default function ErpRfqDetailPriceTrends4h() {
                         className="event-participant-cardBtn d-flex align-items-center justify-content-between"
                         style={{
                           width: "80px",
-                          backgroundColor: "#8b020366",
+                          backgroundColor: "#DA775666",
                           padding: "5px 15px",
                           color: "#000",
-                          border: "1px solid #8b0203",
+                          border: "1px solid #DA7756",
                         }}
                       >
                        Expired
@@ -450,10 +450,10 @@ export default function ErpRfqDetailPriceTrends4h() {
                         className="event-participant-cardBtn d-flex align-items-center justify-content-between"
                         style={{
                           width: "80px",
-                          backgroundColor: "#8b020366",
+                          backgroundColor: "#DA775666",
                           padding: "5px 15px",
                           color: "#000",
-                          border: "1px solid #8b0203",
+                          border: "1px solid #DA7756",
                         }}
                       >
                         <samp>
@@ -464,7 +464,7 @@ export default function ErpRfqDetailPriceTrends4h() {
                             fill="#fff"
                             xmlns="http://www.w3.org/2000/svg"
                           >
-                            <circle cx={6} cy={6} r={6} fill="#8b0203" />
+                            <circle cx={6} cy={6} r={6} fill="#DA7756" />
                           </svg>
                         </samp>{" "}
                         Live

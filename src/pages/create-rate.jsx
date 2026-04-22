@@ -1372,7 +1372,7 @@ if (missingRateIndex !== -1) {
                                     value="organization"
                                     checked={dateType === "organization "}
                                     onChange={() => setDateType("organization ")}
-                                    style={{ color: "#8b0203" }}
+                                    style={{ color: "#DA7756" }}
                                 />
                                 <label
                                     htmlFor="organisationRadio"

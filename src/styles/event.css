@@ -328,7 +328,7 @@
   }
   
   .styles_bottomNudge__FUsAV .cancel-btn  {
-    border: 0.4px solid #8B0203;
+    border: 0.4px solid #DA7756;
     padding: 0.4rem 1rem;
     background: var(--body-bg-color);
     box-shadow: 0px 2.1875243186950684px 0px 0px #0000000b;
@@ -1875,7 +1875,7 @@
     grid-gap: 8px 6px;
   }
   .pro-radio-tabs__tab__selected {
-    border: 1px solid #8b0203 !important;
+    border: 1px solid #DA7756 !important;
     background: rgba(19, 117, 228, 0.05);
   }
   

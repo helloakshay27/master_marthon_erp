@@ -71,7 +71,7 @@ const BOQApprovalList = () => {
                           onClick={toggleArrow}
                           style={{ cursor: "pointer" }}
                         >
-                          <circle cx="16" cy="16" r="16" fill="#8B0203" />
+                          <circle cx="16" cy="16" r="16" fill="#DA7756" />
                           <path
                             d="M16 24L9.0718 12L22.9282 12L16 24Z"
                             fill="white"

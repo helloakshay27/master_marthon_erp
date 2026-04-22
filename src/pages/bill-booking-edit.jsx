@@ -2729,7 +2729,7 @@ const BillBookingEdit = () => {
                   {withBillEntry && !withoutBillEntry && (
                     <div className="col-md-4">
                       <label htmlFor="event-no-select">Bill Entries</label>
-                      <span style={{ color: "#8b0203" }}> *</span>
+                      <span style={{ color: "#DA7756" }}> *</span>
                       <div className="form-group">
                         <SingleSelector
                           options={billEntryOptions}
@@ -2773,7 +2773,7 @@ const BillBookingEdit = () => {
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>Company</label>
-                      <span style={{ color: "#8b0203" }}> *</span>
+                      <span style={{ color: "#DA7756" }}> *</span>
                       <input
                         className="form-control"
                         type="text"
@@ -2794,7 +2794,7 @@ const BillBookingEdit = () => {
 
                   <div className="col-md-4">
                     <label htmlFor="event-no-select">Project</label>
-                    <span style={{ color: "#8b0203" }}> *</span>
+                    <span style={{ color: "#DA7756" }}> *</span>
                     <div className="form-group">
                       <input
                         className="form-control"
@@ -2815,7 +2815,7 @@ const BillBookingEdit = () => {
 
                   <div className="col-md-4 mt-2">
                     <label htmlFor="event-no-select"> SubProject</label>
-                    <span style={{ color: "#8b0203" }}> *</span>
+                    <span style={{ color: "#DA7756" }}> *</span>
                     <div className="form-group">
                       <input
                         className="form-control"
@@ -2836,7 +2836,7 @@ const BillBookingEdit = () => {
                   <div className="col-md-4  mt-2">
                     <div className="form-group">
                       <label>Supplier</label>
-                      <span style={{ color: "#8b0203" }}> *</span>
+                      <span style={{ color: "#DA7756" }}> *</span>
                       {/* <SingleSelector
                         options={supplierOptions}
                         className="form-control form-select"
@@ -2869,7 +2869,7 @@ const BillBookingEdit = () => {
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>PO Type</label>
-                      <span style={{ color: "#8b0203" }}> *</span>
+                      <span style={{ color: "#DA7756" }}> *</span>
                       <SingleSelector
                         options={poTypeOptions}
                         className="form-control form-select"
@@ -2938,7 +2938,7 @@ const BillBookingEdit = () => {
                   <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Invoice Number</label>
-                      <span style={{ color: "#8b0203" }}> *</span>
+                      <span style={{ color: "#DA7756" }}> *</span>
                       <input
                         className="form-control"
                         type="text"
@@ -3010,7 +3010,7 @@ const BillBookingEdit = () => {
                   <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Invoice Amount</label>
-                      <span style={{ color: "#8b0203" }}> *</span>
+                      <span style={{ color: "#DA7756" }}> *</span>
                       {/* <input
                         className="form-control"
                         type="number"

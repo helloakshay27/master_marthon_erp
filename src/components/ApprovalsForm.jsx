@@ -96,7 +96,7 @@ export default function ApprovalsForm({ mode }) {
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <circle cx={16} cy={16} r={16} fill="#8B0203" />
+                <circle cx={16} cy={16} r={16} fill="#DA7756" />
                 <path
                   d={
                     isCollapsed

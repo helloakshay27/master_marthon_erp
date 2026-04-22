@@ -615,7 +615,7 @@ const BillEntryDetails = () => {
                         <td
                           className="text-start"
                           style={{
-                            color: "#8b0203",
+                            color: "#DA7756",
                             textDecoration: "underline",
                             cursor: "pointer",
                           }}
@@ -629,7 +629,7 @@ const BillEntryDetails = () => {
                           <button
                             className="text-decoration-underline border-0 bg-transparent"
                             style={{
-                              color: "#8b0203",
+                              color: "#DA7756",
                               textDecoration: "underline",
                               cursor: "pointer",
                             }}

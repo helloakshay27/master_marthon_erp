@@ -250,12 +250,12 @@ const EstimationCreationDetails = () => {
 
                             <Link
                                 to={`/estimation-creation-edit/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`}
-                                className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+                                className="d-flex align-items-center" style={{ borderColor: '#DA7756' }}>
 
                                 <button class="purple-btn1" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#8b0203" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z" fill="#8b0203" />
-                                        <path d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#8b0203" />
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#DA7756" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z" fill="#DA7756" />
+                                        <path d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#DA7756" />
                                     </svg>
                                 </button>
 
@@ -269,7 +269,7 @@ const EstimationCreationDetails = () => {
 
                             <Link
                                 to={`/estimation-creation-approval/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`}
-                                className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+                                className="d-flex align-items-center" style={{ borderColor: '#DA7756' }}>
 
 
                                 <button className="purple-btn2">

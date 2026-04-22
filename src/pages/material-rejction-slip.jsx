@@ -409,7 +409,7 @@ const MaterialRejctionSlip = () => {
                     style={{
                       backgroundColor:
                         activeTab === "rejection_slip"
-                          ? "#8b0203"
+                          ? "#DA7756"
                           : "transparent",
                       color: activeTab === "rejection_slip" ? "#fff" : "#000",
                       cursor: "pointer",
@@ -428,7 +428,7 @@ const MaterialRejctionSlip = () => {
                     className="col-md-2 text-center"
                     style={{
                       backgroundColor:
-                        activeTab === "draft" ? "#8b0203" : "transparent",
+                        activeTab === "draft" ? "#DA7756" : "transparent",
                       color: activeTab === "draft" ? "#fff" : "#000",
                       cursor: "pointer",
                       borderRadius: "5px",
@@ -447,7 +447,7 @@ const MaterialRejctionSlip = () => {
                     className="col-md-2 text-center"
                     style={{
                       backgroundColor:
-                        activeTab === "accepted" ? "#8b0203" : "transparent",
+                        activeTab === "accepted" ? "#DA7756" : "transparent",
                       color: activeTab === "accepted" ? "#fff" : "#000",
                       cursor: "pointer",
                       borderRadius: "5px",
@@ -466,7 +466,7 @@ const MaterialRejctionSlip = () => {
                     className="col-md-2 text-center"
                     style={{
                       backgroundColor:
-                        activeTab === "rejected" ? "#8b0203" : "transparent",
+                        activeTab === "rejected" ? "#DA7756" : "transparent",
                       color: activeTab === "rejected" ? "#fff" : "#000",
                       cursor: "pointer",
                       borderRadius: "5px",
@@ -816,7 +816,7 @@ const MaterialRejctionSlip = () => {
                                   <td
                                     style={{
                                       cursor: "pointer",
-                                      color: "#8b0203",
+                                      color: "#DA7756",
                                       textDecoration: "underline",
                                     }}
                                     onClick={() =>
@@ -866,7 +866,7 @@ const MaterialRejctionSlip = () => {
                                   <td
                                   // style={{
                                   //   cursor: "pointer",
-                                  //   color: "#8b0203",
+                                  //   color: "#DA7756",
                                   //   textDecoration: "underline",
                                   // }}
                                   // onClick={() =>

@@ -107,7 +107,7 @@ export default function adminList() {
       transform: "translateY(-50%)",
       background: "linear-gradient(to bottom, white, #f0f0f0)",
       border: "1px solid #f3f3f3",
-      borderBottom: "4px solid #8b0203",
+      borderBottom: "4px solid #DA7756",
       borderRadius: "8px",
       boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
       padding: "10px",
@@ -196,7 +196,7 @@ export default function adminList() {
               xmlns="http://www.w3.org/2000/svg"
               width="20"
               height="20"
-              fill="#8b0203"
+              fill="#DA7756"
               className="bi bi-info-circle"
               viewBox="0 0 16 16"
               style={{ cursor: "pointer" }}
@@ -1097,7 +1097,7 @@ export default function adminList() {
                               ? "2px solid orange"
                               : "1px solid #ccc",
                           backgroundColor:
-                            activeTab === "all" ? "#8b0203" : "#fff",
+                            activeTab === "all" ? "#DA7756" : "#fff",
                           color: activeTab === "all" ? "white" : "black", // Adjust text color for better contrast
                         }}
                       >
@@ -1119,7 +1119,7 @@ export default function adminList() {
                               ? "2px solid orange"
                               : "1px solid #ccc",
                           backgroundColor:
-                            activeTab === "live" ? "#8b0203" : "#fff",
+                            activeTab === "live" ? "#DA7756" : "#fff",
                           color: activeTab === "live" ? "white" : "black", // Adjust text color for better contrast
                         }}
                       >
@@ -1141,7 +1141,7 @@ export default function adminList() {
                               ? "2px solid #007bff"
                               : "1px solid #ccc",
                           backgroundColor:
-                            activeTab === "history" ? "#8b0203" : "#fff",
+                            activeTab === "history" ? "#DA7756" : "#fff",
                           color: activeTab === "history" ? "white" : "black",
                         }}
                       >
@@ -1405,7 +1405,7 @@ export default function adminList() {
                             <div className="row justify-content-end align-items-center px-3">
                               <div className="col-md-2">
                                 <button
-                                  style={{ color: "#8b0203" }}
+                                  style={{ color: "#DA7756" }}
                                   className="btn btn-md"
                                   onClick={handleModalShow}
                                 >
@@ -1415,20 +1415,20 @@ export default function adminList() {
                               {/* Add settings button here */}
                               <div className="col-md-2">
                                 <button
-                                  style={{ color: "#8b0203" }}
+                                  style={{ color: "#DA7756" }}
                                   type="button"
                                   className="btn btn-md"
                                   onClick={handleSettingModalShow}
                                 >
                                   <SettingIcon
-                                    color={"#8b0203"}
+                                    color={"#DA7756"}
                                     style={{ width: "23px", height: "23px" }}
                                   />
                                 </button>
                               </div>
                               {/* <div className="col-md-3">
                                   <button
-                                    style={{ color: "#8b0203" }}
+                                    style={{ color: "#DA7756" }}
                                     type="submit"
                                     className="btn btn-md"
                                   >
@@ -1437,7 +1437,7 @@ export default function adminList() {
                                 </div> */}
                               {/* <div className="col-md-3">
                                   <button
-                                    style={{ color: "#8b0203" }}
+                                    style={{ color: "#DA7756" }}
                                     id="downloadButton"
                                     type="submit"
                                     className="btn btn-md"
@@ -1727,7 +1727,7 @@ export default function adminList() {
                             >
                               <path
                                 d="M9 1L1 9L9 17"
-                                stroke="#8b0203"
+                                stroke="#DA7756"
                                 strokeWidth="1.5"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"

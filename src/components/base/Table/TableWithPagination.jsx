@@ -365,7 +365,7 @@ export default function TableWithPagination({
                 <td>
                   <button
                     className="p-2 bg-white border"
-                    style={{ color: "#8b0203" }}
+                    style={{ color: "#DA7756" }}
                     onClick={onActionClick}
                   >
                     <svg

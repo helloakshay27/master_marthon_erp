@@ -306,7 +306,7 @@ const EstimationComparision = () => {
                                         height="24"
                                         viewBox="0 0 24 24"
                                         fill="none"
-                                        stroke="#8B0203"
+                                        stroke="#DA7756"
                                         strokeWidth="3"
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
@@ -323,7 +323,7 @@ const EstimationComparision = () => {
                                     onClick={handleSettingModalShow}
                                 >
                                     <SettingIcon
-                                        color={"#8B0203"}
+                                        color={"#DA7756"}
                                         style={{ width: "25px", height: "25px" }}
                                     />
                                 </button> */}

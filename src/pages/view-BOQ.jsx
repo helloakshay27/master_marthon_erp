@@ -1245,8 +1245,8 @@ const BOQList = () => {
                       <div className="input-group-append">
                         <button type="button" className="btn btn-md btn-default" onClick={handleApplyFilters} >
                           <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
-                            <path d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z" fill="#8B0203" />
+                            <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#DA7756" />
+                            <path d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z" fill="#DA7756" />
                           </svg>
                         </button>
                       </div>
@@ -1270,7 +1270,7 @@ const BOQList = () => {
                           fillRule="evenodd"
                           clipRule="evenodd"
                           d="M6.66604 5.64722C6.39997 5.64722 6.15555 5.7938 6.03024 6.02851C5.90494 6.26322 5.91914 6.54788 6.06718 6.76895L13.7378 18.2238V29.0346C13.7378 29.2945 13.8778 29.5343 14.1041 29.6622C14.3305 29.79 14.6081 29.786 14.8307 29.6518L17.9136 27.7927C18.13 27.6622 18.2622 27.4281 18.2622 27.1755V18.225L25.9316 6.76888C26.0796 6.5478 26.0938 6.26316 25.9685 6.02847C25.8432 5.79378 25.5987 5.64722 25.3327 5.64722H6.66604ZM15.0574 17.6037L8.01605 7.08866H23.9829L16.9426 17.6051C16.8631 17.7237 16.8207 17.8633 16.8207 18.006V26.7685L15.1792 27.7584V18.0048C15.1792 17.862 15.1368 17.7224 15.0574 17.6037Z"
-                          fill="#8B0203"
+                          fill="#DA7756"
                         />
                       </svg>
                     </button>
@@ -1442,7 +1442,7 @@ const BOQList = () => {
                                   <td className="text-start">
 
                                     <Link to={`/boq-details-page-master/${boqDetail2.id}?token=${token}`}>
-                                      <span style={{ color: ' #8b0203', textDecoration: 'underline' }}> {boqDetail2.id}</span>
+                                      <span style={{ color: ' #DA7756', textDecoration: 'underline' }}> {boqDetail2.id}</span>
                                     </Link>
                                   </td>
                                   <td className="text-start"></td>
@@ -1831,7 +1831,7 @@ const BOQList = () => {
                                         <td className="text-start">
 
                                           <Link to={`/boq-details-page-master/${boqDetail2.id}?token=${token}`}>
-                                            <span style={{ color: ' #8b0203', textDecoration: 'underline' }}> {boqDetail2.id}</span>
+                                            <span style={{ color: ' #DA7756', textDecoration: 'underline' }}> {boqDetail2.id}</span>
                                           </Link>
                                         </td>
                                         <td className="text-start"></td>
@@ -2211,7 +2211,7 @@ const BOQList = () => {
                                               </td>
                                               <td className="text-start" >
                                                 <Link to={`/boq-details-page-master/${boqDetail3.id}?token=${token}`}>
-                                                  <span style={{ color: ' #8b0203', textDecoration: 'underline' }}>{boqDetail3.id}</span>
+                                                  <span style={{ color: ' #DA7756', textDecoration: 'underline' }}>{boqDetail3.id}</span>
                                                 </Link>
                                               </td>
                                               <td className="text-start"></td>
@@ -2586,7 +2586,7 @@ const BOQList = () => {
                                                     </td>
                                                     <td className="text-start" >
                                                       <Link to={`/boq-details-page-master/${boqDetail4.id}?token=${token}`}>
-                                                        <span style={{ color: ' #8b0203', textDecoration: 'underline' }}>{boqDetail4.id}</span>
+                                                        <span style={{ color: ' #DA7756', textDecoration: 'underline' }}>{boqDetail4.id}</span>
                                                       </Link>
                                                     </td>
                                                     <td className="text-start"></td>
@@ -2959,7 +2959,7 @@ const BOQList = () => {
                                                           </td>
                                                           <td className="text-start" >
                                                             <Link to={`/boq-details-page-master/${boqDetail5.id}?token=${token}`}>
-                                                              <span style={{ color: ' #8b0203', textDecoration: 'underline' }}>{boqDetail5.id}</span>
+                                                              <span style={{ color: ' #DA7756', textDecoration: 'underline' }}>{boqDetail5.id}</span>
                                                             </Link>
                                                           </td>
                                                           <td className="text-start"></td>
@@ -3316,7 +3316,7 @@ const BOQList = () => {
                   >
                     <path
                       d="M9 1L1 9L9 17"
-                      stroke="#8B0203"
+                      stroke="#DA7756"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -3435,7 +3435,7 @@ const BOQList = () => {
         <div className="modal-footer justify-content-center">
           <button
             className="btn"
-            style={{ backgroundColor: "#8b0203", color: "#fff" }}
+            style={{ backgroundColor: "#DA7756", color: "#fff" }}
             // onClick={handleClose}
             onClick={handleApplyFilters} // Use the new handler here
           >
@@ -3479,13 +3479,13 @@ const BOQList = () => {
                 href={`${baseURL}boq_details/download_boq_sample.json?token=${token}`}
                 download
                 className="d-flex align-items-center text-decoration-none"
-                style={{ color: "#8b0203" }}
+                style={{ color: "#DA7756" }}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
                   height="20"
-                  fill="#8b0203"
+                  fill="#DA7756"
                   className="bi bi-download me-1"
                   viewBox="0 0 16 16"
                 >
@@ -3626,14 +3626,14 @@ const BOQList = () => {
                     //   href={`/boq-details-page-master/${msg.boq_id}`}
                     //   target="_blank"
                     //   rel="noopener noreferrer"
-                    //   style={{ color: "#8b0203", textDecoration: "underline", marginLeft: 8 }}
+                    //   style={{ color: "#DA7756", textDecoration: "underline", marginLeft: 8 }}
                     // >
                     //   <span>View Details</span>
                     // </a>
 
                     <Link
                       to={`/boq-details-page-master/${msg.boq_id}?token=${token}`}
-                      style={{ color: "#8b0203", textDecoration: "underline", marginLeft: 8 }}
+                      style={{ color: "#DA7756", textDecoration: "underline", marginLeft: 8 }}
                     >
                       View Details
                     </Link>

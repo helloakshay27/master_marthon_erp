@@ -305,7 +305,7 @@ const MaterialReconciliationDetail = () => {
               <Link
                 to={`/material-reconciliation-edit/${id}?token=${token}`}
                 className="d-flex align-items-center"
-                style={{ borderColor: "#8b0203" }}
+                style={{ borderColor: "#DA7756" }}
               >
                 <button
                   class="purple-btn1"
@@ -316,16 +316,16 @@ const MaterialReconciliationDetail = () => {
                     width="24"
                     height="24"
                     viewBox="0 0 24 24"
-                    fill="#8b0203"
+                    fill="#DA7756"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
                       d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z"
-                      fill="#8b0203"
+                      fill="#DA7756"
                     />
                     <path
                       d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"
-                      fill="#8b0203"
+                      fill="#DA7756"
                     />
                   </svg>
                 </button>
@@ -611,14 +611,14 @@ const MaterialReconciliationDetail = () => {
                                 >
                                   <path
                                     d="M11.76 6L6 11.76M6 6L11.76 11.76"
-                                    stroke="#8B0203"
+                                    stroke="#DA7756"
                                     strokeWidth="1.5"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                   />
                                   <path
                                     d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z"
-                                    stroke="#8B0203"
+                                    stroke="#DA7756"
                                     strokeWidth="1.5"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
