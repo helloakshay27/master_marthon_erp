@@ -173,7 +173,7 @@ const MaterialReconciliationList = () => {
     axios
       .get(`${baseURL}pms/company_setups.json?token=${token}`)
       .then((response) => {
-        setCompanies(response.data.companies);
+        setCompanies(response.data?.companies || []);
       })
       .catch((error) => {
         console.error("Error fetching company data:", error);
@@ -196,10 +196,10 @@ const MaterialReconciliationList = () => {
         (company) => company.id === selectedOption.value
       );
       setProjects(
-        selectedCompanyData?.projects.map((prj) => ({
+        selectedCompanyData?.projects?.map((prj) => ({
           value: prj.id,
           label: prj.name,
-        }))
+        })) || []
       );
     }
   };
@@ -219,13 +219,13 @@ const MaterialReconciliationList = () => {
       const selectedCompanyData = companies.find(
         (company) => company.id === selectedCompany.value
       );
-      const selectedProjectData = selectedCompanyData?.projects.find(
+      const selectedProjectData = selectedCompanyData?.projects?.find(
         (project) => project.id === selectedOption.value
       );
 
       // Set site options based on selected project
       setSiteOptions(
-        selectedProjectData?.pms_sites.map((site) => ({
+        selectedProjectData?.pms_sites?.map((site) => ({
           value: site.id,
           label: site.name,
         })) || []
@@ -251,16 +251,16 @@ const MaterialReconciliationList = () => {
       const selectedCompanyData = companies.find(
         (company) => company.id === selectedCompany.value
       );
-      const selectedProjectData = selectedCompanyData.projects.find(
+      const selectedProjectData = selectedCompanyData?.projects?.find(
         (project) => project.id === selectedProject.value
       );
-      const selectedSiteData = selectedProjectData?.pms_sites.find(
+      const selectedSiteData = selectedProjectData?.pms_sites?.find(
         (site) => site.id === selectedOption.value
       );
 
       // Set wings options based on selected site
       setWingsOptions(
-        selectedSiteData?.pms_wings.map((wing) => ({
+        selectedSiteData?.pms_wings?.map((wing) => ({
           value: wing.id,
           label: wing.name,
         })) || []
@@ -274,7 +274,7 @@ const MaterialReconciliationList = () => {
   };
 
   // Map companies to options for the dropdown
-  const companyOptions = companies.map((company) => ({
+  const companyOptions = (companies || []).map((company) => ({
     value: company.id,
     label: company.company_name,
   }));

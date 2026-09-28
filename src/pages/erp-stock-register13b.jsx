@@ -265,9 +265,9 @@ const ErpStockRegister13B = () => {
         };
       });
 
-      setData(transformedData);
-      setTotalPages(result?.pagination.total_pages); // Set total pages
-      setTotalEntries(result?.pagination.total_count);
+      setData(transformedData || []);
+      setTotalPages(result?.pagination?.total_pages); // Set total pages
+      setTotalEntries(result?.pagination?.total_count);
       // setPagination(result.pagination);
       // setFilteredData(transformedData);
       setLoading(false);
@@ -364,8 +364,8 @@ const ErpStockRegister13B = () => {
       };
     });
 
-    setData(transformedData);
-    setFilteredData(transformedData);
+    setData(transformedData || []);
+    setFilteredData(transformedData || []);
     setTotalPages(result?.pagination?.total_pages);
     setTotalEntries(result?.pagination?.total_count);
   } catch (error) {
@@ -382,7 +382,7 @@ const ErpStockRegister13B = () => {
     }
   };
   const getTransformedRows = () => {
-    let rowsToShow = data;
+    let rowsToShow = data || [];
 
     // Apply search filter
     const normalizedSearchTerm = searchTerm.trim().toLowerCase();
@@ -687,12 +687,12 @@ const ErpStockRegister13B = () => {
               : "-",
         };
       });
-      setData(transformedData);
+      setData(transformedData || []);
       // Handle response data
       console.log("Fetched stock data**************:", response.data);
       setTotalPages(response.data?.pagination.total_pages); // Set total pages
       setTotalEntries(response.data?.pagination.total_count);
-      setFilteredData(transformedData); // or any appropriate state you have
+      setFilteredData(transformedData || []); // or any appropriate state you have
       //  setData(response.data)
     } catch (error) {
       console.error("Error fetching stock details:", error);
@@ -1234,8 +1234,8 @@ const ErpStockRegister13B = () => {
               : "-",
         };
       });
-      setData(transformedData);
-      setFilteredData(transformedData);
+      setData(transformedData || []);
+      setFilteredData(transformedData || []);
       setPagination(response.data?.pagination || {});
       setTotalPages(response.data?.pagination.total_pages); // Set total pages
       setTotalEntries(response.data?.pagination.total_count);
